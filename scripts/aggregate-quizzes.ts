@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import Ajv from "ajv";
-import schema from "../schema.json";
+import schema from "../schema.json" with { type: "json" };
 
 const ajv = new Ajv();
 const validate = ajv.compile(schema);
