@@ -6,13 +6,8 @@ coverage/
 # Ignore wrangler files
 .wrangler/
 
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
 # Ignore macOS attirbutes file
 .DS_Store
+
+# Ignore generated programs JSON
+.generated
