@@ -197,23 +197,22 @@ describe("loadPrograms", () => {
   });
 
   describe("when localStorage is empty", () => {
-    it("fetches from ./programs.txt", async () => {
+    it("fetches from /api/programs", async () => {
       const encoded = encodeObjectToString(singleProgram);
       vi.spyOn(globalThis, "fetch").mockResolvedValue({
         ok: true,
-        text: () => Promise.resolve(encoded),
+        json: () => Promise.resolve(encoded),
       } as Response);
 
       await loadPrograms();
 
-      expect(globalThis.fetch).toHaveBeenCalledWith("./programs.txt");
+      expect(globalThis.fetch).toHaveBeenCalledWith("/api/programs");
     });
 
     it("returns the decoded programs from the fetch response", async () => {
-      const encoded = encodeObjectToString(multiplePrograms);
       vi.spyOn(globalThis, "fetch").mockResolvedValue({
         ok: true,
-        text: () => Promise.resolve(encoded),
+        json: () => Promise.resolve(multiplePrograms),
       } as Response);
 
       const result = await loadPrograms();
@@ -249,7 +248,7 @@ describe("loadPrograms", () => {
       const encoded = encodeObjectToString(singleProgram);
       vi.spyOn(globalThis, "fetch").mockResolvedValue({
         ok: true,
-        text: () => Promise.resolve(encoded),
+        json: () => Promise.resolve(encoded),
       } as Response);
 
       await loadPrograms();
@@ -263,7 +262,7 @@ describe("loadPrograms", () => {
       const encoded = encodeObjectToString(singleProgram);
       vi.spyOn(globalThis, "fetch").mockResolvedValue({
         ok: true,
-        text: () => Promise.resolve(encoded),
+        json: () => Promise.resolve(encoded),
       } as Response);
 
       await loadPrograms();
@@ -272,15 +271,14 @@ describe("loadPrograms", () => {
     });
 
     it("falls back to fetch and returns the fetched programs", async () => {
-      const encoded = encodeObjectToString(singleProgram);
       vi.spyOn(globalThis, "fetch").mockResolvedValue({
         ok: true,
-        text: () => Promise.resolve(encoded),
+        json: () => Promise.resolve(singleProgram),
       } as Response);
 
       const result = await loadPrograms();
 
-      expect(globalThis.fetch).toHaveBeenCalledWith("./programs.txt");
+      expect(globalThis.fetch).toHaveBeenCalledWith("/api/programs");
       expect(result).toEqual(singleProgram);
     });
 

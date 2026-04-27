@@ -20,9 +20,8 @@ export const loadPrograms = async (): Promise<Program[]> => {
   }
   const rsp = await fetch("/api/programs");
   if (!rsp.ok) throw new Error(`Failed to fetch programs: ${rsp.status}`);
-  const data = await rsp.json();
 
-  return decodeStringToObject(data);
+  return await rsp.json();
 };
 
 /**
