@@ -27,6 +27,7 @@ button {
   max-width: 800px;
   margin: auto;
   width: 100%;
+  text-align: center;
 }
 
 select {
