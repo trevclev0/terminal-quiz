@@ -18,10 +18,11 @@ export const loadPrograms = async (): Promise<Program[]> => {
       window.localStorage.removeItem(PROGRAM_DATA_KEY);
     }
   }
-  const res = await fetch("./programs.txt");
-  if (!res.ok) throw new Error(`Failed to fetch programs: ${res.status}`);
+  const rsp = await fetch("/api/programs");
+  if (!rsp.ok) throw new Error(`Failed to fetch programs: ${rsp.status}`);
+  const data = await rsp.json();
 
-  return decodeStringToObject(await res.text());
+  return decodeStringToObject(data);
 };
 
 /**
