@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { handle } from "hono/cloudflare-pages";
-import programs from "../data/programs.json" with { type: "json" };
+import programs from "../../.generated/programs.json" with { type: "json" };
 
 const app = new Hono().basePath("/api");
 
