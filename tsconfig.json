@@ -20,17 +20,5 @@
     "noUncheckedSideEffectImports": true,
     "types": ["node"]
   },
-  "ts-node": {
-    "compilerOptions": {
-      "moduleResolution": "node",
-      "ignoreDeprecations": "6.0",
-      "allowSyntheticDefaultImports": true,
-      "esModuleInterop": true,
-      "typeRoots": ["types"]
-    },
-    "moduleTypes": {
-      "gulpfile.ts": "cjs"
-    }
-  },
   "include": ["src"]
 }
