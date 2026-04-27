@@ -8,15 +8,18 @@ const validate = ajv.compile(schema);
 
 async function aggregateQuizzes() {
   const programsDir = path.join(process.cwd(), "programs");
-  const files = await fs.readdir(programsDir);
+  const files = (await fs.readdir(programsDir))
+    .filter((file) => file.endsWith(".json"))
+    .sort((a, b) => a.localeCompare(b));
 
   const quizzes = [];
-  for (const file of files.filter((f) => f.endsWith(".json"))) {
+  for (const file of files) {
     const raw = await fs.readFile(path.join(programsDir, file), "utf-8");
     const data = JSON.parse(raw);
     if (!validate(data)) {
-      console.error("Validation errors:", validate.errors);
-      process.exit(1);
+      throw new Error(
+        `Schema validation failed for ${file}: ${JSON.stringify(validate.errors)}`,
+      );
     }
     quizzes.push(data);
   }
@@ -28,4 +31,7 @@ async function aggregateQuizzes() {
   await fs.writeFile(".generated/programs.json", minifiedJsonFiles);
 }
 
-aggregateQuizzes().catch(console.error);
+aggregateQuizzes().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

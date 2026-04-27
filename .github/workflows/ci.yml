@@ -17,7 +17,7 @@ jobs:
       - name: Run Biome checks
         run: pnpm run check
       - name: Run tests with coverage
-        run: bun run coverage
+        run: pnpm run coverage
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
         with:
@@ -35,4 +35,4 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup-project
       - name: Validate commit messages
-        run: pnpm dlx commitlint --from origin/main --to HEAD
+        run: pnpm dlx commitlint --from origin/${{ github.base_ref }} --to HEAD

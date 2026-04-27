@@ -12,7 +12,7 @@ app.get("/programs", (c) => {
 app.post("/hints", async (c) => {
   // const body = await c.req.json()
   // Proxy request to AI model goes here
-  return c.json({ hint: "Think outside the box!" });
+  return c.json({ error: "Not implemented" }, 501);
 });
 
 // Export the Hono app wrapped in Cloudflare Pages' handler

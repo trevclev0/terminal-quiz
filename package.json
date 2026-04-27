@@ -17,7 +17,7 @@
     "commit": "git-cz",
     "lint-staged": "lint-staged",
     "start": "pnpm build && wrangler pages dev dist",
-    "postinstall": "husky",
+    "prepare": "husky",
     "aggregate-quizzes": "tsx scripts/aggregate-quizzes.ts"
   },
   "devDependencies": {
