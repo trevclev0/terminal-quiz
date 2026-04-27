@@ -1,11 +1,11 @@
 const config = {
   "*.{js,jsx,ts,tsx}": [
-    "yarn biome check --write --no-errors-on-unmatched",
-    "yarn vitest related --run",
+    "pnpm biome check --write --no-errors-on-unmatched",
+    "pnpm vitest related --run",
   ],
-  "*.{json,jsonc}": ["yarn biome check --write --no-errors-on-unmatched"],
-  "*.{css,scss,less}": ["yarn biome check --write --no-errors-on-unmatched"],
-  "*.{md,mdx}": ["yarn biome check --write --no-errors-on-unmatched"],
+  "*.{json,jsonc}": ["pnpm biome check --write --no-errors-on-unmatched"],
+  "*.{css,scss,less}": ["pnpm biome check --write --no-errors-on-unmatched"],
+  "*.{md,mdx}": ["pnpm biome check --write --no-errors-on-unmatched"],
 };
 
 export default config;
