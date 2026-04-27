@@ -1,13 +1,11 @@
 import { Hono } from "hono";
 import { handle } from "hono/cloudflare-pages";
+import programs from "../data/programs.json" with { type: "json" };
 
 const app = new Hono().basePath("/api");
 
 app.get("/programs", (c) => {
-  return c.json([
-    { id: 1, title: "First Riddle" },
-    { id: 2, title: "Second Riddle" },
-  ]);
+  return c.json(programs);
 });
 
 // Future endpoint placeholder for the AI hints
