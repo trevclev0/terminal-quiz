@@ -5,18 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:all": "pnpm build && concurrently \"vite\" \"wrangler pages dev dist\"",
     "lint": "biome lint .",
     "format": "biome format --write .",
     "check": "biome check --write .",
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "build": "tsc && vite build",
+    "build": "pnpm aggregate-quizzes && tsc && vite build",
     "preview": "vite preview",
     "commit": "git-cz",
     "lint-staged": "lint-staged",
-    "start": "wrangler pages dev -- yarn run dev",
-    "postinstall": "husky"
+    "start": "pnpm build && wrangler pages dev dist",
+    "postinstall": "husky",
+    "aggregate-quizzes": "tsx scripts/aggregate-quizzes.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",
@@ -36,7 +38,7 @@
     "@types/gulp": "^4.0.18",
     "@types/gulp-json-validator": "^1.2.3",
     "@types/gulp-rename": "^2.0.7",
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/semver": "^7",
@@ -44,9 +46,11 @@
     "@vitejs/plugin-react": "^6.0.1",
     "@vitest/coverage-v8": "^4.1.2",
     "@vitest/ui": "4.1.2",
+    "ajv": "^8.20.0",
     "commitizen": "^4.3.1",
     "commitlint": "^20.5.2",
     "commitlint-config-gitmoji": "^2.3.1",
+    "concurrently": "^9.2.1",
     "conventional-changelog-angular": "^8.3.1",
     "conventional-changelog-conventionalcommits": "^9.3.1",
     "cz-git": "^1.12.0",
@@ -68,6 +72,7 @@
     "semantic-release-gitmoji": "^1.6.9",
     "semver": "^7.7.4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "~6.0.2",
     "vinyl": "^3.0.1",
     "vite": "^8.0.3",
@@ -81,7 +86,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
-  "packageManager": "yarn@4.13.0",
+  "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8",
   "dependenciesMeta": {
     "@biomejs/biome@2.4.10": {
       "unplugged": true
