@@ -198,10 +198,9 @@ describe("loadPrograms", () => {
 
   describe("when localStorage is empty", () => {
     it("fetches from /api/programs", async () => {
-      const encoded = encodeObjectToString(singleProgram);
       vi.spyOn(globalThis, "fetch").mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(encoded),
+        json: () => Promise.resolve(singleProgram),
       } as Response);
 
       await loadPrograms();
@@ -245,10 +244,9 @@ describe("loadPrograms", () => {
     });
 
     it("logs a warning", async () => {
-      const encoded = encodeObjectToString(singleProgram);
       vi.spyOn(globalThis, "fetch").mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(encoded),
+        json: () => Promise.resolve(singleProgram),
       } as Response);
 
       await loadPrograms();
@@ -259,10 +257,9 @@ describe("loadPrograms", () => {
     });
 
     it("removes the corrupt entry from localStorage", async () => {
-      const encoded = encodeObjectToString(singleProgram);
       vi.spyOn(globalThis, "fetch").mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(encoded),
+        json: () => Promise.resolve(singleProgram),
       } as Response);
 
       await loadPrograms();
