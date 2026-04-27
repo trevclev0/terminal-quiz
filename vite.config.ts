@@ -3,7 +3,13 @@ import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   server: {
-    open: "index.html",
+    open: true,
+    proxy: {
+      "/api": {
+        target: "http://localhost:8788",
+        changeOrigin: true,
+      },
+    },
   },
   plugins: [react()],
   test: {
