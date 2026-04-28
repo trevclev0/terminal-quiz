@@ -1,0 +1,22 @@
+name: Deploy
+on: [push, pull_request]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write # Required to post the preview URL comment
+    steps:
+      - uses: actions/checkout@v6
+      
+      - name: Setup
+        uses: ./.github/actions/setup-project
+      
+      # Wrangler automatically detects if it's a PR and creates a preview
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
