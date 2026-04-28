@@ -13,6 +13,9 @@ jobs:
       
       - name: Setup
         uses: ./.github/actions/setup-project
+
+      - name: Run build
+        run: pnpm build
       
       # Wrangler automatically detects if it's a PR and creates a preview
       - name: Deploy to Cloudflare
