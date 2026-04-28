@@ -26,12 +26,17 @@ jobs:
       - name: Run build
         run: pnpm build
 
-      - name: Deploy to Cloudflare
+      - name: Deploy to Cloudflare (Preview)
         id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >
+            ${{ github.ref == 'refs/heads/main' 
+              && 'deploy' 
+              || 'versions upload --experimental-versions' 
+            }}
 
       - name: Update Deployment (Success)
         uses: chrnorm/deployment-status@v2
