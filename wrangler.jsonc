@@ -8,6 +8,12 @@
   "main": "src/entry.ts",
   "compatibility_date": "2026-04-27",
   "preview_urls": true,
+  "routes": [
+    {
+      "pattern": "quiz.clevertrevor.dev",
+      "custom_domain": true
+    }
+  ],
   "assets": {
     "binding": "ASSETS",
     "directory": "./public"
