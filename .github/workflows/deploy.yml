@@ -7,19 +7,45 @@ jobs:
     permissions:
       contents: read
       deployments: write
-      pull-requests: write # Required to post the preview URL comment
+      pull-requests: write
     steps:
       - uses: actions/checkout@v6
-      
+
+      - name: Create GitHub Deployment
+        uses: chrnorm/deployment-action@v2
+        id: deployment
+        if: github.event_name == 'pull_request'
+        with:
+          token: ${{ github.token }}
+          environment: Preview (${{ github.head_ref }})
+          initial-status: pending
+
       - name: Setup
         uses: ./.github/actions/setup-project
 
       - name: Run build
         run: pnpm build
-      
-      # Wrangler automatically detects if it's a PR and creates a preview
+
       - name: Deploy to Cloudflare
+        id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Update Deployment (Success)
+        uses: chrnorm/deployment-status@v2
+        if: github.event_name == 'pull_request' && success()
+        with:
+          token: ${{ github.token }}
+          environment-url: ${{ steps.deploy.outputs.deployment-url }}
+          state: 'success'
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+
+      - name: Update Deployment (Failure)
+        uses: chrnorm/deployment-status@v2
+        if: github.event_name == 'pull_request' && failure()
+        with:
+          token: ${{ github.token }}
+          state: 'error'
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
