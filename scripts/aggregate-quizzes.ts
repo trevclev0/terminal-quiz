@@ -1,9 +1,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import Ajv from "ajv";
+import type { Program } from "typescript";
 import schema from "../schema.json" with { type: "json" };
 
-const ajv = new Ajv();
+const ajv = new Ajv({ allErrors: true });
 const validate = ajv.compile(schema);
 
 async function aggregateQuizzes() {
@@ -12,10 +13,10 @@ async function aggregateQuizzes() {
     .filter((file) => file.endsWith(".json"))
     .sort((a, b) => a.localeCompare(b));
 
-  const quizzes = [];
+  const quizzes: Program[] = [];
   for (const file of files) {
     const raw = await fs.readFile(path.join(programsDir, file), "utf-8");
-    const data = JSON.parse(raw);
+    const data: Program = JSON.parse(raw);
     if (!validate(data)) {
       throw new Error(
         `Schema validation failed for ${file}: ${JSON.stringify(validate.errors)}`,
@@ -25,10 +26,10 @@ async function aggregateQuizzes() {
   }
 
   // Minify: JSON.stringify(data) without pretty-printing
-  const minifiedJsonFiles = JSON.stringify(quizzes);
+  const minifiedAggregatedJson = JSON.stringify(quizzes);
 
   await fs.mkdir(".generated", { recursive: true });
-  await fs.writeFile(".generated/programs.json", minifiedJsonFiles);
+  await fs.writeFile(".generated/programs.json", minifiedAggregatedJson);
 }
 
 aggregateQuizzes().catch((err) => {

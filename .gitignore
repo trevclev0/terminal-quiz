@@ -6,7 +6,7 @@ coverage/
 # Ignore wrangler files
 .wrangler/
 
-# Ignore macOS attirbutes file
+# Ignore macOS attributes file
 .DS_Store
 
 # Ignore generated programs JSON
