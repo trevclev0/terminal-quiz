@@ -1,17 +1,12 @@
+import { cloudflare } from "@cloudflare/vite-plugin";
 import react from "@vitejs/plugin-react";
 import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   server: {
     open: true,
-    proxy: {
-      "/api": {
-        target: "http://localhost:8788",
-        changeOrigin: true,
-      },
-    },
   },
-  plugins: [react()],
+  plugins: [react(), !process.env.VITEST && cloudflare()].filter(Boolean),
   test: {
     environment: "happy-dom",
     setupFiles: "./tests/setupTests.ts",
