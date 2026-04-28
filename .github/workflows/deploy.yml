@@ -11,14 +11,13 @@ jobs:
     permissions:
       contents: read
       deployments: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@v6
 
       - name: Create GitHub Deployment
         uses: chrnorm/deployment-action@v2
         id: deployment
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
         with:
           token: ${{ github.token }}
           environment: Preview (${{ github.head_ref }})
@@ -32,6 +31,7 @@ jobs:
 
       - name: Deploy to Cloudflare (Preview)
         id: deploy
+        if: github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -44,7 +44,7 @@ jobs:
 
       - name: Update Deployment (Success)
         uses: chrnorm/deployment-status@v2
-        if: github.event_name == 'pull_request' && success()
+        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && success()
         with:
           token: ${{ github.token }}
           environment-url: ${{ steps.deploy.outputs.deployment-url }}
@@ -53,7 +53,7 @@ jobs:
 
       - name: Update Deployment (Failure)
         uses: chrnorm/deployment-status@v2
-        if: github.event_name == 'pull_request' && failure()
+        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && failure()
         with:
           token: ${{ github.token }}
           state: 'error'
