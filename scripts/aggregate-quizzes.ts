@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import Ajv from "ajv";
-import type { Program } from "typescript";
 import schema from "../schema.json" with { type: "json" };
+import type { Program } from "../src/App.types";
 
 const ajv = new Ajv({ allErrors: true });
 const validate = ajv.compile(schema);
