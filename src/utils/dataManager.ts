@@ -1,5 +1,9 @@
 import { decode, encode } from "@msgpack/msgpack";
+import { hc } from "hono/client";
 import type { Program } from "../App.types";
+import type { AppType } from "../entry";
+
+const client = hc<AppType>("/");
 
 const PROGRAM_DATA_KEY = "programs";
 
@@ -18,7 +22,7 @@ export const loadPrograms = async (): Promise<Program[]> => {
       window.localStorage.removeItem(PROGRAM_DATA_KEY);
     }
   }
-  const rsp = await fetch("/api/programs");
+  const rsp = await client.api.programs.$get();
   if (!rsp.ok) throw new Error(`Failed to fetch programs: ${rsp.status}`);
 
   return await rsp.json();
