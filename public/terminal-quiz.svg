@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+
+  <!-- Solid black background circle -->
+  <circle cx="100" cy="100" r="89" fill="#000000"/>
+
+  <!-- Solid green border ring -->
+  <circle cx="100" cy="100" r="94" fill="none" stroke="#33ff33" stroke-width="4.5"/>
+
+  <!-- Solid filled green T -->
+  <path
+    d="
+      M 51,58
+      L 149,58
+      A 9,9 0 0,1 158,67
+      L 158,75
+      A 9,9 0 0,1 149,84
+      L 113,84
+      L 113,141
+      A 9,9 0 0,1 104,150
+      L 96,150
+      A 9,9 0 0,1 87,141
+      L 87,84
+      L 51,84
+      A 9,9 0 0,1 42,75
+      L 42,67
+      A 9,9 0 0,1 51,58
+      Z
+    "
+    fill="#33ff33"
+    stroke="none"
+  />
+
+</svg>
