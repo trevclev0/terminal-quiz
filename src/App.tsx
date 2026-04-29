@@ -27,7 +27,7 @@ function App() {
   );
 
   if (isLoading) {
-    return <div className="loading-screen">Loading...</div>;
+    return <h2 className="loading-screen">Loading...</h2>;
   }
 
   if (error) {
