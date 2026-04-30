@@ -18,6 +18,9 @@ const routes = app
 
 // Separate the API routes from the static assets for simpler Hono RPC
 app.get("*", async (c) => {
+  if (c.req.path.startsWith("/api/")) {
+    return c.notFound();
+  }
   try {
     return await c.env.ASSETS.fetch(c.req.raw);
   } catch (e) {

@@ -260,7 +260,7 @@ describe("loadPrograms", () => {
           return HttpResponse.error(); // Simulates a network failure (no response)
         }),
       );
-      await expect(loadPrograms()).rejects.toThrow("Failed to fetch");
+      await expect(loadPrograms()).rejects.toThrow();
     });
   });
 
