@@ -15,12 +15,13 @@ describe("Programs Router (/api/programs)", () => {
     const res = await programsRouter.request("/");
 
     expect(res.status).toBe(200);
-
+    expect(res.headers.get("content-type")).toBe("application/json");
     const data: Program[] = await res.json();
     expect(data).toHaveLength(2);
-    expect(data[0].name).toBe("Test Program 1");
-    expect(data[0].active).toBe(true);
-    expect(data[1].name).toBe("Test Program 2");
+    expect(data).toMatchObject([
+      { name: "Test Program 1", active: true },
+      { name: "Test Program 2", active: false },
+    ]);
     expect(data[1].active).toBe(false);
   });
 });

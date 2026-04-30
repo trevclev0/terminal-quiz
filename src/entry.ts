@@ -16,8 +16,15 @@ const routes = app
   .route("/programs", programsRouter)
   .route("/riddles", riddlesRouter);
 
-// Separate the API routs from the static assets for simpler Hono RPC
-app.get("*", async (c) => await c.env.ASSETS.fetch(c.req.raw));
+// Separate the API routes from the static assets for simpler Hono RPC
+app.get("*", async (c) => {
+  try {
+    return await c.env.ASSETS.fetch(c.req.raw);
+  } catch (e) {
+    console.error("Failed to fetch static asset:", e);
+    return c.notFound();
+  }
+});
 
 export type AppType = typeof routes;
 

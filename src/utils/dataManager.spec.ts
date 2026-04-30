@@ -19,24 +19,6 @@ import {
 } from "./dataManager";
 
 // ---------------------------------------------------------------------------
-// MSW Setup
-// ---------------------------------------------------------------------------
-
-// Define the handlers for your API
-const handlers = [
-  http.get("/api/programs", () => {
-    return HttpResponse.json(multiplePrograms);
-  }),
-];
-
-const server = setupServer(...handlers);
-
-// Lifecycle hooks for the mock server
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
-
-// ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
 
@@ -79,6 +61,24 @@ const multiplePrograms: Program[] = [
     ],
   },
 ];
+
+// ---------------------------------------------------------------------------
+// MSW Setup
+// ---------------------------------------------------------------------------
+
+// Define the handlers for your API
+const handlers = [
+  http.get("/api/programs", () => {
+    return HttpResponse.json(multiplePrograms);
+  }),
+];
+
+const server = setupServer(...handlers);
+
+// Lifecycle hooks for the mock server
+beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 // ---------------------------------------------------------------------------
 // encodeObjectToString
