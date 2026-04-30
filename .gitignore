@@ -10,3 +10,13 @@ coverage/
 
 # Ignore generated programs JSON
 .generated
+
+# Ignore environment variables
+.env
+.env.local
+
+# Local SQLite database files
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
