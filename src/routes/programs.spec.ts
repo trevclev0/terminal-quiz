@@ -5,8 +5,8 @@ import programsRouter from "./programs";
 // Mock the generated JSON file
 vi.mock("../../.generated/programs.json", () => ({
   default: [
-    { name: "Test Program 1", active: true },
-    { name: "Test Program 2", active: false },
+    { name: "Test Program 1", active: true, riddles: [] },
+    { name: "Test Program 2", active: false, riddles: [] },
   ],
 }));
 
@@ -15,12 +15,12 @@ describe("Programs Router (/api/programs)", () => {
     const res = await programsRouter.request("/");
 
     expect(res.status).toBe(200);
-    expect(res.headers.get("content-type")).toBe("application/json");
+    expect(res.headers.get("content-type")).toContain("application/json");
     const data: Program[] = await res.json();
     expect(data).toHaveLength(2);
-    expect(data).toMatchObject([
-      { name: "Test Program 1", active: true },
-      { name: "Test Program 2", active: false },
+    expect(data).toEqual([
+      { name: "Test Program 1", active: true, riddles: [] },
+      { name: "Test Program 2", active: false, riddles: [] },
     ]);
     expect(data[1].active).toBe(false);
   });
