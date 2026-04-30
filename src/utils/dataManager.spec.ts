@@ -1,4 +1,15 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { HttpResponse, http } from "msw";
+import { setupServer } from "msw/node";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import type { Program } from "../App.types";
 import {
   decodeStringToObject,
@@ -6,6 +17,24 @@ import {
   loadPrograms,
   savePrograms,
 } from "./dataManager";
+
+// ---------------------------------------------------------------------------
+// MSW Setup
+// ---------------------------------------------------------------------------
+
+// Define the handlers for your API
+const handlers = [
+  http.get("/api/programs", () => {
+    return HttpResponse.json(multiplePrograms);
+  }),
+];
+
+const server = setupServer(...handlers);
+
+// Lifecycle hooks for the mock server
+beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -198,31 +227,27 @@ describe("loadPrograms", () => {
 
   describe("when localStorage is empty", () => {
     it("fetches from /api/programs", async () => {
-      vi.spyOn(globalThis, "fetch").mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(singleProgram),
-      } as Response);
+      server.use(
+        http.get("/api/programs", () => {
+          return HttpResponse.json(singleProgram);
+        }),
+      );
 
-      await loadPrograms();
-
-      expect(globalThis.fetch).toHaveBeenCalledWith("/api/programs");
+      const result = await loadPrograms();
+      expect(result).toEqual(singleProgram);
     });
 
     it("returns the decoded programs from the fetch response", async () => {
-      vi.spyOn(globalThis, "fetch").mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(multiplePrograms),
-      } as Response);
-
       const result = await loadPrograms();
       expect(result).toEqual(multiplePrograms);
     });
 
     it("throws a descriptive error when the fetch response is not ok", async () => {
-      vi.spyOn(globalThis, "fetch").mockResolvedValue({
-        ok: false,
-        status: 404,
-      } as Response);
+      server.use(
+        http.get("/api/programs", () => {
+          return new HttpResponse(null, { status: 404 });
+        }),
+      );
 
       await expect(loadPrograms()).rejects.toThrow(
         "Failed to fetch programs: 404",
@@ -230,10 +255,12 @@ describe("loadPrograms", () => {
     });
 
     it("propagates network-level fetch errors", async () => {
-      vi.spyOn(globalThis, "fetch").mockRejectedValue(
-        new Error("Network failure"),
+      server.use(
+        http.get("/api/programs", () => {
+          return HttpResponse.error(); // Simulates a network failure (no response)
+        }),
       );
-      await expect(loadPrograms()).rejects.toThrow("Network failure");
+      await expect(loadPrograms()).rejects.toThrow("Failed to fetch");
     });
   });
 
@@ -244,11 +271,6 @@ describe("loadPrograms", () => {
     });
 
     it("logs a warning", async () => {
-      vi.spyOn(globalThis, "fetch").mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(singleProgram),
-      } as Response);
-
       await loadPrograms();
 
       expect(console.warn).toHaveBeenCalledWith(
@@ -257,26 +279,19 @@ describe("loadPrograms", () => {
     });
 
     it("removes the corrupt entry from localStorage", async () => {
-      vi.spyOn(globalThis, "fetch").mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(singleProgram),
-      } as Response);
-
       await loadPrograms();
 
       expect(window.localStorage.removeItem).toHaveBeenCalledWith("programs");
     });
 
     it("falls back to fetch and returns the fetched programs", async () => {
-      vi.spyOn(globalThis, "fetch").mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(singleProgram),
-      } as Response);
-
       const result = await loadPrograms();
 
-      expect(globalThis.fetch).toHaveBeenCalledWith("/api/programs");
-      expect(result).toEqual(singleProgram);
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringContaining("Corrupt localStorage"),
+      );
+      expect(window.localStorage.removeItem).toHaveBeenCalledWith("programs");
+      expect(result).toEqual(multiplePrograms);
     });
 
     it("throws when the fallback fetch also fails", async () => {
