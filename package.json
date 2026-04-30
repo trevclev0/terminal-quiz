@@ -56,6 +56,7 @@
     "happy-dom": "^20.8.9",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
+    "msw": "^2.14.2",
     "semantic-release": "^25.0.3",
     "semantic-release-gitmoji": "^1.6.9",
     "semver": "^7.7.4",
