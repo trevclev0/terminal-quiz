@@ -3,7 +3,7 @@ import riddlesRouter from "./riddles";
 
 describe("Riddles Router (/api/riddles)", () => {
   it("should return a 501 Not Implemented error", async () => {
-    const res = await riddlesRouter.request("/");
+    const res = await riddlesRouter.request("/", { method: "GET" });
 
     expect(res.status).toBe(501);
 

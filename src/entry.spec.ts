@@ -10,6 +10,7 @@ describe("Main App Entry (entry.ts)", () => {
     // As long as it isn't hitting the static asset fallback, the router is mounted.
     // If there is no GET /api/programs, expect a 404 or 405 specifically from the router.
     expect(res.status).not.toBe(500);
+    expect(res.headers.get("content-type")).toBe("application/json");
   });
 
   it("should mount the riddles router at /api/riddles", async () => {
@@ -25,7 +26,7 @@ describe("Main App Entry (entry.ts)", () => {
 
     // Make a request to a static route (e.g., the frontend root)
     // The third argument to app.request() injects the mocked environment variables/bindings
-    const req = new Request("http://localhos/");
+    const req = new Request("http://localhost/");
     const res = await app.request(req, {}, { ASSETS: mockAssetsFetcher });
 
     // Verify the routing hit the catch-all and invoked the fetcher
