@@ -1,14 +1,16 @@
+import type { D1Database } from "@cloudflare/workers-types";
 import { Hono } from "hono";
 import programsRouter from "./routes/programs";
 import riddlesRouter from "./routes/riddles";
 
-export type Generics = {
+export type Env = {
   Bindings: {
     ASSETS: Fetcher;
+    DB: D1Database;
   };
 };
 
-const app = new Hono<Generics>();
+const app = new Hono<Env>();
 
 // Must use chaining in order for Hono RPC to work
 const routes = app
