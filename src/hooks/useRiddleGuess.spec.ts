@@ -32,9 +32,9 @@ const mockIsGuessCloseEnough = vi.mocked(isGuessCloseEnough);
 const riddle: Gate = {
   id: "3a356c09-8802-442f-aa3d-4189651dd35c",
   label: "Step 1",
-  correctAnswer: btoa("secret"),
+  correctAnswer: "A keyboard",
   question: "What has keys?",
-  successMessage: "A keyboard",
+  successMessage: "Congratulations!",
   isSolved: false,
   ...defaultNullishGateProps,
 };
@@ -69,7 +69,12 @@ function renderGuessHook(overrides: Partial<ContextType> = {}) {
   });
   const { result } = renderHook(
     () =>
-      useRiddleGuess({ riddle, decodedAnswer: "secret", shake, clearShake }),
+      useRiddleGuess({
+        riddle,
+        correctAnswer: riddle.correctAnswer,
+        shake,
+        clearShake,
+      }),
     { wrapper },
   );
   return { result, contextValue };

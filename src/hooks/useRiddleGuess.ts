@@ -5,14 +5,14 @@ import { useProgramData } from "./useProgramData";
 
 type UseRiddleGuessArgs = {
   riddle: Gate;
-  decodedAnswer: string;
+  correctAnswer: string;
   shake: () => void;
   clearShake: () => void;
 };
 
 function useRiddleGuess({
   riddle,
-  decodedAnswer,
+  correctAnswer,
   shake,
   clearShake,
 }: UseRiddleGuessArgs) {
@@ -31,7 +31,7 @@ function useRiddleGuess({
   function submitHandler(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (isGuessCloseEnough(guess, decodedAnswer)) {
+    if (isGuessCloseEnough(guess, correctAnswer)) {
       setResponse("Access Granted.");
       setGuessResult("correct");
       clearShake();

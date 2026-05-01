@@ -62,11 +62,10 @@ afterEach(() => {
 // Fixtures
 // ---------------------------------------------------------------------------
 
-// pw is Base64 of "secret"
 const lockedRiddle: Gate = {
   id: "2fe67eac-ec4b-4858-9234-891c609c20df",
   label: "Step 1",
-  correctAnswer: btoa("secret"),
+  correctAnswer: "secret",
   question: "What has keys but no locks?",
   successMessage: "A keyboard",
   isSolved: false,
@@ -202,8 +201,7 @@ describe("details toggle", () => {
       id: "7b24833a-dbcf-45b0-8efd-7f6f692a84ab",
       label: "riddle-1",
       question: "I speak without a mouth and hear without ears. What am I?",
-      // Base64 for "echo" - prevents atob() from throwing an error
-      correctAnswer: "ZWNobw==",
+      correctAnswer: "",
       // CRITICAL: unlocked must be false, otherwise the input is disabled and cannot receive focus
       isSolved: false,
       successMessage: "Sound reflects.",
