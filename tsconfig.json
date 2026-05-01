@@ -20,5 +20,5 @@
     "noUncheckedSideEffectImports": true,
     "types": ["node", "@cloudflare/workers-types"]
   },
-  "include": ["src", "drizzle.config.ts", "scripts/aggregate-quizzes.ts"]
+  "include": ["src", "drizzle.config.ts", "scripts/*.ts"]
 }
