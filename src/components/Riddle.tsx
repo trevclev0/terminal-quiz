@@ -1,17 +1,17 @@
 import React from "react";
-import type { Riddle as RiddleType } from "../App.types";
+import type { Gate } from "../db/types";
 import useRiddleGuess from "../hooks/useRiddleGuess";
 import useShake from "../hooks/useShake";
 
 type RiddleProps = {
   id: string;
-  riddle: RiddleType;
+  riddle: Gate;
 };
 
 function Riddle({ id, riddle }: RiddleProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   // Answers are Base64-encoded for light obfuscation only, not security.
-  const decodedAnswer = atob(riddle.pw);
+  const decodedAnswer = atob(riddle.correctAnswer);
   const { isShaking, shake, clearShake } = useShake();
   const { guess, response, guessResult, changeHandler, submitHandler } =
     useRiddleGuess({
@@ -21,7 +21,7 @@ function Riddle({ id, riddle }: RiddleProps) {
       clearShake,
     });
 
-  const inputVal = riddle.unlocked ? `✔ ${decodedAnswer}` : guess;
+  const inputVal = riddle.isSolved ? `✔ ${decodedAnswer}` : guess;
   const rspClasses = guessResult === "incorrect" ? "response fail" : "response";
 
   function toggleHandler(event: React.ToggleEvent<HTMLDetailsElement>) {
@@ -36,27 +36,27 @@ function Riddle({ id, riddle }: RiddleProps) {
       className={isShaking ? "riddle shake" : "riddle"}
       data-testid={id}
     >
-      <details onToggle={toggleHandler} open={riddle.unlocked}>
-        <summary>{riddle.id}</summary>
+      <details onToggle={toggleHandler} open={riddle.isSolved}>
+        <summary>{riddle.label}</summary>
         <form
           onSubmit={submitHandler}
-          aria-label={`${riddle.id} - enter password and press Enter to submit`}
+          aria-label={`${riddle.label} - enter password and press Enter to submit`}
         >
-          <p className="description">{riddle.riddle}</p>
+          <p className="description">{riddle.question}</p>
           <input
             ref={inputRef}
             type="text"
             placeholder="Enter password..."
             value={inputVal}
             onChange={changeHandler}
-            disabled={riddle.unlocked}
+            disabled={riddle.isSolved}
           />
           {response && (
             <p aria-live="polite" className={rspClasses}>
               {response}
             </p>
           )}
-          {riddle.unlocked && <p className="clue">{riddle.description}</p>}
+          {riddle.isSolved && <p className="clue">{riddle.successMessage}</p>}
         </form>
       </details>
     </div>
