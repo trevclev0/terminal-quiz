@@ -1,7 +1,7 @@
-import type { Riddle } from "../App.types";
+import type { Gate } from "../db/types";
 
-function getRiddlesToRender(riddles: Riddle[]) {
-  const nextRiddleIndex = riddles.findIndex((r) => !r.unlocked);
+function getRiddlesToRender(riddles: Gate[]) {
+  const nextRiddleIndex = riddles.findIndex((r) => !r.isSolved);
   const riddlesToRender =
     nextRiddleIndex === -1 ? riddles : riddles.slice(0, nextRiddleIndex + 1);
 
