@@ -1,5 +1,5 @@
 import type { ChangeEvent } from "react";
-import type { Program } from "../App.types";
+import type { ProgramWithGates } from "../db/types";
 import { useProgramData } from "../hooks/useProgramData";
 
 function ProgramSelector() {
@@ -17,7 +17,7 @@ function ProgramSelector() {
           Select your program
         </option>
 
-        {programs.map((program: Program) => (
+        {programs.map((program: ProgramWithGates) => (
           <option key={program.name} value={program.name}>
             {program.name}
           </option>

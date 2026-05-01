@@ -4,18 +4,31 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import userEvent from "@testing-library/user-event";
-import type { Program } from "../App.types";
+import { defaultNullishProgramProps } from "../../tests/testTypes";
 import type { ProgramDataContext as ProgramDataContextType } from "../contexts/ProgramDataContext";
 import { ProgramDataContext } from "../contexts/ProgramDataContext";
+import type { ProgramWithGates } from "../db/types";
 import ProgramSelector from "./ProgramSelector";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-const programs: Program[] = [
-  { name: "Alpha", active: false, riddles: [] },
-  { name: "Beta", active: false, riddles: [] },
+const programs: ProgramWithGates[] = [
+  {
+    id: "001c25bc-991f-41d0-81ac-4f20b3227551",
+    name: "Alpha",
+    isSelected: false,
+    gates: [],
+    ...defaultNullishProgramProps,
+  },
+  {
+    id: "b78d14cd-f3e9-4368-90c9-e7c5d242f90e",
+    name: "Beta",
+    isSelected: false,
+    gates: [],
+    ...defaultNullishProgramProps,
+  },
 ];
 
 function renderWithContext(overrides: Partial<ProgramDataContextType> = {}) {
