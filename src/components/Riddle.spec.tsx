@@ -70,6 +70,7 @@ const lockedRiddle: Gate = {
   successMessage: "A keyboard",
   isSolved: false,
   ...defaultNullishGateProps,
+  programId: "63e52b69-0bb3-4598-8957-e531c90175ba",
 };
 
 const unlockedRiddle: Gate = { ...lockedRiddle, isSolved: true };
@@ -202,10 +203,11 @@ describe("details toggle", () => {
       label: "riddle-1",
       question: "I speak without a mouth and hear without ears. What am I?",
       correctAnswer: "",
-      // CRITICAL: unlocked must be false, otherwise the input is disabled and cannot receive focus
+      // CRITICAL: isSolved must be false, otherwise the input is disabled and cannot receive focus
       isSolved: false,
       successMessage: "Sound reflects.",
       ...defaultNullishGateProps,
+      programId: "63e52b69-0bb3-4598-8957-e531c90175ba",
     };
 
     // 3. Render the component

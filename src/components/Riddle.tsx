@@ -10,11 +10,11 @@ type RiddleProps = {
 
 function Riddle({ id, riddle }: RiddleProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const [isOpen, setIsOpen] = React.useState(riddle.isSolved);
   const { isShaking, shake, clearShake } = useShake();
   const { guess, response, guessResult, changeHandler, submitHandler } =
     useRiddleGuess({
       riddle,
-      correctAnswer: riddle.correctAnswer,
       shake,
       clearShake,
     });
@@ -23,10 +23,19 @@ function Riddle({ id, riddle }: RiddleProps) {
   const rspClasses = guessResult === "incorrect" ? "response fail" : "response";
 
   function toggleHandler(event: React.ToggleEvent<HTMLDetailsElement>) {
-    if (event.newState === "open") {
+    const isOpen = event.newState === "open";
+    setIsOpen(isOpen);
+    if (isOpen) {
       inputRef.current?.focus();
     }
   }
+
+  // Force open when solved
+  React.useEffect(() => {
+    if (riddle.isSolved) {
+      setIsOpen(true);
+    }
+  }, [riddle.isSolved]);
 
   return (
     <div
@@ -34,7 +43,7 @@ function Riddle({ id, riddle }: RiddleProps) {
       className={isShaking ? "riddle shake" : "riddle"}
       data-testid={id}
     >
-      <details onToggle={toggleHandler} open={riddle.isSolved}>
+      <details onToggle={toggleHandler} open={isOpen}>
         <summary>{riddle.label}</summary>
         <form
           onSubmit={submitHandler}

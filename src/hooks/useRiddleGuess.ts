@@ -5,17 +5,11 @@ import { useProgramData } from "./useProgramData";
 
 type UseRiddleGuessArgs = {
   riddle: Gate;
-  correctAnswer: string;
   shake: () => void;
   clearShake: () => void;
 };
 
-function useRiddleGuess({
-  riddle,
-  correctAnswer,
-  shake,
-  clearShake,
-}: UseRiddleGuessArgs) {
+function useRiddleGuess({ riddle, shake, clearShake }: UseRiddleGuessArgs) {
   const { activeProgram, updateProgram } = useProgramData();
 
   const [guess, setGuess] = useState("");
@@ -31,7 +25,7 @@ function useRiddleGuess({
   function submitHandler(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (isGuessCloseEnough(guess, correctAnswer)) {
+    if (isGuessCloseEnough(guess, riddle.correctAnswer)) {
       setResponse("Access Granted.");
       setGuessResult("correct");
       clearShake();
@@ -40,8 +34,8 @@ function useRiddleGuess({
 
       updateProgram({
         ...activeProgram,
-        gates: activeProgram.gates.map((r) =>
-          r.id === riddle.id ? { ...r, isSolved: true } : r,
+        gates: activeProgram.gates.map((gate) =>
+          gate.id === riddle.id ? { ...gate, isSolved: true } : gate,
         ),
       });
     } else {

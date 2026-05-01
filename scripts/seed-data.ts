@@ -338,7 +338,7 @@ export const gateRows: NewGate[] = [
       "What did we think was a bit odd that Kevin and Kristin Newman said they would never do?",
     correctAnswer: "Share drinks",
     successMessage:
-      "I'm glad that what is mine is your and what's yours is mine.",
+      "I'm glad that what is mine is yours and what's yours is mine.",
     isSolved: false,
     solvedAt: null,
     attemptCount: 0,

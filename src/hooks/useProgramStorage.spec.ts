@@ -23,29 +23,37 @@ const mockSavePrograms = vi.mocked(savePrograms);
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const makeRiddle = (label: string, unlocked = false): Gate => ({
+const makeRiddle = (
+  programId: string,
+  label: string,
+  isSolved = false,
+): Gate => ({
   id: "11537bf6-ad80-46e6-90b9-9fbe0259e360",
-  label: label,
+  label,
   correctAnswer: `pw-${label}`,
   question: `Riddle ${label}`,
   successMessage: `Answer ${label}`,
-  isSolved: unlocked,
+  isSolved,
   ...defaultNullishGateProps,
+  programId,
 });
+
+const programIdA = "269d38fc-09f5-4d0b-924a-3b9874b0e419";
+const programIdB = "df6b79d9-b365-4d9c-9a77-414fafeccaa1";
 
 const programs: ProgramWithGates[] = [
   {
-    id: "269d38fc-09f5-4d0b-924a-3b9874b0e419",
+    id: programIdA,
     name: "Alpha",
     isSelected: true,
-    gates: [makeRiddle("r1"), makeRiddle("r2", true)],
+    gates: [makeRiddle(programIdA, "r1"), makeRiddle(programIdA, "r2", true)],
     ...defaultNullishProgramProps,
   },
   {
-    id: "df6b79d9-b365-4d9c-9a77-414fafeccaa1",
+    id: programIdB,
     name: "Beta",
     isSelected: false,
-    gates: [makeRiddle("r3")],
+    gates: [makeRiddle(programIdB, "r3")],
     ...defaultNullishProgramProps,
   },
 ];
@@ -322,7 +330,10 @@ describe("updateProgram", () => {
 
     const updated: ProgramWithGates = {
       ...programs[0],
-      gates: [makeRiddle("r1", true), makeRiddle("r2", true)],
+      gates: [
+        makeRiddle(programIdA, "r1", true),
+        makeRiddle(programIdA, "r2", true),
+      ],
     };
 
     act(() => result.current.updateProgram(updated));
@@ -346,7 +357,7 @@ describe("updateProgram", () => {
 
     const updated: ProgramWithGates = {
       ...programs[0],
-      gates: [makeRiddle("r1", true)],
+      gates: [makeRiddle(programIdA, "r1", true)],
     };
 
     act(() => result.current.updateProgram(updated));

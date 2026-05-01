@@ -5,11 +5,16 @@ import type { Env } from "../entry";
 
 // Must use chaining in order for Hono RPC to work
 const programsRouter = new Hono<Env>().get("/", async (c) => {
-  const db = drizzle(c.env.DB, { schema });
-  const result = await db.query.programs.findMany({
-    with: { gates: true },
-  });
-  return c.json(result);
+  try {
+    const db = drizzle(c.env.DB, { schema });
+    const result = await db.query.programs.findMany({
+      with: { gates: true },
+    });
+    return c.json(result);
+  } catch (error) {
+    console.error("Failed to fetch programs:", error);
+    return c.json({ error: "Failed to fetch programs" }, 500);
+  }
 });
 
 export default programsRouter;

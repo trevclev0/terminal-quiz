@@ -37,6 +37,7 @@ const riddle: Gate = {
   successMessage: "Congratulations!",
   isSolved: false,
   ...defaultNullishGateProps,
+  programId: "d9e4309c-a3c2-43bc-9894-540aa0a2fc9c",
 };
 
 const activeProgram: ProgramWithGates = {
@@ -71,7 +72,6 @@ function renderGuessHook(overrides: Partial<ContextType> = {}) {
     () =>
       useRiddleGuess({
         riddle,
-        correctAnswer: riddle.correctAnswer,
         shake,
         clearShake,
       }),

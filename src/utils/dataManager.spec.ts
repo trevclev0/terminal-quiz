@@ -41,6 +41,7 @@ const singleProgram: ProgramWithGates[] = [
         successMessage: "A keyboard",
         isSolved: false,
         ...defaultNullishGateProps,
+        programId: "a963c64b-7e2a-457b-862d-94b371a6ee01",
       },
     ],
   },
@@ -62,6 +63,7 @@ const multiplePrograms: ProgramWithGates[] = [
         successMessage: "An echo",
         isSolved: true,
         ...defaultNullishGateProps,
+        programId: "0af45993-84e5-4b1d-968b-a22d2d06ccf1",
       },
       {
         id: "24b658a1-9fce-479e-a190-32b4b84745b1",
@@ -71,6 +73,7 @@ const multiplePrograms: ProgramWithGates[] = [
         successMessage: "Footsteps",
         isSolved: false,
         ...defaultNullishGateProps,
+        programId: "0af45993-84e5-4b1d-968b-a22d2d06ccf1",
       },
     ],
   },
