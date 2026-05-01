@@ -1,6 +1,6 @@
 import { decode, encode } from "@msgpack/msgpack";
 import { hc } from "hono/client";
-import type { Program } from "../App.types";
+import type { ProgramWithGates } from "../db/types";
 import type { AppType } from "../entry";
 
 const client = hc<AppType>("/");
@@ -10,9 +10,9 @@ const PROGRAM_DATA_KEY = "programs";
 /**
  * Load the programs from local storage or from a HTTP request
  *
- * @returns {Promise<Program[]>} A promise that resolves to an array of programs.
+ * @returns {Promise<ProgramWithGates[]>} A promise that resolves to an array of programs.
  */
-export const loadPrograms = async (): Promise<Program[]> => {
+export const loadPrograms = async (): Promise<ProgramWithGates[]> => {
   const raw = window.localStorage.getItem(PROGRAM_DATA_KEY);
   if (raw) {
     try {
@@ -25,7 +25,17 @@ export const loadPrograms = async (): Promise<Program[]> => {
   const rsp = await client.api.programs.$get();
   if (!rsp.ok) throw new Error(`Failed to fetch programs: ${rsp.status}`);
 
-  return await rsp.json();
+  const data = await rsp.json();
+
+  return data.map((p) => ({
+    ...p,
+    selectedAt: p.selectedAt ? new Date(p.selectedAt) : null,
+    completedAt: p.completedAt ? new Date(p.completedAt) : null,
+    gates: p.gates.map((g) => ({
+      ...g,
+      solvedAt: g.solvedAt ? new Date(g.solvedAt) : null,
+    })),
+  })) as ProgramWithGates[];
 };
 
 /**
@@ -33,7 +43,9 @@ export const loadPrograms = async (): Promise<Program[]> => {
  *
  * @param programs The programs to be saved
  */
-export const savePrograms = async (programs: Program[]): Promise<void> => {
+export const savePrograms = async (
+  programs: ProgramWithGates[],
+): Promise<void> => {
   const programData = encodeObjectToString(programs);
   window.localStorage.setItem(PROGRAM_DATA_KEY, programData);
 };
@@ -44,7 +56,7 @@ export const savePrograms = async (programs: Program[]): Promise<void> => {
  * @param programs The JavaScript object to encode
  * @returns The encoded string representation of the object.
  */
-export const encodeObjectToString = (programs: Program[]): string => {
+export const encodeObjectToString = (programs: ProgramWithGates[]): string => {
   const encodedArray = encode(programs) as Uint8Array;
   const encodedString = Array.from(encodedArray)
     .map((byte) => byte.toString())
@@ -56,15 +68,13 @@ export const encodeObjectToString = (programs: Program[]): string => {
 /**
  * Decodes a string representation of an object back into the original JavaScript object.
  *
- * @param encodedString The encoded string representation of the object
+ * @param encStr The encoded string representation of the object
  * @returns The decoded JavaScript object.
  */
-export const decodeStringToObject = (encodedString: string): Program[] => {
-  const byteArray = encodedString
-    .split(" ")
-    .map((byte) => Number.parseInt(byte, 10));
+export const decodeStringToObject = (encStr: string): ProgramWithGates[] => {
+  const byteArray = encStr.split(" ").map((byte) => Number.parseInt(byte, 10));
   const uInt8Array = Uint8Array.from(byteArray);
-  const decodedObject = decode(uInt8Array) as Program[];
+  const decodedObject = decode(uInt8Array) as ProgramWithGates[];
 
   return decodedObject;
 };
