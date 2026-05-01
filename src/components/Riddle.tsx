@@ -10,18 +10,16 @@ type RiddleProps = {
 
 function Riddle({ id, riddle }: RiddleProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
-  // Answers are Base64-encoded for light obfuscation only, not security.
-  const decodedAnswer = atob(riddle.correctAnswer);
   const { isShaking, shake, clearShake } = useShake();
   const { guess, response, guessResult, changeHandler, submitHandler } =
     useRiddleGuess({
       riddle,
-      decodedAnswer,
+      correctAnswer: riddle.correctAnswer,
       shake,
       clearShake,
     });
 
-  const inputVal = riddle.isSolved ? `✔ ${decodedAnswer}` : guess;
+  const inputVal = riddle.isSolved ? `✔ ${riddle.correctAnswer}` : guess;
   const rspClasses = guessResult === "incorrect" ? "response fail" : "response";
 
   function toggleHandler(event: React.ToggleEvent<HTMLDetailsElement>) {
