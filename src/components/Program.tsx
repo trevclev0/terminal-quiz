@@ -1,19 +1,19 @@
 import { useMemo } from "react";
-import type { Program as ProgramType } from "../App.types";
+import type { ProgramWithGates } from "../db/types";
 import useProgressionScroll from "../hooks/useProgressionScroll";
 import getRiddlesToRender from "../utils/getRiddlesToRender";
 import Riddle from "./Riddle";
 
 type ProgramProps = {
-  program: ProgramType;
+  program: ProgramWithGates;
   resetProgram: () => void;
   clearActiveProgram: () => void;
 };
 
 function Program({ program, resetProgram, clearActiveProgram }: ProgramProps) {
   const { riddlesToRender, nextRiddleIndex } = useMemo(
-    () => getRiddlesToRender(program.riddles),
-    [program.riddles],
+    () => getRiddlesToRender(program.gates),
+    [program.gates],
   );
 
   useProgressionScroll(nextRiddleIndex);
