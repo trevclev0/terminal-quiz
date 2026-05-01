@@ -312,10 +312,10 @@ describe("selectProgram", () => {
 });
 
 // ---------------------------------------------------------------------------
-// updateActiveProgram
+// updateProgram
 // ---------------------------------------------------------------------------
 
-describe("updateActiveProgram", () => {
+describe("updateProgram", () => {
   it("replaces the matching program by name", async () => {
     const { result } = renderHook(() => useProgramStorage());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -325,7 +325,7 @@ describe("updateActiveProgram", () => {
       gates: [makeRiddle("r1", true), makeRiddle("r2", true)],
     };
 
-    act(() => result.current.updateActiveProgram(updated));
+    act(() => result.current.updateProgram(updated));
 
     expect(result.current.programs[0]).toEqual(updated);
   });
@@ -335,7 +335,7 @@ describe("updateActiveProgram", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     const updated: ProgramWithGates = { ...programs[0], gates: [] };
-    act(() => result.current.updateActiveProgram(updated));
+    act(() => result.current.updateProgram(updated));
 
     expect(result.current.programs[1]).toEqual(programs[1]);
   });
@@ -349,7 +349,7 @@ describe("updateActiveProgram", () => {
       gates: [makeRiddle("r1", true)],
     };
 
-    act(() => result.current.updateActiveProgram(updated));
+    act(() => result.current.updateProgram(updated));
 
     expect(result.current.activeProgram).toEqual(updated);
   });
@@ -359,9 +359,7 @@ describe("updateActiveProgram", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     const callsBefore = mockSavePrograms.mock.calls.length;
-    act(() =>
-      result.current.updateActiveProgram({ ...programs[0], gates: [] }),
-    );
+    act(() => result.current.updateProgram({ ...programs[0], gates: [] }));
 
     await waitFor(() =>
       expect(mockSavePrograms.mock.calls.length).toBeGreaterThan(callsBefore),

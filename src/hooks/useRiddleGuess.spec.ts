@@ -164,9 +164,9 @@ describe("submitHandler with a correct guess", () => {
     const { result, contextValue } = renderGuessHook();
     act(() => result.current.submitHandler(makeSubmitEvent()));
 
-    expect(contextValue.updateActiveProgram).toHaveBeenCalledOnce();
+    expect(contextValue.updateProgram).toHaveBeenCalledOnce();
     const updatedProgram: ProgramWithGates = vi.mocked(
-      contextValue.updateActiveProgram,
+      contextValue.updateProgram,
     ).mock.calls[0][0];
     const updatedRiddle = updatedProgram.gates.find((r) => r.id === riddle.id);
     expect(updatedRiddle?.isSolved).toBe(true);
@@ -177,7 +177,7 @@ describe("submitHandler with a correct guess", () => {
     act(() => result.current.submitHandler(makeSubmitEvent()));
 
     const updatedProgram: ProgramWithGates = vi.mocked(
-      contextValue.updateActiveProgram,
+      contextValue.updateProgram,
     ).mock.calls[0][0];
     const otherRiddle = updatedProgram.gates.find((r) => r.label === "Step 2");
     expect(otherRiddle?.isSolved).toBe(false);
@@ -188,7 +188,7 @@ describe("submitHandler with a correct guess", () => {
       activeProgram: undefined,
     });
     act(() => result.current.submitHandler(makeSubmitEvent()));
-    expect(contextValue.updateActiveProgram).not.toHaveBeenCalled();
+    expect(contextValue.updateProgram).not.toHaveBeenCalled();
   });
 });
 
@@ -218,6 +218,6 @@ describe("submitHandler with an incorrect guess", () => {
   it("does not call contextValue", () => {
     const { result, contextValue } = renderGuessHook();
     act(() => result.current.submitHandler(makeSubmitEvent()));
-    expect(contextValue.updateActiveProgram).not.toHaveBeenCalled();
+    expect(contextValue.updateProgram).not.toHaveBeenCalled();
   });
 });

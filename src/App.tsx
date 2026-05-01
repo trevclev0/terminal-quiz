@@ -11,7 +11,7 @@ function App() {
     error,
     isLoading,
     selectProgram,
-    updateActiveProgram,
+    updateProgram,
     resetProgram,
     clearActiveProgram,
   } = useProgramStorage();
@@ -21,9 +21,9 @@ function App() {
       programs,
       activeProgram,
       selectProgram,
-      updateActiveProgram,
+      updateProgram,
     }),
-    [programs, activeProgram, selectProgram, updateActiveProgram],
+    [programs, activeProgram, selectProgram, updateProgram],
   );
 
   if (isLoading) {

@@ -37,7 +37,7 @@ function renderWithContext(overrides: Partial<ProgramDataContextType> = {}) {
     programs,
     activeProgram: undefined,
     selectProgram,
-    updateActiveProgram: vi.fn(),
+    updateProgram: vi.fn(),
     ...overrides,
   };
 

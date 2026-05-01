@@ -6,7 +6,7 @@ const defaultContextValue: ProgramDataContext = {
   programs: [],
   activeProgram: undefined,
   selectProgram: vi.fn(),
-  updateActiveProgram: vi.fn(),
+  updateProgram: vi.fn(),
 };
 
 export function createProgramDataWrapper(
