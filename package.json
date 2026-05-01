@@ -17,10 +17,13 @@
     "lint-staged": "lint-staged",
     "start": "pnpm build && wrangler pages dev dist",
     "prepare": "husky",
-    "db-push": "drizzle-kit push",
-    "db-generate": "drizzle-kit generate",
-    "db-migrate": "drizzle-kit migrate",
-    "db-seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "migrate:generate": "drizzle-kit generate",
+    "migrate:local": "wrangler d1 migrations apply terminal-quest --local",
+    "migrate:preview": "wrangler d1 migrations apply terminal-quest-preview --remote",
+    "migrate:prod": "wrangler d1 migrations apply terminal-quest --remote",
+    "deploy": "wrangler deploy",
+    "deploy:preview": "wrangler versions upload --env preview"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",
