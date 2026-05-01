@@ -10,8 +10,9 @@ const makeRiddle = (overrides: Partial<Gate> = {}): Gate => ({
   question: "default riddle",
   successMessage: "default description",
   isSolved: false,
-  ...overrides,
   ...defaultNullishGateProps,
+  ...overrides,
+  programId: "63e52b69-0bb3-4598-8957-e531c90175ba",
 });
 
 describe("getRiddlesToRender", () => {

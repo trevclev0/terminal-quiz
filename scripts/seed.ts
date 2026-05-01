@@ -30,19 +30,24 @@ const DB_PATH = join(
 const sqlite = new Database(DB_PATH);
 const db = drizzle(sqlite, { schema });
 
-console.log("🌱 Starting seed...\n");
+try {
+  console.log("🌱 Starting seed...\n");
 
-// Clear existing data (gates first due to foreign key on programId)
-await db.delete(schema.gates);
-await db.delete(schema.programs);
+  await db.transaction(async (tx) => {
+    // Clear existing data (gates first due to foreign key on programId)
+    await tx.delete(schema.gates);
+    await tx.delete(schema.programs);
 
-// Insert programs
-await db.insert(schema.programs).values(programRows);
-console.log(`✓ Inserted ${programRows.length} programs`);
+    // Insert programs
+    await tx.insert(schema.programs).values(programRows);
+    console.log(`✓ Inserted ${programRows.length} programs`);
 
-// Insert gates
-await db.insert(schema.gates).values(gateRows);
-console.log(`✓ Inserted ${gateRows.length} gates`);
+    // Insert gates
+    await tx.insert(schema.gates).values(gateRows);
+    console.log(`✓ Inserted ${gateRows.length} gates`);
+  });
 
-console.log("\n✅ Seed complete.");
-sqlite.close();
+  console.log("\n✅ Seed complete.");
+} finally {
+  sqlite.close();
+}

@@ -16,18 +16,18 @@ import ProgramSelector from "./ProgramSelector";
 
 const programs: ProgramWithGates[] = [
   {
+    ...defaultNullishProgramProps,
     id: "001c25bc-991f-41d0-81ac-4f20b3227551",
     name: "Alpha",
     isSelected: false,
     gates: [],
-    ...defaultNullishProgramProps,
   },
   {
+    ...defaultNullishProgramProps,
     id: "b78d14cd-f3e9-4368-90c9-e7c5d242f90e",
     name: "Beta",
     isSelected: false,
     gates: [],
-    ...defaultNullishProgramProps,
   },
 ];
 

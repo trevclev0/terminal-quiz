@@ -16,7 +16,9 @@ export const gates = sqliteTable("gates", {
     .default(false),
   guidancePrompt: text("guidance_prompt"),
   guidanceThreshold: integer("guidance_threshold").notNull().default(2),
-  programId: text("program_id").references(() => programs.id),
+  programId: text("program_id")
+    .notNull()
+    .references(() => programs.id, { onDelete: "cascade" }),
 });
 
 export const programs = sqliteTable("programs", {
@@ -41,6 +43,5 @@ export const gatesRelations = relations(gates, ({ one }) => ({
 }));
 
 export const gameState = sqliteTable("game_state", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  lastUpdated: integer("last_updated", { mode: "timestamp" }).notNull(),
+  id: integer("id").primaryKey().default(1), // Singleton - only one row with id=1  lastUpdated: integer("last_updated", { mode: "timestamp" }).notNull(),
 });

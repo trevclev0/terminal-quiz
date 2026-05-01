@@ -48,6 +48,7 @@ const riddles: Gate[] = [
     successMessage: "A1",
     isSolved: true,
     ...defaultNullishGateProps,
+    programId: "63e52b69-0bb3-4598-8957-e531c90175ba",
   },
   {
     id: "570d3614-228e-4942-a52b-7ce7805eac46",
@@ -57,6 +58,7 @@ const riddles: Gate[] = [
     successMessage: "A2",
     isSolved: false,
     ...defaultNullishGateProps,
+    programId: "63e52b69-0bb3-4598-8957-e531c90175ba",
   },
 ];
 
