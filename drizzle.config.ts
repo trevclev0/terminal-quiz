@@ -1,14 +1,10 @@
-import "dotenv/config";
 import { defineConfig } from "drizzle-kit";
 
-const DB_FILE_NAME = process.env.DB_FILE_NAME;
-if (!DB_FILE_NAME) throw new Error("Cannot read database file");
-
 export default defineConfig({
-  out: "./drizzle",
   schema: "./src/db/schema.ts",
+  out: "./migrations",
   dialect: "sqlite",
   dbCredentials: {
-    url: DB_FILE_NAME,
+    url: ".wrangler/state/v3/d1/miniflare-D1DatabaseObject/68b35e1e2f51a6a1a48d7b8210bd41a01c4e1d085f25a78a4c0d51aea32ea598.sqlite",
   },
 });
