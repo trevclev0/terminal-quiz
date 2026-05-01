@@ -31,15 +31,14 @@ jobs:
 
       - name: Apply D1 Migrations
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork)
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: >
-            ${{ github.ref == 'refs/heads/main'
-              && 'pnpm migrate:prod'
-              || 'pnpm migrate:preview'
-            }}
+        run: >
+          ${{ github.ref == 'refs/heads/main'
+            && 'pnpm migrate:prod'
+            || 'pnpm migrate:preview'
+          }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Deploy to Cloudflare
         id: deploy
@@ -50,8 +49,8 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: >
             ${{ github.ref == 'refs/heads/main'
-              && 'pnpm deploy'
-              || 'pnpm deploy:preview'
+              && 'deploy'
+              || 'versions upload --env preview'
             }}
 
       - name: Update Deployment (Success)
