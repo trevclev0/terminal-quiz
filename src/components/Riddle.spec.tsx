@@ -5,7 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import userEvent from "@testing-library/user-event";
 import type React from "react";
-import type { Riddle } from "../App.types";
 import RiddleComponent from "./Riddle";
 
 // ---------------------------------------------------------------------------
@@ -20,6 +19,8 @@ vi.mock("../hooks/useRiddleGuess", () => ({
   default: vi.fn(),
 }));
 
+import { defaultNullishGateProps } from "../../tests/testTypes";
+import type { Gate } from "../db/types";
 import useRiddleGuess from "../hooks/useRiddleGuess";
 import useShake from "../hooks/useShake";
 
@@ -62,17 +63,19 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 // pw is Base64 of "secret"
-const lockedRiddle: Riddle = {
-  id: "Step 1",
-  pw: btoa("secret"),
-  riddle: "What has keys but no locks?",
-  description: "A keyboard",
-  unlocked: false,
+const lockedRiddle: Gate = {
+  id: "2fe67eac-ec4b-4858-9234-891c609c20df",
+  label: "Step 1",
+  correctAnswer: btoa("secret"),
+  question: "What has keys but no locks?",
+  successMessage: "A keyboard",
+  isSolved: false,
+  ...defaultNullishGateProps,
 };
 
-const unlockedRiddle: Riddle = { ...lockedRiddle, unlocked: true };
+const unlockedRiddle: Gate = { ...lockedRiddle, isSolved: true };
 
-function renderRiddle(riddle: Riddle = lockedRiddle, id = "riddle-0") {
+function renderRiddle(riddle: Gate = lockedRiddle, id = "riddle-0") {
   return render(<RiddleComponent id={id} riddle={riddle} />);
 }
 
@@ -195,14 +198,16 @@ describe("shake state", () => {
 describe("details toggle", () => {
   it("focuses the input when the details element is toggled open", () => {
     // 2. Setup mock riddle data
-    const mockRiddle = {
-      id: "riddle-1",
-      riddle: "I speak without a mouth and hear without ears. What am I?",
+    const mockRiddle: Gate = {
+      id: "7b24833a-dbcf-45b0-8efd-7f6f692a84ab",
+      label: "riddle-1",
+      question: "I speak without a mouth and hear without ears. What am I?",
       // Base64 for "echo" - prevents atob() from throwing an error
-      pw: "ZWNobw==",
+      correctAnswer: "ZWNobw==",
       // CRITICAL: unlocked must be false, otherwise the input is disabled and cannot receive focus
-      unlocked: false,
-      description: "Sound reflects.",
+      isSolved: false,
+      successMessage: "Sound reflects.",
+      ...defaultNullishGateProps,
     };
 
     // 3. Render the component
