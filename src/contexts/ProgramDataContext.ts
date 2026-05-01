@@ -5,7 +5,7 @@ export type ProgramDataContext = {
   programs: ProgramWithGates[];
   activeProgram: ProgramWithGates | undefined;
   selectProgram: (name: string) => void;
-  updateActiveProgram: (program: ProgramWithGates) => void;
+  updateProgram: (program: ProgramWithGates) => void;
 };
 
 export const ProgramDataContext = createContext<ProgramDataContext | null>(

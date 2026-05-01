@@ -16,7 +16,7 @@ function useRiddleGuess({
   shake,
   clearShake,
 }: UseRiddleGuessArgs) {
-  const { activeProgram, updateActiveProgram } = useProgramData();
+  const { activeProgram, updateProgram } = useProgramData();
 
   const [guess, setGuess] = useState("");
   const [response, setResponse] = useState("");
@@ -38,7 +38,7 @@ function useRiddleGuess({
 
       if (!activeProgram) return;
 
-      updateActiveProgram({
+      updateProgram({
         ...activeProgram,
         gates: activeProgram.gates.map((r) =>
           r.id === riddle.id ? { ...r, isSolved: true } : r,

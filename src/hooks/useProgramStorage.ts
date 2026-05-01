@@ -47,14 +47,11 @@ function useProgramStorage() {
     );
   }, []);
 
-  const updateActiveProgram = useCallback(
-    (updatedProgram: ProgramWithGates) => {
-      setPrograms((prev) =>
-        prev.map((p) => (p.name === updatedProgram.name ? updatedProgram : p)),
-      );
-    },
-    [],
-  );
+  const updateProgram = useCallback((updatedProgram: ProgramWithGates) => {
+    setPrograms((prev) =>
+      prev.map((p) => (p.name === updatedProgram.name ? updatedProgram : p)),
+    );
+  }, []);
 
   const resetProgram = useCallback(() => {
     setPrograms((prev) =>
@@ -62,7 +59,7 @@ function useProgramStorage() {
         if (!p.isSelected) return p;
         return {
           ...p,
-          gates: p.gates.map((r) => ({ ...r, isSolved: false })),
+          gates: p.gates.map((gate) => ({ ...gate, isSolved: false })),
         };
       }),
     );
@@ -83,7 +80,7 @@ function useProgramStorage() {
     error,
     isLoading,
     selectProgram,
-    updateActiveProgram,
+    updateProgram,
     resetProgram,
     clearActiveProgram,
   };
