@@ -10,6 +10,10 @@ import {
   it,
   vi,
 } from "vitest";
+import {
+  defaultNullishGateProps,
+  defaultNullishProgramProps,
+} from "../../tests/testTypes";
 import type { ProgramWithGates } from "../db/types";
 import {
   decodeStringToObject,
@@ -21,27 +25,13 @@ import {
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
-const defaultNullifiedProgramProps = {
-  selectedAt: null,
-  completedAt: null,
-};
-
-const defaultNullifiedGateProps = {
-  solvedAt: null,
-  attemptCount: 0,
-  guidanceEnabled: false,
-  guidancePrompt: null,
-  guidanceThreshold: 0,
-  acceptanceThreshold: 0.0,
-  programId: null,
-};
 
 const singleProgram: ProgramWithGates[] = [
   {
     id: "a963c64b-7e2a-457b-862d-94b371a6ee01",
     name: "Adventure One",
     isSelected: true,
-    ...defaultNullifiedProgramProps,
+    ...defaultNullishProgramProps,
     gates: [
       {
         id: "7700cd79-0e59-45c9-a00d-137bb53f793a",
@@ -50,7 +40,7 @@ const singleProgram: ProgramWithGates[] = [
         question: "What has keys but no locks?",
         successMessage: "A keyboard",
         isSolved: false,
-        ...defaultNullifiedGateProps,
+        ...defaultNullishGateProps,
       },
     ],
   },
@@ -62,7 +52,7 @@ const multiplePrograms: ProgramWithGates[] = [
     id: "0af45993-84e5-4b1d-968b-a22d2d06ccf1",
     name: "Adventure Two",
     isSelected: false,
-    ...defaultNullifiedProgramProps,
+    ...defaultNullishProgramProps,
     gates: [
       {
         id: "83cc0687-61ac-42ec-b09a-4f5a73ebdfc5",
@@ -71,7 +61,7 @@ const multiplePrograms: ProgramWithGates[] = [
         question: "I speak without a mouth.",
         successMessage: "An echo",
         isSolved: true,
-        ...defaultNullifiedGateProps,
+        ...defaultNullishGateProps,
       },
       {
         id: "24b658a1-9fce-479e-a190-32b4b84745b1",
@@ -80,7 +70,7 @@ const multiplePrograms: ProgramWithGates[] = [
         question: "The more you take, the more you leave behind.",
         successMessage: "Footsteps",
         isSolved: false,
-        ...defaultNullifiedGateProps,
+        ...defaultNullishGateProps,
       },
     ],
   },
