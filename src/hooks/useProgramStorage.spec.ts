@@ -2,7 +2,11 @@
 
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Program } from "../App.types";
+import {
+  defaultNullishGateProps,
+  defaultNullishProgramProps,
+} from "../../tests/testTypes";
+import type { Gate, ProgramWithGates } from "../db/types";
 import { loadPrograms, savePrograms } from "../utils/dataManager";
 import useProgramStorage from "./useProgramStorage";
 
@@ -19,24 +23,30 @@ const mockSavePrograms = vi.mocked(savePrograms);
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const makeRiddle = (id: string, unlocked = false) => ({
-  id,
-  pw: `pw-${id}`,
-  riddle: `Riddle ${id}`,
-  description: `Answer ${id}`,
-  unlocked,
+const makeRiddle = (label: string, unlocked = false): Gate => ({
+  id: "11537bf6-ad80-46e6-90b9-9fbe0259e360",
+  label: label,
+  correctAnswer: `pw-${label}`,
+  question: `Riddle ${label}`,
+  successMessage: `Answer ${label}`,
+  isSolved: unlocked,
+  ...defaultNullishGateProps,
 });
 
-const programs: Program[] = [
+const programs: ProgramWithGates[] = [
   {
+    id: "269d38fc-09f5-4d0b-924a-3b9874b0e419",
     name: "Alpha",
-    active: true,
-    riddles: [makeRiddle("r1"), makeRiddle("r2", true)],
+    isSelected: true,
+    gates: [makeRiddle("r1"), makeRiddle("r2", true)],
+    ...defaultNullishProgramProps,
   },
   {
+    id: "df6b79d9-b365-4d9c-9a77-414fafeccaa1",
     name: "Beta",
-    active: false,
-    riddles: [makeRiddle("r3")],
+    isSelected: false,
+    gates: [makeRiddle("r3")],
+    ...defaultNullishProgramProps,
   },
 ];
 
@@ -120,9 +130,9 @@ describe("when loadPrograms resolves successfully", () => {
   });
 
   it("returns undefined for activeProgram when no program is active", async () => {
-    const allInactive: Program[] = programs.map((p) => ({
+    const allInactive: ProgramWithGates[] = programs.map((p) => ({
       ...p,
-      active: false,
+      isSelected: false,
     }));
     mockLoadPrograms.mockResolvedValue(allInactive);
 
@@ -201,8 +211,8 @@ describe("when loadPrograms rejects", () => {
 describe("cleanup on unmount", () => {
   it("does not update state after the hook unmounts mid-load", async () => {
     // Create a promise we can resolve manually after unmount
-    let resolveLoad!: (value: Program[]) => void;
-    const deferred = new Promise<Program[]>((res) => {
+    let resolveLoad!: (value: ProgramWithGates[]) => void;
+    const deferred = new Promise<ProgramWithGates[]>((res) => {
       resolveLoad = res;
     });
     mockLoadPrograms.mockReturnValue(deferred);
@@ -235,9 +245,9 @@ describe("selectProgram", () => {
 
     act(() => result.current.selectProgram("Beta"));
 
-    expect(result.current.programs.find((p) => p.name === "Beta")?.active).toBe(
-      true,
-    );
+    expect(
+      result.current.programs.find((p) => p.name === "Beta")?.isSelected,
+    ).toBe(true);
   });
 
   it("deactivates all other programs", async () => {
@@ -249,7 +259,7 @@ describe("selectProgram", () => {
     const otherPrograms = result.current.programs.filter(
       (p) => p.name !== "Beta",
     );
-    expect(otherPrograms.every((p) => !p.active)).toBe(true);
+    expect(otherPrograms.every((p) => !p.isSelected)).toBe(true);
   });
 
   it("updates activeProgram accordingly", async () => {
@@ -274,8 +284,8 @@ describe("selectProgram", () => {
 
     const lastCall = mockSavePrograms.mock.calls.at(-1)?.[0];
     if (!lastCall) throw new Error("lasCall was not defined");
-    expect(lastCall.find((p) => p.name === "Beta")?.active).toBe(true);
-    expect(lastCall.find((p) => p.name === "Alpha")?.active).toBe(false);
+    expect(lastCall.find((p) => p.name === "Beta")?.isSelected).toBe(true);
+    expect(lastCall.find((p) => p.name === "Alpha")?.isSelected).toBe(false);
   });
 
   it("handles selecting a program that is already active", async () => {
@@ -285,7 +295,7 @@ describe("selectProgram", () => {
     act(() => result.current.selectProgram("Alpha"));
 
     expect(
-      result.current.programs.find((p) => p.name === "Alpha")?.active,
+      result.current.programs.find((p) => p.name === "Alpha")?.isSelected,
     ).toBe(true);
   });
 
@@ -297,7 +307,7 @@ describe("selectProgram", () => {
       act(() => result.current.selectProgram("Nonexistent")),
     ).not.toThrow();
     // All programs end up inactive
-    expect(result.current.programs.every((p) => !p.active)).toBe(true);
+    expect(result.current.programs.every((p) => !p.isSelected)).toBe(true);
   });
 });
 
@@ -310,9 +320,9 @@ describe("updateActiveProgram", () => {
     const { result } = renderHook(() => useProgramStorage());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    const updated: Program = {
+    const updated: ProgramWithGates = {
       ...programs[0],
-      riddles: [makeRiddle("r1", true), makeRiddle("r2", true)],
+      gates: [makeRiddle("r1", true), makeRiddle("r2", true)],
     };
 
     act(() => result.current.updateActiveProgram(updated));
@@ -324,7 +334,7 @@ describe("updateActiveProgram", () => {
     const { result } = renderHook(() => useProgramStorage());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    const updated: Program = { ...programs[0], riddles: [] };
+    const updated: ProgramWithGates = { ...programs[0], gates: [] };
     act(() => result.current.updateActiveProgram(updated));
 
     expect(result.current.programs[1]).toEqual(programs[1]);
@@ -334,9 +344,9 @@ describe("updateActiveProgram", () => {
     const { result } = renderHook(() => useProgramStorage());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    const updated: Program = {
+    const updated: ProgramWithGates = {
       ...programs[0],
-      riddles: [makeRiddle("r1", true)],
+      gates: [makeRiddle("r1", true)],
     };
 
     act(() => result.current.updateActiveProgram(updated));
@@ -350,7 +360,7 @@ describe("updateActiveProgram", () => {
 
     const callsBefore = mockSavePrograms.mock.calls.length;
     act(() =>
-      result.current.updateActiveProgram({ ...programs[0], riddles: [] }),
+      result.current.updateActiveProgram({ ...programs[0], gates: [] }),
     );
 
     await waitFor(() =>
@@ -370,8 +380,8 @@ describe("resetProgram", () => {
 
     act(() => result.current.resetProgram());
 
-    const activeRiddles = result.current.activeProgram?.riddles ?? [];
-    expect(activeRiddles.every((r) => r.unlocked === false)).toBe(true);
+    const activeRiddles = result.current.activeProgram?.gates ?? [];
+    expect(activeRiddles.every((r) => r.isSolved === false)).toBe(true);
   });
 
   it("does not affect inactive programs", async () => {
@@ -382,7 +392,7 @@ describe("resetProgram", () => {
 
     // Beta's riddle should be unchanged
     const beta = result.current.programs.find((p) => p.name === "Beta");
-    expect(beta?.riddles).toEqual(programs[1].riddles);
+    expect(beta?.gates).toEqual(programs[1].gates);
   });
 
   it("preserves all other riddle fields after reset", async () => {
@@ -391,14 +401,14 @@ describe("resetProgram", () => {
 
     act(() => result.current.resetProgram());
 
-    const riddle = result.current.activeProgram?.riddles[0];
-    expect(riddle?.id).toBe("r1");
-    expect(riddle?.pw).toBe("pw-r1");
-    expect(riddle?.riddle).toBe("Riddle r1");
+    const riddle = result.current.activeProgram?.gates[0];
+    expect(riddle?.label).toBe("r1");
+    expect(riddle?.correctAnswer).toBe("pw-r1");
+    expect(riddle?.question).toBe("Riddle r1");
   });
 
   it("is a no-op when no program is active", async () => {
-    const allInactive = programs.map((p) => ({ ...p, active: false }));
+    const allInactive = programs.map((p) => ({ ...p, isSelected: false }));
     mockLoadPrograms.mockResolvedValue(allInactive);
 
     const { result } = renderHook(() => useProgramStorage());
@@ -434,7 +444,9 @@ describe("clearActiveProgram", () => {
 
     act(() => result.current.clearActiveProgram());
 
-    expect(result.current.programs.every((p) => p.active === false)).toBe(true);
+    expect(result.current.programs.every((p) => p.isSelected === false)).toBe(
+      true,
+    );
   });
 
   it("updates activeProgram to be undefined", async () => {
@@ -447,7 +459,7 @@ describe("clearActiveProgram", () => {
   });
 
   it("is a no-op if no program is currently active", async () => {
-    const allInactive = programs.map((p) => ({ ...p, active: false }));
+    const allInactive = programs.map((p) => ({ ...p, isSelected: false }));
     mockLoadPrograms.mockResolvedValue(allInactive);
 
     const { result } = renderHook(() => useProgramStorage());

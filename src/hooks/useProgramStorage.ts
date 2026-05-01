@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Program } from "../App.types";
+import type { ProgramWithGates } from "../db/types";
 import { loadPrograms, savePrograms } from "../utils/dataManager";
 
 function useProgramStorage() {
-  const [programs, setPrograms] = useState<Program[]>([]);
+  const [programs, setPrograms] = useState<ProgramWithGates[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const activeProgram = programs.find((p) => p.active);
+  const activeProgram = programs.find((p) => p.isSelected);
 
   useEffect(() => {
     let cancelled = false;
@@ -42,24 +42,27 @@ function useProgramStorage() {
     setPrograms((prev) =>
       prev.map((p) => ({
         ...p,
-        active: p.name === programName,
+        isSelected: p.name === programName,
       })),
     );
   }, []);
 
-  const updateActiveProgram = useCallback((updatedProgram: Program) => {
-    setPrograms((prev) =>
-      prev.map((p) => (p.name === updatedProgram.name ? updatedProgram : p)),
-    );
-  }, []);
+  const updateActiveProgram = useCallback(
+    (updatedProgram: ProgramWithGates) => {
+      setPrograms((prev) =>
+        prev.map((p) => (p.name === updatedProgram.name ? updatedProgram : p)),
+      );
+    },
+    [],
+  );
 
   const resetProgram = useCallback(() => {
     setPrograms((prev) =>
       prev.map((p) => {
-        if (!p.active) return p;
+        if (!p.isSelected) return p;
         return {
           ...p,
-          riddles: p.riddles.map((r) => ({ ...r, unlocked: false })),
+          gates: p.gates.map((r) => ({ ...r, isSolved: false })),
         };
       }),
     );
@@ -69,7 +72,7 @@ function useProgramStorage() {
     setPrograms((prev) =>
       prev.map((p) => ({
         ...p,
-        active: false,
+        isSelected: false,
       })),
     );
   }, []);
