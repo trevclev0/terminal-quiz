@@ -26,7 +26,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "d1_databases": [
     {
-      "binding": "terminal_quest",
+      "binding": "DB",
       "database_name": "terminal-quest",
       "database_id": "9905dbd8-5e2d-4e87-aac0-d30fe5aa0a10"
     }
