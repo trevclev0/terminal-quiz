@@ -4,7 +4,6 @@ import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import userEvent from "@testing-library/user-event";
-import type { Program as ProgramType } from "../App.types";
 import Program from "./Program";
 
 // ---------------------------------------------------------------------------
@@ -21,11 +20,16 @@ vi.mock("../utils/getRiddlesToRender", () => ({
 
 // Mock Riddle so Program tests are not dependent on Riddle's internals
 vi.mock("./Riddle", () => ({
-  default: ({ id, riddle }: { id: string; riddle: { id: string } }) => (
-    <div data-testid={id}>Riddle: {riddle.id}</div>
+  default: ({ id, riddle }: { id: string; riddle: { label: string } }) => (
+    <div data-testid={id}>Riddle: {riddle.label}</div>
   ),
 }));
 
+import {
+  defaultNullishGateProps,
+  defaultNullishProgramProps,
+} from "../../tests/testTypes";
+import type { Gate, ProgramWithGates } from "../db/types";
 import useProgressionScroll from "../hooks/useProgressionScroll";
 import getRiddlesToRender from "../utils/getRiddlesToRender";
 
@@ -35,15 +39,33 @@ const mockGetRiddlesToRender = vi.mocked(getRiddlesToRender);
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const riddles = [
-  { id: "Step 1", pw: "abc", riddle: "Q1", description: "A1", unlocked: true },
-  { id: "Step 2", pw: "def", riddle: "Q2", description: "A2", unlocked: false },
+const riddles: Gate[] = [
+  {
+    id: "10a4bca2-59fc-42da-bbac-79b43dc4f76e",
+    label: "Step 1",
+    correctAnswer: "abc",
+    question: "Q1",
+    successMessage: "A1",
+    isSolved: true,
+    ...defaultNullishGateProps,
+  },
+  {
+    id: "570d3614-228e-4942-a52b-7ce7805eac46",
+    label: "Step 2",
+    correctAnswer: "def",
+    question: "Q2",
+    successMessage: "A2",
+    isSolved: false,
+    ...defaultNullishGateProps,
+  },
 ];
 
-const program: ProgramType = {
+const program: ProgramWithGates = {
+  id: "63e52b69-0bb3-4598-8957-e531c90175ba",
   name: "Test Adventure",
-  active: true,
-  riddles,
+  isSelected: true,
+  gates: riddles,
+  ...defaultNullishProgramProps,
 };
 
 beforeEach(() => {
@@ -109,7 +131,7 @@ describe("rendering", () => {
         clearActiveProgram={vi.fn()}
       />,
     );
-    expect(mockGetRiddlesToRender).toHaveBeenCalledWith(program.riddles);
+    expect(mockGetRiddlesToRender).toHaveBeenCalledWith(program.gates);
   });
 });
 
