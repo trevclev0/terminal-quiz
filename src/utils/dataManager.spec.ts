@@ -10,7 +10,7 @@ import {
   it,
   vi,
 } from "vitest";
-import type { Program } from "../App.types";
+import type { ProgramWithGates } from "../db/types";
 import {
   decodeStringToObject,
   encodeObjectToString,
@@ -21,42 +21,66 @@ import {
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
+const defaultNullifiedProgramProps = {
+  selectedAt: null,
+  completedAt: null,
+};
 
-const singleProgram: Program[] = [
+const defaultNullifiedGateProps = {
+  solvedAt: null,
+  attemptCount: 0,
+  guidanceEnabled: false,
+  guidancePrompt: null,
+  guidanceThreshold: 0,
+  acceptanceThreshold: 0.0,
+  programId: null,
+};
+
+const singleProgram: ProgramWithGates[] = [
   {
+    id: "a963c64b-7e2a-457b-862d-94b371a6ee01",
     name: "Adventure One",
-    active: true,
-    riddles: [
+    isSelected: true,
+    ...defaultNullifiedProgramProps,
+    gates: [
       {
-        id: "r1",
-        pw: "secret",
-        riddle: "What has keys but no locks?",
-        description: "A keyboard",
-        unlocked: false,
+        id: "7700cd79-0e59-45c9-a00d-137bb53f793a",
+        label: "r1",
+        correctAnswer: "secret",
+        question: "What has keys but no locks?",
+        successMessage: "A keyboard",
+        isSolved: false,
+        ...defaultNullifiedGateProps,
       },
     ],
   },
 ];
 
-const multiplePrograms: Program[] = [
+const multiplePrograms: ProgramWithGates[] = [
   ...singleProgram,
   {
+    id: "0af45993-84e5-4b1d-968b-a22d2d06ccf1",
     name: "Adventure Two",
-    active: false,
-    riddles: [
+    isSelected: false,
+    ...defaultNullifiedProgramProps,
+    gates: [
       {
-        id: "r2",
-        pw: "opensesame",
-        riddle: "I speak without a mouth.",
-        description: "An echo",
-        unlocked: true,
+        id: "83cc0687-61ac-42ec-b09a-4f5a73ebdfc5",
+        label: "r2",
+        correctAnswer: "opensesame",
+        question: "I speak without a mouth.",
+        successMessage: "An echo",
+        isSolved: true,
+        ...defaultNullifiedGateProps,
       },
       {
-        id: "r3",
-        pw: "alakazam",
-        riddle: "The more you take, the more you leave behind.",
-        description: "Footsteps",
-        unlocked: false,
+        id: "24b658a1-9fce-479e-a190-32b4b84745b1",
+        label: "r3",
+        correctAnswer: "alakazam",
+        question: "The more you take, the more you leave behind.",
+        successMessage: "Footsteps",
+        isSolved: false,
+        ...defaultNullifiedGateProps,
       },
     ],
   },
@@ -137,10 +161,10 @@ describe("decodeStringToObject", () => {
     const encoded = encodeObjectToString(multiplePrograms);
     const decoded = decodeStringToObject(encoded);
 
-    const riddle = decoded[1].riddles[0];
-    expect(riddle.id).toBe("r2");
-    expect(riddle.pw).toBe("opensesame");
-    expect(riddle.unlocked).toBe(true);
+    const riddle = decoded[1].gates[0];
+    expect(riddle.label).toBe("r2");
+    expect(riddle.correctAnswer).toBe("opensesame");
+    expect(riddle.isSolved).toBe(true);
   });
 });
 
