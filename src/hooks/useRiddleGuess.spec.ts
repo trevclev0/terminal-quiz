@@ -5,7 +5,6 @@ import type React from "react";
 import type { SubmitEvent } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createProgramDataWrapper } from "../../tests/createProgramDataWrapper";
-import type { Program, Riddle } from "../App.types";
 import type { ProgramDataContext as ContextType } from "../contexts/ProgramDataContext";
 import useRiddleGuess from "./useRiddleGuess";
 
@@ -17,6 +16,11 @@ vi.mock("../utils/isGuessCloseEnough", () => ({
   default: vi.fn(),
 }));
 
+import {
+  defaultNullishGateProps,
+  defaultNullishProgramProps,
+} from "../../tests/testTypes";
+import type { Gate, ProgramWithGates } from "../db/types";
 import isGuessCloseEnough from "../utils/isGuessCloseEnough";
 
 const mockIsGuessCloseEnough = vi.mocked(isGuessCloseEnough);
@@ -25,18 +29,30 @@ const mockIsGuessCloseEnough = vi.mocked(isGuessCloseEnough);
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const riddle: Riddle = {
-  id: "Step 1",
-  pw: btoa("secret"),
-  riddle: "What has keys?",
-  description: "A keyboard",
-  unlocked: false,
+const riddle: Gate = {
+  id: "3a356c09-8802-442f-aa3d-4189651dd35c",
+  label: "Step 1",
+  correctAnswer: btoa("secret"),
+  question: "What has keys?",
+  successMessage: "A keyboard",
+  isSolved: false,
+  ...defaultNullishGateProps,
 };
 
-const activeProgram: Program = {
+const activeProgram: ProgramWithGates = {
+  id: "d9e4309c-a3c2-43bc-9894-540aa0a2fc9c",
   name: "Alpha",
-  active: true,
-  riddles: [riddle, { ...riddle, id: "Step 2", unlocked: false }],
+  isSelected: true,
+  gates: [
+    riddle,
+    {
+      ...riddle,
+      id: "13646090-d5d3-4e86-9485-886802231c3d",
+      label: "Step 2",
+      isSolved: false,
+    },
+  ],
+  ...defaultNullishProgramProps,
 };
 
 // ---------------------------------------------------------------------------
@@ -144,22 +160,22 @@ describe("submitHandler with a correct guess", () => {
     act(() => result.current.submitHandler(makeSubmitEvent()));
 
     expect(contextValue.updateActiveProgram).toHaveBeenCalledOnce();
-    const updatedProgram: Program = vi.mocked(contextValue.updateActiveProgram)
-      .mock.calls[0][0];
-    const updatedRiddle = updatedProgram.riddles.find(
-      (r) => r.id === riddle.id,
-    );
-    expect(updatedRiddle?.unlocked).toBe(true);
+    const updatedProgram: ProgramWithGates = vi.mocked(
+      contextValue.updateActiveProgram,
+    ).mock.calls[0][0];
+    const updatedRiddle = updatedProgram.gates.find((r) => r.id === riddle.id);
+    expect(updatedRiddle?.isSolved).toBe(true);
   });
 
   it("does not unlock other riddles", () => {
     const { result, contextValue } = renderGuessHook();
     act(() => result.current.submitHandler(makeSubmitEvent()));
 
-    const updatedProgram: Program = vi.mocked(contextValue.updateActiveProgram)
-      .mock.calls[0][0];
-    const otherRiddle = updatedProgram.riddles.find((r) => r.id === "Step 2");
-    expect(otherRiddle?.unlocked).toBe(false);
+    const updatedProgram: ProgramWithGates = vi.mocked(
+      contextValue.updateActiveProgram,
+    ).mock.calls[0][0];
+    const otherRiddle = updatedProgram.gates.find((r) => r.label === "Step 2");
+    expect(otherRiddle?.isSolved).toBe(false);
   });
 
   it("does not call contextValue when activeProgram is undefined", () => {
