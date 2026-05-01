@@ -1,11 +1,11 @@
 import { createContext } from "react";
-import type { Program } from "../App.types";
+import type { ProgramWithGates } from "../db/types";
 
 export type ProgramDataContext = {
-  programs: Program[];
-  activeProgram: Program | undefined;
+  programs: ProgramWithGates[];
+  activeProgram: ProgramWithGates | undefined;
   selectProgram: (name: string) => void;
-  updateActiveProgram: (program: Program) => void;
+  updateActiveProgram: (program: ProgramWithGates) => void;
 };
 
 export const ProgramDataContext = createContext<ProgramDataContext | null>(
