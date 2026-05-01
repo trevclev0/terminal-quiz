@@ -1,11 +1,15 @@
+import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
-import programs from "../../.generated/programs.json" with { type: "json" };
-import type { Program } from "../App.types";
-import type { Generics } from "../entry";
+import * as schema from "../db/schema";
+import type { Env } from "../entry";
 
 // Must use chaining in order for Hono RPC to work
-const programsRouter = new Hono<Generics>().get("/", (c) => {
-  return c.json(programs as Program[]);
+const programsRouter = new Hono<Env>().get("/", async (c) => {
+  const db = drizzle(c.env.DB, { schema });
+  const result = await db.query.programs.findMany({
+    with: { gates: true },
+  });
+  return c.json(result);
 });
 
 export default programsRouter;
