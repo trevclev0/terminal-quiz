@@ -1,19 +1,22 @@
 import { describe, expect, it } from "vitest";
-import type { Riddle } from "../App.types";
+import { defaultNullishGateProps } from "../../tests/testTypes";
+import type { Gate } from "../db/types";
 import getRiddlesToRender from "./getRiddlesToRender";
 
-const makeRiddle = (overrides: Partial<Riddle> = {}): Riddle => ({
-  id: "test-id",
-  pw: "test-pw",
-  riddle: "default riddle",
-  description: "default description",
-  unlocked: false,
+const makeRiddle = (overrides: Partial<Gate> = {}): Gate => ({
+  id: "c3b3ae1c-9565-41f7-b14c-7b203769555c",
+  label: "test-id",
+  correctAnswer: "test-pw",
+  question: "default riddle",
+  successMessage: "default description",
+  isSolved: false,
   ...overrides,
+  ...defaultNullishGateProps,
 });
 
 describe("getRiddlesToRender", () => {
   it("should return 0 if the first riddle is locked", () => {
-    const riddles: Riddle[] = [makeRiddle()];
+    const riddles: Gate[] = [makeRiddle()];
     const { riddlesToRender, nextRiddleIndex } = getRiddlesToRender(riddles);
     expect(nextRiddleIndex).toBe(0);
     expect(riddlesToRender.length).toEqual(1);
@@ -21,8 +24,8 @@ describe("getRiddlesToRender", () => {
   });
 
   it("should return nextRiddleIndex: 1, 2 riddles when 1 of 3 is solved", () => {
-    const riddles: Riddle[] = [
-      makeRiddle({ unlocked: true }),
+    const riddles: Gate[] = [
+      makeRiddle({ isSolved: true }),
       makeRiddle(),
       makeRiddle(),
     ];
@@ -32,9 +35,9 @@ describe("getRiddlesToRender", () => {
   });
 
   it("should return nextRiddleIndex: 2, 3 riddles when 2 of 3 is solved", () => {
-    const riddles: Riddle[] = [
-      makeRiddle({ unlocked: true }),
-      makeRiddle({ unlocked: true }),
+    const riddles: Gate[] = [
+      makeRiddle({ isSolved: true }),
+      makeRiddle({ isSolved: true }),
       makeRiddle(),
     ];
     const { riddlesToRender, nextRiddleIndex } = getRiddlesToRender(riddles);
@@ -43,14 +46,14 @@ describe("getRiddlesToRender", () => {
   });
 
   it("should return -1 if all riddles are solved", () => {
-    const riddles: Riddle[] = [makeRiddle({ unlocked: true })];
+    const riddles: Gate[] = [makeRiddle({ isSolved: true })];
     const { riddlesToRender, nextRiddleIndex } = getRiddlesToRender(riddles);
     expect(nextRiddleIndex).toBe(-1);
     expect(riddlesToRender.length).toEqual(1);
   });
 
   it("should return -1 if there are no riddles", () => {
-    const riddles: Riddle[] = [];
+    const riddles: Gate[] = [];
     const { riddlesToRender, nextRiddleIndex } = getRiddlesToRender(riddles);
     expect(nextRiddleIndex).toBe(-1);
     expect(riddlesToRender.length).toEqual(0);
