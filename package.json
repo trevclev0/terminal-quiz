@@ -20,7 +20,7 @@
     "seed": "tsx scripts/seed.ts",
     "migrate:generate": "drizzle-kit generate",
     "migrate:local": "wrangler d1 migrations apply terminal-quest --local",
-    "migrate:preview": "wrangler d1 migrations apply terminal-quest-preview --remote --env preview",
+    "migrate:preview": "wrangler d1 migrations apply terminal-quest-preview --remote",
     "migrate:prod": "wrangler d1 migrations apply terminal-quest --remote",
     "deploy": "wrangler deploy",
     "deploy:preview": "wrangler versions upload --env preview"

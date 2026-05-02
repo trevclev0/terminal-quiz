@@ -56,7 +56,7 @@ jobs:
 
       - name: Update Deployment (Success)
         uses: chrnorm/deployment-status@v2
-        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && success()
+        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deploy.outcome == 'success'
         with:
           token: ${{ github.token }}
           environment-url: ${{ steps.deploy.outputs.deployment-url }}
@@ -65,7 +65,7 @@ jobs:
 
       - name: Update Deployment (Failure)
         uses: chrnorm/deployment-status@v2
-        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && failure()
+        if: always() && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deploy.outcome != 'success'
         with:
           token: ${{ github.token }}
           state: 'error'

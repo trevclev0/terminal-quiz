@@ -28,20 +28,10 @@
     {
       "binding": "DB",
       "database_name": "terminal-quest",
-      "database_id": "9905dbd8-5e2d-4e87-aac0-d30fe5aa0a10"
+      "database_id": "9905dbd8-5e2d-4e87-aac0-d30fe5aa0a10",
+      "preview_database_id": "04e5b1c3-3e5d-498e-aafa-8230c4bbdee0"
     }
-  ],
-  "env": {
-    "preview": {
-      "d1_databases": [
-        {
-          "binding": "DB",
-          "database_name": "terminal-quest-preview",
-          "database_id": "04e5b1c3-3e5d-498e-aafa-8230c4bbdee0"
-        }
-      ]
-    }
-  }
+  ]
   /**
    * Smart Placement
    * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
