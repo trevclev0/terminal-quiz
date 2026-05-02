@@ -38,7 +38,7 @@ jobs:
           command: >
             ${{ github.ref == 'refs/heads/main'
               && 'd1 migrations apply terminal-quest --remote'
-              || 'd1 migrations apply terminal-quest-preview --remote'
+              || 'd1 migrations apply 04e5b1c3-3e5d-498e-aafa-8230c4bbdee0 --remote'
             }}
 
       - name: Deploy to Cloudflare

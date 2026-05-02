@@ -20,10 +20,10 @@
     "seed": "tsx scripts/seed.ts",
     "migrate:generate": "drizzle-kit generate",
     "migrate:local": "wrangler d1 migrations apply terminal-quest --local",
-    "migrate:preview": "wrangler d1 migrations apply terminal-quest-preview --remote",
+    "migrate:preview": "wrangler d1 migrations apply 04e5b1c3-3e5d-498e-aafa-8230c4bbdee0 --remote",
     "migrate:prod": "wrangler d1 migrations apply terminal-quest --remote",
     "deploy": "wrangler deploy",
-    "deploy:preview": "wrangler versions upload --env preview"
+    "deploy:preview": "wrangler versions upload --remote"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",
