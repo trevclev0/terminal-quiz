@@ -59,7 +59,12 @@ function useProgramStorage() {
         if (!p.isSelected) return p;
         return {
           ...p,
-          gates: p.gates.map((gate) => ({ ...gate, isSolved: false })),
+          gates: p.gates.map((gate) => ({
+            ...gate,
+            isSolved: false,
+            solvedAt: null,
+            attemptCount: 0,
+          })),
         };
       }),
     );
