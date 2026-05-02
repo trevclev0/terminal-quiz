@@ -16,7 +16,7 @@ coverage/
 .env.local
 
 # Ignore Cloudflare environment variables
-.dev.vars
+.dev.vars*
 
 # Local SQLite database files
 *.db
