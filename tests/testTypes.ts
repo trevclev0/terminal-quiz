@@ -8,8 +8,8 @@ const defaultNullishGateProps = {
   attemptCount: 0,
   guidanceEnabled: false,
   guidancePrompt: null,
-  guidanceThreshold: 0,
-  acceptanceThreshold: 0.0,
+  guidanceThreshold: 2,
+  acceptanceThreshold: 0.875,
   programId: null,
 };
 
