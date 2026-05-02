@@ -1,6 +1,15 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import { drizzle } from "drizzle-orm/d1";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import gatesRouter from "./gates";
 
 vi.mock("drizzle-orm/d1", () => ({
@@ -55,11 +64,29 @@ describe("Gates Router", () => {
   // A dummy D1 object to pass into Hono's environment
   const env = { DB: {} as D1Database };
 
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeAll(() => {
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterAll(() => {
+    consoleErrorSpy.mockRestore();
+  });
+
   beforeEach(() => {
+    vi.clearAllMocks();
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     // Use vi.mocked() to access Vitest's typing, and cast mockDb
     vi.mocked(drizzle).mockReturnValue(
       mockDb as unknown as ReturnType<typeof drizzle>,
     );
+  });
+
+  afterEach(() => {
+    if (consoleErrorSpy) {
+      consoleErrorSpy.mockRestore();
+    }
   });
 
   describe("GET /:id", () => {
@@ -92,6 +119,11 @@ describe("Gates Router", () => {
 
       expect(res.status).toBe(500);
       expect(data).toEqual({ error: "Failed to fetch gate" });
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Failed to fetch gate:",
+        expect.any(Error),
+      );
     });
   });
 
@@ -242,6 +274,11 @@ describe("Gates Router", () => {
 
         expect(res.status).toBe(500);
         expect(data).toEqual({ error: "Failed to process guess" });
+
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "Failed to process guess:",
+          expect.any(Error),
+        );
       });
     });
   });
