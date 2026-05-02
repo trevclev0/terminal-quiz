@@ -38,7 +38,7 @@ jobs:
           command: >
             ${{ github.ref == 'refs/heads/main'
               && 'd1 migrations apply terminal-quest --remote'
-              || 'd1 migrations apply terminal-quest-preview --remote --env preview'
+              || 'd1 migrations apply terminal-quest-preview --remote'
             }}
 
       - name: Deploy to Cloudflare
@@ -51,7 +51,7 @@ jobs:
           command: >
             ${{ github.ref == 'refs/heads/main'
               && 'deploy'
-              || 'versions upload --env preview'
+              || 'versions upload'
             }}
 
       - name: Update Deployment (Success)
