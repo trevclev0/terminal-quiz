@@ -43,5 +43,6 @@ export const gatesRelations = relations(gates, ({ one }) => ({
 }));
 
 export const gameState = sqliteTable("game_state", {
-  id: integer("id").primaryKey().default(1), // Singleton - only one row with id=1  lastUpdated: integer("last_updated", { mode: "timestamp" }).notNull(),
+  id: integer("id").primaryKey().default(1), // Singleton - only one row with id=1
+  lastUpdated: integer("last_updated", { mode: "timestamp" }).notNull(),
 });
