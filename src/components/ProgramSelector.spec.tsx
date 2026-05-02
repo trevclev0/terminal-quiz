@@ -75,7 +75,7 @@ describe("rendering", () => {
 
   it("renders no program options when the programs list is empty", () => {
     renderWithContext({ programs: [] });
-    expect(screen.getAllByText("Select your program")).toHaveLength(1);
+    expect(screen.getAllByText("No programs found")).toHaveLength(1);
   });
 });
 

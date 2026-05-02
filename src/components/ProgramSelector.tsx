@@ -9,6 +9,14 @@ function ProgramSelector() {
     selectProgram(selectedProgramName);
   }
 
+  if (programs.length === 0) {
+    return (
+      <h2 id="program-selector" className="warning">
+        No programs found
+      </h2>
+    );
+  }
+
   return (
     <div id="program-selector">
       <select onChange={selectChangeHandler} defaultValue="">

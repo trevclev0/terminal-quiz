@@ -2,6 +2,7 @@
   --black: black;
   --green: #33ff33;
   --red: #ff3333;
+  --light-grey: #c0c0c0;
   --faded-green: #337200;
 }
 
@@ -47,6 +48,7 @@ select {
   cursor: pointer;
   margin: 0.75rem 1rem;
   padding: 1.5rem;
+  min-width: 16rem;
 }
 
 #program-selector {
@@ -89,6 +91,10 @@ p {
 
 .fail {
   color: var(--red);
+}
+
+.warning {
+  color: var(--light-grey);
 }
 
 #classic-ending {
