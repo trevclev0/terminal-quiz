@@ -34,6 +34,9 @@
   ],
   "env": {
     "preview": {
+      "name": "quiz-app-preview",
+      "workers_dev": true,
+      "routes": [],
       "d1_databases": [
         {
           "binding": "DB",
@@ -42,7 +45,8 @@
         }
       ]
     }
-  } /**
+  }
+  /**
    * Smart Placement
    * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
    */
