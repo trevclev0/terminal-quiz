@@ -1,7 +1,7 @@
-import type { InferSelectModel } from "drizzle-orm";
-import type { gates, programs } from "../db/schema";
+import type { z } from "zod";
+import type { selectGateSchema, selectProgramSchema } from "./schema";
 
-type Gate = InferSelectModel<typeof gates>;
-type ProgramWithGates = InferSelectModel<typeof programs> & { gates: Gate[] };
+export type Gate = z.infer<typeof selectGateSchema>;
+export type Program = z.infer<typeof selectProgramSchema>;
 
-export type { Gate, ProgramWithGates };
+export type ProgramWithGates = Program & { gates: Gate[] };

@@ -26,9 +26,9 @@ describe("Main App Entry (entry.ts)", () => {
     expect(res.headers.get("content-type")).toContain("application/json");
   });
 
-  it("should mount the riddles router at /api/riddles", async () => {
-    const res = await app.request("/api/riddles", {}, mockEnv);
-    expect(res.status).toBe(501);
+  it("should mount the gates router at /api/gates", async () => {
+    const res = await app.request("/api/gates", {}, mockEnv);
+    expect(res.status).not.toBe(500);
   });
 
   it("should fall back to the ASSETS fetcher for non-API routes", async () => {

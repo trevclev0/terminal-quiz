@@ -1,7 +1,7 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import { Hono } from "hono";
+import gatesRouter from "./routes/gates";
 import programsRouter from "./routes/programs";
-import riddlesRouter from "./routes/riddles";
 
 export type Env = {
   Bindings: {
@@ -16,7 +16,7 @@ const app = new Hono<Env>();
 const routes = app
   .basePath("/api")
   .route("/programs", programsRouter)
-  .route("/riddles", riddlesRouter);
+  .route("/gates", gatesRouter);
 
 // Separate the API routes from the static assets for simpler Hono RPC
 app.get("*", async (c) => {
