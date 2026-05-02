@@ -51,7 +51,7 @@ jobs:
           command: >
             ${{ github.ref == 'refs/heads/main'
               && 'deploy'
-              || 'versions upload'
+              || 'deploy --env preview'
             }}
 
       - name: Update Deployment (Success)
