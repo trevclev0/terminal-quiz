@@ -2,7 +2,9 @@ import { relations } from "drizzle-orm";
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const gates = sqliteTable("gates", {
-  id: text("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   label: text("label").notNull(),
   question: text("question").notNull(),
   correctAnswer: text("correct_answer").notNull(),
@@ -19,16 +21,24 @@ export const gates = sqliteTable("gates", {
   programId: text("program_id")
     .notNull()
     .references(() => programs.id, { onDelete: "cascade" }),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
 
 export const programs = sqliteTable("programs", {
-  id: text("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
   isSelected: integer("is_selected", { mode: "boolean" })
     .notNull()
     .default(false),
   selectedAt: integer("selected_at", { mode: "timestamp" }),
   completedAt: integer("completed_at", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
 
 export const programsRelations = relations(programs, ({ many }) => ({
@@ -43,6 +53,9 @@ export const gatesRelations = relations(gates, ({ one }) => ({
 }));
 
 export const gameState = sqliteTable("game_state", {
-  id: integer("id").primaryKey().default(1), // Singleton - only one row with id=1
-  lastUpdated: integer("last_updated", { mode: "timestamp" }).notNull(),
+  id: integer("id").primaryKey().default(1),
+  lastUpdated: integer("last_updated", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date())
+    .$onUpdateFn(() => new Date()),
 });
