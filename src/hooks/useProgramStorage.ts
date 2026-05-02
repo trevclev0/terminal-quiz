@@ -49,7 +49,7 @@ function useProgramStorage() {
 
   const updateProgram = useCallback((updatedProgram: ProgramWithGates) => {
     setPrograms((prev) =>
-      prev.map((p) => (p.name === updatedProgram.name ? updatedProgram : p)),
+      prev.map((p) => (p.id === updatedProgram.id ? updatedProgram : p)),
     );
   }, []);
 
