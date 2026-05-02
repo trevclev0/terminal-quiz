@@ -20,3 +20,6 @@ coverage/
 *.db-journal
 *.db-shm
 *.db-wal
+
+# Ignore generated SQL seed file
+seed.sql
