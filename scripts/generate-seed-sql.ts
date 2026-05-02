@@ -15,11 +15,20 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { gateRows, programRows } from "./seed-data";
 
-const sqlEscapeValue = (v: unknown): string => {
+const toSnakeCase = (str: string): string =>
+  str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+
+const sqlEscapeVal = (v: unknown): string => {
   if (v === null || v === undefined) return "NULL";
   if (typeof v === "boolean") return v ? "1" : "0";
   if (typeof v === "number") return String(v);
   return `'${String(v).replace(/'/g, "''")}'`;
+};
+
+const toInsert = (table: string, row: Record<string, unknown>): string => {
+  const columns = Object.keys(row).map(toSnakeCase).join(", ");
+  const values = Object.values(row).map(sqlEscapeVal).join(", ");
+  return `INSERT INTO ${table} (${columns}) VALUES (${values});`;
 };
 
 const lines: string[] = [
@@ -32,17 +41,13 @@ const lines: string[] = [
 ];
 
 for (const program of programRows) {
-  const columns = Object.keys(program).join(", ");
-  const values = Object.values(program).map(sqlEscapeValue).join(", ");
-  lines.push(`INSERT INTO programs (${columns}) VALUES (${values});`);
+  lines.push(toInsert("programs", program as Record<string, unknown>));
 }
 
 lines.push("");
 
 for (const gate of gateRows) {
-  const columns = Object.keys(gate).join(", ");
-  const values = Object.values(gate).map(sqlEscapeValue).join(", ");
-  lines.push(`INSERT INTO gates (${columns}) VALUES (${values});`);
+  lines.push(toInsert("gates", gate as Record<string, unknown>));
 }
 
 lines.push("");
