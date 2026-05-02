@@ -42,6 +42,15 @@ jobs:
             config.workers_dev = true;
             delete config.routes;
 
+            // Force the deployment to bind to the preview D1 database
+            config.d1_databases = [
+              {
+                binding: 'DB',
+                database_name: 'terminal-quest-preview',
+                database_id: '04e5b1c3-3e5d-498e-aafa-8230c4bbdee0'
+              }
+            ];
+
             fs.writeFileSync(file, JSON.stringify(config, null, 2));
           "
 
