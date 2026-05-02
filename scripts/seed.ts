@@ -18,15 +18,15 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import * as schema from "../src/db/schema";
 import { gateRows, programRows } from "./seed-data";
 
+const { DRIZZLE_DATABASE_URL } = process.env;
+if (!DRIZZLE_DATABASE_URL) throw new Error("Missing DRIZZLE_DATABASE_URL");
+
 // ---------------------------------------------------------------------------
 // Assumption: Wrangler stores the local D1 SQLite file at this path.
 // The final segment ("DB") must match the `binding` name in your wrangler.toml.
 // Verify this path exists after running `wrangler d1 migrations apply --local`.
 // ---------------------------------------------------------------------------
-const DB_PATH = join(
-  process.cwd(),
-  ".wrangler/state/v3/d1/miniflare-D1DatabaseObject/68b35e1e2f51a6a1a48d7b8210bd41a01c4e1d085f25a78a4c0d51aea32ea598.sqlite",
-);
+const DB_PATH = join(process.cwd(), DRIZZLE_DATABASE_URL);
 const sqlite = new Database(DB_PATH);
 const db = drizzle(sqlite, { schema });
 
