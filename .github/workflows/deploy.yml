@@ -29,6 +29,22 @@ jobs:
       - name: Run build
         run: pnpm build
 
+      - name: Patch Redirected Config for Preview
+        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
+        run: |
+          node -e "
+            const fs = require('fs');
+            const file = 'dist/quiz_app/wrangler.json';
+            const config = JSON.parse(fs.readFileSync(file, 'utf8'));
+
+            // Override production values with preview values
+            config.name = 'quiz-app-preview';
+            config.workers_dev = true;
+            delete config.routes;
+
+            fs.writeFileSync(file, JSON.stringify(config, null, 2));
+          "
+
       - name: Apply D1 Migrations
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork)
         uses: cloudflare/wrangler-action@v3
