@@ -1,10 +1,12 @@
 import { relations } from "drizzle-orm";
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { createSelectSchema } from "drizzle-zod";
 
 export const gates = sqliteTable("gates", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
+  sequenceOrder: integer("sequence_order").notNull(),
   label: text("label").notNull(),
   question: text("question").notNull(),
   correctAnswer: text("correct_answer").notNull(),
@@ -59,3 +61,7 @@ export const gameState = sqliteTable("game_state", {
     .$defaultFn(() => new Date())
     .$onUpdateFn(() => new Date()),
 });
+
+export const selectProgramSchema = createSelectSchema(programs);
+
+export const selectGateSchema = createSelectSchema(gates);
