@@ -1,6 +1,7 @@
 const defaultNullishProgramProps = {
   selectedAt: null,
   completedAt: null,
+  createdAt: new Date(),
 };
 
 const defaultNullishGateProps = {
@@ -11,6 +12,7 @@ const defaultNullishGateProps = {
   guidanceThreshold: 2,
   acceptanceThreshold: 0.875,
   programId: null,
+  createdAt: new Date(),
 };
 
 export { defaultNullishGateProps, defaultNullishProgramProps };

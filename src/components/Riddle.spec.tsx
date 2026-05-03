@@ -71,6 +71,7 @@ const lockedRiddle: Gate = {
   isSolved: false,
   ...defaultNullishGateProps,
   programId: "63e52b69-0bb3-4598-8957-e531c90175ba",
+  sequenceOrder: 1,
 };
 
 const unlockedRiddle: Gate = { ...lockedRiddle, isSolved: true };
@@ -208,6 +209,7 @@ describe("details toggle", () => {
       successMessage: "Sound reflects.",
       ...defaultNullishGateProps,
       programId: "63e52b69-0bb3-4598-8957-e531c90175ba",
+      sequenceOrder: 1,
     };
 
     // 3. Render the component

@@ -31,9 +31,11 @@ export const loadPrograms = async (): Promise<ProgramWithGates[]> => {
     ...p,
     selectedAt: p.selectedAt ? new Date(p.selectedAt) : null,
     completedAt: p.completedAt ? new Date(p.completedAt) : null,
+    createdAt: new Date(p.createdAt),
     gates: (p.gates ?? []).map((g) => ({
       ...g,
       solvedAt: g.solvedAt ? new Date(g.solvedAt) : null,
+      createdAt: new Date(g.createdAt),
     })),
   })) as ProgramWithGates[];
 };

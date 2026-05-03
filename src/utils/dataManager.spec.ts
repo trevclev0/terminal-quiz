@@ -42,6 +42,7 @@ const singleProgram: ProgramWithGates[] = [
         isSolved: false,
         ...defaultNullishGateProps,
         programId: "a963c64b-7e2a-457b-862d-94b371a6ee01",
+        sequenceOrder: 1,
       },
     ],
   },
@@ -64,6 +65,7 @@ const multiplePrograms: ProgramWithGates[] = [
         isSolved: true,
         ...defaultNullishGateProps,
         programId: "0af45993-84e5-4b1d-968b-a22d2d06ccf1",
+        sequenceOrder: 2,
       },
       {
         id: "24b658a1-9fce-479e-a190-32b4b84745b1",
@@ -74,6 +76,7 @@ const multiplePrograms: ProgramWithGates[] = [
         isSolved: false,
         ...defaultNullishGateProps,
         programId: "0af45993-84e5-4b1d-968b-a22d2d06ccf1",
+        sequenceOrder: 3,
       },
     ],
   },
