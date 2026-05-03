@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -56,10 +56,17 @@ const gatesRouter = new Hono<Env>()
         guess.trim().toLowerCase() === gate.correctAnswer.trim().toLowerCase();
 
       if (isCorrect) {
-        await db
+        const result = await db
           .update(schema.gates)
           .set({ isSolved: true, solvedAt: new Date() })
-          .where(eq(schema.gates.id, gateId));
+          .where(
+            and(eq(schema.gates.id, gateId), eq(schema.gates.isSolved, false)),
+          )
+          .returning({ id: schema.gates.id });
+
+        if (result.length === 0) {
+          return c.json({ error: "Gate is already solved" }, 400);
+        }
 
         // Find the next sequential gate
         const nextGate = await db.query.gates.findFirst({
@@ -74,15 +81,15 @@ const gatesRouter = new Hono<Env>()
         return c.json({
           correct: true,
           successMessage: gate.successMessage,
-          nextGateId: nextGate?.id || null, // null indicates the program is completely finished
+          nextGateId: nextGate?.id ?? null, // null indicates the program is completely finished
         });
       } else {
         // Increment the attempt count
-        const newAttemptCount = gate.attemptCount + 1;
         await db
           .update(schema.gates)
-          .set({ attemptCount: newAttemptCount })
+          .set({ attemptCount: sql`${schema.gates.attemptCount} + 1` })
           .where(eq(schema.gates.id, gateId));
+        const newAttemptCount = gate.attemptCount + 1;
 
         let message = "";
 
