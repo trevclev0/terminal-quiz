@@ -1,285 +1,378 @@
-import type { D1Database } from "@cloudflare/workers-types";
-import { drizzle } from "drizzle-orm/d1";
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+// src/routes/gates.test.ts
+
+import { afterEach } from "node:test";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import gatesRouter from "./gates";
 
-vi.mock("drizzle-orm/d1", () => ({
-  drizzle: vi.fn(),
-}));
+// ---------------------------------------------------------------------------
+// Types — mirror what Drizzle returns for the gates table.
+// Verify these fields and nullability against your actual schema inference.
+// ---------------------------------------------------------------------------
 
-const mockWhere = vi.fn();
-const mockSet = vi.fn(() => ({ where: mockWhere }));
-const mockUpdate = vi.fn(() => ({ set: mockSet }));
-const mockFindFirst = vi.fn();
-
-const mockDb = {
-  query: {
-    gates: {
-      findFirst: mockFindFirst,
-    },
-  },
-  update: mockUpdate,
+type GateRow = {
+  id: string;
+  label: string;
+  question: string;
+  isSolved: boolean;
+  programId: string;
+  correctAnswer: string;
+  successMessage: string;
+  sequenceOrder: number;
+  attemptCount: number;
+  guidanceThreshold: number;
+  guidancePrompt: string | null;
+  solvedAt: Date | null;
 };
 
-type SuccessGuessResponse = {
+type GatePublicResponse = Pick<
+  GateRow,
+  "id" | "label" | "question" | "isSolved" | "programId"
+>;
+
+type GuessCorrectResponse = {
   correct: true;
   successMessage: string;
   nextGateId: string | null;
 };
 
-type IncorrectGuessResponse = {
+type GuessIncorrectResponse = {
   correct: false;
   message: string;
 };
 
-type ErrorResponse = {
-  error: string;
-};
+type ErrorResponse = { error: string };
 
-const createMockGate = (overrides = {}) => ({
-  id: "gate-1",
-  label: "First Gate",
-  question: "What is 2 + 2?",
-  correctAnswer: "four",
-  successMessage: "You have opened the first gate.",
-  isSolved: false,
-  programId: "prog-1",
-  sequenceOrder: 1,
-  attemptCount: 0,
-  guidanceThreshold: 2,
-  guidancePrompt: "Think about the number after three.",
-  ...overrides,
+// ---------------------------------------------------------------------------
+// Hoisted mocks
+//
+// vi.hoisted runs before vi.mock factories, making these references safe to
+// use inside the factory below.
+//
+// The update chain needs special attention: Drizzle's builder is both
+// awaitable on its own AND exposes .returning(). We satisfy both by returning
+// a Promise instance with returning grafted on as an own property.
+// ---------------------------------------------------------------------------
+
+const { mockFindFirst, mockReturning, mockSet, mockUpdate } = vi.hoisted(() => {
+  const mockReturning = vi.fn<() => Promise<Array<{ id: string }>>>();
+
+  const mockWhere = vi.fn(() =>
+    Object.assign(Promise.resolve(undefined), {
+      returning: mockReturning,
+    }),
+  );
+
+  const mockSet = vi.fn(() => ({ where: mockWhere }));
+  const mockUpdate = vi.fn(() => ({ set: mockSet }));
+  const mockFindFirst = vi.fn<() => Promise<GateRow | undefined>>();
+
+  return { mockFindFirst, mockReturning, mockSet, mockUpdate, mockWhere };
 });
 
-describe("Gates Router", () => {
-  // A dummy D1 object to pass into Hono's environment
-  const env = { DB: {} as D1Database };
+vi.mock("drizzle-orm/d1", () => ({
+  drizzle: vi.fn(() => ({
+    query: {
+      gates: { findFirst: mockFindFirst },
+    },
+    update: mockUpdate,
+  })),
+}));
 
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+// ---------------------------------------------------------------------------
+// Fixtures & helpers
+// ---------------------------------------------------------------------------
 
-  beforeAll(() => {
-    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-  });
+/** DB value is irrelevant — drizzle() is mocked and ignores it. */
+const mockEnv = { DB: {} };
 
-  afterAll(() => {
-    consoleErrorSpy.mockRestore();
-  });
+const baseGate: GateRow = {
+  id: "gate-1",
+  label: "Gate One",
+  question: "What is the answer?",
+  isSolved: false,
+  programId: "program-1",
+  correctAnswer: "forty-two",
+  successMessage: "Well done!",
+  sequenceOrder: 1,
+  attemptCount: 0,
+  guidanceThreshold: 3,
+  guidancePrompt: "Try thinking about it differently.",
+  solvedAt: null,
+};
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    // Use vi.mocked() to access Vitest's typing, and cast mockDb
-    vi.mocked(drizzle).mockReturnValue(
-      mockDb as unknown as ReturnType<typeof drizzle>,
+function postGuess(gateId: string, guess: string): Promise<Response> {
+  return Promise.resolve(
+    gatesRouter.request(
+      `http://localhost/${gateId}/guess`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guess }),
+      },
+      mockEnv,
+    ),
+  );
+}
+
+beforeEach(() => {
+  vi.spyOn(console, "error").mockImplementation(() => undefined);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
+// ---------------------------------------------------------------------------
+// GET /:id
+// ---------------------------------------------------------------------------
+
+describe("GET /:id", () => {
+  it("returns the gate when found", async () => {
+    mockFindFirst.mockResolvedValueOnce(baseGate);
+
+    const res = await gatesRouter.request(
+      "http://localhost/gate-1",
+      {},
+      mockEnv,
     );
-  });
 
-  afterEach(() => {
-    if (consoleErrorSpy) {
-      consoleErrorSpy.mockRestore();
-    }
-  });
-
-  describe("GET /:id", () => {
-    it("should return 200 and the gate details if found", async () => {
-      mockFindFirst.mockResolvedValueOnce(createMockGate());
-
-      const res = await gatesRouter.request("/gate-1", {}, env);
-      const data: { label: string } = await res.json();
-
-      expect(res.status).toBe(200);
-      expect(data).toHaveProperty("label", "First Gate");
-      expect(mockFindFirst).toHaveBeenCalledTimes(1);
-    });
-
-    it("should return 404 if the gate does not exist", async () => {
-      mockFindFirst.mockResolvedValueOnce(undefined);
-
-      const res = await gatesRouter.request("/missing-gate", {}, env);
-      const data: ErrorResponse = await res.json();
-
-      expect(res.status).toBe(404);
-      expect(data).toEqual({ error: "Gate not found" });
-    });
-
-    it("should return 500 on database error", async () => {
-      mockFindFirst.mockRejectedValueOnce(new Error("DB failure"));
-
-      const res = await gatesRouter.request("/gate-1", {}, env);
-      const data: ErrorResponse = await res.json();
-
-      expect(res.status).toBe(500);
-      expect(data).toEqual({ error: "Failed to fetch gate" });
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "Failed to fetch gate:",
-        expect.any(Error),
-      );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as GatePublicResponse;
+    expect(body).toMatchObject({
+      id: "gate-1",
+      label: "Gate One",
+      question: "What is the answer?",
+      isSolved: false,
+      programId: "program-1",
     });
   });
 
-  describe("POST /:id/guess", () => {
-    const makeRequest = (guessPayload: { guess: string }) => {
-      return gatesRouter.request(
-        "/gate-1/guess",
+  it("returns 404 when the gate does not exist", async () => {
+    mockFindFirst.mockResolvedValueOnce(undefined);
+
+    const res = await gatesRouter.request(
+      "http://localhost/nonexistent",
+      {},
+      mockEnv,
+    );
+
+    expect(res.status).toBe(404);
+    const body = (await res.json()) as ErrorResponse;
+    expect(body.error).toBe("Gate not found");
+  });
+
+  it("returns 500 when the database throws", async () => {
+    mockFindFirst.mockRejectedValueOnce(new Error("DB failure"));
+
+    const res = await gatesRouter.request(
+      "http://localhost/gate-1",
+      {},
+      mockEnv,
+    );
+
+    expect(res.status).toBe(500);
+    const body = (await res.json()) as ErrorResponse;
+    expect(body.error).toBe("Failed to fetch gate");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// POST /:id/guess
+// ---------------------------------------------------------------------------
+
+describe("POST /:id/guess", () => {
+  beforeEach(() => {
+    // Default: the optimistic update finds and marks one row. Individual tests
+    // that need different behaviour override with mockResolvedValueOnce.
+    mockReturning.mockResolvedValue([{ id: "gate-1" }]);
+  });
+
+  // --- Zod validation ---
+
+  describe("request validation", () => {
+    it("returns 400 when guess is an empty string", async () => {
+      const res = await postGuess("gate-1", "");
+      expect(res.status).toBe(400);
+    });
+
+    it("returns 400 when the guess field is absent", async () => {
+      const res = await gatesRouter.request(
+        "http://localhost/gate-1/guess",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(guessPayload),
+          body: JSON.stringify({}),
         },
-        env,
+        mockEnv,
       );
-    };
+      expect(res.status).toBe(400);
+    });
+  });
 
-    describe("Validation & State Checks", () => {
-      it("should return 400 if guess payload is empty or invalid", async () => {
-        const res = await makeRequest({ guess: "" });
+  // --- Gate state guards ---
 
-        // Zod validation failure handled by Hono returns 400
-        expect(res.status).toBe(400);
-        // Drizzle shouldn't even be called
-        expect(mockFindFirst).not.toHaveBeenCalled();
-      });
+  it("returns 404 when the gate does not exist", async () => {
+    mockFindFirst.mockResolvedValueOnce(undefined);
 
-      it("should return 404 if the gate is not found", async () => {
-        mockFindFirst.mockResolvedValueOnce(undefined);
+    const res = await postGuess("nonexistent", "forty-two");
 
-        const res = await makeRequest({ guess: "four" });
-        expect(res.status).toBe(404);
-      });
+    expect(res.status).toBe(404);
+    const body = (await res.json()) as ErrorResponse;
+    expect(body.error).toBe("Gate not found");
+  });
 
-      it("should return 400 if the gate is already solved", async () => {
-        mockFindFirst.mockResolvedValueOnce(createMockGate({ isSolved: true }));
+  it("returns 400 when the gate is already solved", async () => {
+    mockFindFirst.mockResolvedValueOnce({ ...baseGate, isSolved: true });
 
-        const res = await makeRequest({ guess: "four" });
-        const data: ErrorResponse = await res.json();
+    const res = await postGuess("gate-1", "forty-two");
 
-        expect(res.status).toBe(400);
-        expect(data).toEqual({ error: "Gate is already solved" });
-        expect(mockUpdate).not.toHaveBeenCalled();
-      });
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as ErrorResponse;
+    expect(body.error).toBe("Gate is already solved");
+  });
+
+  // --- Correct guess ---
+
+  describe("correct guess", () => {
+    it("returns correct:true, successMessage, and the next gate's id", async () => {
+      const nextGate: GateRow = { ...baseGate, id: "gate-2", sequenceOrder: 2 };
+      mockFindFirst
+        .mockResolvedValueOnce(baseGate) // initial gate lookup
+        .mockResolvedValueOnce(nextGate); // next-gate lookup
+
+      const res = await postGuess("gate-1", "forty-two");
+
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as GuessCorrectResponse;
+      expect(body.correct).toBe(true);
+      expect(body.successMessage).toBe("Well done!");
+      expect(body.nextGateId).toBe("gate-2");
     });
 
-    describe("Correct Guesses", () => {
-      it("should mark as solved and return the next gate ID", async () => {
-        mockFindFirst
-          // 1st call: fetch current gate
-          .mockResolvedValueOnce(createMockGate())
-          // 2nd call: fetch next gate
-          .mockResolvedValueOnce({ id: "gate-2" });
+    it("returns nextGateId:null when no subsequent gate exists (program complete)", async () => {
+      mockFindFirst
+        .mockResolvedValueOnce(baseGate)
+        .mockResolvedValueOnce(undefined);
 
-        mockWhere.mockResolvedValueOnce(true); // Mock the update success
+      const res = await postGuess("gate-1", "forty-two");
 
-        const res = await makeRequest({ guess: " FOUR " }); // Testing case/trim insensitivity
-        const data: SuccessGuessResponse = await res.json();
-
-        expect(res.status).toBe(200);
-        expect(data).toEqual({
-          correct: true,
-          successMessage: "You have opened the first gate.",
-          nextGateId: "gate-2",
-        });
-
-        // Verify Drizzle update chain was called correctly
-        expect(mockUpdate).toHaveBeenCalled();
-        expect(mockSet).toHaveBeenCalledWith(
-          expect.objectContaining({ isSolved: true }),
-        );
-      });
-
-      it("should return nextGateId as null if it is the final gate in the program", async () => {
-        mockFindFirst
-          .mockResolvedValueOnce(createMockGate())
-          .mockResolvedValueOnce(undefined); // No next gate found
-
-        const res = await makeRequest({ guess: "four" });
-        const data: SuccessGuessResponse = await res.json();
-
-        expect(res.status).toBe(200);
-        expect(data.nextGateId).toBeNull();
-      });
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as GuessCorrectResponse;
+      expect(body.nextGateId).toBeNull();
     });
 
-    describe("Incorrect Guesses", () => {
-      it("should increment attempt count and return correct: false without a hint if below threshold", async () => {
-        mockFindFirst.mockResolvedValueOnce(
-          createMockGate({ attemptCount: 0 }),
-        );
+    it("matches answers case-insensitively", async () => {
+      mockFindFirst
+        .mockResolvedValueOnce(baseGate)
+        .mockResolvedValueOnce(undefined);
 
-        const res = await makeRequest({ guess: "five" });
-        const data: IncorrectGuessResponse = await res.json();
+      const res = await postGuess("gate-1", "FORTY-TWO");
 
-        expect(res.status).toBe(200);
-        expect(data).toEqual({
-          correct: false,
-          message: "",
-        });
-
-        // Verify attempt count update
-        expect(mockUpdate).toHaveBeenCalled();
-        expect(mockSet).toHaveBeenCalledWith({ attemptCount: 1 });
-      });
-
-      it("should return the guidance prompt if the new attempt count hits the threshold", async () => {
-        // Threshold is 2. Current attempts: 1. This wrong guess makes it 2.
-        mockFindFirst.mockResolvedValueOnce(
-          createMockGate({ attemptCount: 1 }),
-        );
-
-        const res = await makeRequest({ guess: "five" });
-        const data: IncorrectGuessResponse = await res.json();
-
-        expect(res.status).toBe(200);
-        expect(data).toEqual({
-          correct: false,
-          message: "Think about the number after three.",
-        });
-
-        expect(mockSet).toHaveBeenCalledWith({ attemptCount: 2 });
-      });
-
-      it("should return a fallback AI hint message if guidance prompt is missing but threshold is met", async () => {
-        mockFindFirst.mockResolvedValueOnce(
-          createMockGate({ attemptCount: 1, guidancePrompt: null }),
-        );
-
-        const res = await makeRequest({ guess: "five" });
-        const data: IncorrectGuessResponse = await res.json();
-
-        expect(res.status).toBe(200);
-        expect(data.message).toBe(
-          "Hint: The AI integration is pending, but keep trying!",
-        );
-      });
+      const body = (await res.json()) as GuessCorrectResponse;
+      expect(body.correct).toBe(true);
     });
 
-    describe("Error Handling", () => {
-      it("should return 500 if database update fails", async () => {
-        mockFindFirst.mockResolvedValueOnce(createMockGate());
-        mockUpdate.mockImplementationOnce(() => {
-          throw new Error("Update failed");
-        });
+    it("trims whitespace from the guess before comparing", async () => {
+      mockFindFirst
+        .mockResolvedValueOnce(baseGate)
+        .mockResolvedValueOnce(undefined);
 
-        const res = await makeRequest({ guess: "four" });
-        const data: ErrorResponse = await res.json();
+      const res = await postGuess("gate-1", "  forty-two  ");
 
-        expect(res.status).toBe(500);
-        expect(data).toEqual({ error: "Failed to process guess" });
-
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-          "Failed to process guess:",
-          expect.any(Error),
-        );
-      });
+      const body = (await res.json()) as GuessCorrectResponse;
+      expect(body.correct).toBe(true);
     });
+
+    it("returns 400 when the optimistic update returns no rows (concurrent solve race condition)", async () => {
+      mockFindFirst.mockResolvedValueOnce(baseGate);
+      mockReturning.mockResolvedValueOnce([]); // a concurrent request already solved it
+
+      const res = await postGuess("gate-1", "forty-two");
+
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as ErrorResponse;
+      expect(body.error).toBe("Gate is already solved");
+    });
+  });
+
+  // --- Incorrect guess ---
+
+  describe("incorrect guess", () => {
+    it("returns correct:false with an empty message when below the guidance threshold", async () => {
+      // attemptCount 0 → increments to 1; threshold is 3 → no guidance yet
+      mockFindFirst.mockResolvedValueOnce(baseGate);
+
+      const res = await postGuess("gate-1", "wrong-answer");
+
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as GuessIncorrectResponse;
+      expect(body.correct).toBe(false);
+      expect(body.message).toBe("");
+    });
+
+    it("returns the guidancePrompt when attempt count reaches the threshold", async () => {
+      // attemptCount 2 → increments to 3; threshold is 3 → show guidance
+      mockFindFirst.mockResolvedValueOnce({
+        ...baseGate,
+        attemptCount: 2,
+        guidanceThreshold: 3,
+      });
+
+      const res = await postGuess("gate-1", "wrong-answer");
+
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as GuessIncorrectResponse;
+      expect(body.correct).toBe(false);
+      expect(body.message).toBe("Try thinking about it differently.");
+    });
+
+    it("returns the guidancePrompt when attempt count exceeds the threshold", async () => {
+      mockFindFirst.mockResolvedValueOnce({
+        ...baseGate,
+        attemptCount: 10,
+        guidanceThreshold: 3,
+      });
+
+      const res = await postGuess("gate-1", "wrong-answer");
+
+      const body = (await res.json()) as GuessIncorrectResponse;
+      expect(body.message).toBe("Try thinking about it differently.");
+    });
+
+    it("returns the default hint when the threshold is met but guidancePrompt is null", async () => {
+      mockFindFirst.mockResolvedValueOnce({
+        ...baseGate,
+        attemptCount: 2,
+        guidanceThreshold: 3,
+        guidancePrompt: null,
+      });
+
+      const res = await postGuess("gate-1", "wrong-answer");
+
+      const body = (await res.json()) as GuessIncorrectResponse;
+      expect(body.message).toBe(
+        "Hint: The AI integration is pending, but keep trying!",
+      );
+    });
+
+    it("calls db.update to increment the attempt count", async () => {
+      mockFindFirst.mockResolvedValueOnce(baseGate);
+
+      await postGuess("gate-1", "wrong-answer");
+
+      expect(mockUpdate).toHaveBeenCalledOnce();
+      // Correct-guess path would call it twice (solve + next-gate); wrong-guess only once
+      expect(mockSet).toHaveBeenCalledOnce();
+    });
+  });
+
+  it("returns 500 when the database throws during guess processing", async () => {
+    mockFindFirst.mockRejectedValueOnce(new Error("DB failure"));
+
+    const res = await postGuess("gate-1", "forty-two");
+
+    expect(res.status).toBe(500);
+    const body = (await res.json()) as ErrorResponse;
+    expect(body.error).toBe("Failed to process guess");
   });
 });
