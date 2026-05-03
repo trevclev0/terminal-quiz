@@ -36,6 +36,7 @@ const makeRiddle = (
   isSolved,
   ...defaultNullishGateProps,
   programId,
+  sequenceOrder: 1,
 });
 
 const programIdA = "269d38fc-09f5-4d0b-924a-3b9874b0e419";

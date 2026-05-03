@@ -13,6 +13,7 @@ const makeRiddle = (overrides: Partial<Gate> = {}): Gate => ({
   ...defaultNullishGateProps,
   ...overrides,
   programId: "63e52b69-0bb3-4598-8957-e531c90175ba",
+  sequenceOrder: 1,
 });
 
 describe("getRiddlesToRender", () => {
@@ -27,8 +28,8 @@ describe("getRiddlesToRender", () => {
   it("should return nextRiddleIndex: 1, 2 riddles when 1 of 3 is solved", () => {
     const riddles: Gate[] = [
       makeRiddle({ isSolved: true }),
-      makeRiddle(),
-      makeRiddle(),
+      makeRiddle({ sequenceOrder: 2 }),
+      makeRiddle({ sequenceOrder: 3 }),
     ];
     const { riddlesToRender, nextRiddleIndex } = getRiddlesToRender(riddles);
     expect(nextRiddleIndex).toBe(1);
@@ -38,8 +39,8 @@ describe("getRiddlesToRender", () => {
   it("should return nextRiddleIndex: 2, 3 riddles when 2 of 3 is solved", () => {
     const riddles: Gate[] = [
       makeRiddle({ isSolved: true }),
-      makeRiddle({ isSolved: true }),
-      makeRiddle(),
+      makeRiddle({ isSolved: true, sequenceOrder: 2 }),
+      makeRiddle({ sequenceOrder: 3 }),
     ];
     const { riddlesToRender, nextRiddleIndex } = getRiddlesToRender(riddles);
     expect(nextRiddleIndex).toBe(2);

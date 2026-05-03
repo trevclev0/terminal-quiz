@@ -38,6 +38,7 @@ const riddle: Gate = {
   isSolved: false,
   ...defaultNullishGateProps,
   programId: "d9e4309c-a3c2-43bc-9894-540aa0a2fc9c",
+  sequenceOrder: 1,
 };
 
 const activeProgram: ProgramWithGates = {
