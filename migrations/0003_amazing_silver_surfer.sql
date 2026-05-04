@@ -1,1 +1,0 @@
-ALTER TABLE `gates` ADD `sequence_order` integer NOT NULL;
