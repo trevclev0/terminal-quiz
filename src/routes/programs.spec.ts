@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ProgramWithGates } from "../db/types";
-import programsRouter from "./programs";
+import app from "../entry";
 
 const mockPrograms = [
   {
@@ -35,7 +35,7 @@ const mockEnv = { DB: {} };
 
 describe("Programs Router (/api/programs)", () => {
   it("should return a 200 status and a list of programs", async () => {
-    const res = await programsRouter.request("/", {}, mockEnv);
+    const res = await app.request("/api/programs", {}, mockEnv);
 
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("application/json");
