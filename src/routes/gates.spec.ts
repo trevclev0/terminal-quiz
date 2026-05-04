@@ -1,25 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Gate as GateRow } from "../db/types";
 import gatesRouter from "./gates";
 
 // ---------------------------------------------------------------------------
 // Types — mirror what Drizzle returns for the gates table.
 // Verify these fields and nullability against your actual schema inference.
 // ---------------------------------------------------------------------------
-
-type GateRow = {
-  id: string;
-  label: string;
-  question: string;
-  isSolved: boolean;
-  programId: string;
-  correctAnswer: string;
-  successMessage: string;
-  sequenceOrder: number;
-  attemptCount: number;
-  guidanceThreshold: number;
-  guidancePrompt: string | null;
-  solvedAt: Date | null;
-};
 
 type GatePublicResponse = Pick<
   GateRow,
@@ -93,9 +79,12 @@ const baseGate: GateRow = {
   successMessage: "Well done!",
   sequenceOrder: 1,
   attemptCount: 0,
+  acceptanceThreshold: 0.875,
+  guidanceEnabled: false,
   guidanceThreshold: 3,
   guidancePrompt: "Try thinking about it differently.",
   solvedAt: null,
+  createdAt: new Date(),
 };
 
 function postGuess(gateId: string, guess: string): Promise<Response> {
@@ -315,6 +304,7 @@ describe("POST /:id/guess", () => {
         ...baseGate,
         attemptCount: 2,
         guidanceThreshold: 3,
+        guidanceEnabled: true,
       });
       mockReturning.mockResolvedValueOnce([{ attemptCount: 3 }]);
 
@@ -331,6 +321,7 @@ describe("POST /:id/guess", () => {
         ...baseGate,
         attemptCount: 10,
         guidanceThreshold: 3,
+        guidanceEnabled: true,
       });
       mockReturning.mockResolvedValueOnce([{ attemptCount: 11 }]);
 
@@ -346,6 +337,7 @@ describe("POST /:id/guess", () => {
         attemptCount: 2,
         guidanceThreshold: 3,
         guidancePrompt: null,
+        guidanceEnabled: true,
       });
       mockReturning.mockResolvedValueOnce([{ attemptCount: 3 }]);
 
@@ -376,5 +368,19 @@ describe("POST /:id/guess", () => {
     expect(res.status).toBe(500);
     const body = (await res.json()) as ErrorResponse;
     expect(body.error).toBe("Failed to process guess");
+  });
+
+  it("suppresses guidance when guidanceEnabled is false even at threshold", async () => {
+    mockFindFirst.mockResolvedValueOnce({
+      ...baseGate,
+      guidanceEnabled: false,
+      attemptCount: 2,
+      guidanceThreshold: 3,
+    });
+
+    const res = await postGuess("gate-1", "wrong-answer");
+
+    const body = (await res.json()) as GuessIncorrectResponse;
+    expect(body.message).toBe("");
   });
 });
