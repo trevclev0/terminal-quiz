@@ -1,112 +1,71 @@
 import { zValidator } from "@hono/zod-validator";
-import { and, eq, gt, sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { z } from "zod";
-import * as schema from "../db/schema";
-import type { Env } from "../entry";
+import type { DbContext } from "../middleware/db";
+import { getGateById, processGateGuess } from "../services/gateService";
 
 const guessPayloadSchema = z.object({
   guess: z.string().min(1, "A guess cannot be empty"),
 });
 
-const gatesRouter = new Hono<Env>()
+const gatesRouter = new Hono<DbContext>()
   .get("/:id", async (c) => {
-    const db = drizzle(c.env.DB, { schema });
+    const db = c.get("db");
     const gateId = c.req.param("id");
 
     try {
-      const gate = await db.query.gates.findFirst({
-        where: eq(schema.gates.id, gateId),
-        columns: {
-          id: true,
-          label: true,
-          question: true,
-          isSolved: true,
-          programId: true,
-        },
-      });
+      const gate = await getGateById(db, gateId);
 
       if (!gate) {
-        return c.json({ error: "Gate not found" }, 404);
+        return c.json(
+          {
+            status: "error",
+            message: "Gate not found",
+            code: "NOT_FOUND",
+          },
+          404,
+        );
       }
-
       return c.json(gate);
     } catch (error) {
       console.error("Failed to fetch gate:", error);
-      return c.json({ error: "Failed to fetch gate" }, 500);
+      return c.json(
+        {
+          status: "error",
+          message: "Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        },
+        500,
+      );
     }
   })
   .post("/:id/guess", zValidator("json", guessPayloadSchema), async (c) => {
-    const db = drizzle(c.env.DB, { schema });
+    const db = c.get("db");
     const gateId = c.req.param("id");
-
     const { guess } = c.req.valid("json");
 
     try {
-      const gate = await db.query.gates.findFirst({
-        where: eq(schema.gates.id, gateId),
-      });
+      const result = await processGateGuess(db, gateId, guess);
 
-      if (!gate) return c.json({ error: "Gate not found" }, 404);
-      if (gate.isSolved)
-        return c.json({ error: "Gate is already solved" }, 400);
-
-      const isCorrect =
-        guess.trim().toLowerCase() === gate.correctAnswer.trim().toLowerCase();
-
-      if (isCorrect) {
-        const result = await db
-          .update(schema.gates)
-          .set({ isSolved: true, solvedAt: new Date() })
-          .where(
-            and(eq(schema.gates.id, gateId), eq(schema.gates.isSolved, false)),
-          )
-          .returning({ id: schema.gates.id });
-
-        if (result.length === 0) {
-          return c.json({ error: "Gate is already solved" }, 400);
-        }
-
-        // Find the next sequential gate
-        const nextGate = await db.query.gates.findFirst({
-          where: and(
-            eq(schema.gates.programId, gate.programId),
-            eq(schema.gates.isSolved, false),
-            gt(schema.gates.sequenceOrder, gate.sequenceOrder),
-          ),
-          orderBy: (gates, { asc }) => [asc(gates.sequenceOrder)],
-        });
-
-        return c.json({
-          correct: true,
-          successMessage: gate.successMessage,
-          nextGateId: nextGate?.id ?? null, // null indicates the program is completely finished
-        });
-      } else {
-        // Increment the attempt count
-        const [{ attemptCount: newAttemptCount }] = await db
-          .update(schema.gates)
-          .set({ attemptCount: sql`${schema.gates.attemptCount} + 1` })
-          .where(eq(schema.gates.id, gateId))
-          .returning({ attemptCount: schema.gates.attemptCount });
-
-        let message = "";
-
-        if (gate.guidanceEnabled && newAttemptCount >= gate.guidanceThreshold) {
-          message =
-            gate.guidancePrompt ||
-            "Hint: The AI integration is pending, but keep trying!";
-        }
-
-        return c.json({
-          correct: false,
-          message,
-        });
+      if (result.status === "error") {
+        let statusCode: ContentfulStatusCode = 400;
+        if (result.code === "NOT_FOUND") statusCode = 404;
+        if (result.code === "ALREADY_SOLVED") statusCode = 409;
+        return c.json(result, statusCode);
       }
+
+      return c.json(result, 200);
     } catch (error) {
       console.error("Failed to process guess:", error);
-      return c.json({ error: "Failed to process guess" }, 500);
+      return c.json(
+        {
+          status: "error",
+          message: "Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        },
+        500,
+      );
     }
   });
 
