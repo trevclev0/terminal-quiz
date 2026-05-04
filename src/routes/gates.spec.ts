@@ -1,5 +1,3 @@
-// src/routes/gates.test.ts
-
 import { afterEach } from "node:test";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import gatesRouter from "./gates";
@@ -54,7 +52,8 @@ type ErrorResponse = { error: string };
 // ---------------------------------------------------------------------------
 
 const { mockFindFirst, mockReturning, mockSet, mockUpdate } = vi.hoisted(() => {
-  const mockReturning = vi.fn<() => Promise<Array<{ id: string }>>>();
+  const mockReturning =
+    vi.fn<() => Promise<Array<{ id?: string; attemptCount?: number }>>>();
 
   const mockWhere = vi.fn(() =>
     Object.assign(Promise.resolve(undefined), {
@@ -301,6 +300,7 @@ describe("POST /:id/guess", () => {
     it("returns correct:false with an empty message when below the guidance threshold", async () => {
       // attemptCount 0 → increments to 1; threshold is 3 → no guidance yet
       mockFindFirst.mockResolvedValueOnce(baseGate);
+      mockReturning.mockResolvedValueOnce([{ attemptCount: 1 }]);
 
       const res = await postGuess("gate-1", "wrong-answer");
 
@@ -317,6 +317,7 @@ describe("POST /:id/guess", () => {
         attemptCount: 2,
         guidanceThreshold: 3,
       });
+      mockReturning.mockResolvedValueOnce([{ attemptCount: 3 }]);
 
       const res = await postGuess("gate-1", "wrong-answer");
 
@@ -332,6 +333,7 @@ describe("POST /:id/guess", () => {
         attemptCount: 10,
         guidanceThreshold: 3,
       });
+      mockReturning.mockResolvedValueOnce([{ attemptCount: 11 }]);
 
       const res = await postGuess("gate-1", "wrong-answer");
 
@@ -346,6 +348,7 @@ describe("POST /:id/guess", () => {
         guidanceThreshold: 3,
         guidancePrompt: null,
       });
+      mockReturning.mockResolvedValueOnce([{ attemptCount: 3 }]);
 
       const res = await postGuess("gate-1", "wrong-answer");
 
