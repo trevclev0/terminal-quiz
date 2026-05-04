@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "a0dfa2dc-17dc-4776-849d-a8f7763968ab",
-  "prevId": "3e504942-a3e2-48b8-bdf5-9e2f00a8d903",
+  "id": "e0209508-435c-4c72-b064-abee27d763e2",
+  "prevId": "fd9a409a-0455-4e90-80fb-3df9d10823e0",
   "tables": {
     "game_state": {
       "name": "game_state",
@@ -20,7 +20,8 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "(CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER))"
         }
       },
       "indexes": {},
@@ -44,7 +45,8 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 1
         },
         "label": {
           "name": "label",
@@ -140,7 +142,8 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "(CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER))"
         }
       },
       "indexes": {},
@@ -203,7 +206,8 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "(CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER))"
         }
       },
       "indexes": {},

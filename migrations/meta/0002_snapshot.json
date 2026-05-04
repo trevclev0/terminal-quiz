@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3e504942-a3e2-48b8-bdf5-9e2f00a8d903",
+  "id": "fd9a409a-0455-4e90-80fb-3df9d10823e0",
   "prevId": "113d0eda-8ad2-436e-bd3e-9e8a6aa17e99",
   "tables": {
     "game_state": {
@@ -38,6 +38,14 @@
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
+        },
+        "sequence_order": {
+          "name": "sequence_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
         },
         "label": {
           "name": "label",
