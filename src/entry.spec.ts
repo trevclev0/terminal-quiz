@@ -7,6 +7,9 @@ vi.mock("drizzle-orm/d1", () => ({
       programs: {
         findMany: vi.fn().mockResolvedValue([]),
       },
+      gates: {
+        findFirst: vi.fn().mockResolvedValue(null),
+      },
     },
   })),
 }));
@@ -27,8 +30,9 @@ describe("Main App Entry (entry.ts)", () => {
   });
 
   it("should mount the gates router at /api/gates", async () => {
-    const res = await app.request("/api/gates", {}, mockEnv);
-    expect(res.status).not.toBe(500);
+    const res = await app.request("/api/gates/some-id", {}, mockEnv);
+    expect(res.status).toBe(404);
+    expect(res.headers.get("content-type")).toContain("application/json");
   });
 
   it("should fall back to the ASSETS fetcher for non-API routes", async () => {
