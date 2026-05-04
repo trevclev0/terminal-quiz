@@ -85,11 +85,11 @@ const gatesRouter = new Hono<Env>()
         });
       } else {
         // Increment the attempt count
-        await db
+        const [{ attemptCount: newAttemptCount }] = await db
           .update(schema.gates)
           .set({ attemptCount: sql`${schema.gates.attemptCount} + 1` })
-          .where(eq(schema.gates.id, gateId));
-        const newAttemptCount = gate.attemptCount + 1;
+          .where(eq(schema.gates.id, gateId))
+          .returning({ attemptCount: schema.gates.attemptCount });
 
         let message = "";
 
