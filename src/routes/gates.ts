@@ -93,7 +93,7 @@ const gatesRouter = new Hono<Env>()
 
         let message = "";
 
-        if (newAttemptCount >= gate.guidanceThreshold) {
+        if (gate.guidanceEnabled && newAttemptCount >= gate.guidanceThreshold) {
           message =
             gate.guidancePrompt ||
             "Hint: The AI integration is pending, but keep trying!";
