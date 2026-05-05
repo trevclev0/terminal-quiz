@@ -64,6 +64,11 @@ export async function processGateGuess(
       };
     }
 
+    await db
+      .update(schema.gameState)
+      .set({ lastUpdated: new Date() })
+      .where(eq(schema.gameState.id, 1));
+
     const nextGate = await db.query.gates.findFirst({
       where: and(
         eq(schema.gates.programId, gate.programId),
