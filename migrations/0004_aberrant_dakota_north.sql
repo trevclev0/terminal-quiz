@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `unique_program_sequence` ON `gates` (`program_id`,`sequence_order`);
