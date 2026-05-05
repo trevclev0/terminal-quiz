@@ -79,11 +79,13 @@ export async function processGateGuess(
       nextGateId: nextGate?.id ?? null,
     };
   } else {
-    const [{ attemptCount: newAttemptCount }] = await db
+    const updateResult = await db
       .update(schema.gates)
       .set({ attemptCount: sql`${schema.gates.attemptCount} + 1` })
       .where(eq(schema.gates.id, gateId))
       .returning({ attemptCount: schema.gates.attemptCount });
+    const newAttemptCount =
+      updateResult[0]?.attemptCount ?? gate.attemptCount + 1;
 
     let clue = "";
     if (gate.guidanceEnabled && newAttemptCount >= gate.guidanceThreshold) {
