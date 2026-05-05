@@ -56,7 +56,7 @@ const programs: ProgramWithGates[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Test Helper: Flushes promises instantly to skip the 50ms waitFor penalty
+// Test Helper: Flushes promises
 // ---------------------------------------------------------------------------
 async function setupHook(mockData = programs, error?: Error) {
   if (error) {
@@ -67,7 +67,6 @@ async function setupHook(mockData = programs, error?: Error) {
 
   const rendered = renderHook(() => useProgramStorage());
 
-  // Instantly flush the mocked promise so React updates state without a polling delay
   await act(async () => {
     await Promise.resolve();
   });
