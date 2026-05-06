@@ -3,8 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   defaultNullishGateProps,
   defaultNullishProgramProps,
-} from "../../tests/testTypes";
-import type { Gate, ProgramWithGates } from "../db/types";
+} from "../../../tests/testTypes";
+import type { Gate, ProgramWithGates } from "../../worker/db/types";
 import { loadPrograms, savePrograms } from "../utils/dataManager";
 import useProgramStorage from "./useProgramStorage";
 
@@ -314,7 +314,7 @@ describe("resetProgram", () => {
     act(() => result.current.resetProgram());
 
     const activeRiddles = result.current.activeProgram?.gates ?? [];
-    expect(activeRiddles.every((r) => r.isSolved === false)).toBe(true);
+    expect(activeRiddles.every((r: Gate) => r.isSolved === false)).toBe(true);
   });
 
   it("does not affect inactive programs", async () => {

@@ -1,5 +1,3 @@
-// src/components/Program.test.tsx
-
 import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
@@ -28,8 +26,8 @@ vi.mock("./Riddle", () => ({
 import {
   defaultNullishGateProps,
   defaultNullishProgramProps,
-} from "../../tests/testTypes";
-import type { Gate, ProgramWithGates } from "../db/types";
+} from "../../../tests/testTypes";
+import type { Gate, ProgramWithGates } from "../../worker/db/types";
 import useProgressionScroll from "../hooks/useProgressionScroll";
 import getRiddlesToRender from "../utils/getRiddlesToRender";
 

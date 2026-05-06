@@ -1,5 +1,3 @@
-// src/components/Riddle.test.tsx
-
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
@@ -19,8 +17,8 @@ vi.mock("../hooks/useRiddleGuess", () => ({
   default: vi.fn(),
 }));
 
-import { defaultNullishGateProps } from "../../tests/testTypes";
-import type { Gate } from "../db/types";
+import { defaultNullishGateProps } from "../../../tests/testTypes";
+import type { Gate } from "../../worker/db/types";
 import useRiddleGuess from "../hooks/useRiddleGuess";
 import useShake from "../hooks/useShake";
 
