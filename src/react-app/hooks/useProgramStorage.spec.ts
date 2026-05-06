@@ -1,10 +1,10 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Gate, ProgramWithGates } from "../../worker/db/types";
 import {
   defaultNullishGateProps,
   defaultNullishProgramProps,
-} from "../../../tests/testTypes";
-import type { Gate, ProgramWithGates } from "../../worker/db/types";
+} from "../test-utils/testTypes";
 import { loadPrograms, savePrograms } from "../utils/dataManager";
 import useProgramStorage from "./useProgramStorage";
 

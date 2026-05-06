@@ -23,12 +23,12 @@ vi.mock("./Riddle", () => ({
   ),
 }));
 
+import type { Gate, ProgramWithGates } from "../../worker/db/types";
+import useProgressionScroll from "../hooks/useProgressionScroll";
 import {
   defaultNullishGateProps,
   defaultNullishProgramProps,
-} from "../../../tests/testTypes";
-import type { Gate, ProgramWithGates } from "../../worker/db/types";
-import useProgressionScroll from "../hooks/useProgressionScroll";
+} from "../test-utils/testTypes";
 import getRiddlesToRender from "../utils/getRiddlesToRender";
 
 const mockGetRiddlesToRender = vi.mocked(getRiddlesToRender);

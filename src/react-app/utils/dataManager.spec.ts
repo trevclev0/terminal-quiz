@@ -10,11 +10,11 @@ import {
   it,
   vi,
 } from "vitest";
+import type { ProgramWithGates } from "../../worker/db/types";
 import {
   defaultNullishGateProps,
   defaultNullishProgramProps,
-} from "../../../tests/testTypes";
-import type { ProgramWithGates } from "../../worker/db/types";
+} from "../test-utils/testTypes";
 import {
   decodeStringToObject,
   encodeObjectToString,

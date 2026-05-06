@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { createProgramDataWrapper } from "../../../tests/createProgramDataWrapper";
+import { createProgramDataWrapper } from "../test-utils/createProgramDataWrapper";
 import { useProgramData } from "./useProgramData";
 
 describe("useProgramData", () => {
