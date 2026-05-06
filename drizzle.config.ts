@@ -5,7 +5,7 @@ const { DRIZZLE_DATABASE_URL } = process.env;
 if (!DRIZZLE_DATABASE_URL) throw new Error("Missing DRIZZLE_DATABASE_URL");
 
 export default defineConfig({
-  schema: "./src/db/schema.ts",
+  schema: "./src/worker/db/schema.ts",
   out: "./migrations",
   dialect: "sqlite",
   dbCredentials: {
