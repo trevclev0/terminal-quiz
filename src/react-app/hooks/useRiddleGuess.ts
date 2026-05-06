@@ -1,5 +1,5 @@
 import { type ChangeEvent, type SubmitEvent, useState } from "react";
-import type { Gate } from "../db/types";
+import type { Gate } from "../../worker/db/types";
 import isGuessCloseEnough from "../utils/isGuessCloseEnough";
 import { useProgramData } from "./useProgramData";
 
@@ -34,7 +34,7 @@ function useRiddleGuess({ riddle, shake, clearShake }: UseRiddleGuessArgs) {
 
       updateProgram({
         ...activeProgram,
-        gates: activeProgram.gates.map((gate) =>
+        gates: activeProgram.gates.map((gate: Gate) =>
           gate.id === riddle.id ? { ...gate, isSolved: true } : gate,
         ),
       });

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { ProgramWithGates } from "../db/types";
+import type { ProgramWithGates } from "../../worker/db/types";
 import useProgressionScroll from "../hooks/useProgressionScroll";
 import getRiddlesToRender from "../utils/getRiddlesToRender";
 import Riddle from "./Riddle";

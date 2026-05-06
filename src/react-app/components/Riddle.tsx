@@ -1,5 +1,5 @@
 import React from "react";
-import type { Gate } from "../db/types";
+import type { Gate } from "../../worker/db/types";
 import useRiddleGuess from "../hooks/useRiddleGuess";
 import useShake from "../hooks/useShake";
 

@@ -1,6 +1,7 @@
 import { decode, encode } from "@msgpack/msgpack";
 import { hc } from "hono/client";
-import type { AppType } from "../worker";
+import type { AppType } from "../../worker";
+import type { ProgramWithGates } from "../../worker/db/types";
 
 const client = hc<AppType>("/");
 
@@ -36,7 +37,7 @@ export const loadPrograms = async (): Promise<ProgramWithGates[]> => {
       solvedAt: g.solvedAt ? new Date(g.solvedAt) : null,
       createdAt: new Date(g.createdAt),
     })),
-  })) as ProgramWithGates[];
+  }));
 };
 
 /**
