@@ -1,4 +1,4 @@
-import type { D1Database, Fetcher } from "@cloudflare/workers-types";
+import type { D1Database } from "@cloudflare/workers-types";
 import { Hono } from "hono";
 import { type DbContext, setupDb } from "./middleware/db";
 import gatesRouter from "./routes/gates";
@@ -6,7 +6,6 @@ import programsRouter from "./routes/programs";
 
 export type Env = {
   Bindings: {
-    ASSETS: Fetcher;
     DB: D1Database;
   };
 };

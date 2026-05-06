@@ -16,9 +16,6 @@ vi.mock("drizzle-orm/d1", () => ({
 
 const mockEnv = {
   DB: {},
-  ASSETS: {
-    fetch: vi.fn().mockResolvedValue(new Response("mocked static HTML")),
-  },
 };
 
 describe("Main App Entry", () => {
