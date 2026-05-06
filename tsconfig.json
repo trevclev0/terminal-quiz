@@ -1,24 +1,8 @@
 {
-  "compilerOptions": {
-    "target": "es2024",
-    "useDefineForClassFields": true,
-    "module": "ESNext",
-    "lib": ["ES2024", "DOM", "DOM.Iterable"],
-    "skipLibCheck": true,
-    "jsx": "react-jsx",
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "noEmit": true,
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-    "types": ["node", "@cloudflare/workers-types"]
-  },
-  "include": ["src", "drizzle.config.ts", "scripts/*.ts"]
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" },
+    { "path": "./tsconfig.worker.json" }
+  ]
 }
