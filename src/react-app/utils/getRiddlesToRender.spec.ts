@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { defaultNullishGateProps } from "../../tests/testTypes";
-import type { Gate } from "../db/types";
+import { defaultNullishGateProps } from "../../../tests/testTypes";
+import type { Gate } from "../../worker/db/types";
 import getRiddlesToRender from "./getRiddlesToRender";
 
 const makeRiddle = (overrides: Partial<Gate> = {}): Gate => ({

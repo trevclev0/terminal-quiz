@@ -1,5 +1,3 @@
-// src/hooks/useShake.test.ts
-
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import useShake from "./useShake";

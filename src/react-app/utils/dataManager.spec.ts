@@ -13,8 +13,8 @@ import {
 import {
   defaultNullishGateProps,
   defaultNullishProgramProps,
-} from "../../tests/testTypes";
-import type { ProgramWithGates } from "../db/types";
+} from "../../../tests/testTypes";
+import type { ProgramWithGates } from "../../worker/db/types";
 import {
   decodeStringToObject,
   encodeObjectToString,
