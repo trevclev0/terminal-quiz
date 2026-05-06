@@ -12,7 +12,7 @@ export default defineConfig({
   },
   test: {
     environment: "happy-dom",
-    setupFiles: "./tests/setupTests.ts",
+    setupFiles: "src/react-app/test-utils/setupTests.ts",
     clearMocks: true,
     restoreMocks: true,
     coverage: {
