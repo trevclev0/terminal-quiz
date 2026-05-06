@@ -95,7 +95,7 @@ pnpm migrate:prod
 
 ## Project Structure
 
-```
+```sh
 .
 ├── migrations/          # Drizzle SQL migration files + metadata snapshots
 ├── public/              # Static assets (SVG favicon, etc.)
@@ -130,7 +130,7 @@ This project uses **Biome** (not ESLint or Prettier). Before committing, Biome i
 
 Key style rules enforced by Biome and the project:
 - Double quotes for JS/TS strings (`"quoteStyle": "double"`)
-- Spaces for indentation (2 spaces general, 4 spaces for `.ts` and `.css`)
+- Spaces for indentation (2 spaces)
 - LF line endings, UTF-8, final newline (see `.editorconfig`)
 - Max line length: 80 characters
 
@@ -150,7 +150,7 @@ pnpm commit
 The Husky hooks enforce this on every `git commit`. Headers are capped at 100 characters. Gitmoji emoji appear at the left of the subject line.
 
 Examples:
-```
+```sh
 ✨ feat(gates): add AI guidance for repeated failed attempts
 🐛 fix(dataManager): handle corrupt localStorage gracefully
 ♻️  refactor(hooks): extract clearActiveProgram from useProgramStorage
