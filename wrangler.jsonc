@@ -5,8 +5,20 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "quiz-app",
-  "main": "src/entry.ts",
+  "main": "./src/worker/index.ts",
   "compatibility_date": "2026-04-27",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+  "upload_source_maps": true,
+  "assets": {
+    "directory": "./dist/client",
+    "not_found_handling": "single-page-application"
+  },
+  /**
+   * Non-template configuration
+   */
   "workers_dev": false,
   "preview_urls": true,
   "routes": [
@@ -15,15 +27,6 @@
       "custom_domain": true
     }
   ],
-  "assets": {
-    "binding": "ASSETS",
-    "directory": "./public"
-  },
-  "observability": {
-    "enabled": true
-  },
-  "upload_source_maps": true,
-  "compatibility_flags": ["nodejs_compat"],
   "d1_databases": [
     {
       "binding": "DB",
