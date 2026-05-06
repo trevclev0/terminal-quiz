@@ -1,7 +1,6 @@
 import { decode, encode } from "@msgpack/msgpack";
 import { hc } from "hono/client";
-import type { ProgramWithGates } from "../db/types";
-import type { AppType } from "../entry";
+import type { AppType } from "../worker";
 
 const client = hc<AppType>("/");
 
