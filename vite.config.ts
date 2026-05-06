@@ -7,6 +7,9 @@ export default defineConfig({
     open: true,
   },
   plugins: [react(), !process.env.VITEST && cloudflare()].filter(Boolean),
+  build: {
+    minify: "oxc",
+  },
   test: {
     environment: "happy-dom",
     setupFiles: "./tests/setupTests.ts",
