@@ -28,9 +28,9 @@
     "deploy:preview": "wrangler versions upload --remote"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.10",
-    "@cloudflare/vite-plugin": "^1.33.2",
-    "@cloudflare/workers-types": "^4.20260426.1",
+    "@biomejs/biome": "^2.4.14",
+    "@cloudflare/vite-plugin": "^1.36.0",
+    "@cloudflare/workers-types": "^4.20260506.1",
     "@commitlint/cli": "^20.5.2",
     "@commitlint/types": "^20.5.0",
     "@mrbernnz/semantic-release-calver": "^0.3.1",
@@ -67,7 +67,7 @@
     "happy-dom": "^20.8.9",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
-    "msw": "^2.14.2",
+    "msw": "^2.14.3",
     "semantic-release": "^25.0.3",
     "semantic-release-gitmoji": "^1.6.9",
     "semver": "^7.7.4",
@@ -75,18 +75,18 @@
     "typescript": "~6.0.2",
     "vite": "^8.0.3",
     "vitest": "^4.1.5",
-    "wrangler": "^4.85.0"
+    "wrangler": "^4.88.0"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.7.6",
     "@msgpack/msgpack": "^3.1.3",
     "drizzle-orm": "^0.45.2",
     "drizzle-zod": "^0.8.3",
-    "hono": "^4.12.15",
+    "hono": "^4.12.17",
     "leven": "^4.1.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "zod": "^4.4.1"
+    "zod": "^4.4.3"
   },
   "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8",
   "dependenciesMeta": {
