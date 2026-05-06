@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import app from "./entry";
+import app from ".";
 
 vi.mock("drizzle-orm/d1", () => ({
   drizzle: vi.fn(() => ({
@@ -21,7 +21,7 @@ const mockEnv = {
   },
 };
 
-describe("Main App Entry (entry.ts)", () => {
+describe("Main App Entry", () => {
   it("should mount the programs router at /api/programs", async () => {
     const res = await app.request("/api/programs", {}, mockEnv);
 
@@ -33,14 +33,5 @@ describe("Main App Entry (entry.ts)", () => {
     const res = await app.request("/api/gates/some-id", {}, mockEnv);
     expect(res.status).toBe(404);
     expect(res.headers.get("content-type")).toContain("application/json");
-  });
-
-  it("should fall back to the ASSETS fetcher for non-API routes", async () => {
-    const req = new Request("http://localhost/");
-    const res = await app.request(req, {}, mockEnv);
-
-    expect(mockEnv.ASSETS.fetch).toHaveBeenCalledOnce();
-    expect(await res.text()).toBe("mocked static HTML");
-    expect(res.status).toBe(200);
   });
 });

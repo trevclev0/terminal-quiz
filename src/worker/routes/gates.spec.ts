@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import app from "../entry";
+import app from "..";
 import type { GuessResponse } from "../services/gateService";
 
 // Mock setup

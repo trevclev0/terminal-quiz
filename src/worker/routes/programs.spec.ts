@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
+import app from "..";
 import type { ProgramWithGates } from "../db/types";
-import app from "../entry";
 
 const mockPrograms = [
   {
