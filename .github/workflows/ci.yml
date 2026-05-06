@@ -15,7 +15,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup-project
       - name: Run Biome checks
-        run: pnpm run check
+        run: pnpm run check:code
       - name: Run tests with coverage
         run: pnpm run coverage
       - name: Upload coverage reports
