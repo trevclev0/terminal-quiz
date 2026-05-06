@@ -1,4 +1,4 @@
-import type { Gate } from "../db/types";
+import type { Gate } from "../../worker/db/types";
 
 function getRiddlesToRender(riddles: Gate[]) {
   const nextRiddleIndex = riddles.findIndex((r) => !r.isSolved);

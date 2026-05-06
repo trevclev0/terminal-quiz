@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { ProgramWithGates } from "../db/types";
+import type { Gate, ProgramWithGates } from "../../worker/db/types";
 import { loadPrograms, savePrograms } from "../utils/dataManager";
 
 function useProgramStorage() {
@@ -59,7 +59,7 @@ function useProgramStorage() {
         if (!p.isSelected) return p;
         return {
           ...p,
-          gates: p.gates.map((gate) => ({
+          gates: p.gates.map((gate: Gate) => ({
             ...gate,
             isSolved: false,
             solvedAt: null,
