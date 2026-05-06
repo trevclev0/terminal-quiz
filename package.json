@@ -17,7 +17,6 @@
     "preview": "pnpm build vite preview",
     "commit": "git-cz",
     "lint-staged": "lint-staged",
-    "start": "pnpm build && wrangler pages dev dist",
     "prepare": "husky",
     "seed:local": "wrangler d1 execute terminal-quest --local --file=scripts/seed.sql",
     "seed:preview": "wrangler d1 execute terminal-quest-preview --remote --env preview --file=scripts/seed.sql",
