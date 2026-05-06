@@ -17,10 +17,10 @@ vi.mock("../hooks/useRiddleGuess", () => ({
   default: vi.fn(),
 }));
 
-import { defaultNullishGateProps } from "../../../tests/testTypes";
 import type { Gate } from "../../worker/db/types";
 import useRiddleGuess from "../hooks/useRiddleGuess";
 import useShake from "../hooks/useShake";
+import { defaultNullishGateProps } from "../test-utils/testTypes";
 
 const mockUseShake = vi.mocked(useShake);
 const mockUseRiddleGuess = vi.mocked(useRiddleGuess);
