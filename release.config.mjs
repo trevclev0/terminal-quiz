@@ -2,7 +2,7 @@
 /** @type {import('semantic-release').GlobalConfig} */
 const config = {
   branches: ["main"],
-  tagFormat: "v${version}", // this is the default; safe to remove if you prefer implicit
+  tagFormat: "v${version}",
 
   plugins: [
     [
