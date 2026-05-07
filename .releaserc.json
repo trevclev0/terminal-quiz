@@ -3,32 +3,13 @@
   "tagFormat": "v${version}",
   "plugins": [
     [
-      "@mrbernnz/semantic-release-calver",
-      {
-        "format": "YYYY.MM.DD"
-      }
-    ],
-    [
-      "semantic-release-gitmoji",
-      {
-        "releaseRules": {
-          "major": [":boom:"],
-          "minor": [":sparkles:"],
-          "patch": [
-            ":bug:",
-            ":ambulance:",
-            ":lock:",
-            ":lipstick:",
-            ":zap:",
-            ":recycled:"
-          ]
-        }
-      }
-    ],
-    [
       "@semantic-release/commit-analyzer",
       {
         "preset": "conventionalcommits",
+        "parserOpts": {
+          "headerPattern": "^(?:.*?\\s)?(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(?:\\((.*)\\))?!?: (.*)$",
+          "headerCorrespondence": ["type", "scope", "subject"]
+        },
         "releaseRules": [
           { "type": "docs", "scope": "README", "release": "patch" },
           { "type": "refactor", "release": "patch" },
@@ -40,6 +21,10 @@
       "@semantic-release/release-notes-generator",
       {
         "preset": "conventionalcommits",
+        "parserOpts": {
+          "headerPattern": "^(?:.*?\\s)?(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(?:\\((.*)\\))?!?: (.*)$",
+          "headerCorrespondence": ["type", "scope", "subject"]
+        },
         "presetConfig": {
           "types": [
             { "type": "feat", "section": "✨ New Features" },
