@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { ProgramWithGates } from "../../worker/db/types";
 import useProgressionScroll from "../hooks/useProgressionScroll";
 import getRiddlesToRender from "../utils/getRiddlesToRender";
@@ -11,6 +11,7 @@ type ProgramProps = {
 };
 
 function Program({ program, resetProgram, clearActiveProgram }: ProgramProps) {
+  const selectNewProgramRef = useRef<HTMLButtonElement>(null);
   const { riddlesToRender, nextRiddleIndex } = useMemo(
     () => getRiddlesToRender(program.gates),
     [program.gates],
@@ -19,6 +20,12 @@ function Program({ program, resetProgram, clearActiveProgram }: ProgramProps) {
   useProgressionScroll(nextRiddleIndex);
 
   const isTheEnd = nextRiddleIndex === -1;
+
+  useEffect(() => {
+    if (isTheEnd) {
+      selectNewProgramRef.current?.focus();
+    }
+  }, [isTheEnd]);
 
   const handleSelectNewProgram = () => {
     // Prompt the user. Returns true for "OK", false for "Cancel"
@@ -47,7 +54,11 @@ function Program({ program, resetProgram, clearActiveProgram }: ProgramProps) {
             <button type="button" onClick={resetProgram}>
               Play program again
             </button>
-            <button type="button" onClick={handleSelectNewProgram}>
+            <button
+              ref={selectNewProgramRef}
+              type="button"
+              onClick={handleSelectNewProgram}
+            >
               Select new program
             </button>
           </div>
