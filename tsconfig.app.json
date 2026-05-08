@@ -10,7 +10,8 @@
     "paths": {
       "@hooks/*": ["./src/react-app/hooks/*"],
       "@components/*": ["./src/react-app/components/*"],
-      "@contexts/*": ["./src/react-app/contexts/*"]
+      "@contexts/*": ["./src/react-app/contexts/*"],
+      "@utils/*": ["./src/react-app/utils/*"]
     },
 
     /* Bundler mode */
