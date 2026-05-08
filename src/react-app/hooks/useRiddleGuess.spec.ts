@@ -1,5 +1,4 @@
 import { act, renderHook } from "@testing-library/react";
-import type React from "react";
 import type { ChangeEvent, SubmitEvent } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ProgramDataContext as ContextType } from "../contexts/ProgramDataContext";
