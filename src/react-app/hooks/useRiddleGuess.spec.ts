@@ -1,9 +1,9 @@
+import useRiddleGuess from "@hooks/useRiddleGuess";
 import { act, renderHook } from "@testing-library/react";
 import type { ChangeEvent, SubmitEvent } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ProgramDataContext as ContextType } from "../contexts/ProgramDataContext";
 import { createProgramDataWrapper } from "../test-utils/createProgramDataWrapper";
-import useRiddleGuess from "./useRiddleGuess";
 
 // ---------------------------------------------------------------------------
 // Module mock

@@ -1,14 +1,14 @@
 import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
+import Program from "@components/Program";
 import userEvent from "@testing-library/user-event";
-import Program from "./Program";
 
 // ---------------------------------------------------------------------------
 // Module mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("../hooks/useProgressionScroll", () => ({
+vi.mock("@hooks/useProgressionScroll", () => ({
   default: vi.fn(),
 }));
 
@@ -17,14 +17,14 @@ vi.mock("../utils/getRiddlesToRender", () => ({
 }));
 
 // Mock Riddle so Program tests are not dependent on Riddle's internals
-vi.mock("./Riddle", () => ({
+vi.mock("@components/Riddle", () => ({
   default: ({ id, riddle }: { id: string; riddle: { label: string } }) => (
     <div data-testid={id}>Riddle: {riddle.label}</div>
   ),
 }));
 
+import useProgressionScroll from "@hooks/useProgressionScroll";
 import type { Gate, ProgramWithGates } from "../../worker/db/types";
-import useProgressionScroll from "../hooks/useProgressionScroll";
 import {
   defaultNullishGateProps,
   defaultNullishProgramProps,

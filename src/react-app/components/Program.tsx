@@ -1,8 +1,8 @@
+import Riddle from "@components/Riddle";
+import useProgressionScroll from "@hooks/useProgressionScroll";
 import { useEffect, useMemo, useRef } from "react";
 import type { ProgramWithGates } from "../../worker/db/types";
-import useProgressionScroll from "../hooks/useProgressionScroll";
 import getRiddlesToRender from "../utils/getRiddlesToRender";
-import Riddle from "./Riddle";
 
 type ProgramProps = {
   program: ProgramWithGates;
