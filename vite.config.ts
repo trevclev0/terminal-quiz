@@ -22,6 +22,8 @@ export default defineConfig({
       "@utils": fileURLToPath(
         new URL("./src/react-app/utils", import.meta.url),
       ),
+      "@shared": fileURLToPath(new URL("./src/shared", import.meta.url)),
+      "@worker": fileURLToPath(new URL("./src/worker", import.meta.url)),
     },
   },
   build: {
