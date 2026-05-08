@@ -39,9 +39,7 @@ export const gates = sqliteTable(
         sql`(CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER))`,
       ),
   },
-  (t) => ({
-    unq: unique("unique_program_sequence").on(t.programId, t.sequenceOrder),
-  }),
+  (t) => [unique("unique_program_sequence").on(t.programId, t.sequenceOrder)],
 );
 
 export const programs = sqliteTable("programs", {
