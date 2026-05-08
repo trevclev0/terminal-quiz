@@ -12,7 +12,9 @@
       "@components/*": ["./src/react-app/components/*"],
       "@contexts/*": ["./src/react-app/contexts/*"],
       "@utils/*": ["./src/react-app/utils/*"],
-      "@test-utils/*": ["./src/react-app/test-utils/*"]
+      "@test-utils/*": ["./src/react-app/test-utils/*"],
+      "@worker/*": ["./src/worker/*"],
+      "@shared/*": ["./src/shared/*"]
     },
 
     /* Bundler mode */
