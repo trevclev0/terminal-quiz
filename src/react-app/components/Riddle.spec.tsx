@@ -17,6 +17,7 @@ vi.mock("../hooks/useRiddleGuess", () => ({
   default: vi.fn(),
 }));
 
+import type { SubmitEvent } from "react";
 import type { Gate } from "../../worker/db/types";
 import useRiddleGuess from "../hooks/useRiddleGuess";
 import useShake from "../hooks/useShake";
@@ -40,9 +41,7 @@ const defaultRiddleGuess = {
   response: "",
   guessResult: null as "correct" | "incorrect" | null,
   changeHandler: vi.fn(),
-  submitHandler: vi.fn((e: React.SubmitEvent<HTMLFormElement>) =>
-    e.preventDefault(),
-  ),
+  submitHandler: vi.fn((e: SubmitEvent<HTMLFormElement>) => e.preventDefault()),
 };
 
 beforeEach(() => {
