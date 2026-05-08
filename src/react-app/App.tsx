@@ -2,7 +2,10 @@ import Program from "@components/Program";
 import ProgramSelector from "@components/ProgramSelector";
 import { ProgramDataContext } from "@contexts/ProgramDataContext";
 import useProgramStorage from "@hooks/useProgramStorage";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useMemo } from "react";
+
+const queryClient = new QueryClient();
 
 function App() {
   const {
@@ -36,17 +39,19 @@ function App() {
 
   return (
     <div className="app">
-      <ProgramDataContext.Provider value={contextValue}>
-        {activeProgram ? (
-          <Program
-            program={activeProgram}
-            resetProgram={resetProgram}
-            clearActiveProgram={clearActiveProgram}
-          />
-        ) : (
-          <ProgramSelector />
-        )}
-      </ProgramDataContext.Provider>
+      <QueryClientProvider client={queryClient}>
+        <ProgramDataContext.Provider value={contextValue}>
+          {activeProgram ? (
+            <Program
+              program={activeProgram}
+              resetProgram={resetProgram}
+              clearActiveProgram={clearActiveProgram}
+            />
+          ) : (
+            <ProgramSelector />
+          )}
+        </ProgramDataContext.Provider>
+      </QueryClientProvider>
     </div>
   );
 }
