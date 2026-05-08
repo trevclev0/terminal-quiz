@@ -1,4 +1,4 @@
-import React from "react";
+import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App";
@@ -8,9 +8,9 @@ const rootElement = document.getElementById("app-root") as HTMLElement;
 
 const root = createRoot(rootElement);
 root.render(
-  <React.StrictMode>
+  <StrictMode>
     <ErrorBoundary>
       <App />
     </ErrorBoundary>
-  </React.StrictMode>,
+  </StrictMode>,
 );

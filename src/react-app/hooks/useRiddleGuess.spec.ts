@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import type React from "react";
-import type { SubmitEvent } from "react";
+import type { ChangeEvent, SubmitEvent } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ProgramDataContext as ContextType } from "../contexts/ProgramDataContext";
 import { createProgramDataWrapper } from "../test-utils/createProgramDataWrapper";
@@ -84,7 +84,7 @@ function makeSubmitEvent() {
 }
 
 function makeChangeEvent(value: string) {
-  return { target: { value } } as React.ChangeEvent<HTMLInputElement>;
+  return { target: { value } } as ChangeEvent<HTMLInputElement>;
 }
 
 beforeEach(() => {

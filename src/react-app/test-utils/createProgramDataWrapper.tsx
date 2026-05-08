@@ -1,4 +1,5 @@
 import type React from "react";
+import type { ReactNode } from "react";
 import { vi } from "vitest";
 import { ProgramDataContext } from "../contexts/ProgramDataContext";
 
@@ -17,7 +18,7 @@ export function createProgramDataWrapper(
     ...overrides,
   };
 
-  function wrapper({ children }: { children: React.ReactNode }) {
+  function wrapper({ children }: { children: ReactNode }) {
     return (
       <ProgramDataContext.Provider value={contextValue}>
         {children}

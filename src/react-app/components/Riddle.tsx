@@ -1,4 +1,4 @@
-import React from "react";
+import React, { type ToggleEvent, useEffect, useRef, useState } from "react";
 import type { Gate } from "../../worker/db/types";
 import useRiddleGuess from "../hooks/useRiddleGuess";
 import useShake from "../hooks/useShake";
@@ -9,8 +9,8 @@ type RiddleProps = {
 };
 
 function Riddle({ id, riddle }: RiddleProps) {
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const [isOpen, setIsOpen] = React.useState(riddle.isSolved);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isOpen, setIsOpen] = useState(riddle.isSolved);
   const { isShaking, shake, clearShake } = useShake();
   const { guess, response, guessResult, changeHandler, submitHandler } =
     useRiddleGuess({
@@ -22,7 +22,7 @@ function Riddle({ id, riddle }: RiddleProps) {
   const inputVal = riddle.isSolved ? `✔ ${riddle.correctAnswer}` : guess;
   const rspClasses = guessResult === "incorrect" ? "response fail" : "response";
 
-  function toggleHandler(event: React.ToggleEvent<HTMLDetailsElement>) {
+  function toggleHandler(event: ToggleEvent<HTMLDetailsElement>) {
     const isOpen = event.newState === "open";
     setIsOpen(isOpen);
     if (isOpen) {
@@ -31,7 +31,7 @@ function Riddle({ id, riddle }: RiddleProps) {
   }
 
   // Force open when solved
-  React.useEffect(() => {
+  useEffect(() => {
     if (riddle.isSolved) {
       setIsOpen(true);
     }
