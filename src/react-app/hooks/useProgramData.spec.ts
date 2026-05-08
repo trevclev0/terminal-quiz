@@ -1,7 +1,7 @@
 import { useProgramData } from "@hooks/useProgramData";
+import { createProgramDataWrapper } from "@test-utils/createProgramDataWrapper";
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { createProgramDataWrapper } from "../test-utils/createProgramDataWrapper";
 
 describe("useProgramData", () => {
   const { wrapper, contextValue } = createProgramDataWrapper();
