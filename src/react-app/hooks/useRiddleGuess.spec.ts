@@ -1,9 +1,9 @@
 import type { ProgramDataContext as ContextType } from "@contexts/ProgramDataContext";
 import useRiddleGuess from "@hooks/useRiddleGuess";
+import { createProgramDataWrapper } from "@test-utils/createProgramDataWrapper";
 import { act, renderHook } from "@testing-library/react";
 import type { ChangeEvent, SubmitEvent } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createProgramDataWrapper } from "../test-utils/createProgramDataWrapper";
 
 // ---------------------------------------------------------------------------
 // Module mock
@@ -13,12 +13,12 @@ vi.mock("@utils/isGuessCloseEnough", () => ({
   default: vi.fn(),
 }));
 
-import isGuessCloseEnough from "@utils/isGuessCloseEnough";
-import type { Gate, ProgramWithGates } from "../../worker/db/types";
 import {
   defaultNullishGateProps,
   defaultNullishProgramProps,
-} from "../test-utils/testTypes";
+} from "@test-utils/testTypes";
+import isGuessCloseEnough from "@utils/isGuessCloseEnough";
+import type { Gate, ProgramWithGates } from "../../worker/db/types";
 
 const mockIsGuessCloseEnough = vi.mocked(isGuessCloseEnough);
 

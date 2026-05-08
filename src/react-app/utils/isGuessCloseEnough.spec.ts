@@ -1,5 +1,5 @@
+import isGuessCloseEnough from "@utils/isGuessCloseEnough";
 import { describe, expect, it } from "vitest";
-import isGuessCloseEnough from "./isGuessCloseEnough";
 
 describe("isGuessCloseEnough", () => {
   it("should return true for close matches", () => {

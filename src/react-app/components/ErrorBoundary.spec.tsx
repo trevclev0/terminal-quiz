@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
+import ErrorBoundary from "@components/ErrorBoundary";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import ErrorBoundary from "./ErrorBoundary";
 
 // Suppress the expected console.error output from React's error boundary machinery
 beforeEach(() => {

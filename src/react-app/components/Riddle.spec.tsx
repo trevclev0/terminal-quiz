@@ -18,9 +18,9 @@ vi.mock("@hooks/useRiddleGuess", () => ({
 
 import useRiddleGuess from "@hooks/useRiddleGuess";
 import useShake from "@hooks/useShake";
+import { defaultNullishGateProps } from "@test-utils/testTypes";
 import type { SubmitEvent } from "react";
 import type { Gate } from "../../worker/db/types";
-import { defaultNullishGateProps } from "../test-utils/testTypes";
 
 const mockUseShake = vi.mocked(useShake);
 const mockUseRiddleGuess = vi.mocked(useRiddleGuess);

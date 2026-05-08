@@ -1,3 +1,13 @@
+import {
+  defaultNullishGateProps,
+  defaultNullishProgramProps,
+} from "@test-utils/testTypes";
+import {
+  decodeStringToObject,
+  encodeObjectToString,
+  loadPrograms,
+  savePrograms,
+} from "@utils/dataManager";
 import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import {
@@ -11,16 +21,6 @@ import {
   vi,
 } from "vitest";
 import type { ProgramWithGates } from "../../worker/db/types";
-import {
-  defaultNullishGateProps,
-  defaultNullishProgramProps,
-} from "../test-utils/testTypes";
-import {
-  decodeStringToObject,
-  encodeObjectToString,
-  loadPrograms,
-  savePrograms,
-} from "./dataManager";
 
 // ---------------------------------------------------------------------------
 // Fixtures
