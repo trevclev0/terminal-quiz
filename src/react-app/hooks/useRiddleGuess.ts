@@ -1,4 +1,4 @@
-import { type ChangeEvent, type SubmitEvent, useState } from "react";
+import { type ChangeEvent, type SubmitEvent, useEffect, useState } from "react";
 import type { Gate } from "../../worker/db/types";
 import isGuessCloseEnough from "../utils/isGuessCloseEnough";
 import { useProgramData } from "./useProgramData";
@@ -17,6 +17,14 @@ function useRiddleGuess({ riddle, shake, clearShake }: UseRiddleGuessArgs) {
   const [guessResult, setGuessResult] = useState<
     "correct" | "incorrect" | null
   >(null);
+
+  useEffect(() => {
+    if (!riddle.isSolved) {
+      setGuess("");
+      setResponse("");
+      setGuessResult(null);
+    }
+  }, [riddle.isSolved]);
 
   function changeHandler(event: ChangeEvent<HTMLInputElement>) {
     setGuess(event.target.value);
