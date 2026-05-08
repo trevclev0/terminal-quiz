@@ -9,6 +9,7 @@ type RiddleProps = {
 };
 
 function Riddle({ id, riddle }: RiddleProps) {
+  const summaryRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isOpen, setIsOpen] = useState(riddle.isSolved);
   const { isShaking, shake, clearShake } = useShake();
@@ -36,6 +37,7 @@ function Riddle({ id, riddle }: RiddleProps) {
       setIsOpen(true);
     } else {
       setIsOpen(false);
+      summaryRef.current?.focus();
     }
   }, [riddle.isSolved]);
 
@@ -46,7 +48,7 @@ function Riddle({ id, riddle }: RiddleProps) {
       data-testid={id}
     >
       <details onToggle={toggleHandler} open={isOpen}>
-        <summary>{riddle.label}</summary>
+        <summary ref={summaryRef}>{riddle.label}</summary>
         <form
           onSubmit={submitHandler}
           aria-label={`${riddle.label} - enter password and press Enter to submit`}
