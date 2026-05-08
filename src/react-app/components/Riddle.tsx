@@ -34,6 +34,8 @@ function Riddle({ id, riddle }: RiddleProps) {
   useEffect(() => {
     if (riddle.isSolved) {
       setIsOpen(true);
+    } else {
+      setIsOpen(false);
     }
   }, [riddle.isSolved]);
 
