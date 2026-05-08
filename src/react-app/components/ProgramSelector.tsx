@@ -1,13 +1,20 @@
-import type { ChangeEvent } from "react";
+import { type ChangeEvent, useEffect, useRef } from "react";
 import { useProgramData } from "../hooks/useProgramData";
 
 function ProgramSelector() {
+  const selectRef = useRef<HTMLSelectElement>(null);
   const { programs, selectProgram } = useProgramData();
 
   function selectChangeHandler(event: ChangeEvent<HTMLSelectElement>) {
     const selectedProgramName = event.target.value;
     selectProgram(selectedProgramName);
   }
+
+  useEffect(() => {
+    if (selectRef.current) {
+      selectRef.current.focus();
+    }
+  }, []);
 
   if (programs.length === 0) {
     return (
@@ -19,7 +26,7 @@ function ProgramSelector() {
 
   return (
     <div id="program-selector">
-      <select onChange={selectChangeHandler} defaultValue="">
+      <select ref={selectRef} onChange={selectChangeHandler} defaultValue="">
         <option value="" disabled hidden>
           Select your program
         </option>
