@@ -13,6 +13,7 @@ export default defineConfig({
       "@hooks": path.resolve(__dirname, "./src/react-app/hooks"),
       "@components": path.resolve(__dirname, "./src/react-app/components"),
       "@contexts": path.resolve(__dirname, "./src/react-app/contexts"),
+      "@utils": path.resolve(__dirname, "./src/react-app/utils"),
     },
   },
   build: {
