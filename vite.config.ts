@@ -1,3 +1,4 @@
+import path from "node:path";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import react from "@vitejs/plugin-react";
 import { configDefaults, defineConfig } from "vitest/config";
@@ -7,6 +8,12 @@ export default defineConfig({
     open: true,
   },
   plugins: [react(), !process.env.VITEST && cloudflare()].filter(Boolean),
+  resolve: {
+    alias: {
+      "@hooks": path.resolve(__dirname, "./src/hooks"),
+      "@components": path.resolve(__dirname, "./src/components"),
+    },
+  },
   build: {
     minify: "oxc",
   },
