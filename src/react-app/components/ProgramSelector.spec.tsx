@@ -1,12 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
+import ProgramSelector from "@components/ProgramSelector";
 import userEvent from "@testing-library/user-event";
 import type { ProgramWithGates } from "../../worker/db/types";
 import type { ProgramDataContext as ProgramDataContextType } from "../contexts/ProgramDataContext";
 import { ProgramDataContext } from "../contexts/ProgramDataContext";
 import { defaultNullishProgramProps } from "../test-utils/testTypes";
-import ProgramSelector from "./ProgramSelector";
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -1,25 +1,25 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
+import RiddleComponent from "@components/Riddle";
 import userEvent from "@testing-library/user-event";
-import RiddleComponent from "./Riddle";
 
 // ---------------------------------------------------------------------------
 // Module mocks — isolate from hook implementations
 // ---------------------------------------------------------------------------
 
-vi.mock("../hooks/useShake", () => ({
+vi.mock("@hooks/useShake", () => ({
   default: vi.fn(),
 }));
 
-vi.mock("../hooks/useRiddleGuess", () => ({
+vi.mock("@hooks/useRiddleGuess", () => ({
   default: vi.fn(),
 }));
 
+import useRiddleGuess from "@hooks/useRiddleGuess";
+import useShake from "@hooks/useShake";
 import type { SubmitEvent } from "react";
 import type { Gate } from "../../worker/db/types";
-import useRiddleGuess from "../hooks/useRiddleGuess";
-import useShake from "../hooks/useShake";
 import { defaultNullishGateProps } from "../test-utils/testTypes";
 
 const mockUseShake = vi.mocked(useShake);

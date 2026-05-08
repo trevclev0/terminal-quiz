@@ -1,5 +1,5 @@
+import { useProgramData } from "@hooks/useProgramData";
 import { type ChangeEvent, useEffect, useRef } from "react";
-import { useProgramData } from "../hooks/useProgramData";
 
 function ProgramSelector() {
   const selectRef = useRef<HTMLSelectElement>(null);

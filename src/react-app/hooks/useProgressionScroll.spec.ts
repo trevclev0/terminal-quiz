@@ -1,6 +1,6 @@
+import useProgressionScroll from "@hooks/useProgressionScroll";
 import { renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import useProgressionScroll from "./useProgressionScroll";
 
 // ---------------------------------------------------------------------------
 // Helpers
