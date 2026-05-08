@@ -8,6 +8,7 @@ import {
   loadPrograms,
   savePrograms,
 } from "@utils/dataManager";
+import type { ProgramWithGates } from "@shared/types";
 import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import {
@@ -20,7 +21,6 @@ import {
   it,
   vi,
 } from "vitest";
-import type { ProgramWithGates } from "../../worker/db/types";
 
 // ---------------------------------------------------------------------------
 // Fixtures

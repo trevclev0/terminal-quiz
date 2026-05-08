@@ -1,6 +1,6 @@
+import type * as schema from "@shared/schema";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { describe, expect, it, vi } from "vitest";
-import type * as schema from "../db/schema";
 import { type GuessResponse, processGateGuess } from "./gateService";
 
 function createMockGateDb() {

@@ -1,6 +1,6 @@
+import * as schema from "@shared/schema";
 import { and, eq, gt, sql } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
-import * as schema from "../db/schema";
 
 type GuessErrorCodes = "NOT_FOUND" | "ALREADY_SOLVED" | "INTERNAL_SERVER_ERROR";
 

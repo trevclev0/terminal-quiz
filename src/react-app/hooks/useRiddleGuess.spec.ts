@@ -13,12 +13,12 @@ vi.mock("@utils/isGuessCloseEnough", () => ({
   default: vi.fn(),
 }));
 
+import type { Gate, ProgramWithGates } from "@shared/types";
 import {
   defaultNullishGateProps,
   defaultNullishProgramProps,
 } from "@test-utils/testTypes";
 import isGuessCloseEnough from "@utils/isGuessCloseEnough";
-import type { Gate, ProgramWithGates } from "../../worker/db/types";
 
 const mockIsGuessCloseEnough = vi.mocked(isGuessCloseEnough);
 

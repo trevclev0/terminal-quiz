@@ -1,7 +1,7 @@
 import { defaultNullishGateProps } from "@test-utils/testTypes";
 import getRiddlesToRender from "@utils/getRiddlesToRender";
 import { describe, expect, it } from "vitest";
-import type { Gate } from "../../worker/db/types";
+import type { Gate } from "@shared/types";
 
 const makeRiddle = (overrides: Partial<Gate> = {}): Gate => ({
   id: "c3b3ae1c-9565-41f7-b14c-7b203769555c",

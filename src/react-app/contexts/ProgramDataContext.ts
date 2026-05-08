@@ -1,5 +1,5 @@
+import type { ProgramWithGates } from "@shared/types";
 import { createContext } from "react";
-import type { ProgramWithGates } from "../../worker/db/types";
 
 export type ProgramDataContext = {
   programs: ProgramWithGates[];

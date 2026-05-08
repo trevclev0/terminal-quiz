@@ -1,7 +1,7 @@
 import { useProgramData } from "@hooks/useProgramData";
 import isGuessCloseEnough from "@utils/isGuessCloseEnough";
 import { type ChangeEvent, type SubmitEvent, useEffect, useState } from "react";
-import type { Gate } from "../../worker/db/types";
+import type { Gate } from "@shared/types";
 
 type UseRiddleGuessArgs = {
   riddle: Gate;
