@@ -18,11 +18,12 @@ export default defineConfig({
     coverage: {
       include: ["src/**/*.{ts,tsx}"],
       exclude: [
-        "src/index.tsx",
-        "src/App.tsx",
+        "src/react-app/App.tsx",
+        "src/react-app/main.tsx",
+        "src/react-app/vite-env.d.ts",
         ...configDefaults.exclude,
-        "**/*.types.ts",
-        "**/*.d.ts",
+        "src/worker/db/schema.ts",
+        "src/worker/db/types.ts",
       ],
     },
   },
