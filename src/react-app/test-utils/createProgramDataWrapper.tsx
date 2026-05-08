@@ -1,4 +1,3 @@
-import type React from "react";
 import type { ReactNode } from "react";
 import { vi } from "vitest";
 import { ProgramDataContext } from "../contexts/ProgramDataContext";

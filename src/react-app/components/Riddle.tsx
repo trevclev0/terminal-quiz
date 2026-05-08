@@ -1,4 +1,4 @@
-import React, { type ToggleEvent, useEffect, useRef, useState } from "react";
+import { type ToggleEvent, useEffect, useRef, useState } from "react";
 import type { Gate } from "../../worker/db/types";
 import useRiddleGuess from "../hooks/useRiddleGuess";
 import useShake from "../hooks/useShake";
