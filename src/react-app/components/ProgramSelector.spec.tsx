@@ -29,11 +29,10 @@ const programs: ProgramWithGates[] = [
 ];
 
 function renderWithContext(overrides: Partial<ProgramDataContext> = {}) {
-  const selectProgram = vi.fn();
   const contextValue: ProgramDataContext = {
     programs,
     activeProgram: undefined,
-    selectProgram,
+    selectProgram: vi.fn(),
     updateProgram: vi.fn(),
     ...overrides,
   };
@@ -44,7 +43,7 @@ function renderWithContext(overrides: Partial<ProgramDataContext> = {}) {
     </ProgramDataContext.Provider>,
   );
 
-  return { selectProgram };
+  return { selectProgram: contextValue.selectProgram };
 }
 
 // ---------------------------------------------------------------------------
