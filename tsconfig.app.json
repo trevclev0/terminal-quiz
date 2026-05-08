@@ -8,8 +8,8 @@
     "skipLibCheck": true,
 
     "paths": {
-      "@hooks/*": ["./src/hooks/*"],
-      "@components/*": ["./src/components/*"]
+      "@hooks/*": ["./src/react-app/hooks/*"],
+      "@components/*": ["./src/react-app/components/*"]
     },
 
     /* Bundler mode */
