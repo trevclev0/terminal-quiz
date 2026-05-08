@@ -1,4 +1,4 @@
-import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import react from "@vitejs/plugin-react";
 import { configDefaults, defineConfig } from "vitest/config";
@@ -10,11 +10,18 @@ export default defineConfig({
   plugins: [react(), !process.env.VITEST && cloudflare()].filter(Boolean),
   resolve: {
     alias: {
-      "@hooks": path.resolve(__dirname, "./src/react-app/hooks"),
-      "@components": path.resolve(__dirname, "./src/react-app/components"),
-      "@contexts": path.resolve(__dirname, "./src/react-app/contexts"),
-      "@utils": path.resolve(__dirname, "./src/react-app/utils"),
-      "@test-utils": path.resolve(__dirname, "./src/react-app/test-utils"),
+      "@hooks": fileURLToPath(
+        new URL("./src/react-app/hooks", import.meta.url),
+      ),
+      "@components": fileURLToPath(
+        new URL("./src/react-app/components", import.meta.url),
+      ),
+      "@contexts": fileURLToPath(
+        new URL("./src/react-app/contexts", import.meta.url),
+      ),
+      "@utils": fileURLToPath(
+        new URL("./src/react-app/utils", import.meta.url),
+      ),
     },
   },
   build: {
@@ -23,6 +30,11 @@ export default defineConfig({
   test: {
     environment: "happy-dom",
     setupFiles: "src/react-app/test-utils/setupTests.ts",
+    alias: {
+      "@test-utils": fileURLToPath(
+        new URL("./src/react-app/test-utils", import.meta.url),
+      ),
+    },
     clearMocks: true,
     restoreMocks: true,
     coverage: {
