@@ -1,5 +1,5 @@
+import { ProgramDataContext } from "@contexts/ProgramDataContext";
 import { useContext } from "react";
-import { ProgramDataContext } from "../contexts/ProgramDataContext";
 
 export function useProgramData(): ProgramDataContext {
   const ctx = useContext(ProgramDataContext);

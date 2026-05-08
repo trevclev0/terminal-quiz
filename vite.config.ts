@@ -12,6 +12,7 @@ export default defineConfig({
     alias: {
       "@hooks": path.resolve(__dirname, "./src/react-app/hooks"),
       "@components": path.resolve(__dirname, "./src/react-app/components"),
+      "@contexts": path.resolve(__dirname, "./src/react-app/contexts"),
     },
   },
   build: {

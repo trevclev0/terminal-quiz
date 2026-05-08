@@ -1,6 +1,6 @@
+import { ProgramDataContext } from "@contexts/ProgramDataContext";
 import type { ReactNode } from "react";
 import { vi } from "vitest";
-import { ProgramDataContext } from "../contexts/ProgramDataContext";
 
 const defaultContextValue: ProgramDataContext = {
   programs: [],
