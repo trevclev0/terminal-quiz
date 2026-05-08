@@ -5,7 +5,7 @@ import ProgramSelector from "@components/ProgramSelector";
 import { ProgramDataContext } from "@contexts/ProgramDataContext";
 import { defaultNullishProgramProps } from "@test-utils/testTypes";
 import userEvent from "@testing-library/user-event";
-import type { ProgramWithGates } from "../../worker/db/types";
+import type { ProgramWithGates } from "@shared/types";
 
 // ---------------------------------------------------------------------------
 // Helpers
