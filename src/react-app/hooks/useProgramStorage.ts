@@ -1,6 +1,6 @@
+import { loadPrograms, savePrograms } from "@utils/dataManager";
 import { useCallback, useEffect, useState } from "react";
 import type { Gate, ProgramWithGates } from "../../worker/db/types";
-import { loadPrograms, savePrograms } from "../utils/dataManager";
 
 function useProgramStorage() {
   const [programs, setPrograms] = useState<ProgramWithGates[]>([]);

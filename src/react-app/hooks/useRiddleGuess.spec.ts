@@ -9,16 +9,16 @@ import { createProgramDataWrapper } from "../test-utils/createProgramDataWrapper
 // Module mock
 // ---------------------------------------------------------------------------
 
-vi.mock("../utils/isGuessCloseEnough", () => ({
+vi.mock("@utils/isGuessCloseEnough", () => ({
   default: vi.fn(),
 }));
 
+import isGuessCloseEnough from "@utils/isGuessCloseEnough";
 import type { Gate, ProgramWithGates } from "../../worker/db/types";
 import {
   defaultNullishGateProps,
   defaultNullishProgramProps,
 } from "../test-utils/testTypes";
-import isGuessCloseEnough from "../utils/isGuessCloseEnough";
 
 const mockIsGuessCloseEnough = vi.mocked(isGuessCloseEnough);
 

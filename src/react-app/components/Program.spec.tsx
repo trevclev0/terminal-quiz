@@ -12,7 +12,7 @@ vi.mock("@hooks/useProgressionScroll", () => ({
   default: vi.fn(),
 }));
 
-vi.mock("../utils/getRiddlesToRender", () => ({
+vi.mock("@utils/getRiddlesToRender", () => ({
   default: vi.fn(),
 }));
 
@@ -24,12 +24,12 @@ vi.mock("@components/Riddle", () => ({
 }));
 
 import useProgressionScroll from "@hooks/useProgressionScroll";
+import getRiddlesToRender from "@utils/getRiddlesToRender";
 import type { Gate, ProgramWithGates } from "../../worker/db/types";
 import {
   defaultNullishGateProps,
   defaultNullishProgramProps,
 } from "../test-utils/testTypes";
-import getRiddlesToRender from "../utils/getRiddlesToRender";
 
 const mockGetRiddlesToRender = vi.mocked(getRiddlesToRender);
 
