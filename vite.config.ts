@@ -10,8 +10,8 @@ export default defineConfig({
   plugins: [react(), !process.env.VITEST && cloudflare()].filter(Boolean),
   resolve: {
     alias: {
-      "@hooks": path.resolve(__dirname, "./src/hooks"),
-      "@components": path.resolve(__dirname, "./src/components"),
+      "@hooks": path.resolve(__dirname, "./src/react-app/hooks"),
+      "@components": path.resolve(__dirname, "./src/react-app/components"),
     },
   },
   build: {
