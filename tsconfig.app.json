@@ -11,7 +11,8 @@
       "@hooks/*": ["./src/react-app/hooks/*"],
       "@components/*": ["./src/react-app/components/*"],
       "@contexts/*": ["./src/react-app/contexts/*"],
-      "@utils/*": ["./src/react-app/utils/*"]
+      "@utils/*": ["./src/react-app/utils/*"],
+      "@test-utils/*": ["./src/react-app/test-utils/*"]
     },
 
     /* Bundler mode */

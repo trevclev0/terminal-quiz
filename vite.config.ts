@@ -14,6 +14,7 @@ export default defineConfig({
       "@components": path.resolve(__dirname, "./src/react-app/components"),
       "@contexts": path.resolve(__dirname, "./src/react-app/contexts"),
       "@utils": path.resolve(__dirname, "./src/react-app/utils"),
+      "@test-utils": path.resolve(__dirname, "./src/react-app/test-utils"),
     },
   },
   build: {
