@@ -11,13 +11,13 @@ const rootElement = document.getElementById("app-root") as HTMLElement;
 const root = createRoot(rootElement);
 root.render(
   <StrictMode>
-    <PersistQueryClientProvider
-      client={queryClient}
-      persistOptions={{ persister: indexedDBMessagePackPersister }}
-    >
-      <ErrorBoundary>
+    <ErrorBoundary>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{ persister: indexedDBMessagePackPersister }}
+      >
         <App />
-      </ErrorBoundary>
-    </PersistQueryClientProvider>
+      </PersistQueryClientProvider>
+    </ErrorBoundary>
   </StrictMode>,
 );
