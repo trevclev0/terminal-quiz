@@ -5,7 +5,10 @@
     "types": ["vite/client", "./worker-configuration.d.ts"],
 
     "paths": {
-      "@shared/*": ["./src/shared/*"]
+      "@shared/*": ["./src/shared/*"],
+      "@middleware/*": ["./src/worker/middleware/*"],
+      "@routes/*": ["./src/worker/routes/*"],
+      "@services/*": ["./src/worker/services/*"]
     }
   },
   "include": ["src/worker", "src/shared"]
