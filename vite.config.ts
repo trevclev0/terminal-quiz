@@ -4,9 +4,6 @@ import react from "@vitejs/plugin-react";
 import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
-  server: {
-    open: true,
-  },
   plugins: [react(), !process.env.VITEST && cloudflare()].filter(Boolean),
   resolve: {
     alias: {
@@ -22,6 +19,7 @@ export default defineConfig({
       "@utils": fileURLToPath(
         new URL("./src/react-app/utils", import.meta.url),
       ),
+      "@api": fileURLToPath(new URL("./src/react-app/api", import.meta.url)),
       "@shared": fileURLToPath(new URL("./src/shared", import.meta.url)),
       "@worker": fileURLToPath(new URL("./src/worker", import.meta.url)),
     },
