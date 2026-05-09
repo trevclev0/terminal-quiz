@@ -29,6 +29,6 @@ export const useProgramsWithGatesQuery = () => {
   return useQuery({
     queryKey: programKeys.allWithGates,
     queryFn: fetchProgramsWithGates,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
   });
 };
