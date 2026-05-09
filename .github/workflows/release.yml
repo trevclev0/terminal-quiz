@@ -28,6 +28,11 @@ jobs:
       - name: Run build
         run: pnpm build
 
+      - name: Zip build assets
+        run: |
+          (cd dist/client && zip -r ../../client-build.zip .)
+          (cd dist/quiz_app && zip -r ../../quiz_app-build.zip .)
+
       - name: Release (or dry-run on PR)
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then

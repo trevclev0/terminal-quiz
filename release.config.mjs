@@ -35,8 +35,12 @@ const config = {
       {
         assets: [
           {
-            path: "dist/**",
-            label: "Build Assets",
+            path: "client-build.zip",
+            label: "Frontend Assets (Client)",
+          },
+          {
+            path: "quiz_app-build.zip",
+            label: "Backend Assets (Worker)",
           },
         ],
       },
