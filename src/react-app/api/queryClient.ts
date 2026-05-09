@@ -4,7 +4,6 @@ import type {
   PersistedClient,
   Persister,
 } from "@tanstack/react-query-persist-client";
-import { persistQueryClient } from "@tanstack/react-query-persist-client";
 import { del, get, set } from "idb-keyval";
 
 const CACHE_KEY = "rq-offline-cache";
@@ -19,7 +18,7 @@ export const queryClient = new QueryClient({
   },
 });
 
-const indexedDBMessagePackPersister: Persister = {
+export const indexedDBMessagePackPersister: Persister = {
   persistClient: async (client: PersistedClient) => {
     const buffer = encode(client);
     await set(CACHE_KEY, buffer);
@@ -39,8 +38,3 @@ const indexedDBMessagePackPersister: Persister = {
     await del(CACHE_KEY);
   },
 };
-
-persistQueryClient({
-  queryClient,
-  persister: indexedDBMessagePackPersister,
-});
