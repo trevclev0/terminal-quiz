@@ -1,5 +1,5 @@
+import type { selectGateSchema, selectProgramSchema } from "@shared/schema";
 import type { z } from "zod";
-import type { selectGateSchema, selectProgramSchema } from "./schema";
 
 export type Gate = z.infer<typeof selectGateSchema>;
 export type Program = z.infer<typeof selectProgramSchema>;
