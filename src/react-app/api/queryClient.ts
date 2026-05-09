@@ -30,6 +30,7 @@ export const indexedDBMessagePackPersister: Persister = {
 
       return decode(buffer) as PersistedClient;
     } catch (error) {
+      await del(CACHE_KEY);
       console.warn("Failed to decode cached data, starting fresh.", error);
       return undefined;
     }
