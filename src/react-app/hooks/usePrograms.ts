@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { programKeys } from "../api/queryKeys";
 
-function useProgramStorage() {
+function usePrograms() {
   const queryClient = useQueryClient();
 
   const { data: programs = [], isLoading, error } = useProgramsWithGatesQuery();
@@ -83,4 +83,4 @@ function useProgramStorage() {
   };
 }
 
-export default useProgramStorage;
+export default usePrograms;
