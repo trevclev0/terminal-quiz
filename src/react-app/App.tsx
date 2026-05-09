@@ -1,7 +1,7 @@
 import Program from "@components/Program";
 import ProgramSelector from "@components/ProgramSelector";
 import { ProgramDataContext } from "@contexts/ProgramDataContext";
-import useProgramStorage from "@hooks/useProgramStorage";
+import useProgramStorage from "@hooks/usePrograms";
 import { useMemo } from "react";
 
 function App() {
