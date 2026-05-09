@@ -1,12 +1,12 @@
 import useProgramStorage from "@hooks/useProgramStorage";
 import type { Gate, ProgramWithGates } from "@shared/types";
-import { act, renderHook } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   defaultNullishGateProps,
   defaultNullishProgramProps,
 } from "@test-utils/testTypes";
+import { act, renderHook } from "@testing-library/react";
 import { loadPrograms, savePrograms } from "@utils/dataManager";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Module mock
