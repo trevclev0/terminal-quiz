@@ -1,6 +1,6 @@
+import type { Gate, ProgramWithGates } from "@shared/types";
 import { loadPrograms, savePrograms } from "@utils/dataManager";
 import { useCallback, useEffect, useState } from "react";
-import type { Gate, ProgramWithGates } from "@shared/types";
 
 function useProgramStorage() {
   const [programs, setPrograms] = useState<ProgramWithGates[]>([]);
