@@ -17,7 +17,6 @@ Live at **[quiz.clevertrevor.dev](https://quiz.clevertrevor.dev)**
 - [Database](#database)
 - [Deployment](#deployment)
 - [Project Structure](#project-structure)
-- [Contributing](#contributing)
 
 ---
 
@@ -52,7 +51,7 @@ Live at **[quiz.clevertrevor.dev](https://quiz.clevertrevor.dev)**
 
 The project is a monorepo-style single repository with two runtime targets sharing a common `src/shared` layer.
 
-```
+```bash
 src/
 ├── react-app/      # Vite-built SPA (served as static assets)
 │   ├── api/        # TanStack Query hooks and the Hono RPC client
@@ -105,7 +104,7 @@ cp .env.example .env
 ```
 
 The typical path looks like:
-```
+```bash
 DRIZZLE_DATABASE_URL=.wrangler/state/v3/d1/miniflare-D1DatabaseObject/<HASH>.sqlite
 ```
 
@@ -230,7 +229,7 @@ Deployment is handled automatically by the `deploy.yml` GitHub Actions workflow.
 
 The workflow:
 1. Builds both the client and worker bundles.
-2. Patches `wrangler.json` for preview deployments (different D1 database, `workers_dev: true`).
+2. Patches `wrangler.jsonc` for preview deployments (different D1 database, `workers_dev: true`).
 3. Applies any pending D1 migrations to the appropriate database.
 4. Deploys via `cloudflare/wrangler-action`.
 5. Updates the GitHub Deployment status with the live URL.
@@ -255,7 +254,7 @@ pnpm deploy:preview   # Upload a preview version
 
 ## Project Structure
 
-```
+```bash
 .
 ├── .github/
 │   ├── actions/setup-project/   # Composite action: install Node, pnpm, Bun, deps
