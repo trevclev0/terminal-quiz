@@ -5,6 +5,14 @@ import type { DbContext } from "../middleware/db";
 
 let cachedYoga: ReturnType<typeof createYoga> | null = null;
 
+// Exported to allow cache invalidation if needed (e.g., during testing).
+// Note: This should not be used in production. In Cloudflare Workers, isolates persist module state.4
+// However, since drizzle-graphql builds the GraphQL schema from the statically bundled TypeScript
+// schema, it only changes when new code is deployed (which naturally resets the isolate).
+export const invalidateCachedYoga = () => {
+  cachedYoga = null;
+};
+
 const graphQlRouter = new Hono<DbContext>().all("*", async (c) => {
   try {
     const currentDb = c.get("db");
