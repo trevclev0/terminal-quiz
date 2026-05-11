@@ -2,6 +2,7 @@ import type { D1Database } from "@cloudflare/workers-types";
 import { Hono } from "hono";
 import { type DbContext, setupDb } from "./middleware/db";
 import gatesRouter from "./routes/gates";
+import graphQlRouter from "./routes/graphql";
 import programsRouter from "./routes/programs";
 
 export type Env = {
@@ -15,6 +16,7 @@ const app = new Hono<Env>();
 // Set up DB middleware for all API routes
 const api = new Hono<DbContext>()
   .use("*", setupDb)
+  .route("/graphql", graphQlRouter)
   .route("/programs", programsRouter)
   .route("/gates", gatesRouter);
 
