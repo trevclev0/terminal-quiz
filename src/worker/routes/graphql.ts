@@ -5,7 +5,7 @@ import type { DbContext } from "../middleware/db";
 
 let cachedYoga: ReturnType<typeof createYoga> | null = null;
 
-const graphQlRouter = new Hono<DbContext>().all("/", async (c) => {
+const graphQlRouter = new Hono<DbContext>().all("*", async (c) => {
   try {
     const currentDb = c.get("db");
 
@@ -14,7 +14,7 @@ const graphQlRouter = new Hono<DbContext>().all("/", async (c) => {
 
       cachedYoga = createYoga({
         schema,
-        graphqlEndpoint: "/graphql",
+        graphqlEndpoint: "/api/graphql",
         fetchAPI: { Response, Request },
       });
     }
