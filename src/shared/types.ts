@@ -1,7 +1,6 @@
-import type { selectGateSchema, selectProgramSchema } from "@shared/schema";
-import type { z } from "zod";
+import type { gates, programs } from "@shared/schema";
 
-export type Gate = z.infer<typeof selectGateSchema>;
-export type Program = z.infer<typeof selectProgramSchema>;
+export type Program = typeof programs.$inferSelect;
+export type Gate = typeof gates.$inferSelect;
 
 export type ProgramWithGates = Program & { gates: Gate[] };

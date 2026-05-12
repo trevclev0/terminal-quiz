@@ -1,12 +1,12 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import { z } from "zod";
+import { z } from "zod/mini";
 import type { DbContext } from "../middleware/db";
 import { getGateById, processGateGuess } from "../services/gateService";
 
 const guessPayloadSchema = z.object({
-  guess: z.string().min(1, "A guess cannot be empty"),
+  guess: z.string().check(z.minLength(1, "A guess cannot be empty")),
 });
 
 const gatesRouter = new Hono<DbContext>()
