@@ -80,7 +80,7 @@
     "drizzle-orm": "^0.45.2",
     "drizzle-zod": "^0.8.3",
     "graphql": "^16.14.0",
-    "graphql-yoga": "^5.21.0",
+    "graphql-http": "^1.22.4",
     "hono": "^4.12.17",
     "idb-keyval": "^6.2.2",
     "leven": "^4.1.0",
