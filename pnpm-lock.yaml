@@ -26,9 +26,6 @@ importers:
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@cloudflare/workers-types@4.20260506.1)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.9.0)
-      drizzle-zod:
-        specifier: ^0.8.3
-        version: 0.8.3(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260506.1)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.9.0))(zod@4.4.3)
       graphql:
         specifier: ^16.14.0
         version: 16.14.0
@@ -2170,12 +2167,6 @@ packages:
         optional: true
       sqlite3:
         optional: true
-
-  drizzle-zod@0.8.3:
-    resolution: {integrity: sha512-66yVOuvGhKJnTdiqj1/Xaaz9/qzOdRJADpDa68enqS6g3t0kpNkwNYjUuaeXgZfO/UWuIM9HIhSlJ6C5ZraMww==}
-    peerDependencies:
-      drizzle-orm: '>=0.36.0'
-      zod: ^3.25.0 || ^4.0.0
 
   duplexer2@0.1.4:
     resolution: {integrity: sha512-asLFVfWWtJ90ZyOUHMqk7/S2w2guQKxUI2itj3d92ADHhxUSbCMGi1f1cBcJ7xM1To+pE/Khbwo1yuNbMEPKeA==}
@@ -5606,11 +5597,6 @@ snapshots:
       '@cloudflare/workers-types': 4.20260506.1
       '@types/better-sqlite3': 7.6.13
       better-sqlite3: 12.9.0
-
-  drizzle-zod@0.8.3(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260506.1)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.9.0))(zod@4.4.3):
-    dependencies:
-      drizzle-orm: 0.45.2(@cloudflare/workers-types@4.20260506.1)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.9.0)
-      zod: 4.4.3
 
   duplexer2@0.1.4:
     dependencies:
