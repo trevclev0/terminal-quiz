@@ -31,6 +31,7 @@ const config = defineConfig({
       },
     ],
     defaultIssues: getIssueFromBranch(),
+    useAI: true,
   } as UserConfig["prompt"],
 });
 
