@@ -6,7 +6,6 @@ import {
   text,
   unique,
 } from "drizzle-orm/sqlite-core";
-import { createSelectSchema } from "drizzle-zod";
 
 export const gates = sqliteTable(
   "gates",
@@ -75,7 +74,3 @@ export const gameState = sqliteTable("game_state", {
     .default(sql`(CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER))`)
     .$onUpdateFn(() => new Date()),
 });
-
-export const selectProgramSchema = createSelectSchema(programs);
-
-export const selectGateSchema = createSelectSchema(gates);
