@@ -1,36 +1,35 @@
 import { buildSchema } from "drizzle-graphql";
-import { createYoga } from "graphql-yoga";
+import { createHandler } from "graphql-http/lib/use/fetch";
 import { Hono } from "hono";
 import type { DbContext } from "../middleware/db";
 
-let cachedYoga: ReturnType<typeof createYoga> | null = null;
+let cachedHandler: ReturnType<typeof createHandler> | null = null;
 
 // Exported to allow cache invalidation if needed (e.g., during testing).
-// Note: This should not be used in production. In Cloudflare Workers, isolates persist module state.4
+// Note: This should not be used in production. In Cloudflare Workers, isolates persist module state.
 // However, since drizzle-graphql builds the GraphQL schema from the statically bundled TypeScript
 // schema, it only changes when new code is deployed (which naturally resets the isolate).
-export const invalidateCachedYoga = () => {
-  cachedYoga = null;
+export const invalidateCachedHandler = () => {
+  cachedHandler = null;
 };
 
 const graphQlRouter = new Hono<DbContext>().all("*", async (c) => {
   try {
     const currentDb = c.get("db");
 
-    if (!cachedYoga) {
+    if (!cachedHandler) {
       const { schema } = buildSchema(currentDb);
 
-      cachedYoga = createYoga({
+      cachedHandler = createHandler({
         schema,
-        graphqlEndpoint: "/api/graphql",
-        fetchAPI: { Response, Request },
+        context: {
+          db: currentDb,
+          env: c.env,
+        },
       });
     }
 
-    return cachedYoga.fetch(c.req.raw, {
-      db: currentDb,
-      env: c.env,
-    });
+    return cachedHandler(c.req.raw);
   } catch (error) {
     console.error("GraphQL error:", error);
     throw error;
