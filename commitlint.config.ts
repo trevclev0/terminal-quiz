@@ -2,14 +2,19 @@ import { execSync } from "node:child_process";
 import type { UserConfig } from "cz-git";
 import { defineConfig } from "czg";
 
-type BrachDetails = {
+type CommitDetails = {
   commitType: string;
   issueId: string;
 };
 
+type AI_Question = {
+  maxSubjectLength: number;
+  diff: string;
+};
+
 const useAI = process.env.CZG_AI_ENABLED === "true";
 
-function getTypeAndIssueFromBranch(): BrachDetails | null {
+const getBranchCommitDetails = (): CommitDetails | null => {
   try {
     const branch = execSync("git branch --show-current").toString().trim();
     const match = branch.match(/^(?<type>\w+)\/(?<issueId>\d+)-/);
@@ -23,9 +28,20 @@ function getTypeAndIssueFromBranch(): BrachDetails | null {
     return null;
   }
   return null;
-}
+};
 
-const branchDetails = getTypeAndIssueFromBranch();
+const conventionalCommitDetails = getBranchCommitDetails();
+
+const aiQuestionCB = ({ maxSubjectLength, diff }: AI_Question): string => {
+  return [
+    "For the following Git diff, please write an insightful, concise Git commit message.",
+    "Please produce output in the imperative mood, without a prefix.",
+    `Note that the length of this sentence must not exceed ${maxSubjectLength} characters! :`,
+    "```diff",
+    diff,
+    "```",
+  ].join("\n");
+};
 
 const config = defineConfig({
   extends: ["gitmoji"],
@@ -37,18 +53,21 @@ const config = defineConfig({
     emojiAlign: "left",
     issuePrefixes: [
       {
-        value: "Refs",
-        name: "Refs:   reference a GitHub issue without closing",
+        value: "refs",
+        name: "refs:   reference a GitHub issue without closing",
       },
       {
-        value: "Closes",
-        name: "Closes: close a GitHub issue on merge to main",
+        value: "closes",
+        name: "closes: close a GitHub issue on merge to main",
       },
     ],
-    defaultIssues: branchDetails?.issueId,
-    defaultType: branchDetails?.commitType,
-    defaultFooterPrefix: "Refs",
+    defaultIssues: conventionalCommitDetails?.issueId,
+    defaultType: conventionalCommitDetails?.commitType,
+    footer: {
+      defaultFooterPrefix: "refs:",
+    },
     useAI,
+    aiQuestionCB,
   } as UserConfig["prompt"],
 });
 
