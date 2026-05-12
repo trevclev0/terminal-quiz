@@ -5,5 +5,10 @@
 
 # Only launch Commitizen if a TTY is available (i.e., a real terminal)
 if [ -t 1 ]; then
-  exec < /dev/tty && pnpm cz --hook || true
+  exec < /dev/tty
+  if [ "$CZG_AI_ENABLED" = "true" ] && [ -n "$OPENAI_API_KEY" ]; then
+    pnpm czg ai --hook || true
+  else
+    pnpm cz --hook || true
+  fi
 fi
