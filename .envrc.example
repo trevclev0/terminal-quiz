@@ -1,0 +1,7 @@
+# Copy this file to .envrc and fill in values.
+# Install direnv: https://direnv.net
+# Then run: direnv allow
+
+export CZG_AI_ENABLED=true
+export CZG_AI_MODEL=gpt-4o-mini
+# export OPEN_AI_KEY=
