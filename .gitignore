@@ -15,6 +15,9 @@ coverage/
 .env
 .env.local
 
+# Ignore direnv environment variables
+.envrc
+
 # Ignore Cloudflare environment variables
 .dev.vars*
 
