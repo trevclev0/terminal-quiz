@@ -2,4 +2,5 @@
 # Install direnv: https://direnv.net
 # Then run: direnv allow .
 
+# Enable AI-powered features (e.g., commit message generation)
 export CZG_AI_ENABLED=true
