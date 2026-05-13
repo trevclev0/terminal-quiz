@@ -63,9 +63,7 @@ const config = defineConfig({
     ],
     defaultIssues: conventionalCommitDetails?.issueId,
     defaultType: conventionalCommitDetails?.commitType,
-    footer: {
-      defaultFooterPrefix: "refs:",
-    },
+    defaultFooterPrefix: "refs",
     useAI,
     aiQuestionCB,
   } as UserConfig["prompt"],
