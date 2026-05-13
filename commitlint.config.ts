@@ -34,8 +34,7 @@ const conventionalCommitDetails = getBranchCommitDetails();
 
 const aiQuestionCB = ({ maxSubjectLength, diff }: AI_Question): string => {
   return [
-    "You are a Principal Software Engineer and a Senior Git Commit Generator.",
-    "Follow the best practices/standards for a Conventional Commit Message.",
+    "You are a Principal Software Engineer.",
     "For the following Git diff, please write an insightful, concise description.",
     "Please only include the `description` portion of the Conventional Commit Message.",
     "Please do not capitalize the first letter",
@@ -67,6 +66,7 @@ const config = defineConfig({
     defaultIssues: conventionalCommitDetails?.issueId,
     defaultType: conventionalCommitDetails?.commitType,
     defaultFooterPrefix: "refs",
+    upperCaseSubject: false,
     useAI,
     aiQuestionCB,
   } as UserConfig["prompt"],
