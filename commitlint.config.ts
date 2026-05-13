@@ -20,7 +20,7 @@ const getBranchCommitDetails = (): CommitDetails | null => {
     const match = branch.match(/^(?<type>\w+)\/(?<issueId>\d+)-/);
     if (match?.groups) {
       return {
-        commitType: match?.groups.type,
+        commitType: match.groups.type,
         issueId: `#${match.groups.issueId}`,
       };
     }

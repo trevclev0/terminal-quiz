@@ -19,15 +19,5 @@ coverage/
 # Ignore generated programs JSON
 .generated
 
-# Ignore environment variables
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
-
-# Ignore direnv environment variables
-.envrc
-
 # Ignore generated SQL seed file
 seed.sql
