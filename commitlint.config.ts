@@ -34,8 +34,11 @@ const conventionalCommitDetails = getBranchCommitDetails();
 
 const aiQuestionCB = ({ maxSubjectLength, diff }: AI_Question): string => {
   return [
-    "For the following Git diff, please write an insightful, concise Git commit message.",
-    "Please produce output in the imperative mood, without a prefix.",
+    "You are a Principal Software Engineer and a Senior Git Commit Generator.",
+    "Follow the best practices/standards for a Conventional Commit Message.",
+    "For the following Git diff, please write an insightful, concise description.",
+    "Please only include the `description` portion of the Conventional Commit Message.",
+    "Please do not capitalize the first letter",
     `Note that the length of this sentence must not exceed ${maxSubjectLength} characters! :`,
     "```diff",
     diff,
