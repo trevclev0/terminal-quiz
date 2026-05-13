@@ -1,9 +1,17 @@
+# Dependency directories
 node_modules
+
+# Build / generated output
 dist
+
 coverage/
 
 # Ignore wrangler files
 .wrangler/
+.env*
+!.env.example
+.dev.vars*
+!.dev.vars.example
 
 # Ignore macOS attributes file
 .DS_Store
@@ -13,19 +21,13 @@ coverage/
 
 # Ignore environment variables
 .env
+.env.development.local
+.env.test.local
+.env.production.local
 .env.local
 
 # Ignore direnv environment variables
 .envrc
-
-# Ignore Cloudflare environment variables
-.dev.vars*
-
-# Local SQLite database files
-*.db
-*.db-journal
-*.db-shm
-*.db-wal
 
 # Ignore generated SQL seed file
 seed.sql
