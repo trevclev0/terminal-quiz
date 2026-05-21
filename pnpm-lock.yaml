@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@hono/graphql-server':
+        specifier: ^0.7.0
+        version: 0.7.0(hono@4.12.21)
       '@hono/zod-validator':
         specifier: ^0.7.6
         version: 0.7.6(hono@4.12.21)(zod@4.4.3)
@@ -29,9 +32,6 @@ importers:
       graphql:
         specifier: ^16.14.0
         version: 16.14.0
-      graphql-http:
-        specifier: ^1.22.4
-        version: 1.22.4(graphql@16.14.0)
       hono:
         specifier: ^4.12.19
         version: 4.12.21
@@ -1070,6 +1070,12 @@ packages:
 
   '@gitmoji/parser-opts@1.4.0':
     resolution: {integrity: sha512-zzmx/vtpdB/ijjUm7u9OzHNCXWKpSbzVEgVzOzhilMgoTBlUDyInZFUtiCTV+Wf4oCP9nxGa/kQGQFfN+XLH1g==}
+
+  '@hono/graphql-server@0.7.0':
+    resolution: {integrity: sha512-TZIqVmcG/ULefzJtKNcNB9LKv3ZNfszwkrKNYjZD9ZSdhfglE3VEEYU6D0kNUlfjKmrhbksiHtp3G2mfMnUf1g==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      hono: '>=3.0.0'
 
   '@hono/zod-validator@0.7.6':
     resolution: {integrity: sha512-Io1B6d011Gj1KknV4rXYz4le5+5EubcWEU/speUjuw9XMMIaP3n78yXLhjd2A3PXaXaUwEAluOiAyLqhBEJgsw==}
@@ -2475,12 +2481,6 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
-
-  graphql-http@1.22.4:
-    resolution: {integrity: sha512-OC3ucK988teMf+Ak/O+ZJ0N2ukcgrEurypp8ePyJFWq83VzwRAmHxxr+XxrMpxO/FIwI4a7m/Fzv3tWGJv0wPA==}
-    engines: {node: '>=12'}
-    peerDependencies:
-      graphql: '>=0.11 <=16'
 
   graphql-parse-resolve-info@4.14.1:
     resolution: {integrity: sha512-WKHukfEuZamP1ZONR84b8iT+4sJgEhtXMDArm1jpXEsU2vTb5EgkCZ4Obfl+v09oNTKXm0CJjPfBUZ5jcJ2Ykg==}
@@ -4653,6 +4653,11 @@ snapshots:
     dependencies:
       '@gitmoji/gitmoji-regex': 1.0.0
 
+  '@hono/graphql-server@0.7.0(hono@4.12.21)':
+    dependencies:
+      graphql: 16.14.0
+      hono: 4.12.21
+
   '@hono/zod-validator@0.7.6(hono@4.12.21)(zod@4.4.3)':
     dependencies:
       hono: 4.12.21
@@ -6042,10 +6047,6 @@ snapshots:
   graceful-fs@4.2.10: {}
 
   graceful-fs@4.2.11: {}
-
-  graphql-http@1.22.4(graphql@16.14.0):
-    dependencies:
-      graphql: 16.14.0
 
   graphql-parse-resolve-info@4.14.1(graphql@16.14.0):
     dependencies:
