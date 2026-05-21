@@ -1,5 +1,6 @@
+import type { D1Database } from "@cloudflare/workers-types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import app from "..";
+import app, { type Env } from "..";
 import type { GuessResponse } from "../services/gateService";
 
 // Mock setup
@@ -14,12 +15,10 @@ vi.mock("../services/gateService", () => ({
 }));
 
 // Fixtures
-const mockEnv = {
-  Bindings: {
-    DB: {
-      prepare: vi.fn(),
-    },
-  },
+const mockEnv: Env["Bindings"] = {
+  DB: {
+    prepare: vi.fn(),
+  } as unknown as D1Database,
 };
 
 function postGuess(gateId: string, guess: string): Promise<Response> {
@@ -64,6 +63,13 @@ describe("GET /api/gates/:id", () => {
 
     const res = await app.request("/api/gates/gate-1", {}, mockEnv);
     expect(res.status).toBe(500);
+    const body = await res.json();
+
+    expect(body).toEqual({
+      status: "error",
+      message: "Server Error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
   });
 });
 
@@ -150,6 +156,13 @@ describe("POST /api/gates/:id/guess", () => {
       const res = await postGuess("gate-1", "guess");
 
       expect(res.status).toBe(500);
+
+      const body = await res.json();
+      expect(body).toEqual({
+        status: "error",
+        message: "Server Error",
+        code: "INTERNAL_SERVER_ERROR",
+      });
     });
   });
 });
