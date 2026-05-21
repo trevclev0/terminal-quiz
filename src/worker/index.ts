@@ -8,6 +8,7 @@ import programsRouter from "./routes/programs";
 export type Env = {
   Bindings: {
     DB: D1Database;
+    ENVIRONMENT?: string;
   };
 };
 
