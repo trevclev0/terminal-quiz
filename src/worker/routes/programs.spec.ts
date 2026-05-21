@@ -1,6 +1,6 @@
 import type { ProgramWithGates } from "@shared/types";
 import { describe, expect, it, vi } from "vitest";
-import app from "..";
+import app, { type Env } from "..";
 
 const mockPrograms = [
   {
@@ -31,7 +31,9 @@ vi.mock("drizzle-orm/d1", () => ({
   })),
 }));
 
-const mockEnv = { DB: {} };
+const mockEnv: Env["Bindings"] = {
+  DB: {} as unknown as D1Database,
+};
 
 describe("Programs Router (/api/programs)", () => {
   it("should return a 200 status and a list of programs", async () => {

@@ -11,7 +11,41 @@ export type Env = {
   };
 };
 
+interface D1Error {
+  message?: string;
+  cause?: unknown;
+  code?: string;
+}
+
 const app = new Hono<Env>();
+
+app.onError((err, c) => {
+  console.error(
+    `[Error on ${c.req.method} ${c.req.path}]:`,
+    err.message || err,
+  );
+
+  if (err.cause) {
+    const cause = err.cause as D1Error;
+    console.error("Underlying D1 Cause:", cause.message || cause);
+  }
+
+  if (c.req.path.startsWith("/api/graphql")) {
+    return c.json(
+      { errors: [{ message: err.message || "Internal Server Error" }] },
+      500,
+    );
+  }
+
+  return c.json(
+    {
+      status: "error",
+      message: "Server Error",
+      code: "INTERNAL_SERVER_ERROR",
+    },
+    500,
+  );
+});
 
 // Set up DB middleware for all API routes
 const api = new Hono<DbContext>()
