@@ -3,6 +3,7 @@
     "arcanis.vscode-zipfs",
     "biomejs.biome",
     "vitest.explorer",
-    "hverlin.mise-vscode"
+    "hverlin.mise-vscode",
+    "bruno-api-client.bruno"
   ]
 }
