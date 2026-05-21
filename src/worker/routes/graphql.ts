@@ -16,6 +16,8 @@ export const invalidateCachedSchema = () => {
 };
 
 const graphQlRouter = new Hono<DbContext>().use("*", async (c, next) => {
+  const isProduction = c.env.ENVIRONMENT === "production";
+
   if (!cachedSchema) {
     try {
       const currentDb = c.get("db");
@@ -51,7 +53,7 @@ const graphQlRouter = new Hono<DbContext>().use("*", async (c, next) => {
 
   return graphqlServer({
     schema: cachedSchema,
-    graphiql: true,
+    graphiql: !isProduction,
   })(c, next);
 });
 

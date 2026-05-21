@@ -35,6 +35,9 @@
       "preview_database_id": "04e5b1c3-3e5d-498e-aafa-8230c4bbdee0"
     }
   ],
+  "vars": {
+    "ENVIRONMENT": "production"
+  },
   "env": {
     "preview": {
       "name": "quiz-app-preview",
