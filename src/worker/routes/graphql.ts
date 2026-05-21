@@ -1,9 +1,10 @@
+import { graphqlServer } from "@hono/graphql-server";
 import { buildSchema } from "drizzle-graphql";
-import { createHandler } from "graphql-http/lib/use/fetch";
+import { GraphQLObjectType, GraphQLSchema } from "graphql";
 import { Hono } from "hono";
 import type { DbContext } from "../middleware/db";
 
-let cachedSchema: ReturnType<typeof buildSchema>["schema"] | null = null;
+let cachedSchema: GraphQLSchema | null = null;
 
 // Exported to allow schema cache invalidation if needed (e.g., during testing).
 // Note: This should not be used in production. In Cloudflare Workers, isolates persist module state.
@@ -14,28 +15,44 @@ export const invalidateCachedSchema = () => {
   cachedSchema = null;
 };
 
-const graphQlRouter = new Hono<DbContext>().all("*", async (c) => {
-  try {
-    const currentDb = c.get("db");
+const graphQlRouter = new Hono<DbContext>().use("*", async (c, next) => {
+  if (!cachedSchema) {
+    try {
+      const currentDb = c.get("db");
+      const { entities } = buildSchema(currentDb);
 
-    if (!cachedSchema) {
-      const { schema } = buildSchema(currentDb);
-      cachedSchema = schema;
+      cachedSchema = new GraphQLSchema({
+        query: new GraphQLObjectType({
+          name: "Query",
+          fields: { ...entities.queries },
+        }),
+        mutation: new GraphQLObjectType({
+          name: "Mutation",
+          fields: { ...entities.mutations },
+        }),
+        types: [
+          ...Object.values(entities.types),
+          ...Object.values(entities.inputs),
+        ],
+      });
+    } catch (schemaError) {
+      console.error("Critical error building GraphQL Schema:", schemaError);
+
+      return c.json(
+        {
+          errors: [
+            { message: "Internal server error during schema generation." },
+          ],
+        },
+        500,
+      );
     }
-
-    const handler = createHandler({
-      schema: cachedSchema,
-      context: {
-        db: currentDb,
-        env: c.env,
-      },
-    });
-
-    return handler(c.req.raw);
-  } catch (error) {
-    console.error("GraphQL error:", error);
-    throw error;
   }
+
+  return graphqlServer({
+    schema: cachedSchema,
+    graphiql: true,
+  })(c, next);
 });
 
 export default graphQlRouter;
