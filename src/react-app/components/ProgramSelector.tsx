@@ -1,9 +1,13 @@
-import { useProgramData } from "@hooks/useProgramData";
+import type { ProgramWithGates } from "@shared/types";
 import { type ChangeEvent, useEffect, useRef } from "react";
 
-function ProgramSelector() {
+type ProgramSelectorProps = {
+  programs: ProgramWithGates[];
+  selectProgram: (programName: string) => void;
+};
+
+function ProgramSelector({ programs, selectProgram }: ProgramSelectorProps) {
   const selectRef = useRef<HTMLSelectElement>(null);
-  const { programs, selectProgram } = useProgramData();
 
   function selectChangeHandler(event: ChangeEvent<HTMLSelectElement>) {
     const selectedProgramName = event.target.value;

@@ -2,7 +2,6 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import ProgramSelector from "@components/ProgramSelector";
-import { ProgramDataContext } from "@contexts/ProgramDataContext";
 import type { ProgramWithGates } from "@shared/types";
 import { defaultNullishProgramProps } from "@test-utils/testTypes";
 import userEvent from "@testing-library/user-event";
@@ -28,49 +27,35 @@ const programs: ProgramWithGates[] = [
   },
 ];
 
-function renderWithContext(overrides: Partial<ProgramDataContext> = {}) {
-  const contextValue: ProgramDataContext = {
-    programs,
-    activeProgram: undefined,
-    selectProgram: vi.fn(),
-    updateProgram: vi.fn(),
-    ...overrides,
-  };
-
-  render(
-    <ProgramDataContext.Provider value={contextValue}>
-      <ProgramSelector />
-    </ProgramDataContext.Provider>,
-  );
-
-  return { selectProgram: contextValue.selectProgram };
-}
-
 // ---------------------------------------------------------------------------
 // Rendering
 // ---------------------------------------------------------------------------
 
 describe("rendering", () => {
   it("renders the placeholder option", () => {
-    renderWithContext();
+    render(<ProgramSelector programs={programs} selectProgram={vi.fn()} />);
+
     expect(screen.getByText("Select your program")).toBeInTheDocument();
   });
 
   it("renders an option for each program", () => {
-    renderWithContext();
+    render(<ProgramSelector programs={programs} selectProgram={vi.fn()} />);
+
     expect(screen.getByRole("option", { name: "Alpha" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Beta" })).toBeInTheDocument();
   });
 
   it("renders the correct number of selectable options", () => {
-    renderWithContext();
+    render(<ProgramSelector programs={programs} selectProgram={vi.fn()} />);
+
     // You might think there should be placeholder + 2 programs = 3 options,
     // but the placeholder is not selectable, so subtract 1
     expect(screen.getAllByRole("option")).toHaveLength(2);
   });
 
   it("renders no program options when the programs list is empty", () => {
-    renderWithContext({ programs: [] });
+    render(<ProgramSelector programs={[]} selectProgram={vi.fn()} />);
+
     expect(screen.getAllByText("No programs found")).toHaveLength(1);
   });
 });
@@ -82,7 +67,10 @@ describe("rendering", () => {
 describe("selecting a program", () => {
   it("calls selectProgram with the chosen program name", async () => {
     const user = userEvent.setup();
-    const { selectProgram } = renderWithContext();
+    const selectProgram = vi.fn();
+    render(
+      <ProgramSelector programs={programs} selectProgram={selectProgram} />,
+    );
 
     await user.selectOptions(screen.getByRole("combobox"), "Beta");
 
@@ -91,7 +79,10 @@ describe("selecting a program", () => {
 
   it("calls selectProgram once per selection change", async () => {
     const user = userEvent.setup();
-    const { selectProgram } = renderWithContext();
+    const selectProgram = vi.fn();
+    render(
+      <ProgramSelector programs={programs} selectProgram={selectProgram} />,
+    );
 
     await user.selectOptions(screen.getByRole("combobox"), "Alpha");
     await user.selectOptions(screen.getByRole("combobox"), "Beta");
