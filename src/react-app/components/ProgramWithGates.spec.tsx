@@ -16,10 +16,22 @@ vi.mock("@utils/getRiddlesToRender", () => ({
   default: vi.fn(),
 }));
 
-// Mock Riddle so Program tests are not dependent on Riddle's internals
 vi.mock("@components/Riddle", () => ({
-  default: ({ id, riddle }: { id: string; riddle: { label: string } }) => (
-    <div data-testid={id}>Riddle: {riddle.label}</div>
+  default: ({
+    id,
+    riddle,
+    onSolve,
+  }: {
+    id: string;
+    riddle: { label: string };
+    onSolve: () => void;
+  }) => (
+    <div data-testid={id}>
+      Riddle: {riddle.label}
+      <button type="button" onClick={onSolve} data-testid={`solve-${id}`}>
+        Solve
+      </button>
+    </div>
   ),
 }));
 
@@ -94,6 +106,7 @@ describe("rendering", () => {
         program={program}
         resetProgram={vi.fn()}
         clearActiveProgram={vi.fn()}
+        updateProgram={vi.fn()}
       />,
     );
     expect(
@@ -107,6 +120,7 @@ describe("rendering", () => {
         program={program}
         resetProgram={vi.fn()}
         clearActiveProgram={vi.fn()}
+        updateProgram={vi.fn()}
       />,
     );
     expect(screen.getByTestId("riddle-0")).toBeInTheDocument();
@@ -119,6 +133,7 @@ describe("rendering", () => {
         program={program}
         resetProgram={vi.fn()}
         clearActiveProgram={vi.fn()}
+        updateProgram={vi.fn()}
       />,
     );
     expect(screen.getByText("Riddle: Step 1")).toBeInTheDocument();
@@ -131,9 +146,49 @@ describe("rendering", () => {
         program={program}
         resetProgram={vi.fn()}
         clearActiveProgram={vi.fn()}
+        updateProgram={vi.fn()}
       />,
     );
     expect(mockGetRiddlesToRender).toHaveBeenCalledWith(program.gates);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Riddle Solved State Updates
+// ---------------------------------------------------------------------------
+
+describe("onSolve callback mapping", () => {
+  it("calls updateProgram with the correctly mapped solved riddle", async () => {
+    const user = userEvent.setup();
+    const updateProgram = vi.fn();
+
+    render(
+      <Program
+        program={program}
+        resetProgram={vi.fn()}
+        clearActiveProgram={vi.fn()}
+        updateProgram={updateProgram}
+      />,
+    );
+
+    // Click the mock solve button for Riddle 2 (which is currently isSolved: false)
+    await user.click(screen.getByTestId("solve-riddle-1"));
+
+    expect(updateProgram).toHaveBeenCalledOnce();
+
+    const updatedProgram = updateProgram.mock.calls[0][0];
+
+    // Verify the specific gate was updated to true
+    const updatedGate = updatedProgram.gates.find(
+      (g: Gate) => g.id === "570d3614-228e-4942-a52b-7ce7805eac46",
+    );
+    expect(updatedGate?.isSolved).toBe(true);
+
+    // Verify the previously solved gate remained solved
+    const existingGate = updatedProgram.gates.find(
+      (g: Gate) => g.id === "10a4bca2-59fc-42da-bbac-79b43dc4f76e",
+    );
+    expect(existingGate?.isSolved).toBe(true);
   });
 });
 
@@ -165,6 +220,7 @@ describe("when the game is finished (nextRiddleIndex === -1)", () => {
         program={program}
         resetProgram={vi.fn()}
         clearActiveProgram={vi.fn()}
+        updateProgram={vi.fn()}
       />,
     );
     expect(
@@ -178,6 +234,7 @@ describe("when the game is finished (nextRiddleIndex === -1)", () => {
         program={program}
         resetProgram={vi.fn()}
         clearActiveProgram={vi.fn()}
+        updateProgram={vi.fn()}
       />,
     );
     expect(
@@ -197,6 +254,7 @@ describe("when the game is finished (nextRiddleIndex === -1)", () => {
         program={program}
         resetProgram={resetProgram}
         clearActiveProgram={vi.fn()}
+        updateProgram={vi.fn()}
       />,
     );
     await user.click(
@@ -219,6 +277,7 @@ describe("when the game is finished (nextRiddleIndex === -1)", () => {
         program={program}
         resetProgram={resetProgram}
         clearActiveProgram={clearActiveProgram}
+        updateProgram={vi.fn()}
       />,
     );
 
@@ -244,6 +303,7 @@ describe("when the game is finished (nextRiddleIndex === -1)", () => {
         program={program}
         resetProgram={resetProgram}
         clearActiveProgram={clearActiveProgram}
+        updateProgram={vi.fn()}
       />,
     );
 
@@ -268,6 +328,7 @@ describe("when the game is in progress (nextRiddleIndex !== -1)", () => {
         program={program}
         resetProgram={vi.fn()}
         clearActiveProgram={vi.fn()}
+        updateProgram={vi.fn()}
       />,
     );
     expect(screen.queryByText("The End")).not.toBeInTheDocument();
@@ -292,6 +353,7 @@ describe("useProgressionScroll", () => {
         program={program}
         resetProgram={vi.fn()}
         clearActiveProgram={vi.fn()}
+        updateProgram={vi.fn()}
       />,
     );
     expect(useProgressionScroll).toHaveBeenCalledWith(1);

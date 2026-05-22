@@ -72,8 +72,12 @@ const lockedRiddle: Gate = {
 
 const unlockedRiddle: Gate = { ...lockedRiddle, isSolved: true };
 
+const mockOnSolve = vi.fn();
+
 function renderRiddle(riddle: Gate = lockedRiddle, id = "riddle-0") {
-  return render(<RiddleComponent id={id} riddle={riddle} />);
+  return render(
+    <RiddleComponent id={id} riddle={riddle} onSolve={mockOnSolve} />,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -194,13 +198,11 @@ describe("shake state", () => {
 
 describe("details toggle", () => {
   it("focuses the input when the details element is toggled open", () => {
-    // 2. Setup mock riddle data
     const mockRiddle: Gate = {
       id: "7b24833a-dbcf-45b0-8efd-7f6f692a84ab",
       label: "riddle-1",
       question: "I speak without a mouth and hear without ears. What am I?",
       correctAnswer: "",
-      // CRITICAL: isSolved must be false, otherwise the input is disabled and cannot receive focus
       isSolved: false,
       successMessage: "Sound reflects.",
       ...defaultNullishGateProps,
@@ -208,12 +210,10 @@ describe("details toggle", () => {
       sequenceOrder: 1,
     };
 
-    // 3. Render the component
     const { container } = render(
-      <RiddleComponent id="test-1" riddle={mockRiddle} />,
+      <RiddleComponent id="test-1" riddle={mockRiddle} onSolve={mockOnSolve} />,
     );
 
-    // 4. Query our elements
     const input = screen.getByPlaceholderText("Enter password...");
     const details = container.querySelector("details");
 
@@ -221,16 +221,13 @@ describe("details toggle", () => {
     if (details === null) throw new Error("details should not be null");
     expect(input).not.toHaveFocus(); // Ensure it isn't focused initially
 
-    // 5. Construct the ToggleEvent
     // We use defineProperty to bypass strict TypeScript/virtual DOM limitations
     // regarding the relatively new ToggleEvent 'newState' property.
     const toggleEvent = new Event("toggle");
     Object.defineProperty(toggleEvent, "newState", { value: "open" });
 
-    // 6. Fire the event
     fireEvent(details, toggleEvent);
 
-    // 7. Assert Line 28 executed successfully
     expect(input).toHaveFocus();
   });
 
