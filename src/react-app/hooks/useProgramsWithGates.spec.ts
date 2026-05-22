@@ -1,4 +1,4 @@
-import usePrograms from "@hooks/usePrograms";
+import usePrograms from "@hooks/useProgramsWithGates";
 import type { Gate, ProgramWithGates } from "@shared/types";
 import {
   defaultNullishGateProps,

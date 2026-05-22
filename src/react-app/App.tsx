@@ -1,6 +1,6 @@
 import ProgramSelector from "@components/ProgramSelector";
 import ProgramWithGates from "@components/ProgramWithGates";
-import usePrograms from "@hooks/usePrograms";
+import usePrograms from "@hooks/useProgramsWithGates";
 
 function App() {
   const {
