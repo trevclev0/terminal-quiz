@@ -6,9 +6,10 @@ import { type ToggleEvent, useEffect, useRef, useState } from "react";
 type RiddleProps = {
   id: string;
   riddle: Gate;
+  onSolve: () => void;
 };
 
-function Riddle({ id, riddle }: RiddleProps) {
+function Riddle({ id, riddle, onSolve }: RiddleProps) {
   const summaryRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isOpen, setIsOpen] = useState(riddle.isSolved);
@@ -18,6 +19,7 @@ function Riddle({ id, riddle }: RiddleProps) {
       riddle,
       shake,
       clearShake,
+      onSolve,
     });
 
   const inputVal = riddle.isSolved ? `✔ ${riddle.correctAnswer}` : guess;

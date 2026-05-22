@@ -8,9 +8,15 @@ type ProgramProps = {
   program: ProgramWithGates;
   resetProgram: () => void;
   clearActiveProgram: () => void;
+  updateProgram: (program: ProgramWithGates) => void;
 };
 
-function Program({ program, resetProgram, clearActiveProgram }: ProgramProps) {
+function Program({
+  program,
+  resetProgram,
+  clearActiveProgram,
+  updateProgram,
+}: ProgramProps) {
   const selectNewProgramRef = useRef<HTMLButtonElement>(null);
   const { riddlesToRender, nextRiddleIndex } = useMemo(
     () => getRiddlesToRender(program.gates),
@@ -45,7 +51,19 @@ function Program({ program, resetProgram, clearActiveProgram }: ProgramProps) {
     <>
       <h1 className="title">{program.name}</h1>
       {riddlesToRender.map((riddle, index) => (
-        <Riddle key={riddle.id} id={`riddle-${index}`} riddle={riddle} />
+        <Riddle
+          key={riddle.id}
+          id={`riddle-${index}`}
+          riddle={riddle}
+          onSolve={() =>
+            updateProgram({
+              ...program,
+              gates: program.gates.map((gate) =>
+                gate.id === riddle.id ? { ...gate, isSolved: true } : gate,
+              ),
+            })
+          }
+        />
       ))}
       {isTheEnd && (
         <div id="classic-ending">

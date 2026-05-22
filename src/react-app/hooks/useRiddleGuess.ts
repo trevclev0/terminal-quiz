@@ -1,4 +1,3 @@
-import { useProgramData } from "@hooks/useProgramData";
 import type { Gate } from "@shared/types";
 import isGuessCloseEnough from "@utils/isGuessCloseEnough";
 import { type ChangeEvent, type SubmitEvent, useEffect, useState } from "react";
@@ -7,11 +6,15 @@ type UseRiddleGuessArgs = {
   riddle: Gate;
   shake: () => void;
   clearShake: () => void;
+  onSolve: () => void;
 };
 
-function useRiddleGuess({ riddle, shake, clearShake }: UseRiddleGuessArgs) {
-  const { activeProgram, updateProgram } = useProgramData();
-
+function useRiddleGuess({
+  riddle,
+  shake,
+  clearShake,
+  onSolve,
+}: UseRiddleGuessArgs) {
   const [guess, setGuess] = useState("");
   const [response, setResponse] = useState("");
   const [guessResult, setGuessResult] = useState<
@@ -37,15 +40,7 @@ function useRiddleGuess({ riddle, shake, clearShake }: UseRiddleGuessArgs) {
       setResponse("Access Granted.");
       setGuessResult("correct");
       clearShake();
-
-      if (!activeProgram) return;
-
-      updateProgram({
-        ...activeProgram,
-        gates: activeProgram.gates.map((gate: Gate) =>
-          gate.id === riddle.id ? { ...gate, isSolved: true } : gate,
-        ),
-      });
+      onSolve();
     } else {
       setResponse("Access Denied.");
       setGuessResult("incorrect");
