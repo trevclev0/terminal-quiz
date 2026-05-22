@@ -42,6 +42,7 @@ function App() {
             program={activeProgram}
             resetProgram={resetProgram}
             clearActiveProgram={clearActiveProgram}
+            updateProgram={updateProgram}
           />
         ) : (
           <ProgramSelector programs={programs} selectProgram={selectProgram} />

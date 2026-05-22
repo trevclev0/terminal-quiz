@@ -1,6 +1,4 @@
-import type { ProgramDataContext as ContextType } from "@contexts/ProgramDataContext";
 import useRiddleGuess from "@hooks/useRiddleGuess";
-import { createProgramDataWrapper } from "@test-utils/createProgramDataWrapper";
 import { act, renderHook } from "@testing-library/react";
 import type { ChangeEvent, SubmitEvent } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -13,11 +11,8 @@ vi.mock("@utils/isGuessCloseEnough", () => ({
   default: vi.fn(),
 }));
 
-import type { Gate, ProgramWithGates } from "@shared/types";
-import {
-  defaultNullishGateProps,
-  defaultNullishProgramProps,
-} from "@test-utils/testTypes";
+import type { Gate } from "@shared/types";
+import { defaultNullishGateProps } from "@test-utils/testTypes";
 import isGuessCloseEnough from "@utils/isGuessCloseEnough";
 
 const mockIsGuessCloseEnough = vi.mocked(isGuessCloseEnough);
@@ -38,44 +33,24 @@ const riddle: Gate = {
   sequenceOrder: 1,
 };
 
-const activeProgram: ProgramWithGates = {
-  id: "d9e4309c-a3c2-43bc-9894-540aa0a2fc9c",
-  name: "Alpha",
-  isSelected: true,
-  gates: [
-    riddle,
-    {
-      ...riddle,
-      id: "13646090-d5d3-4e86-9485-886802231c3d",
-      label: "Step 2",
-      isSolved: false,
-    },
-  ],
-  ...defaultNullishProgramProps,
-};
-
 // ---------------------------------------------------------------------------
-// Wrapper factory
+// Setup Utilities
 // ---------------------------------------------------------------------------
 
 const shake = vi.fn();
 const clearShake = vi.fn();
+const onSolve = vi.fn();
 
-function renderGuessHook(overrides: Partial<ContextType> = {}) {
-  const { wrapper, contextValue } = createProgramDataWrapper({
-    activeProgram,
-    ...overrides,
-  });
-  const { result } = renderHook(
-    () =>
-      useRiddleGuess({
-        riddle,
-        shake,
-        clearShake,
-      }),
-    { wrapper },
+function renderGuessHook() {
+  const { result } = renderHook(() =>
+    useRiddleGuess({
+      riddle,
+      shake,
+      clearShake,
+      onSolve,
+    }),
   );
-  return { result, contextValue };
+  return { result };
 }
 
 function makeSubmitEvent() {
@@ -158,35 +133,10 @@ describe("submitHandler with a correct guess", () => {
     expect(clearShake).toHaveBeenCalled();
   });
 
-  it("calls contextValue with the riddle unlocked", () => {
-    const { result, contextValue } = renderGuessHook();
+  it("calls onSolve", () => {
+    const { result } = renderGuessHook();
     act(() => result.current.submitHandler(makeSubmitEvent()));
-
-    expect(contextValue.updateProgram).toHaveBeenCalledOnce();
-    const updatedProgram: ProgramWithGates = vi.mocked(
-      contextValue.updateProgram,
-    ).mock.calls[0][0];
-    const updatedRiddle = updatedProgram.gates.find((r) => r.id === riddle.id);
-    expect(updatedRiddle?.isSolved).toBe(true);
-  });
-
-  it("does not unlock other riddles", () => {
-    const { result, contextValue } = renderGuessHook();
-    act(() => result.current.submitHandler(makeSubmitEvent()));
-
-    const updatedProgram: ProgramWithGates = vi.mocked(
-      contextValue.updateProgram,
-    ).mock.calls[0][0];
-    const otherRiddle = updatedProgram.gates.find((r) => r.label === "Step 2");
-    expect(otherRiddle?.isSolved).toBe(false);
-  });
-
-  it("does not call contextValue when activeProgram is undefined", () => {
-    const { result, contextValue } = renderGuessHook({
-      activeProgram: undefined,
-    });
-    act(() => result.current.submitHandler(makeSubmitEvent()));
-    expect(contextValue.updateProgram).not.toHaveBeenCalled();
+    expect(onSolve).toHaveBeenCalledOnce();
   });
 });
 
@@ -213,9 +163,9 @@ describe("submitHandler with an incorrect guess", () => {
     expect(shake).toHaveBeenCalled();
   });
 
-  it("does not call contextValue", () => {
-    const { result, contextValue } = renderGuessHook();
+  it("does not call onSolve", () => {
+    const { result } = renderGuessHook();
     act(() => result.current.submitHandler(makeSubmitEvent()));
-    expect(contextValue.updateProgram).not.toHaveBeenCalled();
+    expect(onSolve).not.toHaveBeenCalled();
   });
 });
