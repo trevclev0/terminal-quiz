@@ -1,5 +1,5 @@
-import Program from "@components/Program";
 import ProgramSelector from "@components/ProgramSelector";
+import ProgramWithGates from "@components/ProgramWithGates";
 import { ProgramDataContext } from "@contexts/ProgramDataContext";
 import usePrograms from "@hooks/usePrograms";
 import { useMemo } from "react";
@@ -38,7 +38,7 @@ function App() {
     <div className="app">
       <ProgramDataContext.Provider value={contextValue}>
         {activeProgram ? (
-          <Program
+          <ProgramWithGates
             program={activeProgram}
             resetProgram={resetProgram}
             clearActiveProgram={clearActiveProgram}
