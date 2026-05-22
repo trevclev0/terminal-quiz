@@ -44,7 +44,7 @@ function App() {
             clearActiveProgram={clearActiveProgram}
           />
         ) : (
-          <ProgramSelector />
+          <ProgramSelector programs={programs} selectProgram={selectProgram} />
         )}
       </ProgramDataContext.Provider>
     </div>
