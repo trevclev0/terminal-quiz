@@ -39,6 +39,7 @@ const gatesRouter = new Hono<DbContext>()
       let statusCode: ContentfulStatusCode = 400;
       if (result.code === "NOT_FOUND") statusCode = 404;
       if (result.code === "ALREADY_SOLVED") statusCode = 409;
+      if (result.code === "INTERNAL_SERVER_ERROR") statusCode = 500;
       return c.json(result, statusCode);
     }
 
