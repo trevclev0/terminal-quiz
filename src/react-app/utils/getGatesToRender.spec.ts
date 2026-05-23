@@ -4,16 +4,16 @@ import getGatesToRender from "@utils/getGatesToRender";
 import { describe, expect, it } from "vitest";
 
 const makeGate = (overrides: Partial<Gate> = {}): Gate => ({
+  ...defaultNullishGateProps,
   id: "c3b3ae1c-9565-41f7-b14c-7b203769555c",
   label: "test-id",
   correctAnswer: "test-pw",
   question: "default gate",
   successMessage: "default description",
   isSolved: false,
-  ...defaultNullishGateProps,
-  ...overrides,
   programId: "63e52b69-0bb3-4598-8957-e531c90175ba",
   sequenceOrder: 1,
+  ...overrides,
 });
 
 describe("getGatesToRender", () => {
