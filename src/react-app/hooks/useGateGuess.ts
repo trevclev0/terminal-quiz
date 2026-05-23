@@ -2,19 +2,14 @@ import type { Gate } from "@shared/types";
 import isGuessCloseEnough from "@utils/isGuessCloseEnough";
 import { type ChangeEvent, type SubmitEvent, useEffect, useState } from "react";
 
-type UseRiddleGuessArgs = {
-  riddle: Gate;
+type UseGateGuessArgs = {
+  gate: Gate;
   shake: () => void;
   clearShake: () => void;
   onSolve: () => void;
 };
 
-function useRiddleGuess({
-  riddle,
-  shake,
-  clearShake,
-  onSolve,
-}: UseRiddleGuessArgs) {
+function useGateGuess({ gate, shake, clearShake, onSolve }: UseGateGuessArgs) {
   const [guess, setGuess] = useState("");
   const [response, setResponse] = useState("");
   const [guessResult, setGuessResult] = useState<
@@ -22,12 +17,12 @@ function useRiddleGuess({
   >(null);
 
   useEffect(() => {
-    if (!riddle.isSolved) {
+    if (!gate.isSolved) {
       setGuess("");
       setResponse("");
       setGuessResult(null);
     }
-  }, [riddle.isSolved]);
+  }, [gate.isSolved]);
 
   function changeHandler(event: ChangeEvent<HTMLInputElement>) {
     setGuess(event.target.value);
@@ -36,7 +31,7 @@ function useRiddleGuess({
   function submitHandler(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (isGuessCloseEnough(guess, riddle.correctAnswer)) {
+    if (isGuessCloseEnough(guess, gate.correctAnswer)) {
       setResponse("Access Granted.");
       setGuessResult("correct");
       clearShake();
@@ -51,4 +46,4 @@ function useRiddleGuess({
   return { guess, response, guessResult, changeHandler, submitHandler };
 }
 
-export default useRiddleGuess;
+export default useGateGuess;

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import RiddleComponent from "@components/Gate";
+import GateComponent from "@components/Gate";
 import userEvent from "@testing-library/user-event";
 
 // ---------------------------------------------------------------------------
@@ -35,7 +35,7 @@ const defaultShake = {
   clearShake: vi.fn(),
 };
 
-const defaultRiddleGuess = {
+const defaultGateGuess = {
   guess: "",
   response: "",
   guessResult: null as "correct" | "incorrect" | null,
@@ -45,7 +45,7 @@ const defaultRiddleGuess = {
 
 beforeEach(() => {
   mockUseShake.mockReturnValue(defaultShake);
-  mockuseGateGuess.mockReturnValue(defaultRiddleGuess);
+  mockuseGateGuess.mockReturnValue(defaultGateGuess);
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
@@ -58,7 +58,7 @@ afterEach(() => {
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const lockedRiddle: Gate = {
+const lockedGate: Gate = {
   id: "2fe67eac-ec4b-4858-9234-891c609c20df",
   label: "Step 1",
   correctAnswer: "secret",
@@ -70,43 +70,41 @@ const lockedRiddle: Gate = {
   sequenceOrder: 1,
 };
 
-const unlockedRiddle: Gate = { ...lockedRiddle, isSolved: true };
+const unlockedGate: Gate = { ...lockedGate, isSolved: true };
 
 const mockOnSolve = vi.fn();
 
-function renderRiddle(riddle: Gate = lockedRiddle, id = "riddle-0") {
-  return render(
-    <RiddleComponent id={id} riddle={riddle} onSolve={mockOnSolve} />,
-  );
+function renderGate(gate: Gate = lockedGate, id = "gate-0") {
+  return render(<GateComponent id={id} gate={gate} onSolve={mockOnSolve} />);
 }
 
 // ---------------------------------------------------------------------------
 // Rendering — locked state
 // ---------------------------------------------------------------------------
 
-describe("locked riddle", () => {
-  it("renders the riddle id in the summary", () => {
-    renderRiddle();
+describe("locked gate", () => {
+  it("renders the gate id in the summary", () => {
+    renderGate();
     expect(screen.getByText("Step 1")).toBeInTheDocument();
   });
 
-  it("renders the riddle question", () => {
-    renderRiddle();
+  it("renders the gate question", () => {
+    renderGate();
     expect(screen.getByText("What has keys but no locks?")).toBeInTheDocument();
   });
 
   it("renders an enabled input", () => {
-    renderRiddle();
+    renderGate();
     expect(screen.getByRole("textbox")).not.toBeDisabled();
   });
 
   it("does not render the clue", () => {
-    renderRiddle();
+    renderGate();
     expect(screen.queryByText("A keyboard")).not.toBeInTheDocument();
   });
 
   it("does not show a response message when response is empty", () => {
-    renderRiddle();
+    renderGate();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 });
@@ -115,24 +113,24 @@ describe("locked riddle", () => {
 // Rendering — unlocked state
 // ---------------------------------------------------------------------------
 
-describe("unlocked riddle", () => {
+describe("unlocked gate", () => {
   it("renders the decoded answer in the input prefixed with ✔", () => {
-    renderRiddle(unlockedRiddle);
+    renderGate(unlockedGate);
     expect(screen.getByRole("textbox")).toHaveValue("✔ secret");
   });
 
   it("renders the clue", () => {
-    renderRiddle(unlockedRiddle);
+    renderGate(unlockedGate);
     expect(screen.getByText("A keyboard")).toBeInTheDocument();
   });
 
   it("renders a disabled input", () => {
-    renderRiddle(unlockedRiddle);
+    renderGate(unlockedGate);
     expect(screen.getByRole("textbox")).toBeDisabled();
   });
 
   it("renders the details element as open", () => {
-    renderRiddle(unlockedRiddle);
+    renderGate(unlockedGate);
     expect(screen.getByRole("group")).toHaveAttribute("open");
   });
 });
@@ -144,31 +142,31 @@ describe("unlocked riddle", () => {
 describe("response display", () => {
   it("renders the response text when present", () => {
     mockuseGateGuess.mockReturnValue({
-      ...defaultRiddleGuess,
+      ...defaultGateGuess,
       response: "Access Denied.",
       guessResult: "incorrect",
     });
-    renderRiddle();
+    renderGate();
     expect(screen.getByText("Access Denied.")).toBeInTheDocument();
   });
 
   it("applies the fail class for an incorrect guess", () => {
     mockuseGateGuess.mockReturnValue({
-      ...defaultRiddleGuess,
+      ...defaultGateGuess,
       response: "Access Denied.",
       guessResult: "incorrect",
     });
-    renderRiddle();
+    renderGate();
     expect(screen.getByText("Access Denied.")).toHaveClass("fail");
   });
 
   it("does not apply the fail class for a correct guess", () => {
     mockuseGateGuess.mockReturnValue({
-      ...defaultRiddleGuess,
+      ...defaultGateGuess,
       response: "Access Granted.",
       guessResult: "correct",
     });
-    renderRiddle();
+    renderGate();
     expect(screen.getByText("Access Granted.")).not.toHaveClass("fail");
   });
 });
@@ -180,14 +178,14 @@ describe("response display", () => {
 describe("shake state", () => {
   it("applies the shake class to the form when isShaking is true", () => {
     mockUseShake.mockReturnValue({ ...defaultShake, isShaking: true });
-    renderRiddle();
-    // The form has aria-label containing the riddle id
-    const riddle = screen.getByTestId("riddle-0");
-    expect(riddle).toHaveClass("shake");
+    renderGate();
+    // The form has aria-label containing the gate id
+    const gate = screen.getByTestId("gate-0");
+    expect(gate).toHaveClass("shake");
   });
 
   it("does not apply the shake class when isShaking is false", () => {
-    renderRiddle();
+    renderGate();
     expect(screen.getByRole("form")).not.toHaveClass("shake");
   });
 });
@@ -198,9 +196,9 @@ describe("shake state", () => {
 
 describe("details toggle", () => {
   it("focuses the input when the details element is toggled open", () => {
-    const mockRiddle: Gate = {
+    const mockGate: Gate = {
       id: "7b24833a-dbcf-45b0-8efd-7f6f692a84ab",
-      label: "riddle-1",
+      label: "gate-1",
       question: "I speak without a mouth and hear without ears. What am I?",
       correctAnswer: "",
       isSolved: false,
@@ -211,7 +209,7 @@ describe("details toggle", () => {
     };
 
     const { container } = render(
-      <RiddleComponent id="test-1" riddle={mockRiddle} onSolve={mockOnSolve} />,
+      <GateComponent id="test-1" gate={mockGate} onSolve={mockOnSolve} />,
     );
 
     const input = screen.getByPlaceholderText("Enter password...");
@@ -235,11 +233,11 @@ describe("details toggle", () => {
     const user = userEvent.setup();
     const changeHandler = vi.fn();
     mockuseGateGuess.mockReturnValue({
-      ...defaultRiddleGuess,
+      ...defaultGateGuess,
       changeHandler,
     });
 
-    const { unmount } = renderRiddle(lockedRiddle);
+    const { unmount } = renderGate(lockedGate);
 
     // Open the details first
     const details = screen.getByRole("group");

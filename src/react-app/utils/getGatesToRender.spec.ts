@@ -3,11 +3,11 @@ import { defaultNullishGateProps } from "@test-utils/testTypes";
 import getGatesToRender from "@utils/getGatesToRender";
 import { describe, expect, it } from "vitest";
 
-const makeRiddle = (overrides: Partial<Gate> = {}): Gate => ({
+const makeGate = (overrides: Partial<Gate> = {}): Gate => ({
   id: "c3b3ae1c-9565-41f7-b14c-7b203769555c",
   label: "test-id",
   correctAnswer: "test-pw",
-  question: "default riddle",
+  question: "default gate",
   successMessage: "default description",
   isSolved: false,
   ...defaultNullishGateProps,
@@ -17,8 +17,8 @@ const makeRiddle = (overrides: Partial<Gate> = {}): Gate => ({
 });
 
 describe("getGatesToRender", () => {
-  it("should return 0 if the first riddle is locked", () => {
-    const gates: Gate[] = [makeRiddle()];
+  it("should return 0 if the first gate is locked", () => {
+    const gates: Gate[] = [makeGate()];
     const { gatesToRender, nextGateIndex } = getGatesToRender(gates);
     expect(nextGateIndex).toBe(0);
     expect(gatesToRender.length).toEqual(1);
@@ -27,9 +27,9 @@ describe("getGatesToRender", () => {
 
   it("should return nextGateIndex: 1, 2 gates when 1 of 3 is solved", () => {
     const gates: Gate[] = [
-      makeRiddle({ isSolved: true }),
-      makeRiddle({ sequenceOrder: 2 }),
-      makeRiddle({ sequenceOrder: 3 }),
+      makeGate({ isSolved: true }),
+      makeGate({ sequenceOrder: 2 }),
+      makeGate({ sequenceOrder: 3 }),
     ];
     const { gatesToRender, nextGateIndex } = getGatesToRender(gates);
     expect(nextGateIndex).toBe(1);
@@ -38,9 +38,9 @@ describe("getGatesToRender", () => {
 
   it("should return nextGateIndex: 2, 3 gates when 2 of 3 is solved", () => {
     const gates: Gate[] = [
-      makeRiddle({ isSolved: true }),
-      makeRiddle({ isSolved: true, sequenceOrder: 2 }),
-      makeRiddle({ sequenceOrder: 3 }),
+      makeGate({ isSolved: true }),
+      makeGate({ isSolved: true, sequenceOrder: 2 }),
+      makeGate({ sequenceOrder: 3 }),
     ];
     const { gatesToRender, nextGateIndex } = getGatesToRender(gates);
     expect(nextGateIndex).toBe(2);
@@ -48,7 +48,7 @@ describe("getGatesToRender", () => {
   });
 
   it("should return -1 if all gates are solved", () => {
-    const gates: Gate[] = [makeRiddle({ isSolved: true })];
+    const gates: Gate[] = [makeGate({ isSolved: true })];
     const { gatesToRender, nextGateIndex } = getGatesToRender(gates);
     expect(nextGateIndex).toBe(-1);
     expect(gatesToRender.length).toEqual(1);

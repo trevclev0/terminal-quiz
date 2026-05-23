@@ -1,4 +1,4 @@
-import Riddle from "@components/Gate";
+import Gate from "@components/Gate";
 import useProgressionScroll from "@hooks/useProgressionScroll";
 import type { ProgramWithGates } from "@shared/types";
 import getGatesToRender from "@utils/getGatesToRender";
@@ -18,14 +18,14 @@ function Program({
   updateProgram,
 }: ProgramProps) {
   const selectNewProgramRef = useRef<HTMLButtonElement>(null);
-  const { riddlesToRender, nextRiddleIndex } = useMemo(
+  const { gatesToRender, nextGateIndex } = useMemo(
     () => getGatesToRender(program.gates),
     [program.gates],
   );
 
-  useProgressionScroll(nextRiddleIndex);
+  useProgressionScroll(nextGateIndex);
 
-  const isTheEnd = nextRiddleIndex === -1;
+  const isTheEnd = nextGateIndex === -1;
 
   useEffect(() => {
     if (isTheEnd) {
@@ -50,16 +50,18 @@ function Program({
   return (
     <>
       <h1 className="title">{program.name}</h1>
-      {riddlesToRender.map((riddle, index) => (
-        <Riddle
-          key={riddle.id}
-          id={`riddle-${index}`}
-          riddle={riddle}
+      {gatesToRender.map((gateToRender, index) => (
+        <Gate
+          key={gateToRender.id}
+          id={`gate-${index}`}
+          gate={gateToRender}
           onSolve={() =>
             updateProgram({
               ...program,
-              gates: program.gates.map((gate) =>
-                gate.id === riddle.id ? { ...gate, isSolved: true } : gate,
+              gates: program.gates.map((programGate) =>
+                programGate.id === gateToRender.id
+                  ? { ...programGate, isSolved: true }
+                  : programGate,
               ),
             })
           }
