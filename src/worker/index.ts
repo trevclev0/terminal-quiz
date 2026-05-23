@@ -21,7 +21,9 @@ interface D1Error {
 
 const app = new Hono<Env>();
 
-app.use(logger());
+if (process.env.NODE_ENV !== "test") {
+  app.use("*", logger());
+}
 
 app.onError((err, c) => {
   console.error(
