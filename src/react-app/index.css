@@ -60,7 +60,7 @@ select {
   margin-bottom: 20px;
 }
 
-.riddle {
+.gate {
   border: 1px solid var(--green);
   margin-bottom: 10px;
 }
@@ -76,7 +76,7 @@ summary::marker {
   content: none;
 }
 
-.riddle form {
+.gate form {
   display: flex;
   flex-direction: column;
 }
