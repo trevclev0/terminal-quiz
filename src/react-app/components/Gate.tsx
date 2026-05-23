@@ -44,11 +44,7 @@ function Gate({ id, gate, onSolve }: GateProps) {
   }, [gate.isSolved]);
 
   return (
-    <div
-      id={id}
-      className={isShaking ? "riddle shake" : "riddle"}
-      data-testid={id}
-    >
+    <div id={id} className={isShaking ? "gate shake" : "gate"} data-testid={id}>
       <details onToggle={toggleHandler} open={isOpen}>
         <summary ref={summaryRef}>{gate.label}</summary>
         <form
