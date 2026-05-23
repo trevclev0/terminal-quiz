@@ -21,8 +21,14 @@ interface D1Error {
 
 const app = new Hono<Env>();
 
-if (process.env.NODE_ENV !== "test") {
-  app.use("*", logger());
+// biome-ignore lint/suspicious/noExplicitAny: Allows checking process.env.NODE_ENV in Cloudflare runtime
+const globalObj = globalThis as any;
+
+if (
+  typeof globalObj.process !== "undefined" &&
+  globalObj.process.env?.NODE_ENV !== "test"
+) {
+  app.use(logger());
 }
 
 app.onError((err, c) => {
