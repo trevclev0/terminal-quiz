@@ -74,3 +74,26 @@ export const gameState = sqliteTable("game_state", {
     .default(sql`(CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER))`)
     .$onUpdateFn(() => new Date()),
 });
+
+export const sessionProgress = sqliteTable(
+  "session_progress",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    sessionId: text("session_id").notNull(),
+    programId: text("program_id").notNull(),
+    currentGateId: text("current_gate_id"),
+    completedGateIds: text("completed_gate_ids").default("[]"),
+    status: text("status").notNull().default("in_progress"),
+    startedAt: integer("started_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date())
+      .$onUpdateFn(() => new Date()),
+    completedAt: integer("completed_at", { mode: "timestamp" }),
+  },
+  (t) => [unique("unique_session_progress").on(t.sessionId, t.programId)],
+);
