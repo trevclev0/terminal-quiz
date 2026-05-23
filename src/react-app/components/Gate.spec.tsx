@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import RiddleComponent from "@components/Riddle";
+import RiddleComponent from "@components/Gate";
 import userEvent from "@testing-library/user-event";
 
 // ---------------------------------------------------------------------------
@@ -12,18 +12,18 @@ vi.mock("@hooks/useShake", () => ({
   default: vi.fn(),
 }));
 
-vi.mock("@hooks/useRiddleGuess", () => ({
+vi.mock("@hooks/useGateGuess", () => ({
   default: vi.fn(),
 }));
 
-import useRiddleGuess from "@hooks/useRiddleGuess";
+import useGateGuess from "@hooks/useGateGuess";
 import useShake from "@hooks/useShake";
 import type { Gate } from "@shared/types";
 import { defaultNullishGateProps } from "@test-utils/testTypes";
 import type { SubmitEvent } from "react";
 
 const mockUseShake = vi.mocked(useShake);
-const mockUseRiddleGuess = vi.mocked(useRiddleGuess);
+const mockuseGateGuess = vi.mocked(useGateGuess);
 
 // ---------------------------------------------------------------------------
 // Default mock implementations
@@ -45,7 +45,7 @@ const defaultRiddleGuess = {
 
 beforeEach(() => {
   mockUseShake.mockReturnValue(defaultShake);
-  mockUseRiddleGuess.mockReturnValue(defaultRiddleGuess);
+  mockuseGateGuess.mockReturnValue(defaultRiddleGuess);
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
@@ -143,7 +143,7 @@ describe("unlocked riddle", () => {
 
 describe("response display", () => {
   it("renders the response text when present", () => {
-    mockUseRiddleGuess.mockReturnValue({
+    mockuseGateGuess.mockReturnValue({
       ...defaultRiddleGuess,
       response: "Access Denied.",
       guessResult: "incorrect",
@@ -153,7 +153,7 @@ describe("response display", () => {
   });
 
   it("applies the fail class for an incorrect guess", () => {
-    mockUseRiddleGuess.mockReturnValue({
+    mockuseGateGuess.mockReturnValue({
       ...defaultRiddleGuess,
       response: "Access Denied.",
       guessResult: "incorrect",
@@ -163,7 +163,7 @@ describe("response display", () => {
   });
 
   it("does not apply the fail class for a correct guess", () => {
-    mockUseRiddleGuess.mockReturnValue({
+    mockuseGateGuess.mockReturnValue({
       ...defaultRiddleGuess,
       response: "Access Granted.",
       guessResult: "correct",
@@ -234,7 +234,7 @@ describe("details toggle", () => {
   it("forwards changeHandler to the input", async () => {
     const user = userEvent.setup();
     const changeHandler = vi.fn();
-    mockUseRiddleGuess.mockReturnValue({
+    mockuseGateGuess.mockReturnValue({
       ...defaultRiddleGuess,
       changeHandler,
     });

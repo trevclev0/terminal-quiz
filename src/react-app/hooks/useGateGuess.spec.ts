@@ -1,4 +1,4 @@
-import useRiddleGuess from "@hooks/useRiddleGuess";
+import useRiddleGuess from "@hooks/useGateGuess";
 import { act, renderHook } from "@testing-library/react";
 import type { ChangeEvent, SubmitEvent } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";

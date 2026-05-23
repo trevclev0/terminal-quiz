@@ -12,11 +12,11 @@ vi.mock("@hooks/useProgressionScroll", () => ({
   default: vi.fn(),
 }));
 
-vi.mock("@utils/getRiddlesToRender", () => ({
+vi.mock("@utils/getGatesToRender", () => ({
   default: vi.fn(),
 }));
 
-vi.mock("@components/Riddle", () => ({
+vi.mock("@components/Gate", () => ({
   default: ({
     id,
     riddle,
@@ -41,9 +41,9 @@ import {
   defaultNullishGateProps,
   defaultNullishProgramProps,
 } from "@test-utils/testTypes";
-import getRiddlesToRender from "@utils/getRiddlesToRender";
+import getGatesToRender from "@utils/getGatesToRender";
 
-const mockGetRiddlesToRender = vi.mocked(getRiddlesToRender);
+const mockGetGatesToRender = vi.mocked(getGatesToRender);
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -85,7 +85,7 @@ const program: ProgramWithGates = {
 beforeEach(() => {
   vi.mocked(useProgressionScroll).mockImplementation(() => {});
   // By default return both riddles with a next index
-  mockGetRiddlesToRender.mockReturnValue({
+  mockGetGatesToRender.mockReturnValue({
     riddlesToRender: riddles,
     nextRiddleIndex: 1,
   });
@@ -114,7 +114,7 @@ describe("rendering", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders each riddle returned by getRiddlesToRender", () => {
+  it("renders each riddle returned by getGatesToRender", () => {
     render(
       <Program
         program={program}
@@ -140,7 +140,7 @@ describe("rendering", () => {
     expect(screen.getByText("Riddle: Step 2")).toBeInTheDocument();
   });
 
-  it("calls getRiddlesToRender with the program riddles", () => {
+  it("calls getGatesToRender with the program riddles", () => {
     render(
       <Program
         program={program}
@@ -149,7 +149,7 @@ describe("rendering", () => {
         updateProgram={vi.fn()}
       />,
     );
-    expect(mockGetRiddlesToRender).toHaveBeenCalledWith(program.gates);
+    expect(mockGetGatesToRender).toHaveBeenCalledWith(program.gates);
   });
 });
 
@@ -200,7 +200,7 @@ describe("when the game is finished (nextRiddleIndex === -1)", () => {
   const confirmMock = vi.fn();
 
   beforeEach(() => {
-    mockGetRiddlesToRender.mockReturnValue({
+    mockGetGatesToRender.mockReturnValue({
       riddlesToRender: riddles,
       nextRiddleIndex: -1,
     });
@@ -343,8 +343,8 @@ describe("when the game is in progress (nextRiddleIndex !== -1)", () => {
 // ---------------------------------------------------------------------------
 
 describe("useProgressionScroll", () => {
-  it("is called with the nextRiddleIndex from getRiddlesToRender", () => {
-    mockGetRiddlesToRender.mockReturnValue({
+  it("is called with the nextRiddleIndex from getGatesToRender", () => {
+    mockGetGatesToRender.mockReturnValue({
       riddlesToRender: riddles,
       nextRiddleIndex: 1,
     });
