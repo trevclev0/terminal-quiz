@@ -1,4 +1,4 @@
-import useRiddleGuess from "@hooks/useRiddleGuess";
+import useRiddleGuess from "@hooks/useGateGuess";
 import useShake from "@hooks/useShake";
 import type { Gate } from "@shared/types";
 import { type ToggleEvent, useEffect, useRef, useState } from "react";
