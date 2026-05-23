@@ -32,11 +32,11 @@ describe("on initial mount", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Scenario B — game ongoing (nextRiddleIndex >= 0)
+// Scenario B — game ongoing (nextGateIndex >= 0)
 // ---------------------------------------------------------------------------
 
-describe("when nextRiddleIndex changes to a valid index", () => {
-  it("scrolls the matching riddle element into view", () => {
+describe("when nextGateIndex changes to a valid index", () => {
+  it("scrolls the matching gate element into view", () => {
     const el = makeScrollableElement();
     vi.mocked(document.getElementById).mockReturnValue(el);
 
@@ -47,7 +47,7 @@ describe("when nextRiddleIndex changes to a valid index", () => {
 
     rerender({ index: 1 });
 
-    expect(document.getElementById).toHaveBeenCalledWith("riddle-1");
+    expect(document.getElementById).toHaveBeenCalledWith("gate-1");
     expect(el.scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth" });
   });
 
@@ -64,10 +64,10 @@ describe("when nextRiddleIndex changes to a valid index", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Scenario A — game over (nextRiddleIndex === -1)
+// Scenario A — game over (nextGateIndex === -1)
 // ---------------------------------------------------------------------------
 
-describe("when nextRiddleIndex changes to -1", () => {
+describe("when nextGateIndex changes to -1", () => {
   it("scrolls the classic-ending element into view", () => {
     const el = makeScrollableElement();
     vi.mocked(document.getElementById).mockImplementation((id) =>
@@ -85,7 +85,7 @@ describe("when nextRiddleIndex changes to -1", () => {
     expect(el.scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth" });
   });
 
-  it("does not attempt to find a riddle element when the game is over", () => {
+  it("does not attempt to find a gate element when the game is over", () => {
     const el = makeScrollableElement();
     vi.mocked(document.getElementById).mockImplementation((id) =>
       id === "classic-ending" ? el : null,
@@ -98,10 +98,10 @@ describe("when nextRiddleIndex changes to -1", () => {
 
     rerender({ index: -1 });
 
-    const riddleCalls = vi
+    const gateCalls = vi
       .mocked(document.getElementById)
-      .mock.calls.filter(([id]) => id.startsWith("riddle-"));
-    expect(riddleCalls).toHaveLength(0);
+      .mock.calls.filter(([id]) => id.startsWith("gate-"));
+    expect(gateCalls).toHaveLength(0);
   });
 
   it("does not throw when the ending element does not exist in the DOM", () => {

@@ -1,4 +1,4 @@
-import useRiddleGuess from "@hooks/useGateGuess";
+import useGateGuess from "@hooks/useGateGuess";
 import { act, renderHook } from "@testing-library/react";
 import type { ChangeEvent, SubmitEvent } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -21,7 +21,7 @@ const mockIsGuessCloseEnough = vi.mocked(isGuessCloseEnough);
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const riddle: Gate = {
+const gate: Gate = {
   id: "3a356c09-8802-442f-aa3d-4189651dd35c",
   label: "Step 1",
   correctAnswer: "A keyboard",
@@ -43,8 +43,8 @@ const onSolve = vi.fn();
 
 function renderGuessHook() {
   const { result } = renderHook(() =>
-    useRiddleGuess({
-      riddle,
+    useGateGuess({
+      gate,
       shake,
       clearShake,
       onSolve,

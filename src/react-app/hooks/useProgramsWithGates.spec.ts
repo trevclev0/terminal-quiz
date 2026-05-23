@@ -22,7 +22,7 @@ import { createQueryWrapper } from "@test-utils/queryTestUtils";
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
-const makeRiddle = (
+const makeGate = (
   programId: string,
   label: string,
   isSolved = false,
@@ -30,7 +30,7 @@ const makeRiddle = (
   id: `gate-${label}`,
   label,
   correctAnswer: `pw-${label}`,
-  question: `Riddle ${label}`,
+  question: `Gate ${label}`,
   successMessage: `Answer ${label}`,
   isSolved,
   ...defaultNullishGateProps,
@@ -46,14 +46,14 @@ const mockPrograms: ProgramWithGates[] = [
     id: programIdA,
     name: "Alpha",
     isSelected: true,
-    gates: [makeRiddle(programIdA, "r1"), makeRiddle(programIdA, "r2", true)],
+    gates: [makeGate(programIdA, "r1"), makeGate(programIdA, "r2", true)],
     ...defaultNullishProgramProps,
   },
   {
     id: programIdB,
     name: "Beta",
     isSelected: false,
-    gates: [makeRiddle(programIdB, "r3")],
+    gates: [makeGate(programIdB, "r3")],
     ...defaultNullishProgramProps,
   },
 ];
@@ -197,8 +197,8 @@ describe("updateProgram", () => {
     const updated: ProgramWithGates = {
       ...mockPrograms[0],
       gates: [
-        makeRiddle(programIdA, "r1", true),
-        makeRiddle(programIdA, "r2", true),
+        makeGate(programIdA, "r1", true),
+        makeGate(programIdA, "r2", true),
       ],
     };
 
@@ -217,18 +217,18 @@ describe("updateProgram", () => {
 // Mutations: resetProgram
 // ---------------------------------------------------------------------------
 describe("resetProgram", () => {
-  it("sets all riddles of the active program to unlocked: false", async () => {
+  it("sets all gates of the active program to unlocked: false", async () => {
     const { result } = await setupHook(mockPrograms, undefined, true);
 
     act(() => result.current.resetProgram());
 
     await waitFor(() => {
-      const activeRiddles = result.current.activeProgram?.gates ?? [];
-      expect(activeRiddles.every((r: Gate) => r.isSolved === false)).toBe(true);
+      const activeGates = result.current.activeProgram?.gates ?? [];
+      expect(activeGates.every((r: Gate) => r.isSolved === false)).toBe(true);
     });
 
-    const activeRiddles = result.current.activeProgram?.gates ?? [];
-    expect(activeRiddles[0].label).toBe("r1"); // Preserves other data
+    const activeGates = result.current.activeProgram?.gates ?? [];
+    expect(activeGates[0].label).toBe("r1"); // Preserves other data
   });
 
   it("does not affect inactive programs", async () => {

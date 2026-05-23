@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 
 const scrollOptions: ScrollIntoViewOptions = { behavior: "smooth" };
 
-function useProgressionScroll(nextRiddleIndex: number) {
+function useProgressionScroll(nextGateIndex: number) {
   const isMounted = useRef(false);
   useEffect(() => {
     if (!isMounted.current) {
@@ -10,22 +10,20 @@ function useProgressionScroll(nextRiddleIndex: number) {
       return;
     }
     // Scenario A: The game is over. Scroll to the ending
-    if (nextRiddleIndex === -1) {
+    if (nextGateIndex === -1) {
       const endingElement = document.getElementById("classic-ending");
       if (endingElement) {
         endingElement.scrollIntoView(scrollOptions);
       }
-      return; // Exit early so we don't try to find a riddle
+      return; // Exit early so we don't try to find a gate
     }
 
-    // Scenario B: The game is ongoing. Scroll to the next riddle.
-    const nextRiddleElement = document.getElementById(
-      `riddle-${nextRiddleIndex}`,
-    );
-    if (nextRiddleElement) {
-      nextRiddleElement.scrollIntoView(scrollOptions);
+    // Scenario B: The game is ongoing. Scroll to the next gate.
+    const nextGateElement = document.getElementById(`gate-${nextGateIndex}`);
+    if (nextGateElement) {
+      nextGateElement.scrollIntoView(scrollOptions);
     }
-  }, [nextRiddleIndex]);
+  }, [nextGateIndex]);
 }
 
 export default useProgressionScroll;

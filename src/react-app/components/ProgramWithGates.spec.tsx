@@ -19,15 +19,15 @@ vi.mock("@utils/getGatesToRender", () => ({
 vi.mock("@components/Gate", () => ({
   default: ({
     id,
-    riddle,
+    gate,
     onSolve,
   }: {
     id: string;
-    riddle: { label: string };
+    gate: { label: string };
     onSolve: () => void;
   }) => (
     <div data-testid={id}>
-      Riddle: {riddle.label}
+      Gate: {gate.label}
       <button type="button" onClick={onSolve} data-testid={`solve-${id}`}>
         Solve
       </button>
@@ -49,7 +49,7 @@ const mockGetGatesToRender = vi.mocked(getGatesToRender);
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const riddles: Gate[] = [
+const gates: Gate[] = [
   {
     id: "10a4bca2-59fc-42da-bbac-79b43dc4f76e",
     label: "Step 1",
@@ -78,16 +78,16 @@ const program: ProgramWithGates = {
   id: "63e52b69-0bb3-4598-8957-e531c90175ba",
   name: "Test Adventure",
   isSelected: true,
-  gates: riddles,
+  gates: gates,
   ...defaultNullishProgramProps,
 };
 
 beforeEach(() => {
   vi.mocked(useProgressionScroll).mockImplementation(() => {});
-  // By default return both riddles with a next index
+  // By default return both gates with a next index
   mockGetGatesToRender.mockReturnValue({
-    riddlesToRender: riddles,
-    nextRiddleIndex: 1,
+    gatesToRender: gates,
+    nextGateIndex: 1,
   });
 });
 
@@ -114,7 +114,7 @@ describe("rendering", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders each riddle returned by getGatesToRender", () => {
+  it("renders each gate returned by getGatesToRender", () => {
     render(
       <Program
         program={program}
@@ -123,11 +123,11 @@ describe("rendering", () => {
         updateProgram={vi.fn()}
       />,
     );
-    expect(screen.getByTestId("riddle-0")).toBeInTheDocument();
-    expect(screen.getByTestId("riddle-1")).toBeInTheDocument();
+    expect(screen.getByTestId("gate-0")).toBeInTheDocument();
+    expect(screen.getByTestId("gate-1")).toBeInTheDocument();
   });
 
-  it("passes the correct id prop to each Riddle", () => {
+  it("passes the correct id prop to each Gate", () => {
     render(
       <Program
         program={program}
@@ -136,11 +136,11 @@ describe("rendering", () => {
         updateProgram={vi.fn()}
       />,
     );
-    expect(screen.getByText("Riddle: Step 1")).toBeInTheDocument();
-    expect(screen.getByText("Riddle: Step 2")).toBeInTheDocument();
+    expect(screen.getByText("Gate: Step 1")).toBeInTheDocument();
+    expect(screen.getByText("Gate: Step 2")).toBeInTheDocument();
   });
 
-  it("calls getGatesToRender with the program riddles", () => {
+  it("calls getGatesToRender with the program gates", () => {
     render(
       <Program
         program={program}
@@ -154,11 +154,11 @@ describe("rendering", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Riddle Solved State Updates
+// Gate Solved State Updates
 // ---------------------------------------------------------------------------
 
 describe("onSolve callback mapping", () => {
-  it("calls updateProgram with the correctly mapped solved riddle", async () => {
+  it("calls updateProgram with the correctly mapped solved gate", async () => {
     const user = userEvent.setup();
     const updateProgram = vi.fn();
 
@@ -171,8 +171,8 @@ describe("onSolve callback mapping", () => {
       />,
     );
 
-    // Click the mock solve button for Riddle 2 (which is currently isSolved: false)
-    await user.click(screen.getByTestId("solve-riddle-1"));
+    // Click the mock solve button for Gate 2 (which is currently isSolved: false)
+    await user.click(screen.getByTestId("solve-gate-1"));
 
     expect(updateProgram).toHaveBeenCalledOnce();
 
@@ -193,16 +193,16 @@ describe("onSolve callback mapping", () => {
 });
 
 // ---------------------------------------------------------------------------
-// End-game state (nextRiddleIndex === -1)
+// End-game state (nextGateIndex === -1)
 // ---------------------------------------------------------------------------
 
-describe("when the game is finished (nextRiddleIndex === -1)", () => {
+describe("when the game is finished (nextGateIndex === -1)", () => {
   const confirmMock = vi.fn();
 
   beforeEach(() => {
     mockGetGatesToRender.mockReturnValue({
-      riddlesToRender: riddles,
-      nextRiddleIndex: -1,
+      gatesToRender: gates,
+      nextGateIndex: -1,
     });
     // happy-dom doesn't implement window.confirm, so we inject our own mock
     vi.stubGlobal("confirm", confirmMock);
@@ -321,7 +321,7 @@ describe("when the game is finished (nextRiddleIndex === -1)", () => {
 // In-progress state
 // ---------------------------------------------------------------------------
 
-describe("when the game is in progress (nextRiddleIndex !== -1)", () => {
+describe("when the game is in progress (nextGateIndex !== -1)", () => {
   it("does not render the end screen", () => {
     render(
       <Program
@@ -343,10 +343,10 @@ describe("when the game is in progress (nextRiddleIndex !== -1)", () => {
 // ---------------------------------------------------------------------------
 
 describe("useProgressionScroll", () => {
-  it("is called with the nextRiddleIndex from getGatesToRender", () => {
+  it("is called with the nextGateIndex from getGatesToRender", () => {
     mockGetGatesToRender.mockReturnValue({
-      riddlesToRender: riddles,
-      nextRiddleIndex: 1,
+      gatesToRender: gates,
+      nextGateIndex: 1,
     });
     render(
       <Program
