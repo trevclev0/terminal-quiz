@@ -1,5 +1,6 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import { Hono } from "hono";
+import { logger } from "hono/logger";
 import { type DbContext, setupDb } from "./middleware/db";
 import gatesRouter from "./routes/gates";
 import graphQlRouter from "./routes/graphql";
@@ -19,6 +20,8 @@ interface D1Error {
 }
 
 const app = new Hono<Env>();
+
+app.use(logger());
 
 app.onError((err, c) => {
   console.error(
