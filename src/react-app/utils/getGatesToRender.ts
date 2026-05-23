@@ -1,11 +1,11 @@
 import type { Gate } from "@shared/types";
 
-function getRiddlesToRender(riddles: Gate[]) {
-  const nextRiddleIndex = riddles.findIndex((r) => !r.isSolved);
-  const riddlesToRender =
-    nextRiddleIndex === -1 ? riddles : riddles.slice(0, nextRiddleIndex + 1);
+function getGatesToRender(gates: Gate[]) {
+  const nextGateIndex = gates.findIndex((r) => !r.isSolved);
+  const gatesToRender =
+    nextGateIndex === -1 ? gates : gates.slice(0, nextGateIndex + 1);
 
-  return { riddlesToRender, nextRiddleIndex };
+  return { gatesToRender, nextGateIndex };
 }
 
-export default getRiddlesToRender;
+export default getGatesToRender;

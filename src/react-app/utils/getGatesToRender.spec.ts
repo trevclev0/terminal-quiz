@@ -1,6 +1,6 @@
 import type { Gate } from "@shared/types";
 import { defaultNullishGateProps } from "@test-utils/testTypes";
-import getRiddlesToRender from "@utils/getGatesToRender";
+import getGatesToRender from "@utils/getGatesToRender";
 import { describe, expect, it } from "vitest";
 
 const makeRiddle = (overrides: Partial<Gate> = {}): Gate => ({
@@ -16,48 +16,48 @@ const makeRiddle = (overrides: Partial<Gate> = {}): Gate => ({
   sequenceOrder: 1,
 });
 
-describe("getRiddlesToRender", () => {
+describe("getGatesToRender", () => {
   it("should return 0 if the first riddle is locked", () => {
-    const riddles: Gate[] = [makeRiddle()];
-    const { riddlesToRender, nextRiddleIndex } = getRiddlesToRender(riddles);
-    expect(nextRiddleIndex).toBe(0);
-    expect(riddlesToRender.length).toEqual(1);
-    expect(riddlesToRender).toEqual(riddles);
+    const gates: Gate[] = [makeRiddle()];
+    const { gatesToRender, nextGateIndex } = getGatesToRender(gates);
+    expect(nextGateIndex).toBe(0);
+    expect(gatesToRender.length).toEqual(1);
+    expect(gatesToRender).toEqual(gates);
   });
 
-  it("should return nextRiddleIndex: 1, 2 riddles when 1 of 3 is solved", () => {
-    const riddles: Gate[] = [
+  it("should return nextGateIndex: 1, 2 gates when 1 of 3 is solved", () => {
+    const gates: Gate[] = [
       makeRiddle({ isSolved: true }),
       makeRiddle({ sequenceOrder: 2 }),
       makeRiddle({ sequenceOrder: 3 }),
     ];
-    const { riddlesToRender, nextRiddleIndex } = getRiddlesToRender(riddles);
-    expect(nextRiddleIndex).toBe(1);
-    expect(riddlesToRender.length).toEqual(2);
+    const { gatesToRender, nextGateIndex } = getGatesToRender(gates);
+    expect(nextGateIndex).toBe(1);
+    expect(gatesToRender.length).toEqual(2);
   });
 
-  it("should return nextRiddleIndex: 2, 3 riddles when 2 of 3 is solved", () => {
-    const riddles: Gate[] = [
+  it("should return nextGateIndex: 2, 3 gates when 2 of 3 is solved", () => {
+    const gates: Gate[] = [
       makeRiddle({ isSolved: true }),
       makeRiddle({ isSolved: true, sequenceOrder: 2 }),
       makeRiddle({ sequenceOrder: 3 }),
     ];
-    const { riddlesToRender, nextRiddleIndex } = getRiddlesToRender(riddles);
-    expect(nextRiddleIndex).toBe(2);
-    expect(riddlesToRender.length).toEqual(3);
+    const { gatesToRender, nextGateIndex } = getGatesToRender(gates);
+    expect(nextGateIndex).toBe(2);
+    expect(gatesToRender.length).toEqual(3);
   });
 
-  it("should return -1 if all riddles are solved", () => {
-    const riddles: Gate[] = [makeRiddle({ isSolved: true })];
-    const { riddlesToRender, nextRiddleIndex } = getRiddlesToRender(riddles);
-    expect(nextRiddleIndex).toBe(-1);
-    expect(riddlesToRender.length).toEqual(1);
+  it("should return -1 if all gates are solved", () => {
+    const gates: Gate[] = [makeRiddle({ isSolved: true })];
+    const { gatesToRender, nextGateIndex } = getGatesToRender(gates);
+    expect(nextGateIndex).toBe(-1);
+    expect(gatesToRender.length).toEqual(1);
   });
 
-  it("should return -1 if there are no riddles", () => {
-    const riddles: Gate[] = [];
-    const { riddlesToRender, nextRiddleIndex } = getRiddlesToRender(riddles);
-    expect(nextRiddleIndex).toBe(-1);
-    expect(riddlesToRender.length).toEqual(0);
+  it("should return -1 if there are no gates", () => {
+    const gates: Gate[] = [];
+    const { gatesToRender, nextGateIndex } = getGatesToRender(gates);
+    expect(nextGateIndex).toBe(-1);
+    expect(gatesToRender.length).toEqual(0);
   });
 });
