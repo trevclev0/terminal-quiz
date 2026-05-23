@@ -171,7 +171,7 @@ describe("selectProgram", () => {
   it("marks the named program as active and deactivates others", async () => {
     const { result } = await setupHook(mockPrograms, undefined, true);
 
-    act(() => result.current.selectProgram("Beta"));
+    act(() => result.current.selectProgram(programIdB));
 
     // Wait for the TanStack Query observer to trigger the re-render
     await waitFor(() => {
