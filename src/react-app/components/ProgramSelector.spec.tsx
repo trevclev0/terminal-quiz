@@ -74,7 +74,9 @@ describe("selecting a program", () => {
 
     await user.selectOptions(screen.getByRole("combobox"), "Beta");
 
-    expect(selectProgram).toHaveBeenCalledWith("Beta");
+    expect(selectProgram).toHaveBeenCalledWith(
+      "b78d14cd-f3e9-4368-90c9-e7c5d242f90e",
+    );
   });
 
   it("calls selectProgram once per selection change", async () => {

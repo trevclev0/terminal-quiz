@@ -36,7 +36,7 @@ function ProgramSelector({ programs, selectProgram }: ProgramSelectorProps) {
         </option>
 
         {programs.map((program) => (
-          <option key={program.name} value={program.name}>
+          <option key={program.id} value={program.id}>
             {program.name}
           </option>
         ))}

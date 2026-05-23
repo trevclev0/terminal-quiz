@@ -25,11 +25,11 @@ function usePrograms() {
   );
 
   const selectProgram = useCallback(
-    (programName: string) => {
+    (programId: string) => {
       setProgramsCache((prev) =>
         prev.map((p) => ({
           ...p,
-          isSelected: p.name === programName,
+          isSelected: p.id === programId,
         })),
       );
     },
