@@ -1,7 +1,7 @@
 import Riddle from "@components/Gate";
 import useProgressionScroll from "@hooks/useProgressionScroll";
 import type { ProgramWithGates } from "@shared/types";
-import getRiddlesToRender from "@utils/getGatesToRender";
+import getGatesToRender from "@utils/getGatesToRender";
 import { useEffect, useMemo, useRef } from "react";
 
 type ProgramProps = {
@@ -19,7 +19,7 @@ function Program({
 }: ProgramProps) {
   const selectNewProgramRef = useRef<HTMLButtonElement>(null);
   const { riddlesToRender, nextRiddleIndex } = useMemo(
-    () => getRiddlesToRender(program.gates),
+    () => getGatesToRender(program.gates),
     [program.gates],
   );
 
