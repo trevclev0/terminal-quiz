@@ -1,6 +1,6 @@
-import type { ProgramWithGates } from "@shared/types";
+import { testClient } from "hono/testing";
 import { describe, expect, it, vi } from "vitest";
-import app, { type Env } from "..";
+import app, { type AppType, type Env } from "..";
 
 const mockPrograms = [
   {
@@ -36,13 +36,15 @@ const mockEnv: Env["Bindings"] = {
 };
 
 describe("Programs Router (/api/programs)", () => {
+  const client = testClient<AppType>(app, mockEnv);
+
   it("should return a 200 status and a list of programs", async () => {
-    const res = await app.request("/api/programs", {}, mockEnv);
+    const res = await client.api.programs.$get();
 
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("application/json");
 
-    const data = (await res.json()) as ProgramWithGates[];
+    const data = await res.json();
     expect(data).toHaveLength(2);
     expect(data).toEqual(mockPrograms);
     expect(data[1].isSelected).toBe(false);
