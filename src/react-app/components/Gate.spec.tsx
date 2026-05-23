@@ -186,7 +186,7 @@ describe("shake state", () => {
 
   it("does not apply the shake class when isShaking is false", () => {
     renderGate();
-    expect(screen.getByRole("form")).not.toHaveClass("shake");
+    expect(screen.getByTestId("gate-0")).not.toHaveClass("shake");
   });
 });
 
