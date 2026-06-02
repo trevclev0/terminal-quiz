@@ -1,6 +1,6 @@
 import { getSessionId } from "@utils/session";
 
-const GRAPHQL_ENDPOINT = "/graphql";
+const GRAPHQL_ENDPOINT = "/api/graphql";
 
 export const graphqlFetch = async <T>(
   query: string,
