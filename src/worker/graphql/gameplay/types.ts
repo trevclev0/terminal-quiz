@@ -1,6 +1,4 @@
-import { sessionProgress } from "@shared/schema";
 import type { Gate } from "@shared/types";
-import { and, eq } from "drizzle-orm";
 import {
   GraphQLBoolean,
   GraphQLList,
