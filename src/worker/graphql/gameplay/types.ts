@@ -28,7 +28,8 @@ const CompletedGateType = new GraphQLObjectType({
     correctAnswer: {
       type: new GraphQLNonNull(GraphQLString),
       resolve: (parent: Gate, _args: unknown, context: AppGraphQLContext) => {
-        const { sessionId } = context;
+        const sessionId = context.get("sessionId");
+
         if (!sessionId) {
           throw new Error("Unauthorized: Missing session");
         }
