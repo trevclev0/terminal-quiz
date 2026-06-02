@@ -1,4 +1,5 @@
 import * as schema from "@shared/schema";
+import { sessionProgress } from "@shared/schema";
 import { and, eq, gt, sql } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 
@@ -101,4 +102,23 @@ export async function processGateGuess(
 
     return { status: "incorrect", message: "Access Denied", clue };
   }
+}
+
+export async function hasUserCompletedGate(
+  db: DrizzleD1Database<typeof schema>,
+  sessionId: string,
+  programId: string,
+  gateId: string,
+): Promise<boolean> {
+  const progress = await db.query.sessionProgress.findFirst({
+    where: and(
+      eq(sessionProgress.sessionId, sessionId),
+      eq(sessionProgress.programId, programId),
+    ),
+  });
+
+  if (!progress) return false;
+
+  const completedIds: string[] = JSON.parse(progress.completedGateIds || "[]");
+  return completedIds.includes(gateId);
 }
