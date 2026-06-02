@@ -1,4 +1,3 @@
-import type * as schema from "@shared/schema";
 import {
   GraphQLBoolean,
   GraphQLList,
@@ -6,7 +5,6 @@ import {
   GraphQLObjectType,
   GraphQLString,
 } from "graphql";
-import type { AppGraphQLContext } from "./queries";
 
 const ActiveGateType = new GraphQLObjectType({
   name: "ActiveGate",
@@ -17,26 +15,12 @@ const ActiveGateType = new GraphQLObjectType({
   },
 });
 
-type Gate = typeof schema.gates.$inferSelect;
-
 const CompletedGateType = new GraphQLObjectType({
   name: "CompletedGate",
   fields: {
     id: { type: new GraphQLNonNull(GraphQLString) },
     label: { type: new GraphQLNonNull(GraphQLString) },
     question: { type: new GraphQLNonNull(GraphQLString) },
-    correctAnswer: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: (parent: Gate, _args: unknown, context: AppGraphQLContext) => {
-        const sessionId = context.get("sessionId");
-
-        if (!sessionId) {
-          throw new Error("Unauthorized: Missing session");
-        }
-
-        return parent.correctAnswer;
-      },
-    },
     successMessage: { type: new GraphQLNonNull(GraphQLString) },
   },
 });
