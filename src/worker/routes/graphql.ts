@@ -4,7 +4,7 @@ import { GraphQLObjectType, GraphQLSchema } from "graphql";
 import { Hono } from "hono";
 import { submitGuess } from "../graphql/gameplay/mutations";
 import { getProgramProgression } from "../graphql/gameplay/queries";
-import type { DbContext } from "../middleware/db";
+import type { AppVariables } from "../middleware/db";
 
 let cachedSchema: GraphQLSchema | null = null;
 
@@ -17,7 +17,7 @@ export const invalidateCachedSchema = () => {
   cachedSchema = null;
 };
 
-const graphQlRouter = new Hono<DbContext>().use("*", async (c, next) => {
+const graphQlRouter = new Hono<AppVariables>().use("*", async (c, next) => {
   const isProduction = c.env.ENVIRONMENT === "production";
 
   if (!cachedSchema) {
