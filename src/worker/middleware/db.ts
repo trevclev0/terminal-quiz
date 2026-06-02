@@ -3,14 +3,14 @@ import { type DrizzleD1Database, drizzle } from "drizzle-orm/d1";
 import type { Context, Next } from "hono";
 import type { Env } from "..";
 
-export type DbContext = Env & {
+export type AppVariables = Env & {
   Variables: {
     db: DrizzleD1Database<typeof schema>;
     sessionId?: string;
   };
 };
 
-export async function setupDb(c: Context<DbContext>, next: Next) {
+export async function setupDb(c: Context<AppVariables>, next: Next) {
   c.set("db", drizzle(c.env.DB, { schema }));
   return next();
 }

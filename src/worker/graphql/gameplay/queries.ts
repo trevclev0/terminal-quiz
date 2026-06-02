@@ -2,17 +2,16 @@ import { gates, sessionProgress } from "@shared/schema";
 import { and, asc, eq } from "drizzle-orm";
 import { GraphQLNonNull, GraphQLString } from "graphql";
 import type { Context } from "hono";
-import type { DbContext } from "../../middleware/db";
+import type { AppVariables } from "../../middleware/db";
 import { ProgressionPayloadType } from "./types";
 
-export type AppGraphQLContext = Context<DbContext>;
+export type AppGraphQLContext = Context<AppVariables>;
 
 export const getProgramProgression = {
   type: ProgressionPayloadType,
   args: {
     programId: { type: new GraphQLNonNull(GraphQLString) },
   },
-  // Update the signature with unknown and our strict context
   resolve: async (
     _: unknown,
     args: { programId: string },

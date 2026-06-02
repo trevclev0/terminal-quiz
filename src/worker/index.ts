@@ -1,6 +1,6 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import { Hono } from "hono";
-import { type DbContext, setupDb } from "./middleware/db";
+import { type AppVariables, setupDb } from "./middleware/db";
 import { conditionalLogger } from "./middleware/logger";
 import { sessionMiddleware } from "./middleware/session";
 import gatesRouter from "./routes/gates";
@@ -24,7 +24,7 @@ app.onError((err, c) => {
   return c.json(formatErrorResponse(err, c.req.path), 500);
 });
 
-const api = new Hono<DbContext>()
+const api = new Hono<AppVariables>()
   .use("*", setupDb)
   .use("*", sessionMiddleware)
   .route("/graphql", graphQlRouter)
