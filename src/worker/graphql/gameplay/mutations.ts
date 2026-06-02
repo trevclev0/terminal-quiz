@@ -17,7 +17,9 @@ export const submitGuess = {
     args: { programId: string; gateId: string; guess: string },
     context: AppGraphQLContext,
   ) => {
-    const { db, sessionId } = context;
+    const db = context.get("db");
+    const sessionId = context.get("sessionId");
+
     if (!sessionId) throw new Error("Unauthorized: Missing Session ID");
 
     const progress = await db.query.sessionProgress.findFirst({

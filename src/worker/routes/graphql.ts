@@ -2,6 +2,8 @@ import { graphqlServer } from "@hono/graphql-server";
 import { buildSchema } from "drizzle-graphql";
 import { GraphQLObjectType, GraphQLSchema } from "graphql";
 import { Hono } from "hono";
+import { submitGuess } from "../graphql/gameplay/mutations";
+import { getProgramProgression } from "../graphql/gameplay/queries";
 import type { DbContext } from "../middleware/db";
 
 let cachedSchema: GraphQLSchema | null = null;
@@ -26,11 +28,17 @@ const graphQlRouter = new Hono<DbContext>().use("*", async (c, next) => {
       cachedSchema = new GraphQLSchema({
         query: new GraphQLObjectType({
           name: "Query",
-          fields: { ...entities.queries },
+          fields: {
+            ...entities.queries,
+            getProgramProgression,
+          },
         }),
         mutation: new GraphQLObjectType({
           name: "Mutation",
-          fields: { ...entities.mutations },
+          fields: {
+            ...entities.mutations,
+            submitGuess,
+          },
         }),
         types: [
           ...Object.values(entities.types),

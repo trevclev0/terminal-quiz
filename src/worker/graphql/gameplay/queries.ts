@@ -1,14 +1,11 @@
-import type * as schema from "@shared/schema";
 import { gates, sessionProgress } from "@shared/schema";
 import { and, asc, eq } from "drizzle-orm";
-import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { GraphQLNonNull, GraphQLString } from "graphql";
+import type { Context } from "hono";
+import type { DbContext } from "../../middleware/db";
 import { ProgressionPayloadType } from "./types";
 
-export interface AppGraphQLContext {
-  db: DrizzleD1Database<typeof schema>;
-  sessionId?: string;
-}
+export type AppGraphQLContext = Context<DbContext>;
 
 export const getProgramProgression = {
   type: ProgressionPayloadType,
@@ -21,7 +18,9 @@ export const getProgramProgression = {
     args: { programId: string },
     context: AppGraphQLContext,
   ) => {
-    const { db, sessionId } = context;
+    const db = context.get("db");
+    const sessionId = context.get("sessionId");
+
     if (!sessionId) throw new Error("Unauthorized: Missing Session ID");
 
     // Fetch the raw blueprint (all gates for this program)
@@ -41,8 +40,8 @@ export const getProgramProgression = {
       ),
     });
 
-    // Lazy Initialization: If they don't have progress yet, start them at Gate 1
     if (!progress) {
+      // Lazy Initialization: If they don't have progress yet, start them at Gate 1
       const firstGate = programGates[0];
       try {
         const newProgress = await db
