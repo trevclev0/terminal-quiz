@@ -25,6 +25,9 @@ export const getProgramProgression = {
 
     // Fetch the raw blueprint (all gates for this program)
     const programGates = await db.query.gates.findMany({
+      columns: {
+        correctAnswer: false,
+      },
       where: eq(gates.programId, args.programId),
       orderBy: [asc(gates.sequenceOrder)],
     });
