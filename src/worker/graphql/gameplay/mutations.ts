@@ -1,5 +1,5 @@
 import { gates, sessionProgress } from "@shared/schema";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, gt } from "drizzle-orm";
 import { GraphQLNonNull, GraphQLString } from "graphql";
 import isGuessCloseEnough from "../../utils/isGuessCloseEnough";
 import type { AppGraphQLContext } from "./queries";
@@ -13,9 +13,9 @@ export const submitGuess = {
     guess: { type: new GraphQLNonNull(GraphQLString) },
   },
   resolve: async (
-    _: unknown, // Swapped from any
+    _: unknown,
     args: { programId: string; gateId: string; guess: string },
-    context: AppGraphQLContext, // Swapped from any
+    context: AppGraphQLContext,
   ) => {
     const { db, sessionId } = context;
     if (!sessionId) throw new Error("Unauthorized: Missing Session ID");
@@ -54,20 +54,24 @@ export const submitGuess = {
     }
 
     // Guess is correct! Advance the state.
-    const programGates = await db.query.gates.findMany({
-      where: eq(gates.programId, args.programId),
-      orderBy: [asc(gates.sequenceOrder)],
-    });
+    const nextGate =
+      (await db.query.gates.findFirst({
+        columns: {
+          correctAnswer: false,
+        },
+        where: and(
+          eq(gates.programId, args.programId),
+          gt(gates.sequenceOrder, activeGate.sequenceOrder), // > current gate
+        ),
+        orderBy: [asc(gates.sequenceOrder)],
+      })) || null;
 
     const completedIds: string[] = JSON.parse(
       progress.completedGateIds || "[]",
     );
     completedIds.push(activeGate.id);
 
-    const currentIndex = programGates.findIndex((g) => g.id === activeGate.id);
-    const nextGate = programGates[currentIndex + 1] || null;
     const newStatus = nextGate ? "in_progress" : "completed";
-
     await db
       .update(sessionProgress)
       .set({

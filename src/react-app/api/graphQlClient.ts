@@ -18,12 +18,22 @@ export const graphqlFetch = async <T>(
     }),
   });
 
-  const json = await response.json();
+  let json: { data?: T; errors?: Array<{ message?: string }> };
+  try {
+    json = await response.json();
+  } catch {
+    throw new Error(`GraphQL request failed with HTTP ${response.status}.`);
+  }
 
-  if (json.errors) {
+  if (!response.ok || (json.errors?.length ?? 0) > 0) {
     throw new Error(
-      json.errors[0].message || "An error occurred during the GraphQL request.",
+      json.errors?.[0]?.message ||
+        `GraphQL request failed with HTTP ${response.status}.`,
     );
+  }
+
+  if (json.data === undefined) {
+    throw new Error("GraphQL response did not include data.");
   }
 
   return json.data;

@@ -82,8 +82,12 @@ export const sessionProgress = sqliteTable(
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     sessionId: text("session_id").notNull(),
-    programId: text("program_id").notNull(),
-    currentGateId: text("current_gate_id"),
+    programId: text("program_id")
+      .notNull()
+      .references(() => programs.id, { onDelete: "cascade" }),
+    currentGateId: text("current_gate_id").references(() => gates.id, {
+      onDelete: "set null",
+    }),
     completedGateIds: text("completed_gate_ids").default("[]"),
     status: text("status").notNull().default("in_progress"),
     startedAt: integer("started_at", { mode: "timestamp" })

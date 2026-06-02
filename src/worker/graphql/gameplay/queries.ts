@@ -44,16 +44,28 @@ export const getProgramProgression = {
     // Lazy Initialization: If they don't have progress yet, start them at Gate 1
     if (!progress) {
       const firstGate = programGates[0];
-      const newProgress = await db
-        .insert(sessionProgress)
-        .values({
-          sessionId,
-          programId: args.programId,
-          currentGateId: firstGate.id,
-          completedGateIds: "[]",
-        })
-        .returning();
-      progress = newProgress[0];
+      try {
+        const newProgress = await db
+          .insert(sessionProgress)
+          .values({
+            sessionId,
+            programId: args.programId,
+            currentGateId: firstGate.id,
+            completedGateIds: "[]",
+          })
+          .returning();
+        progress = newProgress[0];
+      } catch {
+        progress = await db.query.sessionProgress.findFirst({
+          where: and(
+            eq(sessionProgress.sessionId, sessionId),
+            eq(sessionProgress.programId, args.programId),
+          ),
+        });
+      }
+      if (!progress) {
+        throw new Error("Failed to initialize session progression.");
+      }
     }
 
     // Assemble the safe payload

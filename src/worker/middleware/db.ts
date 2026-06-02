@@ -4,7 +4,10 @@ import type { Context, Next } from "hono";
 import type { Env } from "..";
 
 export type DbContext = Env & {
-  Variables: { db: DrizzleD1Database<typeof schema> };
+  Variables: {
+    db: DrizzleD1Database<typeof schema>;
+    sessionId?: string;
+  };
 };
 
 export async function setupDb(c: Context<DbContext>, next: Next) {
