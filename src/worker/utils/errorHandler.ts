@@ -1,4 +1,3 @@
-// src/worker/utils/errorHandler.ts
 export interface D1Error {
   message?: string;
   cause?: unknown;
