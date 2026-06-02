@@ -5,6 +5,6 @@
     "vitest.explorer",
     "hverlin.mise-vscode",
     "bruno-api-client.bruno",
-    "tombi-toml.tombi"
+    "tamasfe.even-better-toml"
   ]
 }
