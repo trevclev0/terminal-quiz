@@ -18,7 +18,7 @@ const ActiveGateType = new GraphQLObjectType({
   },
 });
 
-const CompletedGateType = new GraphQLObjectType({
+export const CompletedGateType = new GraphQLObjectType({
   name: "CompletedGate",
   fields: {
     id: { type: new GraphQLNonNull(GraphQLString) },
