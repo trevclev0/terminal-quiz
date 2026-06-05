@@ -1,4 +1,3 @@
-import type { Gate } from "@shared/types";
 import {
   GraphQLBoolean,
   GraphQLList,
@@ -6,8 +5,6 @@ import {
   GraphQLObjectType,
   GraphQLString,
 } from "graphql";
-import { hasUserCompletedGate } from "../../services/gateService";
-import type { AppGraphQLContext } from "./queries";
 
 const ActiveGateType = new GraphQLObjectType({
   name: "ActiveGate",
@@ -24,34 +21,7 @@ export const CompletedGateType = new GraphQLObjectType({
     id: { type: new GraphQLNonNull(GraphQLString) },
     label: { type: new GraphQLNonNull(GraphQLString) },
     question: { type: new GraphQLNonNull(GraphQLString) },
-    correctAnswer: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: async (
-        parent: Gate,
-        _args: unknown,
-        context: AppGraphQLContext,
-      ) => {
-        const db = context.get("db");
-        const sessionId = context.get("sessionId");
-
-        if (!sessionId) {
-          throw new Error("Unauthorized: Missing session");
-        }
-
-        const hasCompleted = await hasUserCompletedGate(
-          db,
-          sessionId,
-          parent.programId,
-          parent.id,
-        );
-
-        if (!hasCompleted) {
-          throw new Error("Forbidden: You have not completed this gate yet.");
-        }
-
-        return parent.correctAnswer;
-      },
-    },
+    correctAnswer: { type: new GraphQLNonNull(GraphQLString) },
     successMessage: { type: new GraphQLNonNull(GraphQLString) },
   },
 });
