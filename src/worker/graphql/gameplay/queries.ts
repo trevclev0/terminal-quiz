@@ -1,5 +1,5 @@
 import { gates, sessionProgress } from "@shared/schema";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { GraphQLNonNull, GraphQLString } from "graphql";
 import type { Context } from "hono";
 import type { AppVariables } from "../../middleware/db";
@@ -22,19 +22,6 @@ export const getProgramProgression = {
 
     if (!sessionId) throw new Error("Unauthorized: Missing Session ID");
 
-    // Fetch the raw blueprint (all gates for this program)
-    const programGates = await db.query.gates.findMany({
-      columns: {
-        correctAnswer: false,
-      },
-      where: eq(gates.programId, args.programId),
-      orderBy: [asc(gates.sequenceOrder)],
-    });
-
-    if (programGates.length === 0)
-      throw new Error("Program not found or has no gates.");
-
-    // Look up user's ledger
     let progress = await db.query.sessionProgress.findFirst({
       where: and(
         eq(sessionProgress.sessionId, sessionId),
@@ -43,8 +30,18 @@ export const getProgramProgression = {
     });
 
     if (!progress) {
-      // Lazy Initialization: If they don't have progress yet, start them at Gate 1
-      const firstGate = programGates[0];
+      const firstGate = await db.query.gates.findFirst({
+        columns: {
+          correctAnswer: false,
+        },
+        where: eq(gates.programId, args.programId),
+        orderBy: [asc(gates.sequenceOrder)],
+      });
+
+      if (!firstGate) {
+        throw new Error("Program not found or has no gates.");
+      }
+
       try {
         const newProgress = await db
           .insert(sessionProgress)
@@ -69,15 +66,33 @@ export const getProgramProgression = {
       }
     }
 
-    // Assemble the safe payload
     const completedIds: string[] = JSON.parse(
       progress.completedGateIds || "[]",
     );
-    const completedGates = programGates.filter((g) =>
-      completedIds.includes(g.id),
-    );
-    const currentGate =
-      programGates.find((g) => g.id === progress.currentGateId) || null;
+
+    // Security: only gates in completedGateIds are fetched with correctAnswer.
+    const completedGates =
+      completedIds.length === 0
+        ? []
+        : await db.query.gates.findMany({
+            where: and(
+              eq(gates.programId, args.programId),
+              inArray(gates.id, completedIds),
+            ),
+            orderBy: [asc(gates.sequenceOrder)],
+          });
+
+    const currentGate = progress.currentGateId
+      ? await db.query.gates.findFirst({
+          columns: {
+            correctAnswer: false,
+          },
+          where: and(
+            eq(gates.id, progress.currentGateId),
+            eq(gates.programId, args.programId),
+          ),
+        })
+      : null;
 
     return {
       currentGate,
