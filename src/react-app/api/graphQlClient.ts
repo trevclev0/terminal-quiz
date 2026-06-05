@@ -18,9 +18,16 @@ export const graphqlFetch = async <T>(
     }),
   });
 
-  let json: { data?: T; errors?: Array<{ message?: string }> };
+  let json: { data?: T; errors?: Array<{ message?: string }> } = {};
   try {
-    json = await response.json();
+    const parsed: unknown = await response.json();
+    if (
+      parsed !== null &&
+      typeof parsed === "object" &&
+      !Array.isArray(parsed)
+    ) {
+      json = parsed as { data?: T; errors?: Array<{ message?: string }> };
+    }
   } catch {
     throw new Error(`GraphQL request failed with HTTP ${response.status}.`);
   }
