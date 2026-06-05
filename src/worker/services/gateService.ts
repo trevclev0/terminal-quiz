@@ -119,6 +119,15 @@ export async function hasUserCompletedGate(
 
   if (!progress) return false;
 
-  const completedIds: string[] = JSON.parse(progress.completedGateIds || "[]");
+  let completedIds: string[] = [];
+  try {
+    const parsed = JSON.parse(progress.completedGateIds || "[]");
+    if (Array.isArray(parsed)) {
+      completedIds = parsed;
+    }
+  } catch (error) {
+    console.error("Error parsing completedGateIds:", error);
+    throw new Error("Internal server error.");
+  }
   return completedIds.includes(gateId);
 }
