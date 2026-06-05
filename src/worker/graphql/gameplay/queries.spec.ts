@@ -43,6 +43,8 @@ describe("Gameplay Queries: getProgramProgression", () => {
     // @ts-expect-error
     mockDb.query.sessionProgress.findFirst.mockResolvedValue({
       completedGateIds: JSON.stringify(["gate-1"]),
+      currentGateId: "gate-2",
+      status: "in_progress",
     });
 
     if (!getProgramProgression.resolve) throw new Error("Resolver not defined");

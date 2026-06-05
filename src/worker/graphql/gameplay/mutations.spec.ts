@@ -14,23 +14,41 @@ describe("Gameplay Mutations: submitGuess", () => {
 
   beforeEach(() => {
     mockDb = {
-      select: vi.fn().mockReturnThis(),
-      from: vi.fn().mockReturnThis(),
-      where: vi.fn().mockReturnThis(),
-      get: vi.fn(),
-      update: vi.fn().mockReturnThis(),
-      set: vi.fn().mockReturnThis(),
-      execute: vi.fn(),
+      query: {
+        sessionProgress: { findFirst: vi.fn() },
+        gates: { findFirst: vi.fn() },
+      },
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue(undefined),
+        }),
+      }),
     } as unknown;
 
     mockContext = {
-      get: vi.fn((key: string) => (key === "db" ? mockDb : "mock-session-123")),
+      get: vi.fn((key: string) => {
+        if (key === "db") return mockDb;
+        if (key === "sessionId") return "mock-session-123";
+        return undefined;
+      }),
     } as unknown as AppGraphQLContext;
   });
 
   it("returns false and does not update DB if guess is incorrect", async () => {
     // @ts-expect-error - mocking nested functions safely for tests
-    mockDb.get.mockResolvedValue({ id: "gate-1", correctAnswer: "apple" });
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      id: "progress-1",
+      status: "in_progress",
+      currentGateId: "gate-1",
+      completedGateIds: "[]",
+    });
+    // @ts-expect-error
+    mockDb.query.gates.findFirst.mockResolvedValue({
+      id: "gate-1",
+      correctAnswer: "apple",
+      sequenceOrder: 1,
+      successMessage: "OK",
+    });
     vi.mocked(isGuessCloseEnough).mockReturnValue(false);
 
     if (!submitGuess.resolve) throw new Error("Resolver not defined");
@@ -48,7 +66,21 @@ describe("Gameplay Mutations: submitGuess", () => {
 
   it("returns true and updates DB if guess is correct", async () => {
     // @ts-expect-error
-    mockDb.get.mockResolvedValue({ id: "gate-1", correctAnswer: "banana" });
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      id: "progress-2",
+      status: "in_progress",
+      currentGateId: "gate-2",
+      completedGateIds: "[]",
+    });
+    // @ts-expect-error
+    mockDb.query.gates.findFirst
+      .mockResolvedValueOnce({
+        id: "gate-2",
+        correctAnswer: "banana",
+        sequenceOrder: 2,
+        successMessage: "Well done!",
+      })
+      .mockResolvedValueOnce(null);
     vi.mocked(isGuessCloseEnough).mockReturnValue(true);
 
     if (!submitGuess.resolve) throw new Error("Resolver not defined");

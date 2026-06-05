@@ -74,7 +74,7 @@ describe("CompletedGateType Resolvers", () => {
           mockContext,
           {} as unknown as GraphQLResolveInfo,
         ),
-      ).rejects.toThrow(/Forbidden: No progress found/);
+      ).rejects.toThrow(/Forbidden: You have not completed this gate yet/);
     });
 
     it("throws Forbidden if the specific gate ID is not in completedGateIds", async () => {
