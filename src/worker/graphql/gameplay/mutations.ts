@@ -68,9 +68,16 @@ export const submitGuess = {
         orderBy: [asc(gates.sequenceOrder)],
       })) || null;
 
-    const completedIds: string[] = JSON.parse(
-      progress.completedGateIds || "[]",
-    );
+    let completedIds: string[] = [];
+    try {
+      const parsed = JSON.parse(progress.completedGateIds || "[]");
+      if (Array.isArray(parsed)) {
+        completedIds = parsed;
+      }
+    } catch (error) {
+      console.error("Error parsing completedGateIds:", error);
+      throw new Error("Internal server error.");
+    }
     completedIds.push(activeGate.id);
 
     const newStatus = nextGate ? "in_progress" : "completed";
