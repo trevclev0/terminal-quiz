@@ -47,6 +47,7 @@ export default defineConfig({
         "src/shared/schema.ts",
         "src/shared/types.ts",
       ],
+      reporter: ["text", "json-summary", "json"],
     },
   },
 });
