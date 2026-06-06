@@ -40,7 +40,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup
-        uses: ./.github/actions/setup-project
+       - name: Setup Environment
+        uses: ./.github/actions/setup-env
+
       - name: Validate commit messages
         run: pnpm dlx commitlint --from origin/${{ github.base_ref }} --to HEAD
