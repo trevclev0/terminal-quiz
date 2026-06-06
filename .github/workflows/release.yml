@@ -1,13 +1,14 @@
-# .github/workflows/release.yml
 name: Release
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+
 concurrency:
-  group: release-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -22,13 +23,15 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.ADMIN_PAT }}
 
-      - name: Setup
-        uses: ./.github/actions/setup-project
+      - name: Setup Environment
+        uses: ./.github/actions/setup-env
 
       - name: Run build
+        if: github.event_name == 'push'
         run: pnpm build
 
       - name: Zip build assets
+        if: github.event_name == 'push'
         run: |
           (cd dist/client && zip -r ../../client-build.zip .)
           (cd dist/quiz_app && zip -r ../../quiz_app-build.zip .)
