@@ -1,0 +1,14 @@
+name: Setup Environment
+description: "Setup project dependencies using mise"
+runs:
+  using: "composite"
+  steps:
+    - name: Setup tools with mise
+      uses: jdx/mise-action@v2
+      with:
+        install: true
+        cache: true
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
