@@ -5,5 +5,5 @@ export const Route = createFileRoute("/select")({
 });
 
 function SelectComponent() {
-  return <div>Hello "/selector"!</div>;
+  return <h2>Hello "/select"!</h2>;
 }
