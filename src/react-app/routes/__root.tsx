@@ -1,5 +1,5 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 export const Route = createRootRoute({
   component: () => (
@@ -7,6 +7,7 @@ export const Route = createRootRoute({
       <main>
         <Outlet />
       </main>
+      {/* Automatically excludes itself from production bundles */}
       <TanStackRouterDevtools />
     </>
   ),
