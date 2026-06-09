@@ -4,7 +4,20 @@ import "./index.css";
 import { indexedDBMessagePackPersister, queryClient } from "@api/queryClient";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import App from "./App";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
+
+// Import the generated route tree
+import { routeTree } from "./routeTree.gen";
+
+// Create a new router instance
+const router = createRouter({ routeTree });
+
+// Register the router instance for type safety
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 const rootElement = document.getElementById("app-root") as HTMLElement;
 
@@ -16,7 +29,7 @@ root.render(
         client={queryClient}
         persistOptions={{ persister: indexedDBMessagePackPersister }}
       >
-        <App />
+        <RouterProvider router={router} />
       </PersistQueryClientProvider>
     </ErrorBoundary>
   </StrictMode>,
