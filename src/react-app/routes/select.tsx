@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/selector")({
+export const Route = createFileRoute("/select")({
   component: RouteComponent,
 });
 
