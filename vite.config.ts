@@ -1,10 +1,20 @@
 import { fileURLToPath } from "node:url";
 import { cloudflare } from "@cloudflare/vite-plugin";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
-  plugins: [react(), !process.env.VITEST && cloudflare()].filter(Boolean),
+  plugins: [
+    tanstackRouter({
+      target: "react",
+      autoCodeSplitting: true,
+      routesDirectory: "./src/react-app/routes",
+      generatedRouteTree: "./src/react-app/routeTree.gen.ts",
+    }),
+    react(),
+    !process.env.VITEST && cloudflare(),
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@hooks": fileURLToPath(
