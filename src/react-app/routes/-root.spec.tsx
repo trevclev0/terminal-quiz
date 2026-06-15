@@ -1,6 +1,7 @@
 import { screen } from "@testing-library/react";
 import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
+
 import {
   afterAll,
   afterEach,
@@ -29,13 +30,22 @@ vi.mock("@tanstack/react-router-devtools", () => ({
   TanStackRouterDevtools: () => <div data-testid="router-devtools" />,
 }));
 
-vi.mock("../hooks/useProgramsWithGates", async (importOriginal) => {
+vi.mock("@hooks/useProgramsWithGates", async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import("../hooks/useProgramsWithGates")>();
+    await importOriginal<typeof import("@hooks/useProgramsWithGates")>();
 
   return {
     ...actual,
-    usePrograms: () => ({ data: [], isLoading: false, isError: false }),
+    default: () => ({
+      programs: [],
+      activeProgram: null,
+      error: null,
+      isLoading: false,
+      selectProgram: vi.fn(),
+      updateProgram: vi.fn(),
+      resetProgram: vi.fn(),
+      clearActiveProgram: vi.fn(),
+    }),
   };
 });
 
