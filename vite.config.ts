@@ -56,6 +56,7 @@ export default defineConfig({
         ...configDefaults.exclude,
         "src/shared/schema.ts",
         "src/shared/types.ts",
+        "src/react-app/routeTree.gen.ts",
       ],
       reporter: ["text", "json-summary", "json"],
     },
