@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import ProgramSelector from "@components/ProgramSelector";
+import ProgramSelector from "@components/ProgramWithGatesSelector";
 import type { ProgramWithGates } from "@shared/types";
 import { defaultNullishProgramProps } from "@test-utils/testTypes";
 import userEvent from "@testing-library/user-event";
