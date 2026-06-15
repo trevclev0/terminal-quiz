@@ -1,5 +1,5 @@
-import ProgramSelector from "@components/ProgramSelector";
 import ProgramWithGates from "@components/ProgramWithGates";
+import ProgramSelector from "@components/ProgramWithGatesSelector";
 import usePrograms from "@hooks/useProgramsWithGates";
 
 function App() {
