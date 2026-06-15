@@ -15,6 +15,9 @@ const router = createRouter({
   defaultPreload: "intent",
   defaultPendingMinMs: 500,
   defaultPendingComponent: () => <h2 className="loading-screen">Loading...</h2>,
+  context: {
+    queryClient,
+  },
 });
 
 // Register the router instance for type safety
