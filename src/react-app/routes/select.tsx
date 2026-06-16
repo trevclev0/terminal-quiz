@@ -1,9 +1,15 @@
+import { programsQueryOptions } from "@api/queries/useProgramsQuery";
+import ProgramSelector from "@components/ProgramSelector";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/select")({
-  component: SelectComponent,
-});
+  loader: async ({ context: { queryClient } }) => {
+    await queryClient.ensureQueryData(programsQueryOptions());
 
-function SelectComponent() {
-  return <h2>Hello "/select"!</h2>;
-}
+    return {};
+  },
+  component: ProgramSelector,
+  pendingComponent: () => (
+    <h2 className="loading-screen">Loading Programs...</h2>
+  ),
+});
