@@ -1,5 +1,5 @@
 import type { Program } from "@shared/types";
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { programKeys } from "../queryKeys";
 
 const GET_PROGRAMS_QUERY = `
@@ -13,7 +13,6 @@ const GET_PROGRAMS_QUERY = `
         limit: $limit
       ) {
         id
-        question
       }
     }
   }
@@ -48,10 +47,13 @@ const fetchPrograms = async (): Promise<Program[]> => {
   return result.data.programs;
 };
 
-export const useProgramsQuery = () => {
-  return useQuery({
+export const programsQueryOptions = () =>
+  queryOptions({
     queryKey: programKeys.all,
     queryFn: fetchPrograms,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
   });
+
+export const useProgramsQuery = () => {
+  return useQuery(programsQueryOptions());
 };
