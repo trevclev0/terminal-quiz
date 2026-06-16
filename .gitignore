@@ -28,3 +28,6 @@ coverage/
 
 # Ignore generated SQL seed file
 seed.sql
+
+# TanStack Router temporary files
+.tanstack/
