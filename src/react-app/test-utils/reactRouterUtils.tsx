@@ -15,6 +15,7 @@ export function createTestRouter(initialUrl: string = "/") {
   const router = createRouter({
     routeTree,
     history,
+    defaultPendingMs: 0, // Show pending components instantly
     defaultPendingMinMs: 0, // Disable pending delays for faster tests
     context: {
       // Provide any required router context (e.g., auth, queryClient)
