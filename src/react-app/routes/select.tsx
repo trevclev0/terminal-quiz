@@ -4,7 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/select")({
   loader: async ({ context: { queryClient } }) => {
-    await queryClient.ensureQueryData(programsQueryOptions());
+    await queryClient.ensureQueryData(programsQueryOptions);
 
     return {};
   },
