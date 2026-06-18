@@ -1,6 +1,6 @@
 import type { Program } from "@shared/types";
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { programKeys } from "../queryKeys";
+import { PROGRAM_KEYS } from "../queryKeys";
 
 const GET_PROGRAMS_QUERY = `
   query GetPrograms($direction: OrderDirection!, $priority: Int!, $limit: Int) {
@@ -48,7 +48,7 @@ const fetchPrograms = async (): Promise<Program[]> => {
 };
 
 export const programsQueryOptions = queryOptions({
-  queryKey: programKeys.all,
+  queryKey: PROGRAM_KEYS.all,
   queryFn: fetchPrograms,
   staleTime: 1000 * 60 * 60 * 24, // 24 hours
 });

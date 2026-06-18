@@ -1,4 +1,4 @@
-import { programKeys } from "@api/queryKeys";
+import { PROGRAM_KEYS } from "@api/queryKeys";
 import usePrograms from "@hooks/usePrograms";
 import { createQueryWrapper } from "@test-utils/queryTestUtils";
 import { act, renderHook, waitFor } from "@testing-library/react";
@@ -13,7 +13,7 @@ describe("usePrograms hook", () => {
   it("updates the cache when selectProgram is called", async () => {
     const { queryClient, wrapper } = createQueryWrapper();
 
-    queryClient.setQueryData(programKeys.all, mockPrograms);
+    queryClient.setQueryData(PROGRAM_KEYS.all, mockPrograms);
 
     const { result } = renderHook(() => usePrograms(), { wrapper });
 

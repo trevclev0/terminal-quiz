@@ -1,5 +1,5 @@
 import { useProgramsQuery } from "@api/queries/useProgramsQuery";
-import { programKeys } from "@api/queryKeys";
+import { PROGRAM_KEYS } from "@api/queryKeys";
 import type { Program } from "@shared/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
@@ -16,7 +16,7 @@ function usePrograms() {
   const setProgramsCache = useCallback(
     (updater: (prev: ProgramWithSelection[]) => ProgramWithSelection[]) => {
       queryClient.setQueryData<ProgramWithSelection[]>(
-        programKeys.all,
+        PROGRAM_KEYS.all,
         (old) => {
           if (!old) return [];
           return updater(old);

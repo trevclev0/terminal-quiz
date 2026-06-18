@@ -1,7 +1,7 @@
 import { api } from "@api/client";
 import type { ProgramWithGates } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
-import { programKeys } from "../queryKeys";
+import { PROGRAM_KEYS } from "../queryKeys";
 
 const fetchProgramsWithGates = async (): Promise<ProgramWithGates[]> => {
   const rsp = await api.programs.$get();
@@ -27,7 +27,7 @@ const fetchProgramsWithGates = async (): Promise<ProgramWithGates[]> => {
 
 export const useProgramsWithGatesQuery = () => {
   return useQuery({
-    queryKey: programKeys.allWithGates,
+    queryKey: PROGRAM_KEYS.allWithGates,
     queryFn: fetchProgramsWithGates,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
   });
