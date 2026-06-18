@@ -13,7 +13,7 @@ const mockPrograms = [
 
 describe("Select Route Integration", () => {
   beforeEach(() => {
-    globalThis.fetch = vi.fn();
+    vi.stubGlobal("fetch", vi.fn());
   });
 
   it("loads data via the router loader and renders the selector", async () => {
@@ -22,9 +22,7 @@ describe("Select Route Integration", () => {
       resolveApi = resolve;
     });
 
-    vi.spyOn(globalThis, "fetch").mockReturnValueOnce(
-      apiPromise as Promise<Response>,
-    );
+    vi.stubGlobal("fetch", vi.fn().mockReturnValueOnce(apiPromise));
     const router = createTestRouter("/select");
 
     renderWithRouter(router);
@@ -48,10 +46,13 @@ describe("Select Route Integration", () => {
   });
 
   it("renders a warning when the loader returns empty programs", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ data: { programs: [] } }),
-    } as Response);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: { programs: [] } }),
+      } as Response),
+    );
 
     const router = createTestRouter("/select");
     renderWithRouter(router);
