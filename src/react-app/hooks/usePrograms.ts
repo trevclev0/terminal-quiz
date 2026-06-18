@@ -4,18 +4,24 @@ import type { Program } from "@shared/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
+export type ProgramWithSelection = Program & { isSelected?: boolean };
+
 function usePrograms() {
   const queryClient = useQueryClient();
-  const { data: programs = [], isLoading, error } = useProgramsQuery();
+  const { data: programsData = [], isLoading, error } = useProgramsQuery();
+  const programs = programsData as ProgramWithSelection[];
 
   const activeProgram = programs.find((p) => p.isSelected);
 
   const setProgramsCache = useCallback(
-    (updater: (prev: Program[]) => Program[]) => {
-      queryClient.setQueryData<Program[]>(programKeys.all, (old) => {
-        if (!old) return [];
-        return updater(old);
-      });
+    (updater: (prev: ProgramWithSelection[]) => ProgramWithSelection[]) => {
+      queryClient.setQueryData<ProgramWithSelection[]>(
+        programKeys.all,
+        (old) => {
+          if (!old) return [];
+          return updater(old);
+        },
+      );
     },
     [queryClient],
   );
