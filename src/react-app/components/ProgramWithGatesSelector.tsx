@@ -30,7 +30,12 @@ function ProgramSelector({ programs, selectProgram }: ProgramSelectorProps) {
 
   return (
     <div id="program-selector">
-      <select ref={selectRef} onChange={selectChangeHandler} defaultValue="">
+      <select
+        ref={selectRef}
+        onChange={selectChangeHandler}
+        defaultValue=""
+        aria-label="Program Selection"
+      >
         <option value="" disabled hidden>
           Select your program
         </option>
