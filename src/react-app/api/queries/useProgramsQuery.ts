@@ -47,13 +47,12 @@ const fetchPrograms = async (): Promise<Program[]> => {
   return result.data.programs;
 };
 
-export const programsQueryOptions = () =>
-  queryOptions({
-    queryKey: programKeys.all,
-    queryFn: fetchPrograms,
-    staleTime: 1000 * 60 * 60 * 24, // 24 hours
-  });
+export const programsQueryOptions = queryOptions({
+  queryKey: programKeys.all,
+  queryFn: fetchPrograms,
+  staleTime: 1000 * 60 * 60 * 24, // 24 hours
+});
 
 export const useProgramsQuery = () => {
-  return useQuery(programsQueryOptions());
+  return useQuery(programsQueryOptions);
 };
