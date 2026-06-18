@@ -2,7 +2,7 @@ import { useProgramsWithGatesQuery } from "@api/queries/useProgramsWithGatesQuer
 import type { Gate, ProgramWithGates } from "@shared/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
-import { programKeys } from "../api/queryKeys";
+import { PROGRAM_KEYS } from "../api/queryKeys";
 
 function usePrograms() {
   const queryClient = useQueryClient();
@@ -14,7 +14,7 @@ function usePrograms() {
   const setProgramsCache = useCallback(
     (updater: (prev: ProgramWithGates[]) => ProgramWithGates[]) => {
       queryClient.setQueryData<ProgramWithGates[]>(
-        programKeys.allWithGates,
+        PROGRAM_KEYS.allWithGates,
         (old) => {
           if (!old) return [];
           return updater(old);

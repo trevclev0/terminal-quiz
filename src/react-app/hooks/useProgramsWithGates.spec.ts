@@ -16,7 +16,7 @@ vi.mock("@api/client", () => ({
 }));
 
 import { api } from "@api/client";
-import { programKeys } from "@api/queryKeys";
+import { PROGRAM_KEYS } from "@api/queryKeys";
 import { createQueryWrapper } from "@test-utils/queryTestUtils";
 
 // ---------------------------------------------------------------------------
@@ -67,7 +67,7 @@ const setupHook = async (
   const { queryClient, wrapper } = createQueryWrapper();
 
   if (primeCache && mockData) {
-    queryClient.setQueryData(programKeys.allWithGates, mockData);
+    queryClient.setQueryData(PROGRAM_KEYS.allWithGates, mockData);
   } else if (error) {
     vi.mocked(api.programs.$get).mockRejectedValueOnce(error);
   } else {
