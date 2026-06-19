@@ -1,5 +1,5 @@
 import ProgramWithGates from "@components/ProgramWithGates";
-import ProgramSelector from "@components/ProgramWithGatesSelector";
+import ProgramWithGatesSelector from "@components/ProgramWithGatesSelector";
 import usePrograms from "@hooks/useProgramsWithGates";
 
 function App() {
@@ -32,7 +32,10 @@ function App() {
           updateProgram={updateProgram}
         />
       ) : (
-        <ProgramSelector programs={programs} selectProgram={selectProgram} />
+        <ProgramWithGatesSelector
+          programs={programs}
+          selectProgram={selectProgram}
+        />
       )}
     </div>
   );
