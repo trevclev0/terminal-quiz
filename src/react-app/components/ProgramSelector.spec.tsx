@@ -83,4 +83,15 @@ describe("ProgramSelector Component", () => {
     const selectElement = screen.getByRole("combobox");
     expect(selectElement).toHaveFocus();
   });
+
+  it("falls back to the placeholder if the URL programId does not exist in the data", () => {
+    (Route.useSearch as Mock).mockReturnValue({ programId: "ghost-id-999" });
+
+    render(<ProgramSelector />);
+
+    const selectElement = screen.getByRole("combobox") as HTMLSelectElement;
+
+    expect(selectElement.value).toBe("");
+    expect(screen.getByText("Select your program")).toBeInTheDocument();
+  });
 });

@@ -7,6 +7,7 @@ import userEvent from "@testing-library/user-event";
 import { delay, graphql, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { validateSelectSearch } from "./select";
 
 const mockPrograms = [
   { id: "1", name: "Program 1" },
@@ -64,5 +65,30 @@ describe("Select Route Integration", () => {
     renderWithRouter(router);
 
     expect(await screen.findByText("No programs found")).toBeInTheDocument();
+  });
+});
+
+describe("Select Route Search Validation", () => {
+  it("accepts a valid string programId", () => {
+    const rawSearch = { programId: "123" };
+    const result = validateSelectSearch(rawSearch);
+
+    expect(result.programId).toBe("123");
+  });
+
+  it("rejects an array of programIds and falls back to undefined", () => {
+    // Simulate a user passing ?programId=1&programId=2
+    const rawSearch = { programId: ["1", "2"] };
+    const result = validateSelectSearch(rawSearch);
+
+    // The type guard should catch the array and strip it out
+    expect(result.programId).toBeUndefined();
+  });
+
+  it("rejects arbitrary objects and falls back to undefined", () => {
+    const rawSearch = { programId: { hijacked: true } };
+    const result = validateSelectSearch(rawSearch);
+
+    expect(result.programId).toBeUndefined();
   });
 });
