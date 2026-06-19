@@ -1,32 +1,46 @@
 import { PROGRAM_KEYS } from "@api/queryKeys";
 import usePrograms from "@hooks/usePrograms";
 import { createQueryWrapper } from "@test-utils/queryTestUtils";
-import { act, renderHook, waitFor } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { renderHook, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockPrograms = [
-  { id: "1", name: "Program A", isSelected: false },
-  { id: "2", name: "Program B", isSelected: false },
+  { id: "1", name: "Program A" },
+  { id: "2", name: "Program B" },
 ];
 
 describe("usePrograms hook", () => {
-  it("updates the cache when selectProgram is called", async () => {
+  beforeEach(() => {
+    globalThis.fetch = vi.fn(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ data: { programs: mockPrograms } })),
+      ),
+    );
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("returns an empty array and loading state initially", () => {
+    const { wrapper } = createQueryWrapper();
+
+    const { result } = renderHook(() => usePrograms(), { wrapper });
+
+    expect(result.current.programs).toEqual([]);
+    expect(result.current.isLoading).toBe(true);
+  });
+
+  it("returns programs when data is successfully fetched or cached", async () => {
     const { queryClient, wrapper } = createQueryWrapper();
 
     queryClient.setQueryData(PROGRAM_KEYS.all, mockPrograms);
 
     const { result } = renderHook(() => usePrograms(), { wrapper });
 
-    expect(result.current.programs[0].isSelected).toBe(false);
-
-    act(() => {
-      result.current.selectProgram("1");
-    });
-
     await waitFor(() => {
-      expect(result.current.programs[0].isSelected).toBe(true);
-      expect(result.current.programs[1].isSelected).toBe(false);
-      expect(result.current.activeProgram?.id).toBe("1");
+      expect(result.current.programs).toEqual(mockPrograms);
+      expect(result.current.isLoading).toBe(false);
     });
   });
 });
