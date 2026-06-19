@@ -6,12 +6,17 @@ type SelectSearch = {
   programId?: string;
 };
 
+export const validateSelectSearch = (
+  search: Record<string, unknown>,
+): SelectSearch => {
+  return {
+    programId:
+      typeof search.programId === "string" ? search.programId : undefined,
+  };
+};
+
 export const Route = createFileRoute("/select")({
-  validateSearch: (search: Record<string, unknown>): SelectSearch => {
-    return {
-      programId: search.programId as string | undefined,
-    };
-  },
+  validateSearch: validateSelectSearch,
   loader: async ({ context: { queryClient } }) => {
     await queryClient.ensureQueryData(programsQueryOptions);
     return {};

@@ -35,11 +35,14 @@ function ProgramSelector() {
 
   return (
     <div id="program-selector">
-      <select ref={selectRef} onChange={handleSelect} value={programId || ""}>
+      <select
+        ref={selectRef}
+        onChange={handleSelect}
+        value={programs.some((p) => p.id === programId) ? programId : ""}
+      >
         <option value="" disabled hidden>
           Select your program
         </option>
-
         {programs.map((program) => (
           <option key={program.id} value={program.id}>
             {program.name}
