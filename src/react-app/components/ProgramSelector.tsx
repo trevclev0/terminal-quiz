@@ -9,6 +9,17 @@ function ProgramSelector() {
   const { programId } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
 
+  const isValidSelection = programs.some((p) => p.id === programId);
+
+  useEffect(() => {
+    if (programId && !isValidSelection) {
+      navigate({
+        search: {},
+        replace: true,
+      });
+    }
+  }, [programId, isValidSelection, navigate]);
+
   useEffect(() => {
     if (selectRef.current) {
       selectRef.current.focus();
@@ -30,6 +41,7 @@ function ProgramSelector() {
   const handleSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     navigate({
       search: { programId: e.target.value },
+      replace: true,
     });
   };
 
@@ -38,7 +50,7 @@ function ProgramSelector() {
       <select
         ref={selectRef}
         onChange={handleSelect}
-        value={programs.some((p) => p.id === programId) ? programId : ""}
+        value={isValidSelection ? programId : ""}
       >
         <option value="" disabled hidden>
           Select your program
