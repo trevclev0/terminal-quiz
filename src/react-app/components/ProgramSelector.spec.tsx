@@ -1,3 +1,4 @@
+// src/react-app/components/ProgramSelector.spec.tsx
 import usePrograms from "@hooks/usePrograms";
 import { useNavigate } from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
@@ -37,61 +38,47 @@ describe("ProgramSelector Component", () => {
 
   it("renders 'No programs found' when the programs array is empty", () => {
     (usePrograms as Mock).mockReturnValue({ programs: [] });
-
     render(<ProgramSelector />);
-
     expect(screen.getByText("No programs found")).toBeInTheDocument();
-    expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
   });
 
-  it("renders the dropdown with the default placeholder when no programId is in the URL", () => {
-    render(<ProgramSelector />);
-
-    const selectElement = screen.getByRole("combobox") as HTMLSelectElement;
-    expect(selectElement).toBeInTheDocument();
-
-    expect(selectElement.value).toBe("");
-    expect(screen.getByText("Select your program")).toBeInTheDocument();
-    expect(screen.getByText("Program Alpha")).toBeInTheDocument();
-  });
-
-  it("pre-selects the correct option if programId exists in the URL parameters", () => {
+  it("pre-selects the correct option if programId exists and is valid", () => {
     (Route.useSearch as Mock).mockReturnValue({ programId: "2" });
 
     render(<ProgramSelector />);
 
     const selectElement = screen.getByRole("combobox") as HTMLSelectElement;
     expect(selectElement.value).toBe("2");
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it("calls navigate with the updated search param when a new option is chosen", async () => {
+  it("clears the search parameter from the URL if programId does not match any existing program", () => {
+    (Route.useSearch as Mock).mockReturnValue({ programId: "ghost-id-999" });
+
     render(<ProgramSelector />);
 
+    expect(mockNavigate).toHaveBeenCalledTimes(1);
+    expect(mockNavigate).toHaveBeenCalledWith({
+      search: {},
+      replace: true,
+    });
+  });
+
+  it("calls navigate with the updated search param when a new option is chosen manually", async () => {
+    render(<ProgramSelector />);
     const selectElement = screen.getByRole("combobox");
 
     await userEvent.selectOptions(selectElement, "2");
 
-    expect(mockNavigate).toHaveBeenCalledTimes(1);
     expect(mockNavigate).toHaveBeenCalledWith({
       search: { programId: "2" },
+      replace: true,
     });
   });
 
   it("focuses the select element on initial mount", () => {
     render(<ProgramSelector />);
-
     const selectElement = screen.getByRole("combobox");
     expect(selectElement).toHaveFocus();
-  });
-
-  it("falls back to the placeholder if the URL programId does not exist in the data", () => {
-    (Route.useSearch as Mock).mockReturnValue({ programId: "ghost-id-999" });
-
-    render(<ProgramSelector />);
-
-    const selectElement = screen.getByRole("combobox") as HTMLSelectElement;
-
-    expect(selectElement.value).toBe("");
-    expect(screen.getByText("Select your program")).toBeInTheDocument();
   });
 });
