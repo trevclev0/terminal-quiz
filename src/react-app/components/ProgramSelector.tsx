@@ -1,10 +1,13 @@
 import usePrograms from "@hooks/usePrograms";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
+import { Route } from "../routes/select";
 
 function ProgramSelector() {
   const selectRef = useRef<HTMLSelectElement>(null);
-
-  const { programs, selectProgram } = usePrograms();
+  const { programs } = usePrograms();
+  const { programId } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
 
   useEffect(() => {
     if (selectRef.current) {
@@ -20,13 +23,19 @@ function ProgramSelector() {
     );
   }
 
+  /**
+   * Update the URL when the user picks a new option
+   * @param e
+   */
+  const handleSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    navigate({
+      search: { programId: e.target.value },
+    });
+  };
+
   return (
     <div id="program-selector">
-      <select
-        ref={selectRef}
-        onChange={(e) => selectProgram(e.target.value)}
-        defaultValue=""
-      >
+      <select ref={selectRef} onChange={handleSelect} value={programId || ""}>
         <option value="" disabled hidden>
           Select your program
         </option>
