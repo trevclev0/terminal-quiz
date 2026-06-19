@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import ProgramSelector from "@components/ProgramWithGatesSelector";
+import ProgramWithGatesSelector from "@components/ProgramWithGatesSelector";
 import type { ProgramWithGates } from "@shared/types";
 import { defaultNullishProgramProps } from "@test-utils/testTypes";
 import userEvent from "@testing-library/user-event";
@@ -33,20 +33,26 @@ const programs: ProgramWithGates[] = [
 
 describe("rendering", () => {
   it("renders the placeholder option", () => {
-    render(<ProgramSelector programs={programs} selectProgram={vi.fn()} />);
+    render(
+      <ProgramWithGatesSelector programs={programs} selectProgram={vi.fn()} />,
+    );
 
     expect(screen.getByText("Select your program")).toBeInTheDocument();
   });
 
   it("renders an option for each program", () => {
-    render(<ProgramSelector programs={programs} selectProgram={vi.fn()} />);
+    render(
+      <ProgramWithGatesSelector programs={programs} selectProgram={vi.fn()} />,
+    );
 
     expect(screen.getByRole("option", { name: "Alpha" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Beta" })).toBeInTheDocument();
   });
 
   it("renders the correct number of selectable options", () => {
-    render(<ProgramSelector programs={programs} selectProgram={vi.fn()} />);
+    render(
+      <ProgramWithGatesSelector programs={programs} selectProgram={vi.fn()} />,
+    );
 
     // You might think there should be placeholder + 2 programs = 3 options,
     // but the placeholder is not selectable, so subtract 1
@@ -54,7 +60,7 @@ describe("rendering", () => {
   });
 
   it("renders no program options when the programs list is empty", () => {
-    render(<ProgramSelector programs={[]} selectProgram={vi.fn()} />);
+    render(<ProgramWithGatesSelector programs={[]} selectProgram={vi.fn()} />);
 
     expect(screen.getAllByText("No programs found")).toHaveLength(1);
   });
@@ -69,7 +75,10 @@ describe("selecting a program", () => {
     const user = userEvent.setup();
     const selectProgram = vi.fn();
     render(
-      <ProgramSelector programs={programs} selectProgram={selectProgram} />,
+      <ProgramWithGatesSelector
+        programs={programs}
+        selectProgram={selectProgram}
+      />,
     );
 
     await user.selectOptions(screen.getByRole("combobox"), "Beta");
@@ -83,7 +92,10 @@ describe("selecting a program", () => {
     const user = userEvent.setup();
     const selectProgram = vi.fn();
     render(
-      <ProgramSelector programs={programs} selectProgram={selectProgram} />,
+      <ProgramWithGatesSelector
+        programs={programs}
+        selectProgram={selectProgram}
+      />,
     );
 
     await user.selectOptions(screen.getByRole("combobox"), "Alpha");

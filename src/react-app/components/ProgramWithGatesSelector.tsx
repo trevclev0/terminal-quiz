@@ -6,7 +6,10 @@ type ProgramSelectorProps = {
   selectProgram: (programName: string) => void;
 };
 
-function ProgramSelector({ programs, selectProgram }: ProgramSelectorProps) {
+function ProgramWithGatesSelector({
+  programs,
+  selectProgram,
+}: ProgramSelectorProps) {
   const selectRef = useRef<HTMLSelectElement>(null);
 
   function selectChangeHandler(event: ChangeEvent<HTMLSelectElement>) {
@@ -50,4 +53,4 @@ function ProgramSelector({ programs, selectProgram }: ProgramSelectorProps) {
   );
 }
 
-export default ProgramSelector;
+export default ProgramWithGatesSelector;
