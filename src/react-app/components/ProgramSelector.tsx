@@ -12,13 +12,13 @@ function ProgramSelector() {
   const isValidSelection = programs.some((p) => p.id === programId);
 
   useEffect(() => {
-    if (programId && !isValidSelection) {
+    if (programId && programs.length > 0 && !isValidSelection) {
       navigate({
         search: {},
         replace: true,
       });
     }
-  }, [programId, isValidSelection, navigate]);
+  }, [programId, programs.length, isValidSelection, navigate]);
 
   useEffect(() => {
     if (selectRef.current) {
