@@ -193,8 +193,6 @@ Schema lives in `src/shared/schema.ts` (Drizzle + single source of truth for DB 
 - `game_state` — single-row table tracking last global update
 - `session_progress` — per-session progression (`current_gate_id`, `completed_gate_ids` as a JSON string, `status`), unique on `(session_id, program_id)`
 
-⚠️ **Known gap:** `session_progress` is defined in `schema.ts` but has no corresponding migration yet — the latest migration is `0004_aberrant_dakota_north`. Run `pnpm migrate:generate` before depending on this table anywhere it would touch real D1.
-
 ```bash
 pnpm migrate:generate   # after editing schema.ts
 pnpm migrate:local / migrate:preview / migrate:prod
@@ -237,8 +235,7 @@ Secrets required in GitHub Actions: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_
 ## Known Gaps (as of this writing)
 
 - `/select` + the GraphQL gameplay resolvers (`getProgramProgression`, `submitGuess`) are not feature-complete and not wired into a finished UI for actually playing through gates session-by-session
-- The REST `gateService.ts` guess flow and the GraphQL `session_progress`-based flow overlap in purpose but track state differently — pick one
-- `session_progress` table has no migration yet
+- The REST `gateService.ts` guess flow and the GraphQL `session_progress`-based flow overlap in purpose but track state differently — GraphQL is the preferred path moving forward, specifically once the `/select` flow is complete
 
 ---
 
