@@ -25,7 +25,7 @@ Live at **[quiz.clevertrevor.dev](https://quiz.clevertrevor.dev)**
 - **Sequential gate progression** — riddles unlock one at a time; solving a gate reveals the next
 - **Fuzzy answer matching** — accepts answers within a configurable Levenshtein distance threshold (default: 87.5% similarity), tolerating minor typos
 - **Guided hints** — optional per-gate guidance that surfaces a clue after a configurable number of failed attempts
-- **Offline-capable** — query results are persisted to IndexedDB via MessagePack encoding, surviving page refreshes and brief connectivity loss
+- **Offline-capable** — program and gate state is cached in IndexedDB (MessagePack-encoded), surviving page refreshes and brief connectivity loss
 - **Terminal aesthetic** — monospace, green-on-black UI faithful to classic terminal interfaces
 
 ---
@@ -34,13 +34,13 @@ Live at **[quiz.clevertrevor.dev](https://quiz.clevertrevor.dev)**
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19, TypeScript, Vite 8 |
-| Backend | Hono, Cloudflare Workers |
+| Frontend | React 19, TypeScript, Vite 8, TanStack Router |
+| Backend | Hono 4, Cloudflare Workers |
 | Database | Cloudflare D1 (SQLite), Drizzle ORM |
-| Caching | TanStack Query v5 + IndexedDB persistence |
+| Client cache | TanStack Query v5, persisted to IndexedDB via `idb-keyval` + MessagePack |
 | Testing | Vitest, React Testing Library, MSW, happy-dom |
 | Linting / Formatting | Biome |
-| Commits | Commitizen + cz-git, commitlint, gitmoji |
+| Commits | cz-git + commitlint, gitmoji, Husky |
 | CI / CD | GitHub Actions |
 | Releases | semantic-release + semantic-release-gitmoji |
 | Package Manager | pnpm |
@@ -49,32 +49,32 @@ Live at **[quiz.clevertrevor.dev](https://quiz.clevertrevor.dev)**
 
 ## Architecture
 
-The project is a monorepo-style single repository with two runtime targets sharing a common `src/shared` layer.
-
 ```bash
 src/
 ├── react-app/      # Vite-built SPA (served as static assets)
-│   ├── api/        # TanStack Query hooks and the Hono RPC client
+│   ├── api/        # TanStack Query client/hooks, Hono RPC client
 │   ├── components/ # React components
-│   ├── contexts/   # React context definitions
-│   ├── hooks/      # Custom hooks
-│   ├── utils/      # Pure utility functions
-│   └── test-utils/ # Shared test helpers and wrappers
+│   ├── hooks/       
+│   ├── routes/      # TanStack file-based routes
+│   ├── utils/       
+│   └── test-utils/ 
 ├── shared/
 │   ├── schema.ts   # Drizzle schema (single source of truth for DB + types)
-│   └── types.ts    # Zod-inferred TypeScript types
+│   └── types.ts    
 └── worker/
-    ├── middleware/  # Hono middleware (DB setup)
-    ├── routes/      # Hono route handlers
-    └── services/    # Business logic (gate guessing, etc.)
+    ├── middleware/  
+    ├── routes/      
+    └── services/    
 ```
 
 **Request flow:**
 
 1. The Cloudflare Worker serves the static React SPA via the `assets` binding.
-2. API calls from the SPA hit `/api/*` routes on the same Worker (no separate origin).
-3. Route handlers delegate to service functions that query/mutate Cloudflare D1 via Drizzle ORM.
-4. The frontend caches API responses in TanStack Query, persisted to IndexedDB between sessions.
+2. On load, the SPA fetches all programs and their gates once via `GET /api/programs`.
+3. From there, all gameplay — selecting a program, solving gates, resetting progress — is handled entirely client-side against a TanStack Query cache. No further writes hit the server during play.
+4. That cache is persisted to IndexedDB (MessagePack-encoded) between sessions, so progress survives reloads.
+
+> A second, backend-driven flow (server-tracked progression via GraphQL, starting at `/select`) is in active development and will eventually become the default once it's feature-complete.
 
 ---
 
@@ -83,7 +83,7 @@ src/
 ### Prerequisites
 
 - **Node.js** `>=22.0.0` (see `.tool-versions` for the pinned version; [mise](https://mise.jdx.dev/) or [asdf](https://asdf-vm.com/) recommended)
-- **pnpm** `>=10` (version is pinned in `package.json`)
+- **pnpm** (version pinned in `package.json`)
 - A [Cloudflare account](https://dash.cloudflare.com/) with Workers and D1 enabled (for deployment; local dev uses a local SQLite file)
 
 ### Installation
@@ -141,6 +141,7 @@ pnpm seed:local      # Populate with initial program/gate data
 | `pnpm coverage` | Run the full test suite and generate a coverage report |
 | `pnpm test:ui` | Open the Vitest browser UI |
 | `pnpm commit` | Launch the interactive Commitizen prompt (preferred over `git commit`) |
+| `pnpm cf-typegen` | Regenerate Wrangler/Workers type bindings |
 
 ### Code style
 
@@ -164,7 +165,7 @@ pnpm test:ui       # Browser-based Vitest UI
 
 ### Testing approach
 
-- **Unit tests** for pure utilities (`isGuessCloseEnough`, `getRiddlesToRender`, etc.)
+- **Unit tests** for pure utilities (`isGuessCloseEnough`, `getGatesToRender`, etc.)
 - **Hook tests** using `renderHook` from React Testing Library, with TanStack Query wrappers and MSW for API mocking where needed
 - **Component tests** using React Testing Library, with module-level `vi.mock` calls to isolate dependencies
 - **Worker/service tests** using plain Vitest with manually constructed mock DB objects
@@ -175,7 +176,7 @@ Test utilities live in `src/react-app/test-utils/`:
 |---|---|
 | `setupTests.ts` | Global setup — imports jest-dom matchers, registers `afterEach` cleanup |
 | `queryTestUtils.tsx` | Factory for a fresh `QueryClient` + `QueryClientProvider` wrapper per test |
-| `createProgramDataWrapper.tsx` | Factory for a `ProgramDataContext.Provider` wrapper with mock functions |
+| `reactRouterUtils.tsx` | Factory for a test router + render helper for route-level integration tests |
 | `testTypes.ts` | Shared default values for nullable fields on `Gate` and `Program` fixtures |
 
 Coverage is collected for all files under `src/` except entry points, the Drizzle schema, and shared type definitions.
@@ -184,7 +185,7 @@ Coverage is collected for all files under `src/` except entry points, the Drizzl
 
 ## Database
 
-Schema is defined in `src/shared/schema.ts` using Drizzle ORM and is the single source of truth for both the database structure and the TypeScript types (via `drizzle-zod`).
+Schema is defined in `src/shared/schema.ts` using Drizzle ORM and is the single source of truth for both the database structure and the TypeScript types.
 
 ### Tables
 
@@ -257,9 +258,9 @@ pnpm deploy:preview   # Upload a preview version
 ```bash
 .
 ├── .github/
-│   ├── actions/setup-project/   # Composite action: install Node, pnpm, Bun, deps
+│   ├── actions/setup-env/       # Composite action: install tools via mise, cache pnpm store
 │   └── workflows/
-│       ├── ci.yml               # Lint, test, coverage on push/PR
+│       ├── ci.yml               # Lint, test, coverage, commitlint on push/PR
 │       ├── deploy.yml           # Build and deploy to Cloudflare
 │       └── release.yml          # semantic-release on push to main
 ├── migrations/                  # Drizzle-generated SQL migration files
@@ -272,7 +273,7 @@ pnpm deploy:preview   # Upload a preview version
 ├── drizzle.config.ts            # Drizzle Kit config (reads DRIZZLE_DATABASE_URL)
 ├── release.config.mjs           # semantic-release config
 ├── vite.config.ts               # Vite + Vitest config
-└── wrangler.jsonc               # Cloudflare Workers / D1 binding config
+└── wrangler.jsonc                # Cloudflare Workers / D1 binding config
 ```
 
 ---
