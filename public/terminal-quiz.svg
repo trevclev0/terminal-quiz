@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <title>Terminal Quiz</title>
 
   <!-- Solid black background circle -->
   <circle cx="100" cy="100" r="89" fill="#000000"/>
