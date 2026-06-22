@@ -34,6 +34,11 @@ The app currently has **two parallel gameplay flows**:
 ## Local Development Setup
 
 ```bash
+mise install   # provisions node/pnpm pinned in .tool-versions; if `node`/
+                # `pnpm` still don't resolve after this, mise's shims aren't
+                # on PATH — run `mise activate` for your shell, or prefix
+                # commands with `mise exec --`
+
 pnpm install
 
 pnpm dev

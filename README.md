@@ -91,6 +91,7 @@ src/
 ```bash
 git clone <repo-url>
 cd terminal-quiz
+mise install      # provisions node/pnpm pinned in .tool-versions
 pnpm install
 ```
 
