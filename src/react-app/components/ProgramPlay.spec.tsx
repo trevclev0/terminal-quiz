@@ -1,0 +1,117 @@
+import { createQueryWrapper } from "@test-utils/queryTestUtils";
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import ProgramPlay from "./ProgramPlay";
+
+vi.mock("@tanstack/react-router", () => ({
+  useNavigate: vi.fn(() => vi.fn()),
+}));
+
+vi.mock("../routes/programs/$programId", () => ({
+  Route: {
+    useParams: vi.fn(() => ({ programId: "test-program-id" })),
+    fullPath: "/programs/test-program-id",
+  },
+}));
+
+describe("ProgramPlay Component", () => {
+  const mockProgression = {
+    currentGate: {
+      id: "gate-1",
+      label: "Gate 1",
+      question: "What is 2+2?",
+    },
+    completedGates: [],
+    status: "in_progress",
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("renders loading state when data is loading", () => {
+    const { wrapper } = createQueryWrapper();
+
+    render(<ProgramPlay />, { wrapper });
+
+    expect(screen.getByText("Loading Program...")).toBeInTheDocument();
+  });
+
+  it("renders current gate when data is loaded", async () => {
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      mockProgression,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("Program: test-program-id");
+    expect(screen.getByText("Gate 1")).toBeInTheDocument();
+    expect(screen.getByText("What is 2+2?")).toBeInTheDocument();
+  });
+
+  it("renders completed gates", async () => {
+    const progressionWithCompleted = {
+      currentGate: {
+        id: "gate-2",
+        label: "Gate 2",
+        question: "What is 3+3?",
+      },
+      completedGates: [
+        {
+          id: "gate-1",
+          label: "Gate 1",
+          question: "What is 2+2?",
+          correctAnswer: "4",
+          successMessage: "Correct!",
+        },
+      ],
+      status: "in_progress",
+    };
+
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      progressionWithCompleted,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("Gate 1");
+    expect(screen.getByText("Correct!")).toBeInTheDocument();
+  });
+
+  it("renders end state when program is completed", async () => {
+    const completedProgression = {
+      currentGate: null,
+      completedGates: [
+        {
+          id: "gate-1",
+          label: "Gate 1",
+          question: "What is 2+2?",
+          correctAnswer: "4",
+          successMessage: "Correct!",
+        },
+      ],
+      status: "completed",
+    };
+
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      completedProgression,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("The End");
+    expect(screen.getByText("Select new program")).toBeInTheDocument();
+    expect(
+      screen.getByTitle("Restarting isn't available yet"),
+    ).toBeInTheDocument();
+  });
+});
