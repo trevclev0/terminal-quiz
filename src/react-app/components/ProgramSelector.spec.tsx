@@ -4,7 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
-import { Route } from "../routes/select";
+import { Route } from "../routes/programs/select";
 import ProgramSelector from "./ProgramSelector";
 
 vi.mock("@hooks/usePrograms");
@@ -13,10 +13,10 @@ vi.mock("@tanstack/react-router", () => ({
   useNavigate: vi.fn(),
 }));
 
-vi.mock("../routes/select", () => ({
+vi.mock("../routes/programs/select", () => ({
   Route: {
     useSearch: vi.fn(),
-    fullPath: "/select",
+    fullPath: "/programs/select",
   },
 }));
 

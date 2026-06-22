@@ -1,7 +1,7 @@
 import usePrograms from "@hooks/usePrograms";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
-import { Route } from "../routes/select";
+import { Route } from "../routes/programs/select";
 
 function ProgramSelector() {
   const selectRef = useRef<HTMLSelectElement>(null);
