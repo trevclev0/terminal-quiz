@@ -15,7 +15,7 @@ export const validateSelectSearch = (
   };
 };
 
-export const Route = createFileRoute("/select")({
+export const Route = createFileRoute("/programs/select")({
   validateSearch: validateSelectSearch,
   loader: async ({ context: { queryClient } }) => {
     await queryClient.ensureQueryData(programsQueryOptions);
