@@ -3,7 +3,10 @@ import { buildSchema } from "drizzle-graphql";
 import { GraphQLObjectType, GraphQLSchema } from "graphql";
 import { Hono } from "hono";
 import { submitGuess } from "../graphql/gameplay/mutations";
-import { getProgramProgression } from "../graphql/gameplay/queries";
+import {
+  getInProgressProgram,
+  getProgramProgression,
+} from "../graphql/gameplay/queries";
 import type { AppVariables } from "../middleware/db";
 
 let cachedSchema: GraphQLSchema | null = null;
@@ -31,6 +34,7 @@ const graphQlRouter = new Hono<AppVariables>().use("*", async (c, next) => {
           fields: {
             ...entities.queries,
             getProgramProgression,
+            getInProgressProgram,
           },
         }),
         mutation: new GraphQLObjectType({
