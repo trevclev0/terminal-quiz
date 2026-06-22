@@ -1,5 +1,4 @@
-import { screen } from "@testing-library/react";
-import { HttpResponse, http } from "msw";
+import { graphql, HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 
 import {
@@ -19,6 +18,11 @@ import {
 const server = setupServer(
   http.get("/api/programs", () => {
     return HttpResponse.json([{ id: 1, name: "Test Program" }]);
+  }),
+  graphql.query("GetInProgressProgram", () => {
+    return HttpResponse.json({
+      data: { getInProgressProgram: null },
+    });
   }),
 );
 
@@ -50,31 +54,31 @@ vi.mock("@hooks/useProgramsWithGates", async (importOriginal) => {
 });
 
 describe("Root Route", () => {
-  it("should render the main outlet container", async () => {
+  it("should redirect to /programs/select when no in-progress program", async () => {
     const router = createTestRouter("/");
     renderWithRouter(router);
 
-    const mainElement = await screen.findByRole("main");
-    expect(mainElement).toBeInTheDocument();
+    // Wait for redirect to complete
+    await vi.waitFor(() => {
+      expect(router.state.location.pathname).toBe("/programs/select");
+    });
   });
 
-  it("should render TanStackRouterDevtools", async () => {
+  it("should redirect to /programs/:programId when in-progress program exists", async () => {
+    server.use(
+      graphql.query("GetInProgressProgram", () => {
+        return HttpResponse.json({
+          data: { getInProgressProgram: "test-program-id" },
+        });
+      }),
+    );
+
     const router = createTestRouter("/");
     renderWithRouter(router);
 
-    const devtools = await screen.findByTestId("router-devtools");
-    expect(devtools).toBeInTheDocument();
-  });
-
-  it("should render layout structure correctly", async () => {
-    const router = createTestRouter("/");
-    renderWithRouter(router);
-
-    // findAllByRole ensures we only have exactly 1 main tag
-    const mainElements = await screen.findAllByRole("main");
-    expect(mainElements.length).toBe(1);
-
-    const devtools = await screen.findByTestId("router-devtools");
-    expect(devtools).toBeInTheDocument();
+    // Wait for redirect to complete
+    await vi.waitFor(() => {
+      expect(router.state.location.pathname).toBe("/programs/test-program-id");
+    });
   });
 });
