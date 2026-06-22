@@ -9,55 +9,58 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SelectRouteImport } from './routes/select'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProgramsSelectRouteImport } from './routes/programs/select'
+import { Route as ProgramsProgramIdRouteImport } from './routes/programs/$programId'
 
-const SelectRoute = SelectRouteImport.update({
-  id: '/select',
-  path: '/select',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProgramsSelectRoute = ProgramsSelectRouteImport.update({
+  id: '/programs/select',
+  path: '/programs/select',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProgramsProgramIdRoute = ProgramsProgramIdRouteImport.update({
+  id: '/programs/$programId',
+  path: '/programs/$programId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/select': typeof SelectRoute
+  '/programs/$programId': typeof ProgramsProgramIdRoute
+  '/programs/select': typeof ProgramsSelectRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/select': typeof SelectRoute
+  '/programs/$programId': typeof ProgramsProgramIdRoute
+  '/programs/select': typeof ProgramsSelectRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/select': typeof SelectRoute
+  '/programs/$programId': typeof ProgramsProgramIdRoute
+  '/programs/select': typeof ProgramsSelectRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/select'
+  fullPaths: '/' | '/programs/$programId' | '/programs/select'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/select'
-  id: '__root__' | '/' | '/select'
+  to: '/' | '/programs/$programId' | '/programs/select'
+  id: '__root__' | '/' | '/programs/$programId' | '/programs/select'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  SelectRoute: typeof SelectRoute
+  ProgramsProgramIdRoute: typeof ProgramsProgramIdRoute
+  ProgramsSelectRoute: typeof ProgramsSelectRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/select': {
-      id: '/select'
-      path: '/select'
-      fullPath: '/select'
-      preLoaderRoute: typeof SelectRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -65,12 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/programs/select': {
+      id: '/programs/select'
+      path: '/programs/select'
+      fullPath: '/programs/select'
+      preLoaderRoute: typeof ProgramsSelectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/programs/$programId': {
+      id: '/programs/$programId'
+      path: '/programs/$programId'
+      fullPath: '/programs/$programId'
+      preLoaderRoute: typeof ProgramsProgramIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  SelectRoute: SelectRoute,
+  ProgramsProgramIdRoute: ProgramsProgramIdRoute,
+  ProgramsSelectRoute: ProgramsSelectRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
