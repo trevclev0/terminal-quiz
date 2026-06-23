@@ -14,6 +14,22 @@ vi.mock("../routes/programs/$programId", () => ({
   },
 }));
 
+vi.mock("@hooks/useProgramPlay", () => ({
+  default: vi.fn(),
+}));
+
+import useProgramPlay from "@hooks/useProgramPlay";
+
+const mockUseProgramPlay = {
+  guess: "",
+  message: null,
+  isShaking: false,
+  changeHandler: vi.fn(),
+  handleSubmit: vi.fn(),
+};
+
+vi.mocked(useProgramPlay).mockReturnValue(mockUseProgramPlay);
+
 describe("ProgramPlay Component", () => {
   const mockPrograms = [{ id: "test-program-id", name: "Test Program" }];
 
@@ -29,10 +45,13 @@ describe("ProgramPlay Component", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(useProgramPlay).mockReturnValue(mockUseProgramPlay);
   });
 
   it("renders loading state when data is loading", () => {
-    const { wrapper } = createQueryWrapper();
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], []);
 
     render(<ProgramPlay />, { wrapper });
 
@@ -151,5 +170,26 @@ describe("ProgramPlay Component", () => {
     render(<ProgramPlay />, { wrapper });
 
     await screen.findByText("test-program-id");
+  });
+
+  it("applies shake class only to active gate when isShaking is true", async () => {
+    vi.mocked(useProgramPlay).mockReturnValue({
+      ...mockUseProgramPlay,
+      isShaking: true,
+    });
+
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], mockPrograms);
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      mockProgression,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("Gate 1");
+    const activeGate = screen.getByText("Gate 1").closest(".gate");
+    expect(activeGate).toHaveClass("shake");
   });
 });
