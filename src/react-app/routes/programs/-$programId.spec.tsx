@@ -17,7 +17,15 @@ const mockProgression = {
   status: "in_progress",
 };
 
-const server = setupServer();
+const mockPrograms = [{ id: "test-program-id", name: "Test Program" }];
+
+const server = setupServer(
+  graphql.query("GetPrograms", () => {
+    return HttpResponse.json({
+      data: { programs: mockPrograms },
+    });
+  }),
+);
 
 describe("Program Play Route Integration", () => {
   beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
@@ -37,7 +45,7 @@ describe("Program Play Route Integration", () => {
     renderWithRouter(router);
 
     await waitFor(() => {
-      expect(screen.getByText("test-program-id")).toBeInTheDocument();
+      expect(screen.getByText("Test Program")).toBeInTheDocument();
     });
 
     expect(screen.getByText("Gate 1")).toBeInTheDocument();
