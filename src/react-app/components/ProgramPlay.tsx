@@ -1,5 +1,8 @@
 import { useSubmitGuessMutation } from "@api/mutations/useSubmitGuessMutation";
 import { programProgressionQueryOptions } from "@api/queries/useProgramProgressionQuery";
+import { programsQueryOptions } from "@api/queries/useProgramsQuery";
+import useProgressionScroll from "@hooks/useProgressionScroll";
+import useShake from "@hooks/useShake";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -13,11 +16,15 @@ function ProgramPlay() {
     programProgressionQueryOptions(programId),
   );
 
+  const { data: programsData } = useQuery(programsQueryOptions);
+
   const submitGuessMutation = useSubmitGuessMutation(programId);
 
   const [guess, setGuess] = useState("");
   const [message, setMessage] = useState<string | null>(null);
 
+  const { isShaking, shake, clearShake } = useShake();
+  const inputRef = useRef<HTMLInputElement>(null);
   const selectNewProgramRef = useRef<HTMLButtonElement>(null);
 
   const currentGate = progression?.currentGate ?? null;
@@ -25,6 +32,29 @@ function ProgramPlay() {
 
   const isTheEnd = currentGate === null;
 
+  // Look up program name from cached programs list
+  const program = programsData?.find((p) => p.id === programId);
+  const programName = program?.name ?? programId;
+
+  // Calculate next gate index for scrolling
+  const nextGateIndex = isTheEnd ? -1 : completedGates.length;
+  useProgressionScroll(nextGateIndex);
+
+  // Clear response message when currentGate.id changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: clearShake is stable from useShake hook
+  useEffect(() => {
+    setMessage(null);
+    clearShake();
+  }, [currentGate?.id]);
+
+  // Auto-focus the active gate's input on mount and when currentGate.id changes
+  useEffect(() => {
+    if (currentGate && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [currentGate]);
+
+  // Focus select new program button at end
   useEffect(() => {
     if (isTheEnd) {
       selectNewProgramRef.current?.focus();
@@ -54,10 +84,11 @@ function ProgramPlay() {
       });
 
       if (result.success) {
-        setMessage(result.message ?? "Correct!");
+        setMessage("Access Granted.");
         setGuess("");
       } else {
-        setMessage(result.message ?? "Incorrect");
+        setMessage("Access Denied.");
+        shake();
       }
     } catch {
       setMessage("Error submitting guess");
@@ -66,30 +97,62 @@ function ProgramPlay() {
 
   return (
     <>
-      <h1 className="title">Program: {programId}</h1>
-      {completedGates.map((gate) => (
-        <div key={gate.id} className="gate completed">
-          <h3>{gate.label}</h3>
-          <p>{gate.question}</p>
-          <p className="success">{gate.successMessage}</p>
+      <h1 className="title">{programName}</h1>
+      {completedGates.map((gate, index) => (
+        <div
+          key={gate.id}
+          id={`gate-${index}`}
+          className={isShaking ? "gate shake" : "gate"}
+        >
+          <details open>
+            <summary>{gate.label}</summary>
+            <form
+              aria-label={`${gate.label} - enter password and press Enter to submit`}
+            >
+              <p className="description">{gate.question}</p>
+              <input
+                type="text"
+                placeholder="Enter password..."
+                value={`✔ ${gate.correctAnswer}`}
+                disabled
+              />
+              <p className="clue">{gate.successMessage}</p>
+            </form>
+          </details>
         </div>
       ))}
       {currentGate && (
-        <div className="gate active">
-          <h3>{currentGate.label}</h3>
-          <p>{currentGate.question}</p>
-          {message && <p className="message">{message}</p>}
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              value={guess}
-              onChange={(e) => setGuess(e.target.value)}
-              disabled={submitGuessMutation.isPending}
-            />
-            <button type="submit" disabled={submitGuessMutation.isPending}>
-              Submit
-            </button>
-          </form>
+        <div
+          id={`gate-${completedGates.length}`}
+          className={isShaking ? "gate shake" : "gate"}
+        >
+          <details open>
+            <summary>{currentGate.label}</summary>
+            <form
+              onSubmit={handleSubmit}
+              aria-label={`${currentGate.label} - enter password and press Enter to submit`}
+            >
+              <p className="description">{currentGate.question}</p>
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Enter password..."
+                value={guess}
+                onChange={(e) => setGuess(e.target.value)}
+                disabled={submitGuessMutation.isPending}
+              />
+              {message && (
+                <p
+                  aria-live="polite"
+                  className={
+                    message === "Access Denied." ? "response fail" : "response"
+                  }
+                >
+                  {message}
+                </p>
+              )}
+            </form>
+          </details>
         </div>
       )}
       {isTheEnd && (
