@@ -1,11 +1,10 @@
-import { useSubmitGuessMutation } from "@api/mutations/useSubmitGuessMutation";
 import { programProgressionQueryOptions } from "@api/queries/useProgramProgressionQuery";
 import { programsQueryOptions } from "@api/queries/useProgramsQuery";
+import useProgramPlay from "@hooks/useProgramPlay";
 import useProgressionScroll from "@hooks/useProgressionScroll";
-import useShake from "@hooks/useShake";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Route } from "../routes/programs/$programId";
 
 function ProgramPlay() {
@@ -18,19 +17,16 @@ function ProgramPlay() {
 
   const { data: programsData } = useQuery(programsQueryOptions);
 
-  const submitGuessMutation = useSubmitGuessMutation(programId);
-
-  const [guess, setGuess] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
-
-  const { isShaking, shake, clearShake } = useShake();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const selectNewProgramRef = useRef<HTMLButtonElement>(null);
-
   const currentGate = progression?.currentGate ?? null;
   const completedGates = progression?.completedGates ?? [];
 
   const isTheEnd = currentGate === null;
+
+  const { guess, message, isShaking, changeHandler, handleSubmit } =
+    useProgramPlay({ programId, currentGateId: currentGate?.id });
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const selectNewProgramRef = useRef<HTMLButtonElement>(null);
 
   // Look up program name from cached programs list
   const program = programsData?.find((p) => p.id === programId);
@@ -40,19 +36,12 @@ function ProgramPlay() {
   const nextGateIndex = isTheEnd ? -1 : completedGates.length;
   useProgressionScroll(nextGateIndex);
 
-  // Clear response message when currentGate.id changes
-  // biome-ignore lint/correctness/useExhaustiveDependencies: clearShake is stable from useShake hook
-  useEffect(() => {
-    setMessage(null);
-    clearShake();
-  }, [currentGate?.id]);
-
   // Auto-focus the active gate's input on mount and when currentGate.id changes
   useEffect(() => {
-    if (currentGate && inputRef.current) {
+    if (currentGate?.id && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [currentGate]);
+  }, [currentGate?.id]);
 
   // Focus select new program button at end
   useEffect(() => {
@@ -71,39 +60,11 @@ function ProgramPlay() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentGate) return;
-
-    setMessage(null);
-
-    try {
-      const result = await submitGuessMutation.mutateAsync({
-        gateId: currentGate.id,
-        guess,
-      });
-
-      if (result.success) {
-        setMessage("Access Granted.");
-        setGuess("");
-      } else {
-        setMessage("Access Denied.");
-        shake();
-      }
-    } catch {
-      setMessage("Error submitting guess");
-    }
-  };
-
   return (
     <>
       <h1 className="title">{programName}</h1>
       {completedGates.map((gate, index) => (
-        <div
-          key={gate.id}
-          id={`gate-${index}`}
-          className={isShaking ? "gate shake" : "gate"}
-        >
+        <div key={gate.id} id={`gate-${index}`} className="gate">
           <details open>
             <summary>{gate.label}</summary>
             <form
@@ -138,8 +99,7 @@ function ProgramPlay() {
                 type="text"
                 placeholder="Enter password..."
                 value={guess}
-                onChange={(e) => setGuess(e.target.value)}
-                disabled={submitGuessMutation.isPending}
+                onChange={changeHandler}
               />
               {message && (
                 <p
