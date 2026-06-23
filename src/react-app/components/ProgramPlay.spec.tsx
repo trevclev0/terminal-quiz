@@ -15,6 +15,8 @@ vi.mock("../routes/programs/$programId", () => ({
 }));
 
 describe("ProgramPlay Component", () => {
+  const mockPrograms = [{ id: "test-program-id", name: "Test Program" }];
+
   const mockProgression = {
     currentGate: {
       id: "gate-1",
@@ -40,6 +42,7 @@ describe("ProgramPlay Component", () => {
   it("renders current gate when data is loaded", async () => {
     const { queryClient, wrapper } = createQueryWrapper();
 
+    queryClient.setQueryData(["programs"], mockPrograms);
     queryClient.setQueryData(
       ["programs", "progression", "test-program-id"],
       mockProgression,
@@ -47,12 +50,12 @@ describe("ProgramPlay Component", () => {
 
     render(<ProgramPlay />, { wrapper });
 
-    await screen.findByText("Program: test-program-id");
+    await screen.findByText("Test Program");
     expect(screen.getByText("Gate 1")).toBeInTheDocument();
     expect(screen.getByText("What is 2+2?")).toBeInTheDocument();
   });
 
-  it("renders completed gates", async () => {
+  it("renders completed gates with details/summary pattern", async () => {
     const progressionWithCompleted = {
       currentGate: {
         id: "gate-2",
@@ -73,6 +76,7 @@ describe("ProgramPlay Component", () => {
 
     const { queryClient, wrapper } = createQueryWrapper();
 
+    queryClient.setQueryData(["programs"], mockPrograms);
     queryClient.setQueryData(
       ["programs", "progression", "test-program-id"],
       progressionWithCompleted,
@@ -81,6 +85,8 @@ describe("ProgramPlay Component", () => {
     render(<ProgramPlay />, { wrapper });
 
     await screen.findByText("Gate 1");
+    const completedInput = screen.getAllByRole("textbox")[0];
+    expect(completedInput).toHaveValue("✔ 4");
     expect(screen.getByText("Correct!")).toBeInTheDocument();
   });
 
@@ -101,6 +107,7 @@ describe("ProgramPlay Component", () => {
 
     const { queryClient, wrapper } = createQueryWrapper();
 
+    queryClient.setQueryData(["programs"], mockPrograms);
     queryClient.setQueryData(
       ["programs", "progression", "test-program-id"],
       completedProgression,
@@ -113,5 +120,36 @@ describe("ProgramPlay Component", () => {
     expect(
       screen.getByTitle("Restarting isn't available yet"),
     ).toBeInTheDocument();
+  });
+
+  it("displays program name from cache", async () => {
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], mockPrograms);
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      mockProgression,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("Test Program");
+    expect(
+      screen.queryByText("Program: test-program-id"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("falls back to programId when name not found in cache", async () => {
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], []);
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      mockProgression,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("test-program-id");
   });
 });
