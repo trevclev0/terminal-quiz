@@ -81,4 +81,33 @@ describe("ProgramSelector Component", () => {
     const selectElement = screen.getByRole("combobox");
     expect(selectElement).toHaveFocus();
   });
+
+  it("does not render Start Program button when no program is selected", () => {
+    (Route.useSearch as Mock).mockReturnValue({ programId: undefined });
+    render(<ProgramSelector />);
+
+    const startButton = screen.queryByText(/Start Program/i);
+    expect(startButton).not.toBeInTheDocument();
+  });
+
+  it("renders Start Program button enabled when a valid program is selected", () => {
+    (Route.useSearch as Mock).mockReturnValue({ programId: "2" });
+    render(<ProgramSelector />);
+
+    const startButton = screen.getByText(/Start Program/i);
+    expect(startButton).not.toBeDisabled();
+  });
+
+  it("navigates to /programs/$programId when Start Program button is clicked", async () => {
+    (Route.useSearch as Mock).mockReturnValue({ programId: "2" });
+    render(<ProgramSelector />);
+
+    const startButton = screen.getByText(/Start Program/i);
+    await userEvent.click(startButton);
+
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: "/programs/$programId",
+      params: { programId: "2" },
+    });
+  });
 });

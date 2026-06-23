@@ -45,9 +45,18 @@ function ProgramSelector() {
     });
   };
 
+  const handleStartProgram = () => {
+    if (!programId) return;
+    navigate({
+      to: "/programs/$programId",
+      params: { programId },
+    });
+  };
+
   return (
     <div id="program-selector">
       <select
+        id="program-selector-select"
         ref={selectRef}
         onChange={handleSelect}
         value={isValidSelection ? programId : ""}
@@ -61,6 +70,16 @@ function ProgramSelector() {
           </option>
         ))}
       </select>
+      <br />
+      {programId && (
+        <button
+          type="button"
+          onClick={handleStartProgram}
+          disabled={!isValidSelection}
+        >
+          Start Program
+        </button>
+      )}
     </div>
   );
 }
