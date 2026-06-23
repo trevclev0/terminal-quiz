@@ -37,7 +37,7 @@ describe("Program Play Route Integration", () => {
     renderWithRouter(router);
 
     await waitFor(() => {
-      expect(screen.getByText("Program: test-program-id")).toBeInTheDocument();
+      expect(screen.getByText("test-program-id")).toBeInTheDocument();
     });
 
     expect(screen.getByText("Gate 1")).toBeInTheDocument();
