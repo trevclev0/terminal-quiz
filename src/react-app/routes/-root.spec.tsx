@@ -24,6 +24,22 @@ const server = setupServer(
       data: { getInProgressProgram: null },
     });
   }),
+  graphql.query("GetPrograms", () => {
+    return HttpResponse.json({
+      data: { programs: [{ id: "test-program-id", name: "Test Program" }] },
+    });
+  }),
+  graphql.query("GetProgramProgression", () => {
+    return HttpResponse.json({
+      data: {
+        getProgramProgression: {
+          currentGate: null,
+          completedGates: [],
+          status: "completed",
+        },
+      },
+    });
+  }),
 );
 
 beforeAll(() => server.listen());
