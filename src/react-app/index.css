@@ -171,7 +171,8 @@ input[type="text"]:disabled {
   border-color: var(--red);
 }
 
-button {
+#classic-ending button,
+#program-selector button {
   color: var(--green);
   border-color: var(--green);
 }
