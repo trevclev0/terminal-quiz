@@ -1,4 +1,5 @@
 import { useSubmitGuessMutation } from "@api/mutations/useSubmitGuessMutation";
+import useShake from "@hooks/useShake";
 import { useEffect, useState } from "react";
 
 type UseProgramPlayProps = {
@@ -11,15 +12,13 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
 
   const [guess, setGuess] = useState("");
   const [message, setMessage] = useState<string | null>(null);
-  const [isShaking, setIsShaking] = useState(false);
-
-  const shake = () => setIsShaking(true);
+  const { isShaking, shake, clearShake } = useShake();
 
   // Clear response message and shake when currentGate.id changes
-  // biome-ignore lint/correctness/useExhaustiveDependencies: State setters are stable, but we need to re-run when currentGateId changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: clearShake is stable from useShake, only re-run when currentGateId changes
   useEffect(() => {
     setMessage(null);
-    setIsShaking(false);
+    clearShake();
   }, [currentGateId]);
 
   const changeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,18 +48,11 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
     }
   };
 
-  // Auto-clear shake animation after 400ms
-  useEffect(() => {
-    if (isShaking) {
-      const timer = setTimeout(() => setIsShaking(false), 400);
-      return () => clearTimeout(timer);
-    }
-  }, [isShaking]);
-
   return {
     guess,
     message,
     isShaking,
+    isPending: submitGuessMutation.isPending,
     changeHandler,
     handleSubmit,
   };
