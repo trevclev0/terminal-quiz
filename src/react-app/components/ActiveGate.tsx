@@ -1,4 +1,5 @@
 import type { ActiveGate as ActiveGateType } from "@api/queries/useProgramProgressionQuery";
+import type { ChangeEvent, RefObject, SubmitEvent } from "react";
 
 type ActiveGateProps = {
   id: string;
@@ -7,9 +8,9 @@ type ActiveGateProps = {
   message: string | null;
   isShaking: boolean;
   isPending: boolean;
-  inputRef: React.RefObject<HTMLInputElement | null>;
-  changeHandler: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleSubmit: (e: React.FormEvent) => void;
+  inputRef: RefObject<HTMLInputElement | null>;
+  changeHandler: (e: ChangeEvent<HTMLInputElement>) => void;
+  handleSubmit: (e: SubmitEvent<HTMLFormElement>) => void | Promise<void>;
 };
 
 export default function ActiveGate({
