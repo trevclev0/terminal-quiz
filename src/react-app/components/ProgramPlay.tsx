@@ -24,7 +24,7 @@ function ProgramPlay() {
 
   const isTheEnd = currentGate === null;
 
-  const { guess, message, isShaking, changeHandler, handleSubmit } =
+  const { guess, message, isShaking, isPending, changeHandler, handleSubmit } =
     useProgramPlay({ programId, currentGateId: currentGate?.id });
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -75,7 +75,7 @@ function ProgramPlay() {
           guess={guess}
           message={message}
           isShaking={isShaking}
-          isPending={false}
+          isPending={isPending}
           inputRef={inputRef}
           changeHandler={changeHandler}
           handleSubmit={handleSubmit}
