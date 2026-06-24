@@ -11,7 +11,12 @@ vi.mock("@api/mutations/useSubmitGuessMutation", () => ({
   useSubmitGuessMutation: vi.fn(),
 }));
 
+vi.mock("@hooks/useShake", () => ({
+  default: vi.fn(),
+}));
+
 import { useSubmitGuessMutation } from "@api/mutations/useSubmitGuessMutation";
+import useShake from "@hooks/useShake";
 
 const mockMutateAsync = vi.fn();
 const mockMutation = {
@@ -37,6 +42,26 @@ vi.mocked(useSubmitGuessMutation).mockReturnValue(
   mockMutation as ReturnType<typeof useSubmitGuessMutation>,
 );
 
+const mockShake = vi.fn();
+const mockClearShake = vi.fn();
+let mockIsShaking = false;
+
+vi.mocked(useShake).mockImplementation(() => {
+  return {
+    get isShaking() {
+      return mockIsShaking;
+    },
+    shake: () => {
+      mockIsShaking = true;
+      mockShake();
+    },
+    clearShake: () => {
+      mockIsShaking = false;
+      mockClearShake();
+    },
+  };
+});
+
 // ---------------------------------------------------------------------------
 // Setup Utilities
 // ---------------------------------------------------------------------------
@@ -60,6 +85,7 @@ function makeChangeEvent(value: string) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockIsShaking = false;
 });
 
 // ---------------------------------------------------------------------------
@@ -80,6 +106,11 @@ describe("initial state", () => {
   it("starts with isShaking false", () => {
     const { result } = renderProgramPlayHook();
     expect(result.current.isShaking).toBe(false);
+  });
+
+  it("starts with isPending false", () => {
+    const { result } = renderProgramPlayHook();
+    expect(result.current.isPending).toBe(false);
   });
 });
 
@@ -151,6 +182,12 @@ describe("submitHandler with an incorrect guess", () => {
     await act(async () => result.current.handleSubmit(makeSubmitEvent()));
     expect(result.current.isShaking).toBe(true);
   });
+
+  it("calls shake from useShake", async () => {
+    const { result } = renderProgramPlayHook();
+    await act(async () => result.current.handleSubmit(makeSubmitEvent()));
+    expect(mockShake).toHaveBeenCalled();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -174,13 +211,17 @@ describe("submitHandler with an error", () => {
 // ---------------------------------------------------------------------------
 
 describe("when currentGateId changes", () => {
-  it("initializes with empty state", () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId: "test", currentGateId: "gate-1" }),
+  it("clears shake when currentGateId changes", () => {
+    mockClearShake.mockClear();
+    const { rerender } = renderHook(
+      ({ currentGateId }) =>
+        useProgramPlay({ programId: "test", currentGateId }),
+      { initialProps: { currentGateId: "gate-1" } },
     );
 
-    expect(result.current.guess).toBe("");
-    expect(result.current.message).toBeNull();
-    expect(result.current.isShaking).toBe(false);
+    // clearShake is called on initial render due to effect
+    const initialCallCount = mockClearShake.mock.calls.length;
+    rerender({ currentGateId: "gate-2" });
+    expect(mockClearShake.mock.calls.length).toBe(initialCallCount + 1);
   });
 });
