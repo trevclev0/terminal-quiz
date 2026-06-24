@@ -46,7 +46,7 @@ function ProgramSelector() {
   };
 
   const handleStartProgram = () => {
-    if (!programId) return;
+    if (!programId || !isValidSelection) return;
     navigate({
       to: "/programs/$programId",
       params: { programId },
