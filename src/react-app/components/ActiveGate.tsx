@@ -32,6 +32,7 @@ export default function ActiveGate({
         <form onSubmit={handleSubmit} aria-label={formAriaLabel}>
           <p className="description">{gate.question}</p>
           <input
+            aria-label={`${gate.label} password input`}
             ref={inputRef}
             type="text"
             placeholder="Enter password..."
