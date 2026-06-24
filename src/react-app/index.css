@@ -17,6 +17,7 @@ body {
 
 button {
   border: 1px solid var(--green);
+  color: var(--green);
   background-color: var(--black);
   cursor: pointer;
   padding: 1rem;
@@ -169,10 +170,4 @@ input[type="text"]:disabled {
 .error-screen button {
   color: var(--red);
   border-color: var(--red);
-}
-
-#classic-ending button,
-#program-selector button {
-  color: var(--green);
-  border-color: var(--green);
 }
