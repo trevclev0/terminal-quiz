@@ -1,6 +1,6 @@
 import { useSubmitGuessMutation } from "@api/mutations/useSubmitGuessMutation";
 import useShake from "@hooks/useShake";
-import { useEffect, useState } from "react";
+import { type ChangeEvent, type SubmitEvent, useEffect, useState } from "react";
 
 type UseProgramPlayProps = {
   programId: string;
@@ -21,11 +21,11 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
     clearShake();
   }, [currentGateId]);
 
-  const changeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const changeHandler = (e: ChangeEvent<HTMLInputElement>) => {
     setGuess(e.target.value);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setMessage(null);
