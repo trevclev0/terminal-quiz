@@ -28,6 +28,8 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    if (submitGuessMutation.isPending || !currentGateId) return;
+
     setMessage(null);
 
     try {
