@@ -28,13 +28,16 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (submitGuessMutation.isPending || !currentGateId) return;
+    if (submitGuessMutation.isPending || !currentGateId) {
+      setMessage("No active gate to submit guess to");
+      return;
+    }
 
     setMessage(null);
 
     try {
       const result = await submitGuessMutation.mutateAsync({
-        gateId: currentGateId ?? "",
+        gateId: currentGateId,
         guess,
       });
 
