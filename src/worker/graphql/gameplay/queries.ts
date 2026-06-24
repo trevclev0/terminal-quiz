@@ -1,5 +1,5 @@
 import { gates, sessionProgress } from "@shared/schema";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { GraphQLNonNull, GraphQLString } from "graphql";
 import type { Context } from "hono";
 import type { AppVariables } from "../../middleware/db";
@@ -121,6 +121,7 @@ export const getInProgressProgram = {
         eq(sessionProgress.sessionId, sessionId),
         eq(sessionProgress.status, "in_progress"),
       ),
+      orderBy: [desc(sessionProgress.updatedAt)],
     });
 
     return progress?.programId ?? null;
