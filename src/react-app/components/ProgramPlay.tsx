@@ -1,5 +1,7 @@
 import { programProgressionQueryOptions } from "@api/queries/useProgramProgressionQuery";
 import { programsQueryOptions } from "@api/queries/useProgramsQuery";
+import ActiveGate from "@components/ActiveGate";
+import CompletedGate from "@components/CompletedGate";
 import useProgramPlay from "@hooks/useProgramPlay";
 import useProgressionScroll from "@hooks/useProgressionScroll";
 import { useQuery } from "@tanstack/react-query";
@@ -64,56 +66,20 @@ function ProgramPlay() {
     <>
       <h1 className="title">{programName}</h1>
       {completedGates.map((gate, index) => (
-        <div key={gate.id} id={`gate-${index}`} className="gate">
-          <details open>
-            <summary>{gate.label}</summary>
-            <form
-              aria-label={`${gate.label} - enter password and press Enter to submit`}
-            >
-              <p className="description">{gate.question}</p>
-              <input
-                type="text"
-                placeholder="Enter password..."
-                value={`✔ ${gate.correctAnswer}`}
-                disabled
-              />
-              <p className="clue">{gate.successMessage}</p>
-            </form>
-          </details>
-        </div>
+        <CompletedGate key={gate.id} id={`gate-${index}`} gate={gate} />
       ))}
       {currentGate && (
-        <div
+        <ActiveGate
           id={`gate-${completedGates.length}`}
-          className={isShaking ? "gate shake" : "gate"}
-        >
-          <details open>
-            <summary>{currentGate.label}</summary>
-            <form
-              onSubmit={handleSubmit}
-              aria-label={`${currentGate.label} - enter password and press Enter to submit`}
-            >
-              <p className="description">{currentGate.question}</p>
-              <input
-                ref={inputRef}
-                type="text"
-                placeholder="Enter password..."
-                value={guess}
-                onChange={changeHandler}
-              />
-              {message && (
-                <p
-                  aria-live="polite"
-                  className={
-                    message === "Access Denied." ? "response fail" : "response"
-                  }
-                >
-                  {message}
-                </p>
-              )}
-            </form>
-          </details>
-        </div>
+          gate={currentGate}
+          guess={guess}
+          message={message}
+          isShaking={isShaking}
+          isPending={false}
+          inputRef={inputRef}
+          changeHandler={changeHandler}
+          handleSubmit={handleSubmit}
+        />
       )}
       {isTheEnd && (
         <div id="classic-ending">
