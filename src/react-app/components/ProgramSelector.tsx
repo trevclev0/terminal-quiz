@@ -70,7 +70,6 @@ function ProgramSelector() {
           </option>
         ))}
       </select>
-      <br />
       {programId && (
         <button
           type="button"
