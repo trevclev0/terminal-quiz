@@ -17,6 +17,7 @@ export default function CompletedGate({ id, gate }: CompletedGateProps) {
             placeholder="Password entered correctly"
             value={`✔ ${gate.correctAnswer}`}
             disabled
+            readOnly
           />
           <p className="clue">{gate.successMessage}</p>
         </form>
