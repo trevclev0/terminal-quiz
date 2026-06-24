@@ -24,14 +24,12 @@ export default function ActiveGate({
   changeHandler,
   handleSubmit,
 }: ActiveGateProps) {
+  const formAriaLabel = `${gate.label} - enter password and press Enter to submit`;
   return (
     <div id={id} className={isShaking ? "gate shake" : "gate"}>
       <details open>
         <summary>{gate.label}</summary>
-        <form
-          onSubmit={handleSubmit}
-          aria-label={`${gate.label} - enter password and press Enter to submit`}
-        >
+        <form onSubmit={handleSubmit} aria-label={formAriaLabel}>
           <p className="description">{gate.question}</p>
           <input
             ref={inputRef}
@@ -44,6 +42,7 @@ export default function ActiveGate({
           {message && (
             <p
               aria-live="polite"
+              role="status"
               className={
                 message === "Access Denied." ? "response fail" : "response"
               }

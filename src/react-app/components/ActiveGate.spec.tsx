@@ -179,6 +179,7 @@ describe("ActiveGate", () => {
       />,
     );
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Access/)).not.toBeInTheDocument();
   });
 
   it("calls changeHandler on input change", () => {
