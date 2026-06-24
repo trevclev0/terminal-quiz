@@ -1,6 +1,17 @@
 import { createQueryWrapper } from "@test-utils/queryTestUtils";
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { graphql, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import ProgramPlay from "./ProgramPlay";
 
 vi.mock("@tanstack/react-router", () => ({
@@ -34,26 +45,42 @@ const mockUseProgramPlay = {
   guess: "",
   message: null,
   isShaking: false,
+  isPending: false,
   changeHandler: vi.fn(),
   handleSubmit: vi.fn(),
 };
 
 vi.mocked(useProgramPlay).mockReturnValue(mockUseProgramPlay);
-vi.mocked(ActiveGate);
-vi.mocked(CompletedGate);
+
+const mockPrograms = [{ id: "test-program-id", name: "Test Program" }];
+
+const mockProgression = {
+  currentGate: {
+    id: "gate-1",
+    label: "Gate 1",
+    question: "What is 2+2?",
+  },
+  completedGates: [],
+  status: "in_progress",
+};
+
+const server = setupServer(
+  graphql.query("GetPrograms", () => {
+    return HttpResponse.json({
+      data: { programs: mockPrograms },
+    });
+  }),
+  graphql.query("GetProgramProgression", () => {
+    return HttpResponse.json({
+      data: { getProgramProgression: mockProgression },
+    });
+  }),
+);
 
 describe("ProgramPlay Component", () => {
-  const mockPrograms = [{ id: "test-program-id", name: "Test Program" }];
-
-  const mockProgression = {
-    currentGate: {
-      id: "gate-1",
-      label: "Gate 1",
-      question: "What is 2+2?",
-    },
-    completedGates: [],
-    status: "in_progress",
-  };
+  beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+  afterEach(() => server.resetHandlers());
+  afterAll(() => server.close());
 
   beforeEach(() => {
     vi.clearAllMocks();
