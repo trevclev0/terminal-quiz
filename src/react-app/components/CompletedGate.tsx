@@ -10,13 +10,11 @@ export default function CompletedGate({ id, gate }: CompletedGateProps) {
     <div id={id} className="gate">
       <details open>
         <summary>{gate.label}</summary>
-        <form
-          aria-label={`${gate.label} - enter password and press Enter to submit`}
-        >
+        <form aria-label={`${gate.label} - completed`}>
           <p className="description">{gate.question}</p>
           <input
             type="text"
-            placeholder="Enter password..."
+            placeholder="Password entered correctly"
             value={`✔ ${gate.correctAnswer}`}
             disabled
           />
