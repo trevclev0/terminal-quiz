@@ -18,6 +18,16 @@ vi.mock("@hooks/useProgramPlay", () => ({
   default: vi.fn(),
 }));
 
+vi.mock("@components/ActiveGate", () => ({
+  default: vi.fn(() => null),
+}));
+
+vi.mock("@components/CompletedGate", () => ({
+  default: vi.fn(() => null),
+}));
+
+import ActiveGate from "@components/ActiveGate";
+import CompletedGate from "@components/CompletedGate";
 import useProgramPlay from "@hooks/useProgramPlay";
 
 const mockUseProgramPlay = {
@@ -29,6 +39,8 @@ const mockUseProgramPlay = {
 };
 
 vi.mocked(useProgramPlay).mockReturnValue(mockUseProgramPlay);
+vi.mocked(ActiveGate);
+vi.mocked(CompletedGate);
 
 describe("ProgramPlay Component", () => {
   const mockPrograms = [{ id: "test-program-id", name: "Test Program" }];
@@ -70,11 +82,19 @@ describe("ProgramPlay Component", () => {
     render(<ProgramPlay />, { wrapper });
 
     await screen.findByText("Test Program");
-    expect(screen.getByText("Gate 1")).toBeInTheDocument();
-    expect(screen.getByText("What is 2+2?")).toBeInTheDocument();
+    const activeGateCall = vi.mocked(ActiveGate).mock.calls[0];
+    expect(activeGateCall).toBeDefined();
+    expect(activeGateCall[0]).toMatchObject({
+      id: "gate-0",
+      gate: mockProgression.currentGate,
+      guess: "",
+      message: null,
+      isShaking: false,
+      isPending: false,
+    });
   });
 
-  it("renders completed gates with details/summary pattern", async () => {
+  it("renders completed gates", async () => {
     const progressionWithCompleted = {
       currentGate: {
         id: "gate-2",
@@ -103,10 +123,13 @@ describe("ProgramPlay Component", () => {
 
     render(<ProgramPlay />, { wrapper });
 
-    await screen.findByText("Gate 1");
-    const completedInput = screen.getAllByRole("textbox")[0];
-    expect(completedInput).toHaveValue("✔ 4");
-    expect(screen.getByText("Correct!")).toBeInTheDocument();
+    await screen.findByText("Test Program");
+    const completedGateCall = vi.mocked(CompletedGate).mock.calls[0];
+    expect(completedGateCall).toBeDefined();
+    expect(completedGateCall[0]).toMatchObject({
+      id: "gate-0",
+      gate: progressionWithCompleted.completedGates[0],
+    });
   });
 
   it("renders end state when program is completed", async () => {
@@ -172,7 +195,7 @@ describe("ProgramPlay Component", () => {
     await screen.findByText("test-program-id");
   });
 
-  it("applies shake class only to active gate when isShaking is true", async () => {
+  it("passes isShaking prop to ActiveGate correctly", async () => {
     vi.mocked(useProgramPlay).mockReturnValue({
       ...mockUseProgramPlay,
       isShaking: true,
@@ -188,8 +211,11 @@ describe("ProgramPlay Component", () => {
 
     render(<ProgramPlay />, { wrapper });
 
-    await screen.findByText("Gate 1");
-    const activeGate = screen.getByText("Gate 1").closest(".gate");
-    expect(activeGate).toHaveClass("shake");
+    await screen.findByText("Test Program");
+    const activeGateCall = vi.mocked(ActiveGate).mock.calls[0];
+    expect(activeGateCall).toBeDefined();
+    expect(activeGateCall[0]).toMatchObject({
+      isShaking: true,
+    });
   });
 });
