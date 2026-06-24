@@ -40,10 +40,10 @@ function ProgramPlay() {
 
   // Auto-focus the active gate's input on mount and when currentGate.id changes
   useEffect(() => {
-    if (currentGate?.id && inputRef.current) {
+    if (currentGate?.id && !isPending && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [currentGate?.id]);
+  }, [currentGate?.id, isPending]);
 
   // Focus select new program button at end
   useEffect(() => {
