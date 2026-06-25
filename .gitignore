@@ -31,3 +31,4 @@ seed.sql
 
 # TanStack Router temporary files
 .tanstack/
+.aider*
