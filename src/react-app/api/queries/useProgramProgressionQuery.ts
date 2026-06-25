@@ -54,5 +54,5 @@ const fetchProgramProgression = async (
 export const programProgressionQueryOptions = (programId: string) => ({
   queryKey: PROGRAM_KEYS.progression(programId),
   queryFn: () => fetchProgramProgression(programId),
-  staleTime: 1000 * 30, // 30 seconds
+  staleTime: 1000 * 30, // 30 second
 });
