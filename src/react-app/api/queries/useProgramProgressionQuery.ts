@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { graphqlFetch } from "../graphQlClient";
 import { PROGRAM_KEYS } from "../queryKeys";
 
@@ -57,7 +58,5 @@ export const programProgressionQueryOptions = (programId: string) => ({
 });
 
 export const useProgramProgressionQuery = (programId: string) => {
-  return {
-    queryOptions: programProgressionQueryOptions(programId),
-  };
+  return useQuery(programProgressionQueryOptions(programId));
 };
