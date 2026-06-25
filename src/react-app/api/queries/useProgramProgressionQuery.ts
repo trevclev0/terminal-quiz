@@ -57,6 +57,3 @@ export const programProgressionQueryOptions = (programId: string) => ({
   staleTime: 1000 * 30, // 30 seconds
 });
 
-export const useProgramProgressionQuery = (programId: string) => {
-  return useQuery(programProgressionQueryOptions(programId));
-};
