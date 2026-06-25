@@ -56,4 +56,3 @@ export const programProgressionQueryOptions = (programId: string) => ({
   queryFn: () => fetchProgramProgression(programId),
   staleTime: 1000 * 30, // 30 seconds
 });
-
