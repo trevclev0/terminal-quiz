@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { graphqlFetch } from "../graphQlClient";
 import { PROGRAM_KEYS } from "../queryKeys";
 
@@ -54,5 +53,5 @@ const fetchProgramProgression = async (
 export const programProgressionQueryOptions = (programId: string) => ({
   queryKey: PROGRAM_KEYS.progression(programId),
   queryFn: () => fetchProgramProgression(programId),
-  staleTime: 1000 * 30, // 30 second
+  staleTime: 1000 * 30, // 30 seconds
 });
