@@ -3,10 +3,10 @@ import {
   index,
   integer,
   real,
+  sql,
   sqliteTable,
   text,
   unique,
-  sql,
 } from "drizzle-orm/sqlite-core";
 
 export const gates = sqliteTable(
