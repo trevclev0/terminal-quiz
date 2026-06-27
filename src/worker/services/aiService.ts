@@ -1,5 +1,5 @@
+import type { Context } from "hono";
 import { env } from "hono/adapter";
-import { type Context } from "hono";
 
 // Maximum length for the AI-generated clue to prevent overly verbose responses.
 const MAX_CLUE_LENGTH = 200;
@@ -52,7 +52,8 @@ ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}
   }
 
   // Add a reminder not to reveal the answer directly.
-  userPrompt += `\nGenerate a new, short, and subtle clue without revealing "${correctAnswer}".`.trim();
+  userPrompt +=
+    `\nGenerate a new, short, and subtle clue without revealing "${correctAnswer}".`.trim();
 
   try {
     const response = await AI.run("@cf/mistral/mistral-7-b-instruct-v0.1", {
