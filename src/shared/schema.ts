@@ -95,22 +95,30 @@ export const sessionProgress = sqliteTable(
   (t) => [unique("unique_session_progress").on(t.sessionId, t.programId)],
 );
 
-export const gateClues = sqliteTable("gate_clues", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  sessionProgressId: text("session_progress_id")
-    .notNull()
-    .references(() => sessionProgress.id, { onDelete: "cascade" }),
-  gateId: text("gate_id")
-    .notNull()
-    .references(() => gates.id, { onDelete: "cascade" }),
-  clueText: text("clue_text").notNull(),
-  attemptCountAtRequest: integer("attempt_count_at_request").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-});
+export const gateClues = sqliteTable(
+  "gate_clues",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    sessionProgressId: text("session_progress_id")
+      .notNull()
+      .references(() => sessionProgress.id, { onDelete: "cascade" }),
+    gateId: text("gate_id")
+      .notNull()
+      .references(() => gates.id, { onDelete: "cascade" }),
+    clueText: text("clue_text").notNull(),
+    attemptCountAtRequest: integer("attempt_count_at_request").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(strftime('%s', 'now'))`)
+      .$defaultFn(() => new Date()),
+  },
+  (t) => [
+    index("gate_clues_session_progress_id_idx").on(t.sessionProgressId),
+    index("gate_clues_gate_id_idx").on(t.gateId),
+  ],
+);
 
 export const programsRelations = relations(programs, ({ many }) => ({
   gates: many(gates),
