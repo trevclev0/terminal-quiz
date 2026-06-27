@@ -32,7 +32,7 @@ export async function generateClue(
   currentGuess: string,
   previousClues: string[],
 ): Promise<string | null> {
-  const { AI } = env<{ AI: AiTextGeneration }>(c);
+  const { AI } = env<{ AI: BaseAiTextGeneration }>(c);
 
   if (!AI) {
     console.error("AI binding not available.");
