@@ -3,7 +3,6 @@ import {
   index,
   integer,
   real,
-  sql,
   sqliteTable,
   text,
   unique,
