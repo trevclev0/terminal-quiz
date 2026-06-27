@@ -56,44 +56,6 @@ export const programs = sqliteTable("programs", {
     .default(sql`(CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER))`),
 });
 
-export const programsRelations = relations(programs, ({ many }) => ({
-  gates: many(gates),
-}));
-
-export const gatesRelations = relations(gates, ({ one, many }) => ({
-  program: one(programs, {
-    fields: [gates.programId],
-    references: [programs.id],
-  }),
-  gateClues: many(gateClues),
-}));
-
-export const sessionProgressRelations = relations(
-  sessionProgress,
-  ({ one, many }) => ({
-    program: one(programs, {
-      fields: [sessionProgress.programId],
-      references: [programs.id],
-    }),
-    currentGate: one(gates, {
-      fields: [sessionProgress.currentGateId],
-      references: [gates.id],
-    }),
-    gateClues: many(gateClues),
-  }),
-);
-
-export const gateCluesRelations = relations(gateClues, ({ one }) => ({
-  sessionProgress: one(sessionProgress, {
-    fields: [gateClues.sessionProgressId],
-    references: [sessionProgress.id],
-  }),
-  gate: one(gates, {
-    fields: [gateClues.gateId],
-    references: [gates.id],
-  }),
-}));
-
 export const gameState = sqliteTable("game_state", {
   id: integer("id").primaryKey().default(1),
   lastUpdated: integer("last_updated", { mode: "timestamp" })
@@ -146,3 +108,41 @@ export const gateClues = sqliteTable("gate_clues", {
     .notNull()
     .$defaultFn(() => new Date()),
 });
+
+export const programsRelations = relations(programs, ({ many }) => ({
+  gates: many(gates),
+}));
+
+export const gatesRelations = relations(gates, ({ one, many }) => ({
+  program: one(programs, {
+    fields: [gates.programId],
+    references: [programs.id],
+  }),
+  gateClues: many(gateClues),
+}));
+
+export const sessionProgressRelations = relations(
+  sessionProgress,
+  ({ one, many }) => ({
+    program: one(programs, {
+      fields: [sessionProgress.programId],
+      references: [programs.id],
+    }),
+    currentGate: one(gates, {
+      fields: [sessionProgress.currentGateId],
+      references: [gates.id],
+    }),
+    gateClues: many(gateClues),
+  }),
+);
+
+export const gateCluesRelations = relations(gateClues, ({ one }) => ({
+  sessionProgress: one(sessionProgress, {
+    fields: [gateClues.sessionProgressId],
+    references: [sessionProgress.id],
+  }),
+  gate: one(gates, {
+    fields: [gateClues.gateId],
+    references: [gates.id],
+  }),
+}));
