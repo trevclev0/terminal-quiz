@@ -87,7 +87,8 @@ export const sessionProgress = sqliteTable(
       .$defaultFn(() => new Date())
       .$onUpdateFn(() => new Date()),
     completedAt: integer("completed_at", { mode: "timestamp" }),
-    attemptCount: integer("attempt_count").notNull().default(0), // Counter for incorrect guesses for the current gate
+    // Counter for incorrect guesses for the current gate
+    attemptCount: integer("attempt_count").notNull().default(0),
   },
   (t) => [unique("unique_session_progress").on(t.sessionId, t.programId)],
 );
