@@ -36,6 +36,10 @@
 - No `console.log` in production code. Use structured logging if needed.
 - Imports: Biome handles organization. Do not manually sort.
 - No barrel files (`index.ts` re-exports) unless already established in that directory.
+- Double quotes for JS/TS strings
+- 2-space indentation, LF line endings, UTF-8, final newline (`.editorconfig`)
+- Max line length: 80 characters
+- TypeScript strict mode plus `noUnusedLocals`, `noUnusedParameters`, etc. — do not disable these
 
 ## Testing
 
