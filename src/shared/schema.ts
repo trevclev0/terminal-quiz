@@ -1,10 +1,12 @@
 import { relations, sql } from "drizzle-orm";
 import {
+  index,
   integer,
   real,
   sqliteTable,
   text,
   unique,
+  sql,
 } from "drizzle-orm/sqlite-core";
 
 export const gates = sqliteTable(
