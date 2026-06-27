@@ -43,6 +43,13 @@
       "when": 1781955928179,
       "tag": "0005_colossal_marrow",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1782585554058,
+      "tag": "0006_cooing_annihilus",
+      "breakpoints": true
     }
   ]
 }
