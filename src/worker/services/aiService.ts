@@ -1,6 +1,5 @@
 import type { Context } from "hono";
 import { env } from "hono/adapter";
-import type { Ai } from "worker-configuration.d.ts"; // Explicitly import Ai
 
 // Maximum length for the AI-generated clue to prevent overly verbose responses.
 const MAX_CLUE_LENGTH = 200;
@@ -57,7 +56,7 @@ ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}
     `\nGenerate a new, short, and subtle clue without revealing "${correctAnswer}".`.trim();
 
   try {
-    const response = await AI.run("@cf/mistral/mistral-7-b-instruct-v0.1", {
+    const response = (await AI.run("@cf/mistral/mistral-7-b-instruct-v0.1", {
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: userPrompt },
@@ -65,7 +64,7 @@ ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}
       // Ensure the AI doesn't get too creative and sticks to the point.
       temperature: 0.7,
       max_tokens: 100, // Limit AI response to encourage conciseness
-    });
+    })) as AiTextGenerationOutput;
 
     // Extract the AI's response content.
     const clueText = response.response?.trim();
