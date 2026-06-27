@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import { env } from "hono/adapter";
+import type { Ai } from "worker-configuration.d.ts"; // Explicitly import Ai
 
 // Maximum length for the AI-generated clue to prevent overly verbose responses.
 const MAX_CLUE_LENGTH = 200;
@@ -32,7 +33,7 @@ export async function generateClue(
   currentGuess: string,
   previousClues: string[],
 ): Promise<string | null> {
-  const { AI } = env<{ AI: BaseAiTextGeneration }>(c);
+  const { AI } = env<{ AI: Ai }>(c);
 
   if (!AI) {
     console.error("AI binding not available.");
