@@ -2,19 +2,25 @@ import type { Ai, AiTextGenerationOutput } from "@cloudflare/workers-types";
 import type { Context } from "hono";
 import { env } from "hono/adapter";
 
-// Maximum length for the AI-generated clue to prevent overly verbose responses.
+// Maximum length for the AI-generated clue to prevent
+// overly verbose responses.
 const MAX_CLUE_LENGTH = 200;
 
-// System prompt instructing the AI on its role and constraints for generating clues.
+// System prompt instructing the AI on its role and constraints
+// for generating clues.
 const SYSTEM_PROMPT = `
-You are a helpful assistant for a terminal-based riddle game. Your goal is to provide hints to the player without directly revealing the correct answer.
+You are a helpful assistant for a terminal-based riddle game.
+Your goal is to provide hints to the player without directly
+revealing the correct answer.
 
 Here are the strict rules you must follow:
-1.  NEVER reveal the exact correct answer.
-2.  Provide clues that are short, concise, and helpful for a riddle.
-3.  Consider the current question, the player's last guess, and any previous clues given.
-4.  If the player's guess is very close but incorrect, provide a subtle nudge.
-5.  Keep clues under ${MAX_CLUE_LENGTH} characters.
+1. NEVER reveal the exact correct answer.
+2. Provide clues that are short, concise, and helpful for a riddle.
+3. Consider the current question, the player's last guess, and any
+   previous clues given.
+4. If the player's guess is very close but incorrect, provide a
+   subtle nudge.
+5. Keep clues under ${MAX_CLUE_LENGTH} characters.
 `.trim();
 
 /**
@@ -49,12 +55,11 @@ Player's current incorrect guess: "${currentGuess}"
   if (previousClues.length > 0) {
     userPrompt += `\nPrevious clues given:
 ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}
-`.trim();
+`;
   }
 
   // Add a reminder not to reveal the answer directly.
-  userPrompt +=
-    `\nGenerate a new, short, and subtle clue without revealing "${correctAnswer}".`.trim();
+  userPrompt += `\nGenerate a new, short, and subtle clue without revealing "${correctAnswer}".`;
 
   try {
     const response = (await AI.run("@cf/mistral/mistral-7-b-instruct-v0.1", {
@@ -77,13 +82,10 @@ ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}
 
     // Basic check to ensure the AI didn't directly reveal the answer.
     // This is a safeguard, as the system prompt should ideally prevent it.
-    if (
-      clueText.toLowerCase().includes(correctAnswer.toLowerCase()) &&
-      // Only filter if the clue is *just* the answer or too similar.
-      clueText.toLowerCase().length < correctAnswer.toLowerCase().length + 10
-    ) {
-      console.warn("AI generated a clue too close to the answer. Filtering.");
-      return "The AI generated a clue too close to the answer. Try again or check previous clues.";
+    const answerRegex = new RegExp(`\\b${correctAnswer}\\b`, "i");
+    if (answerRegex.test(clueText)) {
+      console.warn("AI generated a clue containing the answer. Filtering.");
+      return null;
     }
 
     // Trim to maximum length to prevent overly long clues.
