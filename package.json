@@ -31,7 +31,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.0",
     "@cloudflare/vite-plugin": "^1.42.0",
-    "@cloudflare/workers-types": "^4.20260619.1",
+    "@cloudflare/workers-types": "^4.20260626.1",
     "@commitlint/cli": "^20.5.2",
     "@commitlint/types": "^20.5.0",
     "@semantic-release/git": "^10.0.1",

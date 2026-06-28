@@ -1,7 +1,5 @@
-import type * as schema from "@shared/schema";
 import { gateClues, gates, sessionProgress } from "@shared/schema";
 import { and, asc, desc, eq, gt } from "drizzle-orm";
-import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { GraphQLNonNull, GraphQLString } from "graphql";
 import { generateClue } from "../../services/aiService";
 import isGuessCloseEnough from "../../utils/isGuessCloseEnough";
@@ -14,7 +12,7 @@ import type { AppGraphQLContext } from "./queries";
 import { RequestClueResultType, SubmitGuessPayloadType } from "./types";
 
 async function getExistingCluesForGate(
-  db: DrizzleD1Database<typeof schema>,
+  db: AppGraphQLContext["var"]["db"],
   sessionProgressId: string,
   gateId: string,
 ) {
