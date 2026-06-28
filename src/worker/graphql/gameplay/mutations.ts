@@ -234,7 +234,9 @@ export const requestClue = {
       };
     }
 
-    const previousClueTexts = existingClues.map((clue) => clue.clueText);
+    const previousClueTexts = existingClues
+      .toReversed()
+      .map((clue) => clue.clueText);
     const clueText = await generateClue(
       context,
       activeGate.question,
