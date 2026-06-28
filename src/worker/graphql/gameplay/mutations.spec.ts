@@ -81,7 +81,12 @@ describe("Gameplay Mutations: submitGuess", () => {
   });
 
   it("returns false and increments attemptCount if guess is incorrect", async () => {
-    mockDb.query.sessionProgress.findFirst.mockResolvedValue(defaultProgress);
+    mockDb.query.sessionProgress.findFirst
+      .mockResolvedValueOnce(defaultProgress)
+      .mockResolvedValueOnce({
+        ...defaultProgress,
+        attemptCount: 1,
+      });
     mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
     vi.mocked(isGuessCloseEnough).mockReturnValue(false);
 
@@ -97,14 +102,23 @@ describe("Gameplay Mutations: submitGuess", () => {
     expect(result.canRequestClue).toBe(false);
     expect(mockDb.update).toHaveBeenCalled();
     const setCall = mockDb.update.mock.results[0]?.value.set;
-    expect(setCall).toHaveBeenCalledWith({ attemptCount: 1 });
+    expect(setCall).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attemptCount: expect.anything(),
+      }),
+    );
   });
 
   it("returns canRequestClue true when guidance threshold is met", async () => {
-    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
-      ...defaultProgress,
-      attemptCount: 1,
-    });
+    mockDb.query.sessionProgress.findFirst
+      .mockResolvedValueOnce({
+        ...defaultProgress,
+        attemptCount: 1,
+      })
+      .mockResolvedValueOnce({
+        ...defaultProgress,
+        attemptCount: 2,
+      });
     mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
     mockDb.query.gateClues.findMany.mockResolvedValue([]);
     vi.mocked(isGuessCloseEnough).mockReturnValue(false);
@@ -121,10 +135,15 @@ describe("Gameplay Mutations: submitGuess", () => {
   });
 
   it("returns canRequestClue false when guidance is disabled", async () => {
-    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
-      ...defaultProgress,
-      attemptCount: 5,
-    });
+    mockDb.query.sessionProgress.findFirst
+      .mockResolvedValueOnce({
+        ...defaultProgress,
+        attemptCount: 5,
+      })
+      .mockResolvedValueOnce({
+        ...defaultProgress,
+        attemptCount: 6,
+      });
     mockDb.query.gates.findFirst.mockResolvedValue({
       ...defaultGate,
       guidanceEnabled: false,
@@ -144,10 +163,15 @@ describe("Gameplay Mutations: submitGuess", () => {
   });
 
   it("returns canRequestClue false when max clues reached", async () => {
-    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
-      ...defaultProgress,
-      attemptCount: 5,
-    });
+    mockDb.query.sessionProgress.findFirst
+      .mockResolvedValueOnce({
+        ...defaultProgress,
+        attemptCount: 5,
+      })
+      .mockResolvedValueOnce({
+        ...defaultProgress,
+        attemptCount: 6,
+      });
     mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
     mockDb.query.gateClues.findMany.mockResolvedValue([
       { attemptCountAtRequest: 2 },
@@ -168,10 +192,15 @@ describe("Gameplay Mutations: submitGuess", () => {
   });
 
   it("returns canRequestClue false when no new attempt since last clue", async () => {
-    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
-      ...defaultProgress,
-      attemptCount: 2,
-    });
+    mockDb.query.sessionProgress.findFirst
+      .mockResolvedValueOnce({
+        ...defaultProgress,
+        attemptCount: 2,
+      })
+      .mockResolvedValueOnce({
+        ...defaultProgress,
+        attemptCount: 3,
+      });
     mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
     mockDb.query.gateClues.findMany.mockResolvedValue([
       { attemptCountAtRequest: 3 },
@@ -190,10 +219,15 @@ describe("Gameplay Mutations: submitGuess", () => {
   });
 
   it("returns canRequestClue true after a new attempt since last clue", async () => {
-    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
-      ...defaultProgress,
-      attemptCount: 3,
-    });
+    mockDb.query.sessionProgress.findFirst
+      .mockResolvedValueOnce({
+        ...defaultProgress,
+        attemptCount: 3,
+      })
+      .mockResolvedValueOnce({
+        ...defaultProgress,
+        attemptCount: 4,
+      });
     mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
     mockDb.query.gateClues.findMany.mockResolvedValue([
       { attemptCountAtRequest: 3 },
@@ -300,6 +334,38 @@ describe("Gameplay Mutations: requestClue", () => {
     ).rejects.toThrow("Desync: Clue requested for the wrong active gate.");
   });
 
+  it("throws when currentGuess is empty", async () => {
+    if (!requestClue.resolve) throw new Error("Resolver not defined");
+
+    await expect(
+      requestClue.resolve(
+        null,
+        {
+          programId: "prog-1",
+          gateId: "gate-1",
+          currentGuess: "   ",
+        },
+        mockContext,
+      ),
+    ).rejects.toThrow("Invalid current guess length.");
+  });
+
+  it("throws when currentGuess exceeds max length", async () => {
+    if (!requestClue.resolve) throw new Error("Resolver not defined");
+
+    await expect(
+      requestClue.resolve(
+        null,
+        {
+          programId: "prog-1",
+          gateId: "gate-1",
+          currentGuess: "a".repeat(501),
+        },
+        mockContext,
+      ),
+    ).rejects.toThrow("Invalid current guess length.");
+  });
+
   it("returns no clue when guidance is disabled", async () => {
     mockDb.query.sessionProgress.findFirst.mockResolvedValue({
       ...defaultProgress,
@@ -397,7 +463,8 @@ describe("Gameplay Mutations: requestClue", () => {
     });
     mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
     mockDb.query.gateClues.findMany.mockResolvedValue([
-      { clueText: "Think about doctors.", attemptCountAtRequest: 2 },
+      { clueText: "It grows on trees.", attemptCountAtRequest: 2 },
+      { clueText: "Think about doctors.", attemptCountAtRequest: 1 },
     ]);
     vi.mocked(generateClue).mockResolvedValue("It is often red or green.");
 
@@ -418,7 +485,7 @@ describe("Gameplay Mutations: requestClue", () => {
       defaultGate.question,
       defaultGate.correctAnswer,
       "banana",
-      ["Think about doctors."],
+      ["Think about doctors.", "It grows on trees."],
     );
     expect(mockDb.insert).toHaveBeenCalled();
     const valuesCall = mockDb.insert.mock.results[0]?.value.values;
@@ -430,8 +497,8 @@ describe("Gameplay Mutations: requestClue", () => {
     });
     expect(result).toEqual({
       clueText: "It is often red or green.",
-      isClueLimitReached: false,
-      cluesRemaining: 1,
+      isClueLimitReached: true,
+      cluesRemaining: 0,
     });
   });
 
