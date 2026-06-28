@@ -52,6 +52,9 @@
 
 - Conventional commits with gitmoji prefix. Format: `<emoji> <type>(<scope>): <description>`
 - Never commit directly to `main`. Feature branches only.
+- Regarding scope: Always lowercase and kebab-case (e.g. ai-service, not aiService)
+- Regarding scope: Never include file extensions (e.g. ai-service, not ai-service.ts)
+- Regarding scope: Use the logical module name, not the filename
 - Do not push unreviewed changes to `main` — prefer branch-and-reset if a bad push occurs.
 
 ## What NOT to do
