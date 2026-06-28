@@ -116,6 +116,11 @@ export const gateClues = sqliteTable(
   (t) => [
     index("gate_clues_session_progress_id_idx").on(t.sessionProgressId),
     index("gate_clues_gate_id_idx").on(t.gateId),
+    unique("unique_clue_per_attempt").on(
+      t.sessionProgressId,
+      t.gateId,
+      t.attemptCountAtRequest,
+    ),
   ],
 );
 
