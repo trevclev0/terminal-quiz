@@ -1,5 +1,5 @@
 import { gateClues, gates, sessionProgress } from "@shared/schema";
-import { and, asc, desc, eq, gt } from "drizzle-orm";
+import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
 import { GraphQLNonNull, GraphQLString } from "graphql";
 import { generateClue } from "../../services/aiService";
 import isGuessCloseEnough from "../../utils/isGuessCloseEnough";
@@ -68,12 +68,22 @@ export const submitGuess = {
     }
 
     if (!isGuessCloseEnough(args.guess, activeGate.correctAnswer)) {
-      const newAttemptCount = progress.attemptCount + 1;
-
+      // Atomic increment of attemptCount to prevent race conditions
       await db
         .update(sessionProgress)
-        .set({ attemptCount: newAttemptCount })
+        .set({
+          attemptCount: sql`${sessionProgress.attemptCount} + 1`,
+        })
         .where(eq(sessionProgress.id, progress.id));
+
+      // Re-fetch to get the incremented value
+      const updatedProgress = await db.query.sessionProgress.findFirst({
+        where: eq(sessionProgress.id, progress.id),
+      });
+
+      if (!updatedProgress) {
+        throw new Error("Failed to update attempt count.");
+      }
 
       const existingClues = await getExistingCluesForGate(
         db,
@@ -86,7 +96,7 @@ export const submitGuess = {
       const canRequestClue = computeCanRequestClue({
         isCorrectGuess: false,
         guidanceEnabled: activeGate.guidanceEnabled,
-        attemptCount: newAttemptCount,
+        attemptCount: updatedProgress.attemptCount,
         guidanceThreshold: activeGate.guidanceThreshold,
         existingClueCount: existingClues.length,
         mostRecentClueAttemptCount,
@@ -161,6 +171,15 @@ export const requestClue = {
     const db = context.get("db");
     const sessionId = context.get("sessionId");
 
+    const MAX_CURRENT_GUESS_LENGTH = 500;
+    const currentGuess = args.currentGuess.trim();
+    if (
+      currentGuess.length === 0 ||
+      currentGuess.length > MAX_CURRENT_GUESS_LENGTH
+    ) {
+      throw new Error("Invalid current guess length.");
+    }
+
     if (!sessionId) throw new Error("Unauthorized: Missing Session ID");
 
     const progress = await db.query.sessionProgress.findFirst({
@@ -197,37 +216,20 @@ export const requestClue = {
     const mostRecentClueAttemptCount =
       existingClues[0]?.attemptCountAtRequest ?? null;
 
-    if (!activeGate.guidanceEnabled) {
-      return {
-        clueText: null,
-        isClueLimitReached: false,
-        cluesRemaining,
-      };
-    }
+    // Use shared helper to check eligibility
+    const canRequestClue = computeCanRequestClue({
+      isCorrectGuess: false,
+      guidanceEnabled: activeGate.guidanceEnabled,
+      attemptCount: progress.attemptCount,
+      guidanceThreshold: activeGate.guidanceThreshold,
+      existingClueCount: existingClues.length,
+      mostRecentClueAttemptCount,
+    });
 
-    if (existingClues.length >= MAX_CLUES_PER_GATE) {
+    if (!canRequestClue) {
       return {
         clueText: null,
-        isClueLimitReached: true,
-        cluesRemaining: 0,
-      };
-    }
-
-    if (
-      mostRecentClueAttemptCount !== null &&
-      progress.attemptCount <= mostRecentClueAttemptCount
-    ) {
-      return {
-        clueText: null,
-        isClueLimitReached: false,
-        cluesRemaining,
-      };
-    }
-
-    if (progress.attemptCount < activeGate.guidanceThreshold) {
-      return {
-        clueText: null,
-        isClueLimitReached: false,
+        isClueLimitReached: existingClues.length >= MAX_CLUES_PER_GATE,
         cluesRemaining,
       };
     }
@@ -239,7 +241,7 @@ export const requestClue = {
       context,
       activeGate.question,
       activeGate.correctAnswer,
-      args.currentGuess,
+      currentGuess,
       previousClueTexts,
     );
 
@@ -251,12 +253,23 @@ export const requestClue = {
       };
     }
 
-    await db.insert(gateClues).values({
-      sessionProgressId: progress.id,
-      gateId: args.gateId,
-      clueText,
-      attemptCountAtRequest: progress.attemptCount,
-    });
+    try {
+      await db.insert(gateClues).values({
+        sessionProgressId: progress.id,
+        gateId: args.gateId,
+        clueText,
+        attemptCountAtRequest: progress.attemptCount,
+      });
+    } catch (error) {
+      // Handle unique constraint violation - another request
+      // may have already inserted a clue for this attempt
+      console.warn("Failed to insert clue (likely duplicate):", error);
+      return {
+        clueText: null,
+        isClueLimitReached: false,
+        cluesRemaining,
+      };
+    }
 
     const newCluesRemaining = computeCluesRemaining(existingClues.length + 1);
 
