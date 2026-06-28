@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `unique_clue_per_attempt` ON `gate_clues` (`session_progress_id`,`gate_id`,`attempt_count_at_request`);
