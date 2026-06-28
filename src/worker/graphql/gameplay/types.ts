@@ -1,5 +1,6 @@
 import {
   GraphQLBoolean,
+  GraphQLInt,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -45,7 +46,21 @@ const SubmitGuessPayloadType = new GraphQLObjectType({
     success: { type: new GraphQLNonNull(GraphQLBoolean) },
     message: { type: GraphQLString }, // Dynamic hint or success text
     nextGate: { type: ActiveGateType }, // Nullable if completed
+    canRequestClue: { type: new GraphQLNonNull(GraphQLBoolean) },
   },
 });
 
-export { ProgressionPayloadType, SubmitGuessPayloadType };
+const RequestClueResultType = new GraphQLObjectType({
+  name: "RequestClueResult",
+  fields: {
+    clueText: { type: GraphQLString },
+    isClueLimitReached: { type: new GraphQLNonNull(GraphQLBoolean) },
+    cluesRemaining: { type: new GraphQLNonNull(GraphQLInt) },
+  },
+});
+
+export {
+  ProgressionPayloadType,
+  RequestClueResultType,
+  SubmitGuessPayloadType,
+};

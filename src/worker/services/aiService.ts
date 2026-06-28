@@ -1,3 +1,4 @@
+import type { Ai, AiTextGenerationOutput } from "@cloudflare/workers-types";
 import type { Context } from "hono";
 import { env } from "hono/adapter";
 

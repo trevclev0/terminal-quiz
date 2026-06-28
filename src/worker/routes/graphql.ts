@@ -2,7 +2,7 @@ import { graphqlServer } from "@hono/graphql-server";
 import { buildSchema } from "drizzle-graphql";
 import { GraphQLObjectType, GraphQLSchema } from "graphql";
 import { Hono } from "hono";
-import { submitGuess } from "../graphql/gameplay/mutations";
+import { requestClue, submitGuess } from "../graphql/gameplay/mutations";
 import {
   getInProgressProgram,
   getProgramProgression,
@@ -42,6 +42,7 @@ const graphQlRouter = new Hono<AppVariables>().use("*", async (c, next) => {
           fields: {
             ...entities.mutations,
             submitGuess,
+            requestClue,
           },
         }),
         types: [
