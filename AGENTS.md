@@ -57,9 +57,8 @@ Dev server: `http://localhost:5173`.
 ## Common Commands
 
 ```bash
-pnpm test               # watch mode
+pnpm test run           # run tests once
 pnpm coverage           # single run with V8 coverage
-pnpm test:ui            # Vitest browser UI
 
 pnpm lint               # biome lint .
 pnpm format             # biome format --write .
@@ -169,8 +168,8 @@ Do **not** bypass hooks with `--no-verify` unless documented.
 Tests are co-located with source as `*.spec.ts` / `*.spec.tsx`. Shared helpers live in `src/react-app/test-utils/`; worker tests use plain Vitest with hand-built mock DB objects (no real D1 in unit tests).
 
 ```bash
-pnpm test          # watch mode
-pnpm coverage      # single run with V8 coverage
+pnpm test run          # run tests once
+pnpm coverage          # single run with V8 coverage
 ```
 
 **Stack:** Vitest, React Testing Library + happy-dom, MSW (HTTP mocking, e.g. GraphQL queries in `-select.spec.tsx`), `@testing-library/jest-dom`.

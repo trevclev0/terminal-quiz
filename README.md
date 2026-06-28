@@ -54,17 +54,17 @@ src/
 ├── react-app/      # Vite-built SPA (served as static assets)
 │   ├── api/        # TanStack Query client/hooks, Hono RPC client
 │   ├── components/ # React components
-│   ├── hooks/       
+│   ├── hooks/
 │   ├── routes/      # TanStack file-based routes
-│   ├── utils/       
-│   └── test-utils/ 
+│   ├── utils/
+│   └── test-utils/
 ├── shared/
 │   ├── schema.ts   # Drizzle schema (single source of truth for DB + types)
-│   └── types.ts    
+│   └── types.ts
 └── worker/
-    ├── middleware/  
-    ├── routes/      
-    └── services/    
+    ├── middleware/
+    ├── routes/
+    └── services/
 ```
 
 **Request flow:**
@@ -139,8 +139,8 @@ pnpm seed:local      # Populate with initial program/gate data
 | `pnpm check` | Build and run a wrangler dry-run deploy (pre-deploy sanity check) |
 | `pnpm check:code` | Run Biome linting and formatting checks, auto-fixing where safe |
 | `pnpm test` | Run the Vitest test suite in watch mode |
+| `pnpm test run` | Run the Vitest test suite once |
 | `pnpm coverage` | Run the full test suite and generate a coverage report |
-| `pnpm test:ui` | Open the Vitest browser UI |
 | `pnpm commit` | Launch the interactive Commitizen prompt (preferred over `git commit`) |
 | `pnpm cf-typegen` | Regenerate Wrangler/Workers type bindings |
 
@@ -160,6 +160,7 @@ The project uses Vitest with happy-dom as the test environment.
 
 ```bash
 pnpm test          # Watch mode
+pnpm test:run      # Run tests once
 pnpm coverage      # Single run with coverage (outputs to ./coverage)
 pnpm test:ui       # Browser-based Vitest UI
 ```
