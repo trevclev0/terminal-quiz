@@ -3,8 +3,8 @@ import { graphqlFetch } from "../graphQlClient";
 import { PROGRAM_KEYS } from "../queryKeys";
 
 const REQUEST_CLUE_MUTATION = `
-  mutation RequestClue($gateId: String!, $currentGuess: String!) {
-    requestClue(gateId: $gateId, currentGuess: $currentGuess) {
+  mutation RequestClue($programId: String!, $gateId: String!, $currentGuess: String!) {
+    requestClue(programId: $programId, gateId: $gateId, currentGuess: $currentGuess) {
       clueText
       isClueLimitReached
       cluesRemaining
@@ -19,12 +19,13 @@ export type RequestClueResponse = {
 };
 
 const requestClue = async (
+  programId: string,
   gateId: string,
   currentGuess: string,
 ): Promise<RequestClueResponse> => {
   const result = await graphqlFetch<{ requestClue: RequestClueResponse }>(
     REQUEST_CLUE_MUTATION,
-    { gateId, currentGuess },
+    { programId, gateId, currentGuess },
   );
   return result.requestClue;
 };
@@ -34,7 +35,7 @@ export const useRequestClueMutation = (programId: string) => {
 
   return useMutation({
     mutationFn: (variables: { gateId: string; currentGuess: string }) =>
-      requestClue(variables.gateId, variables.currentGuess),
+      requestClue(programId, variables.gateId, variables.currentGuess),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: PROGRAM_KEYS.progression(programId),
