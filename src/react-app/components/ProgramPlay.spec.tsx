@@ -1,3 +1,4 @@
+import type { UseMutationResult } from "@tanstack/react-query";
 import { createQueryWrapper } from "@test-utils/queryTestUtils";
 import { render, screen } from "@testing-library/react";
 import { graphql, HttpResponse } from "msw";
@@ -12,6 +13,7 @@ import {
   it,
   vi,
 } from "vitest";
+import type { RequestClueResponse } from "../api/mutations/useRequestClueMutation";
 import ProgramPlay from "./ProgramPlay";
 
 vi.mock("@tanstack/react-router", () => ({
@@ -68,7 +70,12 @@ const mockUseProgramPlay = {
     context: undefined,
     isPaused: false,
     submittedAt: 0,
-  },
+  } as UseMutationResult<
+    RequestClueResponse,
+    Error,
+    { gateId: string; currentGuess: string },
+    unknown
+  >,
 };
 
 vi.mocked(useProgramPlay).mockReturnValue(mockUseProgramPlay);
