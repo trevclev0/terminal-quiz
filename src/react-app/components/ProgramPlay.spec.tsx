@@ -48,6 +48,27 @@ const mockUseProgramPlay = {
   isPending: false,
   changeHandler: vi.fn(),
   handleSubmit: vi.fn(),
+  canRequestClue: false,
+  clues: [],
+  handleRequestClue: vi.fn(),
+  requestClueMutation: {
+    mutate: vi.fn(),
+    isPending: false,
+    data: undefined,
+    error: null,
+    variables: undefined,
+    isError: false,
+    isSuccess: false,
+    failureCount: 0,
+    failureReason: null,
+    mutateAsync: vi.fn(),
+    reset: vi.fn(),
+    status: "idle" as const,
+    isIdle: true,
+    context: undefined,
+    isPaused: false,
+    submittedAt: 0,
+  },
 };
 
 vi.mocked(useProgramPlay).mockReturnValue(mockUseProgramPlay);

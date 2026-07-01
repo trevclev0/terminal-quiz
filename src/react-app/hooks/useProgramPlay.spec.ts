@@ -308,9 +308,7 @@ describe("when currentGateId changes", () => {
 
     // Simulate having a clue and canRequestClue true
     act(() => {
-      // @ts-expect-error manipulating internal state for test setup
       result.current.clues = ["old clue"];
-      // @ts-expect-error manipulating internal state for test setup
       result.current.canRequestClue = true;
     });
 
