@@ -40,7 +40,8 @@ export default function ActiveGate({
   clues,
 }: ActiveGateProps) {
   const formAriaLabel = `${gate.label} - enter password and press Enter to submit`;
-  const isClueLimitReached = requestClueMutation.data?.isClueLimitReached ?? false;
+  const isClueLimitReached =
+    requestClueMutation.data?.isClueLimitReached ?? false;
 
   return (
     <div id={id} className={isShaking ? "gate shake" : "gate"}>
@@ -76,7 +77,9 @@ export default function ActiveGate({
                 onClick={handleRequestClue}
                 disabled={requestClueMutation.isPending || isClueLimitReached}
               >
-                {requestClueMutation.isPending ? "Fetching Clue..." : "Get Clue"}
+                {requestClueMutation.isPending
+                  ? "Fetching Clue..."
+                  : "Get Clue"}
               </button>
             </div>
           )}

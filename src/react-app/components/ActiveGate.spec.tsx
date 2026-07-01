@@ -21,7 +21,9 @@ const mockRequestClueMutation = {
 };
 const mockHandleRequestClue = vi.fn();
 
-function renderActiveGate(props: Partial<React.ComponentProps<typeof ActiveGate>> = {}) {
+function renderActiveGate(
+  props: Partial<React.ComponentProps<typeof ActiveGate>> = {},
+) {
   const fullProps = {
     id: "gate-0",
     gate: mockActiveGate,
@@ -118,12 +120,16 @@ describe("ActiveGate", () => {
 describe("Clue Functionality", () => {
   it("does not render 'Get Clue' button when canRequestClue is false", () => {
     renderActiveGate({ canRequestClue: false });
-    expect(screen.queryByRole("button", { name: /get clue/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /get clue/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("renders 'Get Clue' button when canRequestClue is true", () => {
     renderActiveGate({ canRequestClue: true });
-    expect(screen.getByRole("button", { name: /get clue/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /get clue/i }),
+    ).toBeInTheDocument();
   });
 
   it("disables 'Get Clue' button and shows 'Fetching Clue...' when requestClueMutation is pending", () => {
