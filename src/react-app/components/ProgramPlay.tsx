@@ -24,8 +24,16 @@ function ProgramPlay() {
 
   const isTheEnd = currentGate === null;
 
-  const { guess, message, isShaking, isPending, changeHandler, handleSubmit } =
-    useProgramPlay({ programId, currentGateId: currentGate?.id });
+  const {
+    guess,
+    message,
+    isShaking,
+    isPending,
+    changeHandler,
+    handleSubmit,
+    canRequestClue,
+    handleRequestClue,
+  } = useProgramPlay({ programId, currentGateId: currentGate?.id });
 
   const inputRef = useRef<HTMLInputElement>(null);
   const selectNewProgramRef = useRef<HTMLButtonElement>(null);
@@ -79,6 +87,8 @@ function ProgramPlay() {
           inputRef={inputRef}
           changeHandler={changeHandler}
           handleSubmit={handleSubmit}
+          canRequestClue={canRequestClue}
+          handleRequestClue={handleRequestClue}
         />
       )}
       {isTheEnd && (
