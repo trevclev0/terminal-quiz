@@ -11,6 +11,17 @@ type ActiveGateProps = {
   inputRef: RefObject<HTMLInputElement | null>;
   changeHandler: (e: ChangeEvent<HTMLInputElement>) => void;
   handleSubmit: (e: SubmitEvent<HTMLFormElement>) => void | Promise<void>;
+  canRequestClue: boolean;
+  requestClueMutation: {
+    isPending: boolean;
+    data?: {
+      clueText: string | null;
+      isClueLimitReached: boolean;
+      cluesRemaining: number;
+    } | null;
+  };
+  handleRequestClue: () => void;
+  clues: string[];
 };
 
 export default function ActiveGate({
@@ -23,8 +34,14 @@ export default function ActiveGate({
   inputRef,
   changeHandler,
   handleSubmit,
+  canRequestClue,
+  requestClueMutation,
+  handleRequestClue,
+  clues,
 }: ActiveGateProps) {
   const formAriaLabel = `${gate.label} - enter password and press Enter to submit`;
+  const isClueLimitReached = requestClueMutation.data?.isClueLimitReached ?? false;
+
   return (
     <div id={id} className={isShaking ? "gate shake" : "gate"}>
       <details open>
@@ -50,6 +67,29 @@ export default function ActiveGate({
             >
               {message}
             </p>
+          )}
+
+          {canRequestClue && (
+            <div className="clue-section" style={{ marginTop: "1rem" }}>
+              <button
+                type="button"
+                onClick={handleRequestClue}
+                disabled={requestClueMutation.isPending || isClueLimitReached}
+              >
+                {requestClueMutation.isPending ? "Fetching Clue..." : "Get Clue"}
+              </button>
+            </div>
+          )}
+
+          {clues.length > 0 && (
+            <div className="clues-list" style={{ marginTop: "1rem" }}>
+              <strong>Clues:</strong>
+              <ul>
+                {clues.map((clue, index) => (
+                  <li key={index}>{clue}</li>
+                ))}
+              </ul>
+            </div>
           )}
         </form>
       </details>
