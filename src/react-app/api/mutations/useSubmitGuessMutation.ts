@@ -20,7 +20,7 @@ const SUBMIT_GUESS_MUTATION = `
 export type SubmitGuessResponse = {
   success: boolean;
   message?: string;
-  canRequestClue?: boolean;
+  canRequestClue: boolean;
   nextGate: {
     id: string;
     label: string;
