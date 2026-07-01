@@ -89,6 +89,7 @@ export default function ActiveGate({
               <strong>Clues:</strong>
               <ul>
                 {clues.map((clue, index) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: clues are read-only and order is stable
                   <li key={index}>{clue}</li>
                 ))}
               </ul>
