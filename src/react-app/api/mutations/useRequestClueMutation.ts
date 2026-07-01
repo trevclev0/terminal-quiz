@@ -1,5 +1,6 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlFetch } from "../graphQlClient";
+import { PROGRAM_KEYS } from "../queryKeys";
 
 const REQUEST_CLUE_MUTATION = `
   mutation RequestClue($gateId: String!, $currentGuess: String!) {
@@ -28,9 +29,16 @@ const requestClue = async (
   return result.requestClue;
 };
 
-export const useRequestClueMutation = () => {
+export const useRequestClueMutation = (programId: string) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (variables: { gateId: string; currentGuess: string }) =>
       requestClue(variables.gateId, variables.currentGuess),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: PROGRAM_KEYS.progression(programId),
+      });
+    },
   });
 };

@@ -10,7 +10,7 @@ type UseProgramPlayProps = {
 
 function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
   const submitGuessMutation = useSubmitGuessMutation(programId);
-  const requestClueMutation = useRequestClueMutation();
+  const requestClueMutation = useRequestClueMutation(programId);
 
   const [guess, setGuess] = useState("");
   const [message, setMessage] = useState<string | null>(null);
