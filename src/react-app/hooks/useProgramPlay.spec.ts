@@ -19,8 +19,8 @@ vi.mock("@hooks/useShake", () => ({
   default: vi.fn(),
 }));
 
-import { useSubmitGuessMutation } from "@api/mutations/useSubmitGuessMutation";
 import { useRequestClueMutation } from "@api/mutations/useRequestClueMutation";
+import { useSubmitGuessMutation } from "@api/mutations/useSubmitGuessMutation";
 import useShake from "@hooks/useShake";
 
 const mockMutateAsync = vi.fn();
@@ -199,7 +199,11 @@ describe("submitHandler with a correct guess", () => {
 
 describe("submitHandler with an incorrect guess", () => {
   beforeEach(() => {
-    mockMutateAsync.mockResolvedValue({ success: false, message: "Wrong!", canRequestClue: true });
+    mockMutateAsync.mockResolvedValue({
+      success: false,
+      message: "Wrong!",
+      canRequestClue: true,
+    });
   });
 
   it('sets message to "Access Denied."', async () => {
@@ -261,11 +265,17 @@ describe("handleRequestClue", () => {
   it("appends clue to clues array on success", () => {
     const { result } = renderProgramPlayHook("gate-1");
     act(() => result.current.handleRequestClue());
-    
+
     // Extract the onSuccess callback and call it
     const onSuccessCallback = mockRequestClueMutate.mock.calls[0][1].onSuccess;
-    act(() => onSuccessCallback({ clueText: "A hint!", isClueLimitReached: false, cluesRemaining: 2 }));
-    
+    act(() =>
+      onSuccessCallback({
+        clueText: "A hint!",
+        isClueLimitReached: false,
+        cluesRemaining: 2,
+      }),
+    );
+
     expect(result.current.clues).toEqual(["A hint!"]);
   });
 });
