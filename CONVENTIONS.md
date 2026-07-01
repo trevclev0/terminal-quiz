@@ -57,6 +57,11 @@
 - Regarding scope: Use the logical module name, not the filename
 - Do not push unreviewed changes to `main` — prefer branch-and-reset if a bad push occurs.
 
+## Build Verification
+
+After all edits are complete, run `pnpm check` to verify the build (in dry-run mode) passes.
+If the build fails, the AI should offer to fix the issues automatically before proceeding to the next edit.
+
 ## What NOT to do
 
 - Do not install new dependencies without asking first.
