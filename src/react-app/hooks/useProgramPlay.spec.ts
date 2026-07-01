@@ -11,11 +11,16 @@ vi.mock("@api/mutations/useSubmitGuessMutation", () => ({
   useSubmitGuessMutation: vi.fn(),
 }));
 
+vi.mock("@api/mutations/useRequestClueMutation", () => ({
+  useRequestClueMutation: vi.fn(),
+}));
+
 vi.mock("@hooks/useShake", () => ({
   default: vi.fn(),
 }));
 
 import { useSubmitGuessMutation } from "@api/mutations/useSubmitGuessMutation";
+import { useRequestClueMutation } from "@api/mutations/useRequestClueMutation";
 import useShake from "@hooks/useShake";
 
 const mockMutateAsync = vi.fn();
@@ -36,10 +41,35 @@ const mockMutation = {
   context: undefined,
   isPaused: false,
   submittedAt: 0,
+  canRequestClue: false,
 };
 
 vi.mocked(useSubmitGuessMutation).mockReturnValue(
   mockMutation as ReturnType<typeof useSubmitGuessMutation>,
+);
+
+const mockRequestClueMutate = vi.fn();
+const mockRequestClueMutation = {
+  mutate: mockRequestClueMutate,
+  isPending: false,
+  data: undefined,
+  error: null,
+  variables: undefined,
+  isError: false,
+  isSuccess: false,
+  failureCount: 0,
+  failureReason: null,
+  mutateAsync: vi.fn(),
+  reset: vi.fn(),
+  status: "idle" as const,
+  isIdle: true,
+  context: undefined,
+  isPaused: false,
+  submittedAt: 0,
+};
+
+vi.mocked(useRequestClueMutation).mockReturnValue(
+  mockRequestClueMutation as ReturnType<typeof useRequestClueMutation>,
 );
 
 const mockShake = vi.fn();
@@ -86,6 +116,7 @@ function makeChangeEvent(value: string) {
 beforeEach(() => {
   vi.clearAllMocks();
   mockIsShaking = false;
+  mockRequestClueMutate.mockReset();
 });
 
 // ---------------------------------------------------------------------------
@@ -168,7 +199,7 @@ describe("submitHandler with a correct guess", () => {
 
 describe("submitHandler with an incorrect guess", () => {
   beforeEach(() => {
-    mockMutateAsync.mockResolvedValue({ success: false, message: "Wrong!" });
+    mockMutateAsync.mockResolvedValue({ success: false, message: "Wrong!", canRequestClue: true });
   });
 
   it('sets message to "Access Denied."', async () => {
@@ -187,6 +218,12 @@ describe("submitHandler with an incorrect guess", () => {
     const { result } = renderProgramPlayHook();
     await act(async () => result.current.handleSubmit(makeSubmitEvent()));
     expect(mockShake).toHaveBeenCalled();
+  });
+
+  it("sets canRequestClue to true if returned by mutation", async () => {
+    const { result } = renderProgramPlayHook();
+    await act(async () => result.current.handleSubmit(makeSubmitEvent()));
+    expect(result.current.canRequestClue).toBe(true);
   });
 });
 
@@ -207,6 +244,33 @@ describe("submitHandler with an error", () => {
 });
 
 // ---------------------------------------------------------------------------
+// handleRequestClue
+// ---------------------------------------------------------------------------
+
+describe("handleRequestClue", () => {
+  it("calls requestClueMutation.mutate with gateId and guess", () => {
+    const { result } = renderProgramPlayHook("gate-1");
+    act(() => result.current.changeHandler(makeChangeEvent("my guess")));
+    act(() => result.current.handleRequestClue());
+    expect(mockRequestClueMutate).toHaveBeenCalledWith(
+      { gateId: "gate-1", currentGuess: "my guess" },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    );
+  });
+
+  it("appends clue to clues array on success", () => {
+    const { result } = renderProgramPlayHook("gate-1");
+    act(() => result.current.handleRequestClue());
+    
+    // Extract the onSuccess callback and call it
+    const onSuccessCallback = mockRequestClueMutate.mock.calls[0][1].onSuccess;
+    act(() => onSuccessCallback({ clueText: "A hint!", isClueLimitReached: false, cluesRemaining: 2 }));
+    
+    expect(result.current.clues).toEqual(["A hint!"]);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // currentGateId change
 // ---------------------------------------------------------------------------
 
@@ -223,5 +287,26 @@ describe("when currentGateId changes", () => {
     const initialCallCount = mockClearShake.mock.calls.length;
     rerender({ currentGateId: "gate-2" });
     expect(mockClearShake.mock.calls.length).toBe(initialCallCount + 1);
+  });
+
+  it("resets clues and canRequestClue when currentGateId changes", () => {
+    const { result, rerender } = renderHook(
+      ({ currentGateId }) =>
+        useProgramPlay({ programId: "test", currentGateId }),
+      { initialProps: { currentGateId: "gate-1" } },
+    );
+
+    // Simulate having a clue and canRequestClue true
+    act(() => {
+      // @ts-expect-error manipulating internal state for test setup
+      result.current.clues = ["old clue"];
+      // @ts-expect-error manipulating internal state for test setup
+      result.current.canRequestClue = true;
+    });
+
+    rerender({ currentGateId: "gate-2" });
+
+    expect(result.current.clues).toEqual([]);
+    expect(result.current.canRequestClue).toBe(false);
   });
 });

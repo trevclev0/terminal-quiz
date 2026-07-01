@@ -7,6 +7,7 @@ const SUBMIT_GUESS_MUTATION = `
     submitGuess(programId: $programId, gateId: $gateId, guess: $guess) {
       success
       message
+      canRequestClue
       nextGate {
         id
         label
@@ -19,6 +20,7 @@ const SUBMIT_GUESS_MUTATION = `
 export type SubmitGuessResponse = {
   success: boolean;
   message?: string;
+  canRequestClue?: boolean;
   nextGate: {
     id: string;
     label: string;

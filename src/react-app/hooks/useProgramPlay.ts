@@ -1,4 +1,5 @@
 import { useSubmitGuessMutation } from "@api/mutations/useSubmitGuessMutation";
+import { useRequestClueMutation } from "@api/mutations/useRequestClueMutation";
 import useShake from "@hooks/useShake";
 import { type ChangeEvent, type SubmitEvent, useEffect, useState } from "react";
 
@@ -9,16 +10,21 @@ type UseProgramPlayProps = {
 
 function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
   const submitGuessMutation = useSubmitGuessMutation(programId);
+  const requestClueMutation = useRequestClueMutation();
 
   const [guess, setGuess] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [canRequestClue, setCanRequestClue] = useState(false);
+  const [clues, setClues] = useState<string[]>([]);
   const { isShaking, shake, clearShake } = useShake();
 
-  // Clear response message and shake when currentGate.id changes
+  // Clear response message, shake, clues, and canRequestClue when currentGate.id changes
   // biome-ignore lint/correctness/useExhaustiveDependencies: clearShake is stable from useShake, only re-run when currentGateId changes
   useEffect(() => {
     setMessage(null);
     clearShake();
+    setClues([]);
+    setCanRequestClue(false);
   }, [currentGateId]);
 
   const changeHandler = (e: ChangeEvent<HTMLInputElement>) => {
@@ -50,10 +56,27 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
       } else {
         setMessage("Access Denied.");
         shake();
+        if (result.canRequestClue) {
+          setCanRequestClue(true);
+        }
       }
     } catch {
       setMessage("Error submitting guess");
     }
+  };
+
+  const handleRequestClue = () => {
+    if (!currentGateId) return;
+    requestClueMutation.mutate(
+      { gateId: currentGateId, currentGuess: guess },
+      {
+        onSuccess: (data) => {
+          if (data.clueText) {
+            setClues((prev) => [...prev, data.clueText as string]);
+          }
+        },
+      },
+    );
   };
 
   return {
@@ -63,6 +86,10 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
     isPending: submitGuessMutation.isPending,
     changeHandler,
     handleSubmit,
+    canRequestClue,
+    clues,
+    handleRequestClue,
+    requestClueMutation,
   };
 }
 
