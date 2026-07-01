@@ -62,7 +62,7 @@ ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}
   userPrompt += `\nGenerate a new, short, and subtle clue without revealing "${correctAnswer}".`;
 
   try {
-    const response = (await AI.run("@cf/mistral/mistral-7-b-instruct-v0.1", {
+    const response = (await AI.run("@cf/meta/llama-4-scout-17b-16e-instruct", {
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: userPrompt },
