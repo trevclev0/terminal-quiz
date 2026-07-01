@@ -21,7 +21,7 @@ type ActiveGateProps = {
     } | null;
   };
   handleRequestClue: () => void;
-  clues: string[];
+  clues?: string[];
 };
 
 export default function ActiveGate({
@@ -37,7 +37,7 @@ export default function ActiveGate({
   canRequestClue,
   requestClueMutation,
   handleRequestClue,
-  clues,
+  clues = [],
 }: ActiveGateProps) {
   const formAriaLabel = `${gate.label} - enter password and press Enter to submit`;
   const isClueLimitReached =
