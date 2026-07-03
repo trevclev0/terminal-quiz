@@ -87,7 +87,7 @@ export default function ActiveGate({
               <button
                 type="button"
                 onClick={handleRequestClue}
-                disabled={isMutationPending}
+                disabled={isMutationPending || guess.trim() === ""}
               >
                 {isMutationPending
                   ? "Fetching Clue..."
