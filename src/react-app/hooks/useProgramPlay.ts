@@ -29,6 +29,7 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
 
   const changeHandler = (e: ChangeEvent<HTMLInputElement>) => {
     setGuess(e.target.value);
+    setCanRequestClue(false);
   };
 
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
@@ -74,6 +75,7 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
           if (data.clueText) {
             setClues((prev) => [...prev, data.clueText as string]);
           }
+          setCanRequestClue(false);
         },
       },
     );
