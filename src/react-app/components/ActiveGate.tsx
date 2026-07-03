@@ -46,7 +46,13 @@ export default function ActiveGate({
   const cluesRemaining = requestClueMutation?.data?.cluesRemaining;
   const clueNumber = clues.length + 1;
   const clueSuffix =
-    clueNumber === 1 ? "st" : clueNumber === 2 ? "nd" : clueNumber === 3 ? "rd" : "th";
+    clueNumber === 1
+      ? "st"
+      : clueNumber === 2
+        ? "nd"
+        : clueNumber === 3
+          ? "rd"
+          : "th";
   const isFinalClue = cluesRemaining === 1;
 
   return (
