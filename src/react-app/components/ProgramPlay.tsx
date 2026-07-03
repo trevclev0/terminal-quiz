@@ -33,6 +33,8 @@ function ProgramPlay() {
     handleSubmit,
     canRequestClue,
     handleRequestClue,
+    clues,
+    requestClueMutation,
   } = useProgramPlay({ programId, currentGateId: currentGate?.id });
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -89,6 +91,8 @@ function ProgramPlay() {
           handleSubmit={handleSubmit}
           canRequestClue={canRequestClue}
           handleRequestClue={handleRequestClue}
+          clues={clues}
+          requestClueMutation={requestClueMutation}
         />
       )}
       {isTheEnd && (
