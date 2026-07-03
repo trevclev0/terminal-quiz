@@ -154,8 +154,20 @@ describe("Clue Functionality", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("disables 'Get Clue' button when guess is empty", () => {
+    renderActiveGate({ canRequestClue: true, guess: "" });
+    const button = screen.getByRole("button", { name: /get.*clue/i });
+    expect(button).toBeDisabled();
+  });
+
+  it("enables 'Get Clue' button when guess is not empty", () => {
+    renderActiveGate({ canRequestClue: true, guess: "some guess" });
+    const button = screen.getByRole("button", { name: /get.*clue/i });
+    expect(button).not.toBeDisabled();
+  });
+
   it("calls handleRequestClue when 'Get Clue' button is clicked", () => {
-    renderActiveGate({ canRequestClue: true });
+    renderActiveGate({ canRequestClue: true, guess: "some guess" });
     fireEvent.click(screen.getByRole("button", { name: /get.*clue/i }));
     expect(mockHandleRequestClue).toHaveBeenCalledTimes(1);
   });
