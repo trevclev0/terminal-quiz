@@ -121,14 +121,14 @@ describe("Clue Functionality", () => {
   it("does not render 'Get Clue' button when canRequestClue is false", () => {
     renderActiveGate({ canRequestClue: false });
     expect(
-      screen.queryByRole("button", { name: /get clue/i }),
+      screen.queryByRole("button", { name: /get.*clue/i }),
     ).not.toBeInTheDocument();
   });
 
   it("renders 'Get Clue' button when canRequestClue is true", () => {
     renderActiveGate({ canRequestClue: true });
     expect(
-      screen.getByRole("button", { name: /get clue/i }),
+      screen.getByRole("button", { name: /get.*clue/i }),
     ).toBeInTheDocument();
   });
 
@@ -141,7 +141,7 @@ describe("Clue Functionality", () => {
     expect(button).toBeDisabled();
   });
 
-  it("disables 'Get Clue' button when isClueLimitReached is true", () => {
+  it("removes 'Get Clue' button when isClueLimitReached is true", () => {
     renderActiveGate({
       canRequestClue: true,
       requestClueMutation: {
@@ -149,13 +149,14 @@ describe("Clue Functionality", () => {
         data: { clueText: null, isClueLimitReached: true, cluesRemaining: 0 },
       },
     });
-    const button = screen.getByRole("button", { name: /get clue/i });
-    expect(button).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: /get.*clue/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("calls handleRequestClue when 'Get Clue' button is clicked", () => {
     renderActiveGate({ canRequestClue: true });
-    fireEvent.click(screen.getByRole("button", { name: /get clue/i }));
+    fireEvent.click(screen.getByRole("button", { name: /get.*clue/i }));
     expect(mockHandleRequestClue).toHaveBeenCalledTimes(1);
   });
 
