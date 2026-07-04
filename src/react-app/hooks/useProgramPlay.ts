@@ -1,6 +1,7 @@
 import { useRequestClueMutation } from "@api/mutations/useRequestClueMutation";
 import { useSubmitGuessMutation } from "@api/mutations/useSubmitGuessMutation";
 import useShake from "@hooks/useShake";
+import { MAX_CLUES_PER_GATE } from "@shared/types";
 import { type ChangeEvent, type SubmitEvent, useEffect, useState } from "react";
 
 type UseProgramPlayProps = {
@@ -88,6 +89,8 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
     );
   };
 
+  const isClueLimitReached = clues.length >= MAX_CLUES_PER_GATE;
+
   return {
     guess,
     message,
@@ -97,6 +100,7 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
     changeHandler,
     handleSubmit,
     canRequestClue,
+    isClueLimitReached,
     clues,
     handleRequestClue,
     requestClueMutation,

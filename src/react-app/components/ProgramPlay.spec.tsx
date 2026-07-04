@@ -46,11 +46,13 @@ import useProgramPlay from "@hooks/useProgramPlay";
 const mockUseProgramPlay = {
   guess: "",
   message: null,
+  guessSucceeded: null,
   isShaking: false,
   isPending: false,
   changeHandler: vi.fn(),
   handleSubmit: vi.fn(),
   canRequestClue: false,
+  isClueLimitReached: false,
   clues: [],
   handleRequestClue: vi.fn(),
   requestClueMutation: {
