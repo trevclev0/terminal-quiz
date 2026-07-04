@@ -88,7 +88,7 @@ describe("useProgramPlay", () => {
     await act(async () => {
       await result.current.handleSubmit({
         preventDefault,
-      } as unknown as React.FormEvent<HTMLFormElement>);
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
     });
 
     expect(preventDefault).toHaveBeenCalled();
@@ -103,7 +103,7 @@ describe("useProgramPlay", () => {
     await act(async () => {
       await result.current.handleSubmit({
         preventDefault: vi.fn(),
-      } as unknown as React.FormEvent<HTMLFormElement>);
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
     });
 
     expect(result.current.message).toBe("Correct!");
@@ -124,7 +124,7 @@ describe("useProgramPlay", () => {
     await act(async () => {
       await result.current.handleSubmit({
         preventDefault: vi.fn(),
-      } as unknown as React.FormEvent<HTMLFormElement>);
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
     });
 
     expect(result.current.guess).toBe("");
@@ -139,7 +139,7 @@ describe("useProgramPlay", () => {
     await act(async () => {
       await result.current.handleSubmit({
         preventDefault: vi.fn(),
-      } as unknown as React.FormEvent<HTMLFormElement>);
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
     });
 
     expect(mockShake).not.toHaveBeenCalled();
@@ -154,7 +154,7 @@ describe("useProgramPlay", () => {
     await act(async () => {
       await result.current.handleSubmit({
         preventDefault: vi.fn(),
-      } as unknown as React.FormEvent<HTMLFormElement>);
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
     });
 
     expect(result.current.message).toBe("Wrong!");
@@ -169,7 +169,7 @@ describe("useProgramPlay", () => {
     await act(async () => {
       await result.current.handleSubmit({
         preventDefault: vi.fn(),
-      } as unknown as React.FormEvent<HTMLFormElement>);
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
     });
 
     expect(mockShake).toHaveBeenCalled();
@@ -184,7 +184,7 @@ describe("useProgramPlay", () => {
     await act(async () => {
       await result.current.handleSubmit({
         preventDefault: vi.fn(),
-      } as unknown as React.FormEvent<HTMLFormElement>);
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
     });
 
     expect(mockShake).toHaveBeenCalled();
@@ -203,7 +203,7 @@ describe("useProgramPlay", () => {
     await act(async () => {
       await result.current.handleSubmit({
         preventDefault: vi.fn(),
-      } as unknown as React.FormEvent<HTMLFormElement>);
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
     });
 
     expect(result.current.canRequestClue).toBe(true);
@@ -218,7 +218,7 @@ describe("useProgramPlay", () => {
     await act(async () => {
       await result.current.handleSubmit({
         preventDefault: vi.fn(),
-      } as unknown as React.FormEvent<HTMLFormElement>);
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
     });
 
     expect(result.current.message).toBe("Error submitting guess");
@@ -249,7 +249,7 @@ describe("useProgramPlay", () => {
       useProgramPlay({ programId, currentGateId }),
     );
 
-    mockMutate.mockImplementation((variables, options) => {
+    mockMutate.mockImplementation((_variables, options) => {
       options.onSuccess({ clueText: "Here is a clue" });
     });
 
@@ -277,7 +277,7 @@ describe("useProgramPlay", () => {
       { initialProps: { currentGateId: "gate-1" } },
     );
 
-    mockMutate.mockImplementation((variables, options) => {
+    mockMutate.mockImplementation((_variables, options) => {
       options.onSuccess({ clueText: "Here is a clue" });
     });
 
