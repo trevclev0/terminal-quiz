@@ -57,7 +57,7 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
       });
 
       if (result.success) {
-        setMessage(result.message);
+        setMessage(result.message ?? null);
         setGuessSucceeded(true);
         setGuess("");
       } else {
