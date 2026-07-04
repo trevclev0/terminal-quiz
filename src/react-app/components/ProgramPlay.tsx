@@ -27,11 +27,13 @@ function ProgramPlay() {
   const {
     guess,
     message,
+    guessSucceeded,
     isShaking,
     isPending,
     changeHandler,
     handleSubmit,
     canRequestClue,
+    isClueLimitReached,
     handleRequestClue,
     clues,
     requestClueMutation,
@@ -84,12 +86,14 @@ function ProgramPlay() {
           gate={currentGate}
           guess={guess}
           message={message}
+          guessSucceeded={guessSucceeded}
           isShaking={isShaking}
           isPending={isPending}
           inputRef={inputRef}
           changeHandler={changeHandler}
           handleSubmit={handleSubmit}
           canRequestClue={canRequestClue}
+          isClueLimitReached={isClueLimitReached}
           handleRequestClue={handleRequestClue}
           clues={clues}
           requestClueMutation={requestClueMutation}
