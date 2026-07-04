@@ -6,12 +6,14 @@ type ActiveGateProps = {
   gate: ActiveGateType;
   guess: string;
   message: string | null;
+  guessSucceeded?: boolean | null;
   isShaking: boolean;
   isPending: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
   changeHandler: (e: ChangeEvent<HTMLInputElement>) => void;
   handleSubmit: (e: SubmitEvent<HTMLFormElement>) => void | Promise<void>;
   canRequestClue: boolean;
+  isClueLimitReached?: boolean;
   requestClueMutation?: {
     isPending: boolean;
     data?: {
@@ -29,19 +31,23 @@ export default function ActiveGate({
   gate,
   guess,
   message,
+  guessSucceeded = null,
   isShaking,
   isPending,
   inputRef,
   changeHandler,
   handleSubmit,
   canRequestClue,
+  isClueLimitReached: propIsClueLimitReached,
   requestClueMutation,
   handleRequestClue,
   clues = [],
 }: ActiveGateProps) {
   const formAriaLabel = `${gate.label} - enter password and press Enter to submit`;
   const isClueLimitReached =
-    requestClueMutation?.data?.isClueLimitReached ?? false;
+    propIsClueLimitReached ??
+    requestClueMutation?.data?.isClueLimitReached ??
+    false;
   const isMutationPending = requestClueMutation?.isPending ?? false;
   const cluesRemaining = requestClueMutation?.data?.cluesRemaining;
   const clueNumber = clues.length + 1;
@@ -75,7 +81,7 @@ export default function ActiveGate({
               aria-live="polite"
               role="status"
               className={
-                message === "Access Denied." ? "response fail" : "response"
+                guessSucceeded === false ? "response fail" : "response"
               }
             >
               {message}

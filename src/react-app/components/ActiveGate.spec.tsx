@@ -17,7 +17,6 @@ const mockInputRef = createRef<HTMLInputElement>();
 
 const mockRequestClueMutation = {
   isPending: false,
-  data: { clueText: null, isClueLimitReached: false, cluesRemaining: 3 },
 };
 const mockHandleRequestClue = vi.fn();
 
@@ -29,12 +28,14 @@ function renderActiveGate(
     gate: mockActiveGate,
     guess: "",
     message: null,
+    guessSucceeded: null,
     isShaking: false,
     isPending: false,
     inputRef: mockInputRef,
     changeHandler: mockChangeHandler,
     handleSubmit: mockSubmitHandler,
     canRequestClue: false,
+    isClueLimitReached: false,
     requestClueMutation: mockRequestClueMutation,
     handleRequestClue: mockHandleRequestClue,
     clues: [],
@@ -85,13 +86,13 @@ describe("ActiveGate", () => {
   });
 
   it("renders response message with .fail class for incorrect response", () => {
-    renderActiveGate({ message: "Access Denied." });
+    renderActiveGate({ message: "Access Denied.", guessSucceeded: false });
     const response = screen.getByText("Access Denied.");
     expect(response).toHaveClass("fail");
   });
 
   it("renders response message without .fail class for correct response", () => {
-    renderActiveGate({ message: "Access Granted." });
+    renderActiveGate({ message: "Access Granted.", guessSucceeded: true });
     const response = screen.getByText("Access Granted.");
     expect(response).not.toHaveClass("fail");
   });
@@ -144,10 +145,7 @@ describe("Clue Functionality", () => {
   it("removes 'Get Clue' button when isClueLimitReached is true", () => {
     renderActiveGate({
       canRequestClue: true,
-      requestClueMutation: {
-        isPending: false,
-        data: { clueText: null, isClueLimitReached: true, cluesRemaining: 0 },
-      },
+      isClueLimitReached: true,
     });
     expect(
       screen.queryByRole("button", { name: /get.*clue/i }),
