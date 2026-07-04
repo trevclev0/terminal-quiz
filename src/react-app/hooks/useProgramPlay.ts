@@ -14,6 +14,7 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
 
   const [guess, setGuess] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [guessSucceeded, setGuessSucceeded] = useState<boolean | null>(null);
   const [canRequestClue, setCanRequestClue] = useState(false);
   const [clues, setClues] = useState<string[]>([]);
   const { isShaking, shake, clearShake } = useShake();
@@ -22,6 +23,7 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: clearShake is stable from useShake, only re-run when currentGateId changes
   useEffect(() => {
     setMessage(null);
+    setGuessSucceeded(null);
     clearShake();
     setClues([]);
     setCanRequestClue(false);
@@ -41,9 +43,11 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
 
     if (!currentGateId) {
       setMessage("No active gate to submit guess to");
+      setGuessSucceeded(false);
       return;
     }
     setMessage(null);
+    setGuessSucceeded(null);
 
     try {
       const result = await submitGuessMutation.mutateAsync({
@@ -53,9 +57,11 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
 
       if (result.success) {
         setMessage("Access Granted.");
+        setGuessSucceeded(true);
         setGuess("");
       } else {
         setMessage("Access Denied.");
+        setGuessSucceeded(false);
         shake();
         if (result.canRequestClue) {
           setCanRequestClue(true);
@@ -63,6 +69,7 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
       }
     } catch {
       setMessage("Error submitting guess");
+      setGuessSucceeded(false);
     }
   };
 
@@ -84,6 +91,7 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
   return {
     guess,
     message,
+    guessSucceeded,
     isShaking,
     isPending: submitGuessMutation.isPending,
     changeHandler,
