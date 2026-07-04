@@ -1,4 +1,5 @@
 import type { ActiveGate as ActiveGateType } from "@api/queries/useProgramProgressionQuery";
+import { MAX_CLUES_PER_GATE } from "@shared/types";
 import type { ChangeEvent, RefObject, SubmitEvent } from "react";
 
 type ActiveGateProps = {
@@ -16,11 +17,6 @@ type ActiveGateProps = {
   isClueLimitReached?: boolean;
   requestClueMutation?: {
     isPending: boolean;
-    data?: {
-      clueText: string | null;
-      isClueLimitReached: boolean;
-      cluesRemaining: number;
-    } | null;
   };
   handleRequestClue: () => void;
   clues?: string[];
@@ -38,18 +34,13 @@ export default function ActiveGate({
   changeHandler,
   handleSubmit,
   canRequestClue,
-  isClueLimitReached: propIsClueLimitReached,
+  isClueLimitReached = false,
   requestClueMutation,
   handleRequestClue,
   clues = [],
 }: ActiveGateProps) {
   const formAriaLabel = `${gate.label} - enter password and press Enter to submit`;
-  const isClueLimitReached =
-    propIsClueLimitReached ??
-    requestClueMutation?.data?.isClueLimitReached ??
-    false;
   const isMutationPending = requestClueMutation?.isPending ?? false;
-  const cluesRemaining = requestClueMutation?.data?.cluesRemaining;
   const clueNumber = clues.length + 1;
   const clueSuffix =
     clueNumber === 1
@@ -59,7 +50,10 @@ export default function ActiveGate({
         : clueNumber === 3
           ? "rd"
           : "th";
-  const isFinalClue = cluesRemaining === 1;
+  const isFinalClue = clueNumber === MAX_CLUES_PER_GATE;
+
+  const pendingMessage = isPending ? "Verifying..." : null;
+  const displayMessage = pendingMessage ?? message;
 
   return (
     <div id={id} className={isShaking ? "gate shake" : "gate"}>
@@ -76,22 +70,27 @@ export default function ActiveGate({
             onChange={changeHandler}
             disabled={isPending}
           />
-          {message && (
+          {displayMessage && (
             <p
               aria-live="polite"
               role="status"
               className={
-                guessSucceeded === false ? "response fail" : "response"
+                pendingMessage
+                  ? "response pending"
+                  : guessSucceeded === false
+                    ? "response fail"
+                    : "response"
               }
             >
-              {message}
+              {displayMessage}
             </p>
           )}
 
           {canRequestClue && !isClueLimitReached && (
-            <div className="clue-section" style={{ marginTop: "1rem" }}>
+            <p className="clue-prompt" style={{ marginTop: "1rem" }}>
               <button
                 type="button"
+                className="clue-link"
                 onClick={handleRequestClue}
                 disabled={isMutationPending || guess.trim() === ""}
               >
@@ -101,7 +100,7 @@ export default function ActiveGate({
                     ? "Get Final Clue"
                     : `Get ${clueNumber}${clueSuffix} Clue`}
               </button>
-            </div>
+            </p>
           )}
 
           {clues.length > 0 && (

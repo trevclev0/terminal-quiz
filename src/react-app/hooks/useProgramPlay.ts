@@ -57,11 +57,11 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
       });
 
       if (result.success) {
-        setMessage("Access Granted.");
+        setMessage(result.message);
         setGuessSucceeded(true);
         setGuess("");
       } else {
-        setMessage("Access Denied.");
+        setMessage(result.message ?? "Access Denied.");
         setGuessSucceeded(false);
         shake();
         if (result.canRequestClue) {
