@@ -50,25 +50,6 @@ vi.mock("@tanstack/react-router-devtools", () => ({
   TanStackRouterDevtools: () => <div data-testid="router-devtools" />,
 }));
 
-vi.mock("@hooks/useProgramsWithGates", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("@hooks/useProgramsWithGates")>();
-
-  return {
-    ...actual,
-    default: () => ({
-      programs: [],
-      activeProgram: null,
-      error: null,
-      isLoading: false,
-      selectProgram: vi.fn(),
-      updateProgram: vi.fn(),
-      resetProgram: vi.fn(),
-      clearActiveProgram: vi.fn(),
-    }),
-  };
-});
-
 describe("Root Route", () => {
   it("should redirect to /programs/select when no in-progress program", async () => {
     const router = createTestRouter("/");

@@ -19,9 +19,3 @@ export const inProgressProgramQueryOptions = {
   queryFn: fetchInProgressProgram,
   staleTime: 0, // Always refetch to get latest session state
 };
-
-export const useInProgressProgramQuery = () => {
-  return {
-    queryOptions: inProgressProgramQueryOptions,
-  };
-};

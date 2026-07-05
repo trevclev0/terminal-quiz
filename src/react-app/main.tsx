@@ -1,9 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { indexedDBMessagePackPersister, queryClient } from "@api/queryClient";
+import { queryClient } from "@api/queryClient";
 import ErrorBoundary from "@components/ErrorBoundary";
-import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 
 // Import the generated route tree
@@ -33,12 +32,7 @@ const root = createRoot(rootElement);
 root.render(
   <StrictMode>
     <ErrorBoundary>
-      <PersistQueryClientProvider
-        client={queryClient}
-        persistOptions={{ persister: indexedDBMessagePackPersister }}
-      >
-        <RouterProvider router={router} />
-      </PersistQueryClientProvider>
+      <RouterProvider router={router} />
     </ErrorBoundary>
   </StrictMode>,
 );
