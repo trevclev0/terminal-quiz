@@ -61,15 +61,20 @@ export default function ActiveGate({
         <summary>{gate.label}</summary>
         <form onSubmit={handleSubmit} aria-label={formAriaLabel}>
           <p className="description">{gate.question}</p>
-          <input
-            aria-label={`${gate.label} password input`}
-            ref={inputRef}
-            type="text"
-            placeholder="Enter password..."
-            value={guess}
-            onChange={changeHandler}
-            disabled={isPending}
-          />
+          <div className="prompt-line">
+            <span className="prompt-caret" aria-hidden="true">
+              &gt;
+            </span>
+            <input
+              aria-label={`${gate.label} password input`}
+              ref={inputRef}
+              type="text"
+              placeholder="enter password..."
+              value={guess}
+              onChange={changeHandler}
+              disabled={isPending}
+            />
+          </div>
           {displayMessage && (
             <p
               aria-live="polite"
@@ -87,7 +92,7 @@ export default function ActiveGate({
           )}
 
           {canRequestClue && !isClueLimitReached && (
-            <p className="clue-prompt" style={{ marginTop: "1rem" }}>
+            <p className="clue-prompt">
               <button
                 type="button"
                 className="clue-link"
@@ -104,14 +109,14 @@ export default function ActiveGate({
           )}
 
           {clues.length > 0 && (
-            <div className="clues-list" style={{ marginTop: "1rem" }}>
-              <strong>Clues:</strong>
-              <ul>
-                {clues.map((clue, index) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: clues are read-only and order is stable
-                  <li key={index}>{clue}</li>
-                ))}
-              </ul>
+            <div className="clues-list">
+              <p className="clues-heading">Clues:</p>
+              {clues.map((clue, index) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: clues are read-only and order is stable
+                <p key={index} className="clue-line">
+                  - {clue}
+                </p>
+              ))}
             </div>
           )}
         </form>

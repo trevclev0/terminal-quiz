@@ -12,13 +12,18 @@ export default function CompletedGate({ id, gate }: CompletedGateProps) {
         <summary>{gate.label}</summary>
         <form aria-label={`${gate.label} - completed`}>
           <p className="description">{gate.question}</p>
-          <input
-            type="text"
-            placeholder="Password entered correctly"
-            value={`✔ ${gate.correctAnswer}`}
-            disabled
-            readOnly
-          />
+          <div className="prompt-line">
+            <span className="prompt-caret" aria-hidden="true">
+              {gate.correctAnswer ? "✔" : ">"}
+            </span>
+            <input
+              type="text"
+              placeholder="Password entered correctly"
+              value={gate.correctAnswer ? gate.correctAnswer : ""}
+              disabled
+              readOnly
+            />
+          </div>
           <p className="clue">{gate.successMessage}</p>
         </form>
       </details>

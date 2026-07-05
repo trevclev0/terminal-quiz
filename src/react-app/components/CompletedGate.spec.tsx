@@ -27,7 +27,7 @@ describe("CompletedGate", () => {
     render(<CompletedGate id="gate-0" gate={mockCompletedGate} />);
     const input = screen.getByRole("textbox");
     expect(input).toBeDisabled();
-    expect(input).toHaveValue("✔ 4");
+    expect(input).toHaveValue("4");
   });
 
   it("success message rendered with .clue class", () => {
