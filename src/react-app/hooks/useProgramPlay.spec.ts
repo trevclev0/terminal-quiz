@@ -209,6 +209,40 @@ describe("useProgramPlay", () => {
     expect(result.current.canRequestClue).toBe(true);
   });
 
+  it("resets canRequestClue to false if returned by mutation without changing guess", async () => {
+    const { result } = renderHook(() =>
+      useProgramPlay({ programId, currentGateId }),
+    );
+
+    mockMutateAsync.mockResolvedValue({
+      success: false,
+      message: "Wrong!",
+      canRequestClue: true,
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
+    });
+
+    expect(result.current.canRequestClue).toBe(true);
+
+    mockMutateAsync.mockResolvedValue({
+      success: false,
+      message: "Wrong!",
+      canRequestClue: false,
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
+    });
+
+    expect(result.current.canRequestClue).toBe(false);
+  });
+
   it("sets message to error text", async () => {
     const { result } = renderHook(() =>
       useProgramPlay({ programId, currentGateId }),
@@ -250,7 +284,7 @@ describe("useProgramPlay", () => {
     );
 
     mockMutate.mockImplementation((_variables, options) => {
-      options.onSuccess({ clueText: "Here is a clue" });
+      options.onSuccess({ clueText: "Here is a clue", isClueLimitReached: false });
     });
 
     act(() => {
@@ -258,6 +292,44 @@ describe("useProgramPlay", () => {
     });
 
     expect(result.current.clues).toEqual(["Here is a clue"]);
+  });
+
+  it("sets error message and does not append clue if clueText is null", () => {
+    const { result } = renderHook(() =>
+      useProgramPlay({ programId, currentGateId }),
+    );
+
+    mockMutate.mockImplementation((_variables, options) => {
+      options.onSuccess({ clueText: null, isClueLimitReached: false });
+    });
+
+    act(() => {
+      result.current.handleRequestClue();
+    });
+
+    expect(result.current.clues).toEqual([]);
+    expect(result.current.message).toBe(
+      "Failed to generate a clue. Please try again.",
+    );
+  });
+
+  it("sets error message and does not append clue on mutation error", () => {
+    const { result } = renderHook(() =>
+      useProgramPlay({ programId, currentGateId }),
+    );
+
+    mockMutate.mockImplementation((_variables, options) => {
+      options.onError(new Error("Network error"));
+    });
+
+    act(() => {
+      result.current.handleRequestClue();
+    });
+
+    expect(result.current.clues).toEqual([]);
+    expect(result.current.message).toBe(
+      "Error requesting clue. Please try again.",
+    );
   });
 
   it("clears shake when currentGateId changes", () => {
@@ -278,7 +350,7 @@ describe("useProgramPlay", () => {
     );
 
     mockMutate.mockImplementation((_variables, options) => {
-      options.onSuccess({ clueText: "Here is a clue" });
+      options.onSuccess({ clueText: "Here is a clue", isClueLimitReached: false });
     });
 
     act(() => {

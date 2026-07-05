@@ -18,6 +18,7 @@ export default function CompletedGate({ id, gate }: CompletedGateProps) {
             </span>
             <input
               type="text"
+              aria-label={gate.question}
               placeholder="Password entered correctly"
               value={gate.correctAnswer ? gate.correctAnswer : ""}
               disabled
