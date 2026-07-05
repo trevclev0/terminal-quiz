@@ -1,9 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@api/queryClient";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 
 // Import the generated route tree
