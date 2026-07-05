@@ -220,7 +220,7 @@ describe("Clue Functionality", () => {
       clues: ["First Clue", "Second Clue"],
     });
     expect(
-      screen.getByRole("button", { name: /get 3rd clue/i }),
+      screen.getByRole("button", { name: /get Final clue/i }),
     ).toBeInTheDocument();
   });
 });
