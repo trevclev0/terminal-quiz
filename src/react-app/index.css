@@ -137,11 +137,6 @@ p {
   margin: 0.75rem 1rem;
 }
 
-.prompt-caret {
-  color: var(--green);
-  margin-right: 0.5rem;
-}
-
 input[type="text"] {
   background-color: var(--black);
   border: none;
