@@ -193,3 +193,7 @@ input[type="text"]:disabled {
   cursor: default;
   opacity: 0.5;
 }
+
+.clues-list {
+  margin: 0.75rem 1rem;
+}
