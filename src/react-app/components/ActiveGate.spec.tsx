@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import type { ActiveGate as ActiveGateType } from "@api/queries/useProgramProgressionQuery";
+import { MAX_CLUES_PER_GATE } from "@shared/types";
 import { createRef } from "react";
 import ActiveGate from "./ActiveGate";
 
@@ -70,6 +71,13 @@ describe("ActiveGate", () => {
 
   it("input is disabled when isPending is true", () => {
     renderActiveGate({ isPending: true });
+    expect(screen.getByRole("textbox")).toBeDisabled();
+  });
+
+  it("input is disabled when requestClueMutation is pending", () => {
+    renderActiveGate({
+      requestClueMutation: { ...mockRequestClueMutation, isPending: true },
+    });
     expect(screen.getByRole("textbox")).toBeDisabled();
   });
 
@@ -142,6 +150,12 @@ describe("Clue Functionality", () => {
     expect(button).toBeDisabled();
   });
 
+  it("disables 'Get Clue' button when isPending is true", () => {
+    renderActiveGate({ canRequestClue: true, isPending: true });
+    const button = screen.getByRole("button", { name: /get.*clue/i });
+    expect(button).toBeDisabled();
+  });
+
   it("removes 'Get Clue' button when isClueLimitReached is true", () => {
     renderActiveGate({
       canRequestClue: true,
@@ -175,5 +189,38 @@ describe("Clue Functionality", () => {
     expect(screen.getByText("Clues:")).toBeInTheDocument();
     expect(screen.getByText(/- First Clue/)).toBeInTheDocument();
     expect(screen.getByText(/- Second Clue/)).toBeInTheDocument();
+  });
+
+  it("renders 'Get Final Clue' button when clues length is MAX_CLUES_PER_GATE - 1", () => {
+    const clues = Array(MAX_CLUES_PER_GATE - 1).fill("Clue");
+    renderActiveGate({ canRequestClue: true, guess: "some guess", clues });
+    expect(
+      screen.getByRole("button", { name: /get final clue/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("renders correct ordinal suffix for numbered clues", () => {
+    renderActiveGate({ canRequestClue: true, guess: "some guess", clues: [] });
+    expect(
+      screen.getByRole("button", { name: /get 1st clue/i }),
+    ).toBeInTheDocument();
+
+    renderActiveGate({
+      canRequestClue: true,
+      guess: "some guess",
+      clues: ["First Clue"],
+    });
+    expect(
+      screen.getByRole("button", { name: /get 2nd clue/i }),
+    ).toBeInTheDocument();
+
+    renderActiveGate({
+      canRequestClue: true,
+      guess: "some guess",
+      clues: ["First Clue", "Second Clue"],
+    });
+    expect(
+      screen.getByRole("button", { name: /get 3rd clue/i }),
+    ).toBeInTheDocument();
   });
 });

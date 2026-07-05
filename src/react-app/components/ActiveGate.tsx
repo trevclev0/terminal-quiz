@@ -72,7 +72,7 @@ export default function ActiveGate({
               placeholder="enter password..."
               value={guess}
               onChange={changeHandler}
-              disabled={isPending}
+              disabled={isPending || isMutationPending}
             />
           </div>
           {displayMessage && (
@@ -97,7 +97,7 @@ export default function ActiveGate({
                 type="button"
                 className="clue-link"
                 onClick={handleRequestClue}
-                disabled={isMutationPending || guess.trim() === ""}
+                disabled={isMutationPending || isPending || guess.trim() === ""}
               >
                 {isMutationPending
                   ? "Fetching Clue..."
@@ -109,7 +109,7 @@ export default function ActiveGate({
           )}
 
           {clues.length > 0 && (
-            <div className="clues-list">
+            <div className="clues-list" aria-live="polite">
               <p className="clues-heading">Clues:</p>
               {clues.map((clue, index) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: clues are read-only and order is stable
