@@ -1,9 +1,10 @@
 :root {
-  --black: black;
-  --green: #33ff33;
-  --red: #ff3333;
-  --light-grey: #c0c0c0;
-  --faded-green: #337200;
+  --black: #0a0f0a;
+  --green: #4caf50;
+  --red: #b04a4a;
+  --light-grey: #7fa87f;
+  --faded-green: #2d4a2d;
+  --accent: #4a9999;
 }
 
 body {
@@ -130,14 +131,32 @@ p {
   }
 }
 
+.prompt-line {
+  display: flex;
+  align-items: center;
+  margin: 0.75rem 1rem;
+}
+
+.prompt-caret {
+  color: var(--green);
+  margin-right: 0.5rem;
+}
+
 input[type="text"] {
   background-color: var(--black);
-  border: 1px solid var(--green);
+  border: none;
+  border-bottom: 1px solid var(--faded-green);
   color: var(--green);
-  padding: 0.75rem;
+  padding: 0.5rem 0;
   font-family: inherit;
   font-size: 16px;
-  margin: 0.75rem 1rem;
+  flex: 1;
+  caret-shape: block;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-bottom-color: var(--green);
 }
 
 input[type="text"]:disabled {
@@ -145,6 +164,53 @@ input[type="text"]:disabled {
   border-color: var(--faded-green);
   user-select: none;
   -moz-user-select: none;
+}
+
+.prompt-caret {
+  color: var(--green);
+  margin-right: 0.5rem;
+  width: 1ch;
+  display: inline-block;
+}
+
+input[type="text"].solved {
+  color: var(--faded-green);
+  border-bottom-color: var(--faded-green);
+}
+
+.clue-prompt {
+  margin: 0.75rem 1rem;
+}
+
+.clue-link {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  text-decoration: underline;
+  cursor: pointer;
+  color: var(--accent);
+  font: inherit;
+  font-weight: bold;
+}
+
+.clue-link:disabled {
+  color: var(--faded-green);
+  text-decoration: none;
+  cursor: default;
+}
+
+.clues-list {
+  margin: 0.75rem 1rem;
+}
+
+.clues-heading {
+  margin: 0 0 0.25rem;
+}
+
+.clue-line {
+  margin: 0.25rem 0;
+  color: var(--light-grey);
 }
 
 @media (max-width: 600px) {
@@ -170,30 +236,4 @@ input[type="text"]:disabled {
 .error-screen button {
   color: var(--red);
   border-color: var(--red);
-}
-
-.response.pending {
-  opacity: 0.7;
-  font-style: italic;
-}
-
-.clue-link {
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  text-decoration: underline;
-  cursor: pointer;
-  color: inherit;
-  font: inherit;
-}
-
-.clue-link:disabled {
-  text-decoration: none;
-  cursor: default;
-  opacity: 0.5;
-}
-
-.clues-list {
-  margin: 0.75rem 1rem;
 }
