@@ -284,7 +284,10 @@ describe("useProgramPlay", () => {
     );
 
     mockMutate.mockImplementation((_variables, options) => {
-      options.onSuccess({ clueText: "Here is a clue", isClueLimitReached: false });
+      options.onSuccess({
+        clueText: "Here is a clue",
+        isClueLimitReached: false,
+      });
     });
 
     act(() => {
@@ -350,7 +353,10 @@ describe("useProgramPlay", () => {
     );
 
     mockMutate.mockImplementation((_variables, options) => {
-      options.onSuccess({ clueText: "Here is a clue", isClueLimitReached: false });
+      options.onSuccess({
+        clueText: "Here is a clue",
+        isClueLimitReached: false,
+      });
     });
 
     act(() => {
