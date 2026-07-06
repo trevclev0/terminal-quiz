@@ -77,9 +77,11 @@ run = "pnpm run migrate:prod"
 description = "Run migrations in production"
 
 [tasks.deploy]
+depends = ["build"]
 run = "pnpm run deploy"
 description = "Deploy to production"
 
 [tasks."deploy:preview"]
+depends = ["build"]
 run = "pnpm run deploy:preview"
 description = "Deploy to preview"
