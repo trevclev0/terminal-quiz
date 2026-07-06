@@ -2,6 +2,7 @@ import type { ActiveGate as ActiveGateType } from "@api/queries/useProgramProgre
 import { MAX_CLUES_PER_GATE } from "@shared/types";
 import type { ChangeEvent, RefObject, SubmitEvent } from "react";
 import styles from "./ActiveGate.module.css";
+import gateStyles from "./Gate.module.css";
 
 type ActiveGateProps = {
   id: string;
@@ -59,14 +60,16 @@ export default function ActiveGate({
   return (
     <div
       id={id}
-      className={isShaking ? `${styles.gate} ${styles.shake}` : styles.gate}
+      className={
+        isShaking ? `${gateStyles.gate} ${styles.shake}` : gateStyles.gate
+      }
     >
       <details open>
         <summary>{gate.label}</summary>
         <form onSubmit={handleSubmit} aria-label={formAriaLabel}>
           <p className="description">{gate.question}</p>
-          <div className={styles.promptLine}>
-            <span className={styles.promptCaret} aria-hidden="true">
+          <div className={gateStyles.promptLine}>
+            <span className={gateStyles.promptCaret} aria-hidden="true">
               &gt;
             </span>
             <input

@@ -1,5 +1,5 @@
 import type { CompletedGate as CompletedGateType } from "@api/queries/useProgramProgressionQuery";
-import styles from "./CompletedGate.module.css";
+import styles from "./Gate.module.css";
 
 type CompletedGateProps = {
   id: string;

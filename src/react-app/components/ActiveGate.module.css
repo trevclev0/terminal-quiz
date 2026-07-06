@@ -1,13 +1,3 @@
-.gate {
-  border: 1px solid var(--green);
-  margin-bottom: 10px;
-}
-
-.gate form {
-  display: flex;
-  flex-direction: column;
-}
-
 .shake {
   animation: shake 0.4s;
 }
@@ -32,19 +22,6 @@
   100% {
     transform: translateX(0px);
   }
-}
-
-.promptLine {
-  display: flex;
-  align-items: center;
-  margin: 0.75rem 1rem;
-}
-
-.promptCaret {
-  color: var(--green);
-  margin-right: 0.5rem;
-  width: 1ch;
-  display: inline-block;
 }
 
 .fail {
