@@ -27,10 +27,10 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: Run Biome checks
-        run: pnpm run check:code
+        run: mise run check:code
 
       - name: Run tests with coverage
-        run: pnpm run coverage
+        run: mise run coverage
 
       - name: Report coverage
         if: always()
