@@ -7,12 +7,11 @@ import { createRef } from "react";
 import ActiveGate from "./ActiveGate";
 
 vi.mock("./ActiveGate.module.css", () => ({
-  default: new Proxy(
-    {},
-    {
-      get: (_, prop) => prop.toString(),
-    },
-  ),
+  default: new Proxy({}, { get: (_, prop) => prop.toString() }),
+}));
+
+vi.mock("./Gate.module.css", () => ({
+  default: new Proxy({}, { get: (_, prop) => prop.toString() }),
 }));
 
 const mockActiveGate: ActiveGateType = {
@@ -93,25 +92,25 @@ describe("ActiveGate", () => {
   it("applies .shake class when isShaking is true", () => {
     const { container } = renderActiveGate({ isShaking: true });
     const gateDiv = container.querySelector("#gate-0");
-    expect(gateDiv).toHaveClass("shake");
+    expect(gateDiv).toHaveClass("shake gate");
   });
 
   it("does not apply .shake class when isShaking is false", () => {
     const { container } = renderActiveGate({ isShaking: false });
     const gateDiv = container.querySelector("#gate-0");
-    expect(gateDiv).not.toHaveClass("shake");
+    expect(gateDiv).not.toHaveClass("shake gate");
   });
 
   it("renders response message with .fail class for incorrect response", () => {
     renderActiveGate({ message: "Access Denied.", guessSucceeded: false });
     const response = screen.getByText("Access Denied.");
-    expect(response).toHaveClass("fail");
+    expect(response).toHaveClass("fail response");
   });
 
   it("renders response message without .fail class for correct response", () => {
     renderActiveGate({ message: "Access Granted.", guessSucceeded: true });
     const response = screen.getByText("Access Granted.");
-    expect(response).not.toHaveClass("fail");
+    expect(response).not.toHaveClass("fail response");
   });
 
   it("no response message rendered when message is null", () => {
