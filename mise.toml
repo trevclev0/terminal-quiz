@@ -1,0 +1,65 @@
+[tools]
+node = "24.17.0"
+pnpm = "11.8.0"
+
+[tasks.dev]
+run = "pnpm run dev"
+
+[tasks.lint]
+run = "pnpm run lint"
+
+[tasks.format]
+run = "pnpm run format"
+
+[tasks."check:code"]
+run = "pnpm run check:code"
+
+[tasks.build]
+run = "pnpm run build"
+
+[tasks.check]
+depends = ["build"]
+run = "pnpm exec wrangler deploy --dry-run"
+
+[tasks.preview]
+depends = ["build"]
+run = "pnpm exec vite preview"
+
+[tasks.test]
+run = "pnpm run test"
+
+[tasks.coverage]
+run = "pnpm run coverage"
+
+[tasks."test:ui"]
+run = "pnpm run test:ui"
+
+[tasks."cf-typegen"]
+run = "pnpm run cf-typegen"
+
+[tasks."seed:local"]
+run = "pnpm run seed:local"
+
+[tasks."seed:preview"]
+run = "pnpm run seed:preview"
+
+[tasks."seed:prod"]
+run = "pnpm run seed:prod"
+
+[tasks."migrate:generate"]
+run = "pnpm run migrate:generate"
+
+[tasks."migrate:local"]
+run = "pnpm run migrate:local"
+
+[tasks."migrate:preview"]
+run = "pnpm run migrate:preview"
+
+[tasks."migrate:prod"]
+run = "pnpm run migrate:prod"
+
+[tasks.deploy]
+run = "pnpm run deploy"
+
+[tasks."deploy:preview"]
+run = "pnpm run deploy:preview"
