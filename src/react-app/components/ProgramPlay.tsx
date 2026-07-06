@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { Route } from "../routes/programs/$programId";
+import styles from "./ProgramPlay.module.css";
 
 function ProgramPlay() {
   const { programId } = Route.useParams();
@@ -76,7 +77,7 @@ function ProgramPlay() {
 
   return (
     <>
-      <h1 className="title">{programName}</h1>
+      <h1 className={styles.title}>{programName}</h1>
       {completedGates.map((gate, index) => (
         <CompletedGate key={gate.id} id={`gate-${index}`} gate={gate} />
       ))}

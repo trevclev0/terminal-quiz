@@ -57,16 +57,6 @@ select {
   text-align: center;
 }
 
-.title {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.gate {
-  border: 1px solid var(--green);
-  margin-bottom: 10px;
-}
-
 summary {
   color: var(--green);
   font-size: 16px;
@@ -78,62 +68,11 @@ summary::marker {
   content: none;
 }
 
-.gate form {
-  display: flex;
-  flex-direction: column;
-}
-
 p:empty {
   margin: 0;
 }
 
 p {
-  margin: 0.75rem 1rem;
-}
-
-.fail {
-  color: var(--red);
-}
-
-.warning {
-  color: var(--light-grey);
-}
-
-#classic-ending {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.shake {
-  animation: shake 0.4s;
-}
-
-@keyframes shake {
-  0% {
-    transform: translateX(0px);
-  }
-
-  25% {
-    transform: translateX(-5px);
-  }
-
-  50% {
-    transform: translateX(5px);
-  }
-
-  75% {
-    transform: translateX(-5px);
-  }
-
-  100% {
-    transform: translateX(0px);
-  }
-}
-
-.prompt-line {
-  display: flex;
-  align-items: center;
   margin: 0.75rem 1rem;
 }
 
@@ -161,51 +100,15 @@ input[type="text"]:disabled {
   -moz-user-select: none;
 }
 
-.prompt-caret {
-  color: var(--green);
-  margin-right: 0.5rem;
-  width: 1ch;
-  display: inline-block;
-}
-
 input[type="text"].solved {
   color: var(--faded-green);
   border-bottom-color: var(--faded-green);
 }
 
-.clue-prompt {
-  margin: 0.75rem 1rem;
-}
-
-.clue-link {
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  text-decoration: underline;
-  cursor: pointer;
-  color: var(--accent);
-  font: inherit;
-  font-weight: bold;
-}
-
-.clue-link:disabled {
-  color: var(--faded-green);
-  text-decoration: none;
-  cursor: default;
-}
-
-.clues-list {
-  margin: 0.75rem 1rem;
-}
-
-.clues-heading {
-  margin: 0 0 0.25rem;
-}
-
-.clue-line {
-  margin: 0.25rem 0;
-  color: var(--light-grey);
+#classic-ending {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 @media (max-width: 600px) {
@@ -220,15 +123,4 @@ input[type="text"].solved {
   input[type="text"] {
     font-size: 14px;
   }
-}
-
-.error-screen {
-  text-align: center;
-  margin-top: 4rem;
-  color: var(--red);
-}
-
-.error-screen button {
-  color: var(--red);
-  border-color: var(--red);
 }

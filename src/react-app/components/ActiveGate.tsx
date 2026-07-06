@@ -1,6 +1,7 @@
 import type { ActiveGate as ActiveGateType } from "@api/queries/useProgramProgressionQuery";
 import { MAX_CLUES_PER_GATE } from "@shared/types";
 import type { ChangeEvent, RefObject, SubmitEvent } from "react";
+import styles from "./ActiveGate.module.css";
 
 type ActiveGateProps = {
   id: string;
@@ -56,13 +57,16 @@ export default function ActiveGate({
   const displayMessage = pendingMessage ?? message;
 
   return (
-    <div id={id} className={isShaking ? "gate shake" : "gate"}>
+    <div
+      id={id}
+      className={isShaking ? `${styles.gate} ${styles.shake}` : styles.gate}
+    >
       <details open>
         <summary>{gate.label}</summary>
         <form onSubmit={handleSubmit} aria-label={formAriaLabel}>
           <p className="description">{gate.question}</p>
-          <div className="prompt-line">
-            <span className="prompt-caret" aria-hidden="true">
+          <div className={styles.promptLine}>
+            <span className={styles.promptCaret} aria-hidden="true">
               &gt;
             </span>
             <input
@@ -83,7 +87,7 @@ export default function ActiveGate({
                 pendingMessage
                   ? "response pending"
                   : guessSucceeded === false
-                    ? "response fail"
+                    ? `response ${styles.fail}`
                     : "response"
               }
             >
@@ -92,10 +96,10 @@ export default function ActiveGate({
           )}
 
           {canRequestClue && !isClueLimitReached && (
-            <p className="clue-prompt">
+            <p className={styles.cluePrompt}>
               <button
                 type="button"
-                className="clue-link"
+                className={styles.clueLink}
                 onClick={handleRequestClue}
                 disabled={isMutationPending || isPending || guess.trim() === ""}
               >
@@ -109,11 +113,11 @@ export default function ActiveGate({
           )}
 
           {clues.length > 0 && (
-            <div className="clues-list" aria-live="polite">
-              <p className="clues-heading">Clues:</p>
+            <div className={styles.cluesList} aria-live="polite">
+              <p className={styles.cluesHeading}>Clues:</p>
               {clues.map((clue, index) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: clues are read-only and order is stable
-                <p key={index} className="clue-line">
+                <p key={index} className={styles.clueLine}>
                   - {clue}
                 </p>
               ))}

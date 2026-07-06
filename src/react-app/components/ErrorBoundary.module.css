@@ -1,0 +1,10 @@
+.errorScreen {
+  text-align: center;
+  margin-top: 4rem;
+  color: var(--red);
+}
+
+.errorScreen button {
+  color: var(--red);
+  border-color: var(--red);
+}
