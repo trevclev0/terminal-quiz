@@ -82,8 +82,8 @@ src/
 
 ### Prerequisites
 
-- **Node.js** `>=22.0.0` (see `.tool-versions` for the pinned version; [mise](https://mise.jdx.dev/) or [asdf](https://asdf-vm.com/) recommended)
-- **pnpm** (version pinned in `package.json`)
+- **Node.js** `>=22.0.0` (see `mise.toml` for the pinned version; [mise](https://mise.jdx.dev/) recommended)
+- **pnpm** (version pinned in `mise.toml` and `package.json`)
 - A [Cloudflare account](https://dash.cloudflare.com/) with Workers and D1 enabled (for deployment; local dev uses a local SQLite file)
 
 ### Installation
@@ -91,7 +91,7 @@ src/
 ```bash
 git clone <repo-url>
 cd terminal-quiz
-mise install      # provisions node/pnpm pinned in .tool-versions
+mise install      # provisions node/pnpm pinned in mise.toml
 pnpm install
 ```
 
@@ -143,6 +143,9 @@ pnpm seed:local      # Populate with initial program/gate data
 | `pnpm coverage` | Run the full test suite and generate a coverage report |
 | `pnpm commit` | Launch the interactive Commitizen prompt (preferred over `git commit`) |
 | `pnpm cf-typegen` | Regenerate Wrangler/Workers type bindings |
+
+> [!NOTE]
+> You can run any of the scripts above using `mise run <script-name>` instead of `pnpm run <script-name>`. Both are fully supported.
 
 ### Code style
 
