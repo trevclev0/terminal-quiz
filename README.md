@@ -82,7 +82,7 @@ src/
 
 ### Prerequisites
 
-- **Node.js** `>=22.0.0` (see `mise.toml` for the pinned version; [mise](https://mise.jdx.dev/) recommended)
+- **Node.js** `24.17.0` (pinned via `mise.toml`; [mise](https://mise.jdx.dev/) recommended)
 - **pnpm** (version pinned in `mise.toml` and `package.json`)
 - A [Cloudflare account](https://dash.cloudflare.com/) with Workers and D1 enabled (for deployment; local dev uses a local SQLite file)
 
