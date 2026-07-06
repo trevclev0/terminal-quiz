@@ -98,7 +98,8 @@ describe("ActiveGate", () => {
   it("does not apply .shake class when isShaking is false", () => {
     const { container } = renderActiveGate({ isShaking: false });
     const gateDiv = container.querySelector("#gate-0");
-    expect(gateDiv).not.toHaveClass("shake gate");
+    expect(gateDiv).not.toHaveClass("shake");
+    expect(gateDiv).toHaveClass("gate");
   });
 
   it("renders response message with .fail class for incorrect response", () => {
@@ -110,7 +111,8 @@ describe("ActiveGate", () => {
   it("renders response message without .fail class for correct response", () => {
     renderActiveGate({ message: "Access Granted.", guessSucceeded: true });
     const response = screen.getByText("Access Granted.");
-    expect(response).not.toHaveClass("fail response");
+    expect(response).not.toHaveClass("fail");
+    expect(response).toHaveClass("response");
   });
 
   it("no response message rendered when message is null", () => {
