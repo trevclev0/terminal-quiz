@@ -4,62 +4,82 @@ pnpm = "11.8.0"
 
 [tasks.dev]
 run = "pnpm run dev"
+description = "Start development server"
 
 [tasks.lint]
 run = "pnpm run lint"
+description = "Lint code"
 
 [tasks.format]
 run = "pnpm run format"
+description = "Format code"
 
 [tasks."check:code"]
 run = "pnpm run check:code"
+description = "Check code"
 
 [tasks.build]
 run = "pnpm run build"
+description = "Build project"
 
 [tasks.check]
 depends = ["build"]
 run = "pnpm exec wrangler deploy --dry-run"
+description = "Check deployment"
 
 [tasks.preview]
 depends = ["build"]
 run = "pnpm exec vite preview"
+description = "Preview build"
 
 [tasks.test]
 run = "pnpm run test"
+description = "Run tests"
 
 [tasks.coverage]
 run = "pnpm run coverage"
+description = "Run coverage"
 
 [tasks."test:ui"]
 run = "pnpm run test:ui"
+description = "Run tests with UI"
 
 [tasks."cf-typegen"]
 run = "pnpm run cf-typegen"
+description = "Generate Cloudflare types"
 
 [tasks."seed:local"]
 run = "pnpm run seed:local"
+description = "Seed local database"
 
 [tasks."seed:preview"]
 run = "pnpm run seed:preview"
+description = "Seed preview database"
 
 [tasks."seed:prod"]
 run = "pnpm run seed:prod"
+description = "Seed production database"
 
 [tasks."migrate:generate"]
 run = "pnpm run migrate:generate"
+description = "Generate migrations"
 
 [tasks."migrate:local"]
 run = "pnpm run migrate:local"
+description = "Run migrations locally"
 
 [tasks."migrate:preview"]
 run = "pnpm run migrate:preview"
+description = "Run migrations in preview"
 
 [tasks."migrate:prod"]
 run = "pnpm run migrate:prod"
+description = "Run migrations in production"
 
 [tasks.deploy]
 run = "pnpm run deploy"
+description = "Deploy to production"
 
 [tasks."deploy:preview"]
 run = "pnpm run deploy:preview"
+description = "Deploy to preview"
