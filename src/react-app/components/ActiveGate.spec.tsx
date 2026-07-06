@@ -3,16 +3,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import type { ActiveGate as ActiveGateType } from "@api/queries/useProgramProgressionQuery";
 import { MAX_CLUES_PER_GATE } from "@shared/types";
+import { mockCssModuleProxy } from "@test-utils/cssModuleMock";
 import { createRef } from "react";
 import ActiveGate from "./ActiveGate";
 
-vi.mock("./ActiveGate.module.css", () => ({
-  default: new Proxy({}, { get: (_, prop) => prop.toString() }),
-}));
-
-vi.mock("./Gate.module.css", () => ({
-  default: new Proxy({}, { get: (_, prop) => prop.toString() }),
-}));
+vi.mock("./ActiveGate.module.css", () => ({ default: mockCssModuleProxy() }));
+vi.mock("./Gate.module.css", () => ({ default: mockCssModuleProxy() }));
 
 const mockActiveGate: ActiveGateType = {
   id: "gate-1",
