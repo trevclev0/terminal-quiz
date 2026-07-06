@@ -2,6 +2,7 @@ import usePrograms from "@hooks/usePrograms";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { Route } from "../routes/programs/select";
+import styles from "./ProgramSelector.module.css";
 
 function ProgramSelector() {
   const selectRef = useRef<HTMLSelectElement>(null);
@@ -28,7 +29,7 @@ function ProgramSelector() {
 
   if (programs.length === 0) {
     return (
-      <h2 id="program-selector" className="warning">
+      <h2 id="program-selector" className={styles.warning}>
         No programs found
       </h2>
     );

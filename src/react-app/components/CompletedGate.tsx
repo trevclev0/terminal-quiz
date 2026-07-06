@@ -1,4 +1,5 @@
 import type { CompletedGate as CompletedGateType } from "@api/queries/useProgramProgressionQuery";
+import styles from "./CompletedGate.module.css";
 
 type CompletedGateProps = {
   id: string;
@@ -7,13 +8,13 @@ type CompletedGateProps = {
 
 export default function CompletedGate({ id, gate }: CompletedGateProps) {
   return (
-    <div id={id} className="gate">
+    <div id={id} className={styles.gate}>
       <details open>
         <summary>{gate.label}</summary>
         <form aria-label={`${gate.label} - completed`}>
           <p className="description">{gate.question}</p>
-          <div className="prompt-line">
-            <span className="prompt-caret" aria-hidden="true">
+          <div className={styles.promptLine}>
+            <span className={styles.promptCaret} aria-hidden="true">
               {gate.correctAnswer ? "✔" : ">"}
             </span>
             <input

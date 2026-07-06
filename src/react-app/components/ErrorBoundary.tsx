@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import styles from "./ErrorBoundary.module.css";
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -39,7 +40,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       }
 
       return (
-        <div className="error-screen">
+        <div className={styles.errorScreen}>
           <p>A critical error occurred.</p>
           <button type="button" onClick={this.reset}>
             Retry

@@ -1,0 +1,87 @@
+.gate {
+  border: 1px solid var(--green);
+  margin-bottom: 10px;
+}
+
+.gate form {
+  display: flex;
+  flex-direction: column;
+}
+
+.shake {
+  animation: shake 0.4s;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0px);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  50% {
+    transform: translateX(5px);
+  }
+
+  75% {
+    transform: translateX(-5px);
+  }
+
+  100% {
+    transform: translateX(0px);
+  }
+}
+
+.promptLine {
+  display: flex;
+  align-items: center;
+  margin: 0.75rem 1rem;
+}
+
+.promptCaret {
+  color: var(--green);
+  margin-right: 0.5rem;
+  width: 1ch;
+  display: inline-block;
+}
+
+.fail {
+  color: var(--red);
+}
+
+.cluePrompt {
+  margin: 0.75rem 1rem;
+}
+
+.clueLink {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  text-decoration: underline;
+  cursor: pointer;
+  color: var(--accent);
+  font: inherit;
+  font-weight: bold;
+}
+
+.clueLink:disabled {
+  color: var(--faded-green);
+  text-decoration: none;
+  cursor: default;
+}
+
+.cluesList {
+  margin: 0.75rem 1rem;
+}
+
+.cluesHeading {
+  margin: 0 0 0.25rem;
+}
+
+.clueLine {
+  margin: 0.25rem 0;
+  color: var(--light-grey);
+}
