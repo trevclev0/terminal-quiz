@@ -28,7 +28,7 @@ jobs:
 
       - name: Run build
         if: github.event_name == 'push'
-        run: pnpm build
+        run: mise run build
 
       - name: Zip build assets
         if: github.event_name == 'push'
