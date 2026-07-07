@@ -1,4 +1,3 @@
-import { env } from "hono/adapter";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createMockHonoContext } from "../test-utils/mockEnv";
 import { generateClue } from "./aiService";

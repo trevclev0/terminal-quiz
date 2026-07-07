@@ -1,4 +1,4 @@
-import type { D1Database } from "@cloudflare/workers-types";
+import type { Ai, D1Database } from "@cloudflare/workers-types";
 import { Hono } from "hono";
 import { type AppVariables, setupDb } from "./middleware/db";
 import { conditionalLogger } from "./middleware/logger";
@@ -9,6 +9,7 @@ import { formatErrorResponse, logError } from "./utils/errorHandler";
 export type Env = {
   Bindings: {
     DB: D1Database;
+    AI?: Ai;
     ENVIRONMENT?: string;
   };
 };
