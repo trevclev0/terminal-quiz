@@ -4,8 +4,10 @@ import ActiveGate from "@components/ActiveGate";
 import CompletedGate from "@components/CompletedGate";
 import useProgramPlay from "@hooks/useProgramPlay";
 import useProgressionScroll from "@hooks/useProgressionScroll";
+import { useResetSession } from "@hooks/useResetSession";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { getSessionId } from "@utils/session";
 import { useEffect, useRef } from "react";
 import { Route } from "../routes/programs/$programId";
 import styles from "./ProgramPlay.module.css";
@@ -39,6 +41,8 @@ function ProgramPlay() {
     clues,
     requestClueMutation,
   } = useProgramPlay({ programId, currentGateId: currentGate?.id });
+
+  const resetSessionMutation = useResetSession(programId);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const selectNewProgramRef = useRef<HTMLButtonElement>(null);
@@ -75,6 +79,11 @@ function ProgramPlay() {
     });
   };
 
+  const handlePlayAgain = () => {
+    const sessionId = getSessionId();
+    resetSessionMutation.mutate({ sessionId, programId });
+  };
+
   return (
     <>
       <h1 className={styles.title}>{programName}</h1>
@@ -106,10 +115,17 @@ function ProgramPlay() {
           <div className="action-buttons">
             <button
               type="button"
-              disabled
-              title="Restarting isn't available yet"
+              onClick={handlePlayAgain}
+              disabled={resetSessionMutation.isPending}
+              title={
+                resetSessionMutation.isPending
+                  ? "Restarting..."
+                  : "Play program again"
+              }
             >
-              Play program again
+              {resetSessionMutation.isPending
+                ? "Restarting..."
+                : "Play program again"}
             </button>
             <button
               ref={selectNewProgramRef}

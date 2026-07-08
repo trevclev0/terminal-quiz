@@ -240,9 +240,7 @@ describe("ProgramPlay Component", () => {
 
     await screen.findByText("The End");
     expect(screen.getByText("Select new program")).toBeInTheDocument();
-    expect(
-      screen.getByTitle("Restarting isn't available yet"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Play program again")).toBeEnabled();
   });
 
   it("displays program name from cache", async () => {
