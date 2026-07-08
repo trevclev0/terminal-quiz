@@ -1,5 +1,5 @@
 name: Setup Environment
-description: "Setup project dependencies using mise and cache pnpm store"
+description: "Setup project dependencies using mise (bun) and cache bun install cache"
 runs:
   using: "composite"
   steps:
@@ -9,18 +9,14 @@ runs:
         install: true
         cache: true
 
-    - name: Get pnpm store directory
-      shell: bash
-      run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-    - name: Cache pnpm store
+    - name: Cache bun install cache
       uses: actions/cache@v4
       with:
-        path: ${{ env.STORE_PATH }}
-        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        path: ~/.bun/install/cache
+        key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
         restore-keys: |
-          ${{ runner.os }}-pnpm-store-
+          ${{ runner.os }}-bun-
 
     - name: Install dependencies
       shell: bash
-      run: pnpm install --frozen-lockfile
+      run: bun install --frozen-lockfile

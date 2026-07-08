@@ -39,9 +39,9 @@ jobs:
       - name: Release (or dry-run on PR)
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            pnpm exec semantic-release --dry-run
+            bunx semantic-release --dry-run
           else
-            pnpm exec semantic-release
+            bunx semantic-release
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.ADMIN_PAT }}
