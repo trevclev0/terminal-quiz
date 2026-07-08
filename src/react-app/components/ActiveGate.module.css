@@ -62,3 +62,7 @@
   margin: 0.25rem 0;
   color: var(--light-grey);
 }
+
+.gateInput {
+  margin-right: 1.125rem;
+}
