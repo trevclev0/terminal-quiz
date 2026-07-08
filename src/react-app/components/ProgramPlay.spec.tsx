@@ -1,6 +1,7 @@
 import type { UseMutationResult } from "@tanstack/react-query";
 import { createQueryWrapper } from "@test-utils/queryTestUtils";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { graphql, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import {
@@ -39,9 +40,24 @@ vi.mock("@components/CompletedGate", () => ({
   default: vi.fn(() => null),
 }));
 
+const mockResetSessionMutation = {
+  mutateAsync: vi.fn().mockResolvedValue(true),
+  isPending: false,
+} as unknown as UseMutationResult<
+  boolean,
+  Error,
+  { sessionId: string; programId: string },
+  unknown
+>;
+
+vi.mock("@hooks/useResetSession", () => ({
+  useResetSession: vi.fn(() => mockResetSessionMutation),
+}));
+
 import ActiveGate from "@components/ActiveGate";
 import CompletedGate from "@components/CompletedGate";
 import useProgramPlay from "@hooks/useProgramPlay";
+import { useResetSession } from "@hooks/useResetSession";
 
 const mockUseProgramPlay = {
   guess: "",
@@ -139,6 +155,7 @@ describe("ProgramPlay Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useProgramPlay).mockReturnValue(mockUseProgramPlay);
+    vi.mocked(useResetSession).mockReturnValue(mockResetSessionMutation);
   });
 
   it("renders loading state when data is loading", () => {
@@ -296,5 +313,117 @@ describe("ProgramPlay Component", () => {
     expect(activeGateCall[0]).toMatchObject({
       isShaking: true,
     });
+  });
+
+  it("calls resetSessionMutation when 'Play program again' is clicked", async () => {
+    const completedProgression = {
+      currentGate: null,
+      completedGates: [
+        {
+          id: "gate-1",
+          label: "Gate 1",
+          question: "What is 2+2?",
+          correctAnswer: "4",
+          successMessage: "Correct!",
+        },
+      ],
+      status: "completed",
+    };
+
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], mockPrograms);
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      completedProgression,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("The End");
+    const playAgainButton = screen.getByText("Play program again");
+    await userEvent.click(playAgainButton);
+
+    expect(mockResetSessionMutation.mutateAsync).toHaveBeenCalledWith({
+      sessionId: expect.any(String),
+      programId: "test-program-id",
+    });
+  });
+
+  it("opens confirm modal and resets session on confirm", async () => {
+    const completedProgression = {
+      currentGate: null,
+      completedGates: [
+        {
+          id: "gate-1",
+          label: "Gate 1",
+          question: "What is 2+2?",
+          correctAnswer: "4",
+          successMessage: "Correct!",
+        },
+      ],
+      status: "completed",
+    };
+
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], mockPrograms);
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      completedProgression,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("The End");
+    await userEvent.click(screen.getByText("Select new program"));
+
+    expect(
+      screen.getByText("Reset current progress and select a new program?"),
+    ).toBeInTheDocument();
+
+    await userEvent.click(screen.getByText("Confirm"));
+
+    expect(mockResetSessionMutation.mutateAsync).toHaveBeenCalledWith({
+      sessionId: expect.any(String),
+      programId: "test-program-id",
+    });
+  });
+
+  it("opens confirm modal and navigates without resetting on cancel", async () => {
+    const completedProgression = {
+      currentGate: null,
+      completedGates: [
+        {
+          id: "gate-1",
+          label: "Gate 1",
+          question: "What is 2+2?",
+          correctAnswer: "4",
+          successMessage: "Correct!",
+        },
+      ],
+      status: "completed",
+    };
+
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], mockPrograms);
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      completedProgression,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("The End");
+    await userEvent.click(screen.getByText("Select new program"));
+
+    expect(
+      screen.getByText("Reset current progress and select a new program?"),
+    ).toBeInTheDocument();
+
+    await userEvent.click(screen.getByText("Cancel"));
+
+    expect(mockResetSessionMutation.mutateAsync).not.toHaveBeenCalled();
   });
 });
