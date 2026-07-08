@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createQueryWrapper } from "../test-utils/queryTestUtils";
 import useProgramPlay from "./useProgramPlay";
 
 // Mock the mutations
@@ -33,42 +34,48 @@ vi.mock("@hooks/useShake", () => ({
 describe("useProgramPlay", () => {
   const programId = "test-program";
   const currentGateId = "gate-1";
+  const { wrapper } = createQueryWrapper();
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("starts with an empty guess", () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
     expect(result.current.guess).toBe("");
   });
 
   it("starts with null message", () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
     expect(result.current.message).toBeNull();
   });
 
   it("starts with isShaking false", () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
     expect(result.current.isShaking).toBe(false);
   });
 
   it("starts with isPending false", () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
     expect(result.current.isPending).toBe(false);
   });
 
   it("updates the guess value", () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
     act(() => {
       result.current.changeHandler({
@@ -79,8 +86,9 @@ describe("useProgramPlay", () => {
   });
 
   it("prevents the default form submission", async () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
     const preventDefault = vi.fn();
     mockMutateAsync.mockResolvedValue({ success: true, message: "Correct!" });
@@ -95,8 +103,9 @@ describe("useProgramPlay", () => {
   });
 
   it('sets message to "Access Granted."', async () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
     mockMutateAsync.mockResolvedValue({ success: true, message: "Correct!" });
 
@@ -110,8 +119,9 @@ describe("useProgramPlay", () => {
   });
 
   it("clears the guess", async () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
     mockMutateAsync.mockResolvedValue({ success: true, message: "Correct!" });
 
@@ -131,8 +141,9 @@ describe("useProgramPlay", () => {
   });
 
   it("does not set isShaking to true", async () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
     mockMutateAsync.mockResolvedValue({ success: true, message: "Correct!" });
 
@@ -146,8 +157,9 @@ describe("useProgramPlay", () => {
   });
 
   it('sets message to "Access Denied."', async () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
     mockMutateAsync.mockResolvedValue({ success: false, message: "Wrong!" });
 
@@ -161,8 +173,9 @@ describe("useProgramPlay", () => {
   });
 
   it("sets isShaking to true", async () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
     mockMutateAsync.mockResolvedValue({ success: false, message: "Wrong!" });
 
@@ -176,8 +189,9 @@ describe("useProgramPlay", () => {
   });
 
   it("calls shake from useShake", async () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
     mockMutateAsync.mockResolvedValue({ success: false, message: "Wrong!" });
 
@@ -191,8 +205,9 @@ describe("useProgramPlay", () => {
   });
 
   it("sets canRequestClue to true if returned by mutation", async () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
     mockMutateAsync.mockResolvedValue({
       success: false,
@@ -210,8 +225,9 @@ describe("useProgramPlay", () => {
   });
 
   it("resets canRequestClue to false if returned by mutation without changing guess", async () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
 
     mockMutateAsync.mockResolvedValue({
@@ -244,8 +260,9 @@ describe("useProgramPlay", () => {
   });
 
   it("sets message to error text", async () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
     mockMutateAsync.mockRejectedValue(new Error("Network error"));
 
@@ -259,8 +276,9 @@ describe("useProgramPlay", () => {
   });
 
   it("calls requestClueMutation.mutate with gateId and guess", () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
     act(() => {
       result.current.changeHandler({
@@ -279,8 +297,9 @@ describe("useProgramPlay", () => {
   });
 
   it("appends clue to clues array on success", () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
 
     mockMutate.mockImplementation((_variables, options) => {
@@ -298,8 +317,9 @@ describe("useProgramPlay", () => {
   });
 
   it("sets error message and does not append clue if clueText is null", () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
 
     mockMutate.mockImplementation((_variables, options) => {
@@ -317,8 +337,9 @@ describe("useProgramPlay", () => {
   });
 
   it("sets error message and does not append clue on mutation error", () => {
-    const { result } = renderHook(() =>
-      useProgramPlay({ programId, currentGateId }),
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
     );
 
     mockMutate.mockImplementation((_variables, options) => {
@@ -338,7 +359,7 @@ describe("useProgramPlay", () => {
   it("clears shake when currentGateId changes", () => {
     const { rerender } = renderHook(
       ({ currentGateId }) => useProgramPlay({ programId, currentGateId }),
-      { initialProps: { currentGateId: "gate-1" } },
+      { wrapper, initialProps: { currentGateId: "gate-1" } },
     );
 
     rerender({ currentGateId: "gate-2" });
@@ -349,7 +370,7 @@ describe("useProgramPlay", () => {
   it("resets clues and canRequestClue when currentGateId changes", () => {
     const { result, rerender } = renderHook(
       ({ currentGateId }) => useProgramPlay({ programId, currentGateId }),
-      { initialProps: { currentGateId: "gate-1" } },
+      { wrapper, initialProps: { currentGateId: "gate-1" } },
     );
 
     mockMutate.mockImplementation((_variables, options) => {
