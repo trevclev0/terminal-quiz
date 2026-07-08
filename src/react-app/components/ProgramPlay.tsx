@@ -160,7 +160,7 @@ function ProgramPlay() {
       )}
       {isConfirmOpen && (
         <TerminalConfirmModal
-          message="Reset current progress and select a new program?"
+          message={`Reset your progress on "${programName}" before selecting a new one?`}
           onConfirm={handleConfirmReset}
           onCancel={handleCancelReset}
         />

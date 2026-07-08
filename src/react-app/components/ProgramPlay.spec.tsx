@@ -379,10 +379,12 @@ describe("ProgramPlay Component", () => {
     await userEvent.click(screen.getByText("Select new program"));
 
     expect(
-      screen.getByText("Reset current progress and select a new program?"),
+      screen.getByText(
+        `Reset your progress on "Test Program" before selecting a new one?`,
+      ),
     ).toBeInTheDocument();
 
-    await userEvent.click(screen.getByText("Confirm"));
+    await userEvent.click(screen.getByText("Reset Progress"));
 
     expect(mockResetSessionMutation.mutateAsync).toHaveBeenCalledWith({
       sessionId: expect.any(String),
@@ -419,10 +421,12 @@ describe("ProgramPlay Component", () => {
     await userEvent.click(screen.getByText("Select new program"));
 
     expect(
-      screen.getByText("Reset current progress and select a new program?"),
+      screen.getByText(
+        `Reset your progress on "Test Program" before selecting a new one?`,
+      ),
     ).toBeInTheDocument();
 
-    await userEvent.click(screen.getByText("Cancel"));
+    await userEvent.click(screen.getByText("Keep Progress"));
 
     expect(mockResetSessionMutation.mutateAsync).not.toHaveBeenCalled();
   });
