@@ -79,6 +79,7 @@ export default function ActiveGate({
               placeholder="enter password..."
               value={guess}
               onChange={changeHandler}
+              className={styles.gateInput}
               disabled={isPending || isMutationPending}
             />
           </div>
