@@ -72,7 +72,7 @@ const graphQlRouter = new Hono<AppVariables>().use("*", async (c, next) => {
   return graphqlServer({
     schema: cachedSchema,
     graphiql: !isProduction,
-  })(c as any, next);
+  })(c, next);
 });
 
 export default graphQlRouter;
