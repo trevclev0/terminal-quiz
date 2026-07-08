@@ -1,6 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 export interface MyRouterContext {
   queryClient: QueryClient;
@@ -17,7 +16,8 @@ export function RootComponent() {
         <Outlet />
       </main>
       {/* Automatically excludes itself from production bundles */}
-      <TanStackRouterDevtools />
+      {/* TODO: Re-enable devtools in development once TanStack Router Devtools is updated */}
+      {/* <TanStackRouterDevtools /> */}
     </>
   );
 }
