@@ -1,87 +1,90 @@
 [tools]
-node = "24.17.0"
-pnpm = "11.8.0"
+bun = "1.3.14"
 
 [tasks.dev]
-run = "pnpm run dev"
+run = "bun run dev"
 description = "Start development server"
 
 [tasks.lint]
-run = "pnpm run lint"
+run = "bun run lint"
 description = "Lint code"
 
 [tasks.format]
-run = "pnpm run format"
+run = "bun run format"
 description = "Format code"
 
 [tasks."check:code"]
-run = "pnpm run check:code"
+run = "bun run check:code"
 description = "Check code"
 
 [tasks.build]
-run = "pnpm run build"
+run = "bun run build"
 description = "Build project"
 
 [tasks.check]
 depends = ["build"]
-run = "pnpm exec wrangler deploy --dry-run"
+run = "bunx wrangler deploy --dry-run"
 description = "Check deployment"
 
 [tasks.preview]
 depends = ["build"]
-run = "pnpm exec vite preview"
+run = "bunx vite preview"
 description = "Preview build"
 
 [tasks.test]
-run = "pnpm run test"
-description = "Run tests"
+run = "bun run test"
+description = "Run unit tests"
+
+[tasks."test:run"]
+run = "bun run test --run"
+description = "Run unit tests single run"
 
 [tasks.coverage]
-run = "pnpm run coverage"
+run = "bun run coverage"
 description = "Run coverage"
 
 [tasks."test:ui"]
-run = "pnpm run test:ui"
+run = "bun run test:ui"
 description = "Run tests with UI"
 
 [tasks."cf-typegen"]
-run = "pnpm run cf-typegen"
+run = "bun run cf-typegen"
 description = "Generate Cloudflare types"
 
 [tasks."seed:local"]
-run = "pnpm run seed:local"
+run = "bun run seed:local"
 description = "Seed local database"
 
 [tasks."seed:preview"]
-run = "pnpm run seed:preview"
+run = "bun run seed:preview"
 description = "Seed preview database"
 
 [tasks."seed:prod"]
-run = "pnpm run seed:prod"
+run = "bun run seed:prod"
 description = "Seed production database"
 
 [tasks."migrate:generate"]
-run = "pnpm run migrate:generate"
+run = "bun run migrate:generate"
 description = "Generate migrations"
 
 [tasks."migrate:local"]
-run = "pnpm run migrate:local"
+run = "bun run migrate:local"
 description = "Run migrations locally"
 
 [tasks."migrate:preview"]
-run = "pnpm run migrate:preview"
+run = "bun run migrate:preview"
 description = "Run migrations in preview"
 
 [tasks."migrate:prod"]
-run = "pnpm run migrate:prod"
+run = "bun run migrate:prod"
 description = "Run migrations in production"
 
 [tasks.deploy]
 depends = ["build"]
-run = "pnpm run deploy"
+run = "bun run deploy"
 description = "Deploy to production"
 
 [tasks."deploy:preview"]
 depends = ["build"]
-run = "pnpm run deploy:preview"
+run = "bun run deploy:preview"
 description = "Deploy to preview"
