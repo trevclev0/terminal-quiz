@@ -78,6 +78,30 @@ const mockUseProgramPlay = {
     { gateId: string; currentGuess: string },
     unknown
   >,
+  handleResetSession: vi.fn(),
+  resetSessionMutation: {
+    mutate: vi.fn(),
+    isPending: false,
+    data: undefined,
+    error: null,
+    variables: undefined,
+    isError: false,
+    isSuccess: false,
+    failureCount: 0,
+    failureReason: null,
+    mutateAsync: vi.fn(),
+    reset: vi.fn(),
+    status: "idle" as const,
+    isIdle: true,
+    context: undefined,
+    isPaused: false,
+    submittedAt: 0,
+  } as UseMutationResult<
+    boolean,
+    Error,
+    { sessionId: string; programId: string },
+    unknown
+  >,
 };
 
 vi.mocked(useProgramPlay).mockReturnValue(mockUseProgramPlay);
