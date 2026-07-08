@@ -2,13 +2,14 @@ import { programProgressionQueryOptions } from "@api/queries/useProgramProgressi
 import { programsQueryOptions } from "@api/queries/useProgramsQuery";
 import ActiveGate from "@components/ActiveGate";
 import CompletedGate from "@components/CompletedGate";
+import TerminalConfirmModal from "@components/TerminalConfirmModal";
 import useProgramPlay from "@hooks/useProgramPlay";
 import useProgressionScroll from "@hooks/useProgressionScroll";
 import { useResetSession } from "@hooks/useResetSession";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { getSessionId } from "@utils/session";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Route } from "../routes/programs/$programId";
 import styles from "./ProgramPlay.module.css";
 
@@ -43,6 +44,7 @@ function ProgramPlay() {
   } = useProgramPlay({ programId, currentGateId: currentGate?.id });
 
   const resetSessionMutation = useResetSession(programId);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const selectNewProgramRef = useRef<HTMLButtonElement>(null);
@@ -62,7 +64,7 @@ function ProgramPlay() {
     }
   }, [currentGate?.id, isPending]);
 
-  // Focus select new program button at end
+  // Focus select new program button when the program is completed
   useEffect(() => {
     if (isTheEnd) {
       selectNewProgramRef.current?.focus();
@@ -74,14 +76,33 @@ function ProgramPlay() {
   }
 
   const handleSelectNewProgram = () => {
-    navigate({
-      to: "/programs/select",
-    });
+    setIsConfirmOpen(true);
   };
 
-  const handlePlayAgain = () => {
+  const handleConfirmReset = async () => {
     const sessionId = getSessionId();
-    resetSessionMutation.mutate({ sessionId, programId });
+    try {
+      await resetSessionMutation.mutateAsync({ sessionId, programId });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsConfirmOpen(false);
+      navigate({ to: "/programs/select" });
+    }
+  };
+
+  const handleCancelReset = () => {
+    setIsConfirmOpen(false);
+    navigate({ to: "/programs/select" });
+  };
+
+  const handlePlayAgain = async () => {
+    const sessionId = getSessionId();
+    try {
+      await resetSessionMutation.mutateAsync({ sessionId, programId });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -136,6 +157,13 @@ function ProgramPlay() {
             </button>
           </div>
         </div>
+      )}
+      {isConfirmOpen && (
+        <TerminalConfirmModal
+          message="Reset current progress and select a new program?"
+          onConfirm={handleConfirmReset}
+          onCancel={handleCancelReset}
+        />
       )}
     </>
   );
