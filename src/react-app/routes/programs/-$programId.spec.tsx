@@ -83,8 +83,6 @@ describe("Program Play Route Integration", () => {
     });
 
     expect(screen.getByText("Select new program")).toBeInTheDocument();
-    expect(
-      screen.getByTitle("Restarting isn't available yet"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Play program again")).toBeEnabled();
   });
 });
