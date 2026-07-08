@@ -12,44 +12,43 @@ function TerminalConfirmModal({
   onConfirm,
   onCancel,
 }: TerminalConfirmModalProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const confirmRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    dialogRef.current?.showModal();
     confirmRef.current?.focus();
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onCancel();
-      } else if (e.key === "Enter") {
-        onConfirm();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onCancel, onConfirm]);
+  }, []);
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <p className={styles.message}>{message}</p>
-        <div className={styles.actions}>
-          <button
-            ref={confirmRef}
-            type="button"
-            onClick={onConfirm}
-            className={styles.confirmButton}
-          >
-            Confirm
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className={styles.cancelButton}
-          >
-            Cancel
-          </button>
-        </div>
+    <dialog
+      ref={dialogRef}
+      className={styles.modal}
+      onClose={onCancel}
+      onCancel={(e) => {
+        e.preventDefault();
+        onCancel();
+      }}
+    >
+      <p className={styles.message}>{message}</p>
+      <div className={styles.actions}>
+        <button
+          ref={confirmRef}
+          type="button"
+          onClick={onConfirm}
+          className={styles.confirmButton}
+        >
+          Reset Progress
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className={styles.cancelButton}
+        >
+          Keep Progress
+        </button>
       </div>
-    </div>
+    </dialog>
   );
 }
 

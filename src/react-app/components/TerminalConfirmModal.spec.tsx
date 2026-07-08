@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import TerminalConfirmModal from "./TerminalConfirmModal";
@@ -15,7 +15,7 @@ describe("TerminalConfirmModal", () => {
     expect(screen.getByText("Are you sure?")).toBeInTheDocument();
   });
 
-  it("calls onConfirm when Confirm button is clicked", async () => {
+  it("calls onConfirm when Reset Progress button is clicked", async () => {
     const onConfirm = vi.fn();
     render(
       <TerminalConfirmModal
@@ -24,11 +24,11 @@ describe("TerminalConfirmModal", () => {
         onCancel={vi.fn()}
       />,
     );
-    await userEvent.click(screen.getByText("Confirm"));
+    await userEvent.click(screen.getByText("Reset Progress"));
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
 
-  it("calls onCancel when Cancel button is clicked", async () => {
+  it("calls onCancel when Keep Progress button is clicked", async () => {
     const onCancel = vi.fn();
     render(
       <TerminalConfirmModal
@@ -37,11 +37,11 @@ describe("TerminalConfirmModal", () => {
         onCancel={onCancel}
       />,
     );
-    await userEvent.click(screen.getByText("Cancel"));
+    await userEvent.click(screen.getByText("Keep Progress"));
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
-  it("calls onConfirm when Enter key is pressed", () => {
+  it("calls onConfirm when Enter key is pressed", async () => {
     const onConfirm = vi.fn();
     render(
       <TerminalConfirmModal
@@ -50,11 +50,12 @@ describe("TerminalConfirmModal", () => {
         onCancel={vi.fn()}
       />,
     );
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    // Confirm button is auto-focused, so Enter triggers a click
+    await userEvent.keyboard("{Enter}");
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
 
-  it("calls onCancel when Escape key is pressed", () => {
+  it("calls onCancel when Escape key is pressed", async () => {
     const onCancel = vi.fn();
     render(
       <TerminalConfirmModal
@@ -63,7 +64,9 @@ describe("TerminalConfirmModal", () => {
         onCancel={onCancel}
       />,
     );
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    // Escape triggers the cancel event on the dialog
+    const dialog = screen.getByRole("dialog");
+    fireEvent(dialog, new Event("cancel", { bubbles: true, cancelable: true }));
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 });
