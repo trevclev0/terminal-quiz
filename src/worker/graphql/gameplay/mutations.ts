@@ -1,6 +1,11 @@
 import { gateClues, gates, sessionProgress } from "@shared/schema";
 import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
-import { GraphQLNonNull, GraphQLString } from "graphql";
+import {
+  GraphQLBoolean,
+  GraphQLID,
+  GraphQLNonNull,
+  GraphQLString,
+} from "graphql";
 import { generateClue } from "../../services/aiService";
 import isGuessCloseEnough from "../../utils/isGuessCloseEnough";
 import {
@@ -278,5 +283,35 @@ export const requestClue = {
       isClueLimitReached: newCluesRemaining === 0,
       cluesRemaining: newCluesRemaining,
     };
+  },
+};
+
+export const resetSession = {
+  type: new GraphQLNonNull(GraphQLBoolean),
+  args: {
+    sessionId: { type: new GraphQLNonNull(GraphQLID) },
+    programId: { type: new GraphQLNonNull(GraphQLID) },
+  },
+  resolve: async (
+    _: unknown,
+    args: { sessionId: string; programId: string },
+    context: AppGraphQLContext,
+  ) => {
+    const db = context.get("db");
+
+    try {
+      await db
+        .delete(sessionProgress)
+        .where(
+          and(
+            eq(sessionProgress.sessionId, args.sessionId),
+            eq(sessionProgress.programId, args.programId),
+          ),
+        );
+      return true;
+    } catch (error) {
+      console.error("Error resetting session:", error);
+      return false;
+    }
   },
 };
