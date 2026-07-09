@@ -81,7 +81,11 @@ function ProgramPlay() {
   const handleConfirmReset = async () => {
     setResetError(null);
     try {
-      await resetSessionMutation.mutateAsync({ programId });
+      const success = await resetSessionMutation.mutateAsync({ programId });
+      if (!success) {
+        setResetError("Failed to reset progress. Please try again.");
+        return;
+      }
       setIsConfirmOpen(false);
       navigate({ to: "/programs/select" });
     } catch (error) {
@@ -98,7 +102,10 @@ function ProgramPlay() {
   const handlePlayAgain = async () => {
     setResetError(null);
     try {
-      await resetSessionMutation.mutateAsync({ programId });
+      const success = await resetSessionMutation.mutateAsync({ programId });
+      if (!success) {
+        setResetError("Failed to reset progress. Please try again.");
+      }
     } catch (error) {
       console.error(error);
       setResetError("Failed to reset progress. Please try again.");

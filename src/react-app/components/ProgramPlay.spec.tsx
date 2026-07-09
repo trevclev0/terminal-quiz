@@ -50,14 +50,9 @@ const mockResetSessionMutation = {
   unknown
 >;
 
-vi.mock("@hooks/useResetSession", () => ({
-  useResetSession: vi.fn(() => mockResetSessionMutation),
-}));
-
 import ActiveGate from "@components/ActiveGate";
 import CompletedGate from "@components/CompletedGate";
 import useProgramPlay from "@hooks/useProgramPlay";
-import { useResetSession } from "@hooks/useResetSession";
 
 const mockUseProgramPlay = {
   guess: "",
@@ -133,7 +128,6 @@ describe("ProgramPlay Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useProgramPlay).mockReturnValue(mockUseProgramPlay);
-    vi.mocked(useResetSession).mockReturnValue(mockResetSessionMutation);
   });
 
   it("renders loading state when data is loading", () => {
