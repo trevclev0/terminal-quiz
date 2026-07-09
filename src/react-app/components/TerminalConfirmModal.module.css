@@ -1,4 +1,5 @@
 .modal {
+  inset-block-end: 25vh;
   background-color: var(--black);
   border: 1px solid var(--green);
   padding: 1.5rem;
