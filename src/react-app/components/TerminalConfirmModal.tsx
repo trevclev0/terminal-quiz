@@ -55,13 +55,6 @@ function TerminalConfirmModal({
         >
           Keep Progress
         </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className={styles.cancelButton}
-        >
-          Cancel
-        </button>
       </div>
     </dialog>
   );
