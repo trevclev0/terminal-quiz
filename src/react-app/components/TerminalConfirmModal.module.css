@@ -46,3 +46,8 @@
   outline: 2px solid var(--green);
   outline-offset: 2px;
 }
+
+.error {
+  color: var(--red, #ff3333);
+  margin: 0 0 1rem 0;
+}
