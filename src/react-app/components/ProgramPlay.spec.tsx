@@ -46,7 +46,7 @@ const mockResetSessionMutation = {
 } as unknown as UseMutationResult<
   boolean,
   Error,
-  { sessionId: string; programId: string },
+  { programId: string },
   unknown
 >;
 
@@ -95,29 +95,7 @@ const mockUseProgramPlay = {
     unknown
   >,
   handleResetSession: vi.fn(),
-  resetSessionMutation: {
-    mutate: vi.fn(),
-    isPending: false,
-    data: undefined,
-    error: null,
-    variables: undefined,
-    isError: false,
-    isSuccess: false,
-    failureCount: 0,
-    failureReason: null,
-    mutateAsync: vi.fn(),
-    reset: vi.fn(),
-    status: "idle" as const,
-    isIdle: true,
-    context: undefined,
-    isPaused: false,
-    submittedAt: 0,
-  } as UseMutationResult<
-    boolean,
-    Error,
-    { sessionId: string; programId: string },
-    unknown
-  >,
+  resetSessionMutation: mockResetSessionMutation,
 };
 
 vi.mocked(useProgramPlay).mockReturnValue(mockUseProgramPlay);
@@ -345,7 +323,6 @@ describe("ProgramPlay Component", () => {
     await userEvent.click(playAgainButton);
 
     expect(mockResetSessionMutation.mutateAsync).toHaveBeenCalledWith({
-      sessionId: expect.any(String),
       programId: "test-program-id",
     });
   });
@@ -387,7 +364,6 @@ describe("ProgramPlay Component", () => {
     await userEvent.click(screen.getByText("Reset Progress"));
 
     expect(mockResetSessionMutation.mutateAsync).toHaveBeenCalledWith({
-      sessionId: expect.any(String),
       programId: "test-program-id",
     });
   });
