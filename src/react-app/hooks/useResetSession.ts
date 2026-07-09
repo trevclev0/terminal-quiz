@@ -3,13 +3,12 @@ import { programProgressionQueryOptions } from "@api/queries/useProgramProgressi
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const RESET_SESSION_MUTATION = `
-  mutation ResetSession($sessionId: ID!, $programId: ID!) {
-    resetSession(sessionId: $sessionId, programId: $programId)
+  mutation ResetSession($programId: ID!) {
+    resetSession(programId: $programId)
   }
 `;
 
 type ResetSessionVariables = {
-  sessionId: string;
   programId: string;
 };
 
