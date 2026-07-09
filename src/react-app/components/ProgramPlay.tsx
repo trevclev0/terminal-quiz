@@ -135,6 +135,13 @@ function ProgramPlay() {
           <h2>The End</h2>
           <div className="action-buttons">
             <button
+              ref={selectNewProgramRef}
+              type="button"
+              onClick={handleSelectNewProgram}
+            >
+              Select new program
+            </button>
+            <button
               type="button"
               onClick={handlePlayAgain}
               disabled={resetSessionMutation.isPending}
@@ -147,13 +154,6 @@ function ProgramPlay() {
               {resetSessionMutation.isPending
                 ? "Restarting..."
                 : "Play program again"}
-            </button>
-            <button
-              ref={selectNewProgramRef}
-              type="button"
-              onClick={handleSelectNewProgram}
-            >
-              Select new program
             </button>
           </div>
         </div>
