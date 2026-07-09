@@ -1,11 +1,6 @@
 import { gateClues, gates, sessionProgress } from "@shared/schema";
 import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
-import {
-  GraphQLBoolean,
-  GraphQLID,
-  GraphQLNonNull,
-  GraphQLString,
-} from "graphql";
+import { GraphQLBoolean, GraphQLNonNull, GraphQLString } from "graphql";
 import { generateClue } from "../../services/aiService";
 import isGuessCloseEnough from "../../utils/isGuessCloseEnough";
 import {
@@ -289,22 +284,24 @@ export const requestClue = {
 export const resetSession = {
   type: new GraphQLNonNull(GraphQLBoolean),
   args: {
-    sessionId: { type: new GraphQLNonNull(GraphQLID) },
-    programId: { type: new GraphQLNonNull(GraphQLID) },
+    programId: { type: new GraphQLNonNull(GraphQLString) },
   },
   resolve: async (
     _: unknown,
-    args: { sessionId: string; programId: string },
+    args: { programId: string },
     context: AppGraphQLContext,
   ) => {
     const db = context.get("db");
+    const sessionId = context.get("sessionId");
+
+    if (!sessionId) throw new Error("Unauthorized: Missing Session ID");
 
     try {
       await db
         .delete(sessionProgress)
         .where(
           and(
-            eq(sessionProgress.sessionId, args.sessionId),
+            eq(sessionProgress.sessionId, sessionId),
             eq(sessionProgress.programId, args.programId),
           ),
         );
