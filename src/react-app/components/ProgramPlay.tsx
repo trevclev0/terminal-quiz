@@ -5,10 +5,8 @@ import CompletedGate from "@components/CompletedGate";
 import TerminalConfirmModal from "@components/TerminalConfirmModal";
 import useProgramPlay from "@hooks/useProgramPlay";
 import useProgressionScroll from "@hooks/useProgressionScroll";
-import { useResetSession } from "@hooks/useResetSession";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { getSessionId } from "@utils/session";
 import { useEffect, useRef, useState } from "react";
 import { Route } from "../routes/programs/$programId";
 import styles from "./ProgramPlay.module.css";
@@ -41,10 +39,11 @@ function ProgramPlay() {
     handleRequestClue,
     clues,
     requestClueMutation,
+    resetSessionMutation,
   } = useProgramPlay({ programId, currentGateId: currentGate?.id });
 
-  const resetSessionMutation = useResetSession(programId);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const selectNewProgramRef = useRef<HTMLButtonElement>(null);
@@ -80,14 +79,14 @@ function ProgramPlay() {
   };
 
   const handleConfirmReset = async () => {
-    const sessionId = getSessionId();
+    setResetError(null);
     try {
-      await resetSessionMutation.mutateAsync({ sessionId, programId });
-    } catch (error) {
-      console.error(error);
-    } finally {
+      await resetSessionMutation.mutateAsync({ programId });
       setIsConfirmOpen(false);
       navigate({ to: "/programs/select" });
+    } catch (error) {
+      console.error(error);
+      setResetError("Failed to reset progress. Please try again.");
     }
   };
 
@@ -97,11 +96,12 @@ function ProgramPlay() {
   };
 
   const handlePlayAgain = async () => {
-    const sessionId = getSessionId();
+    setResetError(null);
     try {
-      await resetSessionMutation.mutateAsync({ sessionId, programId });
+      await resetSessionMutation.mutateAsync({ programId });
     } catch (error) {
       console.error(error);
+      setResetError("Failed to reset progress. Please try again.");
     }
   };
 
@@ -133,6 +133,7 @@ function ProgramPlay() {
       {isTheEnd && (
         <div id="classic-ending">
           <h2>The End</h2>
+          {resetError && <p className="error-message">{resetError}</p>}
           <div className="action-buttons">
             <button
               ref={selectNewProgramRef}
@@ -163,6 +164,7 @@ function ProgramPlay() {
           message={`Reset your progress on "${programName}" before selecting a new one?`}
           onConfirm={handleConfirmReset}
           onCancel={handleCancelReset}
+          errorMessage={resetError}
         />
       )}
     </>

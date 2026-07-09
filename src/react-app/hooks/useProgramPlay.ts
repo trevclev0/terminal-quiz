@@ -2,7 +2,6 @@ import { useRequestClueMutation } from "@api/mutations/useRequestClueMutation";
 import { useSubmitGuessMutation } from "@api/mutations/useSubmitGuessMutation";
 import { useResetSession } from "@hooks/useResetSession";
 import useShake from "@hooks/useShake";
-import { getSessionId } from "@utils/session";
 import { type ChangeEvent, type SubmitEvent, useEffect, useState } from "react";
 
 type UseProgramPlayProps = {
@@ -97,13 +96,6 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
     );
   };
 
-  const handleResetSession = () => {
-    resetSessionMutation.mutate({
-      sessionId: getSessionId(),
-      programId,
-    });
-  };
-
   return {
     guess,
     message,
@@ -117,7 +109,6 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
     clues,
     handleRequestClue,
     requestClueMutation,
-    handleResetSession,
     resetSessionMutation,
   };
 }
