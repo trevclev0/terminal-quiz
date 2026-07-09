@@ -24,8 +24,7 @@
   gap: 1rem;
 }
 
-.confirmButton,
-.cancelButton {
+.actionButton {
   background-color: var(--black);
   color: var(--green);
   border: 1px solid var(--green);
@@ -35,14 +34,22 @@
     color 0.2s;
 }
 
-.confirmButton:hover,
-.cancelButton:hover {
+.cancelButton {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 1.5rem;
+  border: none;
+  margin: 0 0.5rem;
+  padding: 0.5rem;
+}
+
+.actionButton:hover {
   background-color: var(--green);
   color: var(--black);
 }
 
-.confirmButton:focus-visible,
-.cancelButton:focus-visible {
+.actionButton:focus-visible {
   outline: 2px solid var(--green);
   outline-offset: 2px;
 }
