@@ -16,11 +16,16 @@ export function useResetSession() {
   const queryClient = useQueryClient();
 
   return useMutation<boolean, Error, ResetSessionVariables>({
-    mutationFn: (variables) =>
-      graphqlFetch<boolean>(RESET_SESSION_MUTATION, variables),
+    mutationFn: async (variables) => {
+      const data = await graphqlFetch<{ resetSession: boolean }>(
+        RESET_SESSION_MUTATION,
+        variables,
+      );
+      return data.resetSession;
+    },
     onSettled: (_data, _error, variables) => {
       if (variables?.programId) {
-        queryClient.invalidateQueries({
+        return queryClient.invalidateQueries({
           queryKey: programProgressionQueryOptions(variables.programId)
             .queryKey,
         });

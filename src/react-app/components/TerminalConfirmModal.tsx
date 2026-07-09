@@ -4,6 +4,7 @@ import styles from "./TerminalConfirmModal.module.css";
 type TerminalConfirmModalProps = {
   message: string;
   onConfirm: () => void;
+  onKeepProgress: () => void;
   onCancel: () => void;
   errorMessage?: string | null;
 };
@@ -11,6 +12,7 @@ type TerminalConfirmModalProps = {
 function TerminalConfirmModal({
   message,
   onConfirm,
+  onKeepProgress,
   onCancel,
   errorMessage,
 }: TerminalConfirmModalProps) {
@@ -48,10 +50,17 @@ function TerminalConfirmModal({
         </button>
         <button
           type="button"
-          onClick={onCancel}
+          onClick={onKeepProgress}
           className={styles.cancelButton}
         >
           Keep Progress
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className={styles.cancelButton}
+        >
+          Cancel
         </button>
       </div>
     </dialog>

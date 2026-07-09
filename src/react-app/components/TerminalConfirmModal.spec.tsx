@@ -9,6 +9,7 @@ describe("TerminalConfirmModal", () => {
       <TerminalConfirmModal
         message="Are you sure?"
         onConfirm={vi.fn()}
+        onKeepProgress={vi.fn()}
         onCancel={vi.fn()}
       />,
     );
@@ -21,6 +22,7 @@ describe("TerminalConfirmModal", () => {
       <TerminalConfirmModal
         message="test"
         onConfirm={onConfirm}
+        onKeepProgress={vi.fn()}
         onCancel={vi.fn()}
       />,
     );
@@ -28,17 +30,18 @@ describe("TerminalConfirmModal", () => {
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
 
-  it("calls onCancel when Keep Progress button is clicked", async () => {
-    const onCancel = vi.fn();
+  it("calls onKeepProgress when Keep Progress button is clicked", async () => {
+    const onKeepProgress = vi.fn();
     render(
       <TerminalConfirmModal
         message="test"
         onConfirm={vi.fn()}
-        onCancel={onCancel}
+        onKeepProgress={onKeepProgress}
+        onCancel={vi.fn()}
       />,
     );
     await userEvent.click(screen.getByText("Keep Progress"));
-    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(onKeepProgress).toHaveBeenCalledTimes(1);
   });
 
   it("calls onConfirm when Enter key is pressed", async () => {
@@ -47,6 +50,7 @@ describe("TerminalConfirmModal", () => {
       <TerminalConfirmModal
         message="test"
         onConfirm={onConfirm}
+        onKeepProgress={vi.fn()}
         onCancel={vi.fn()}
       />,
     );
@@ -61,6 +65,7 @@ describe("TerminalConfirmModal", () => {
       <TerminalConfirmModal
         message="test"
         onConfirm={vi.fn()}
+        onKeepProgress={vi.fn()}
         onCancel={onCancel}
       />,
     );

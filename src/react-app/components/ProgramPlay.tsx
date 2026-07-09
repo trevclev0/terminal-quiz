@@ -94,9 +94,13 @@ function ProgramPlay() {
     }
   };
 
-  const handleCancelReset = () => {
+  const handleKeepProgress = () => {
     setIsConfirmOpen(false);
     navigate({ to: "/programs/select" });
+  };
+
+  const handleCancelReset = () => {
+    setIsConfirmOpen(false);
   };
 
   const handlePlayAgain = async () => {
@@ -170,6 +174,7 @@ function ProgramPlay() {
         <TerminalConfirmModal
           message={`Reset your progress on "${programName}" before selecting a new one?`}
           onConfirm={handleConfirmReset}
+          onKeepProgress={handleKeepProgress}
           onCancel={handleCancelReset}
           errorMessage={resetError}
         />
