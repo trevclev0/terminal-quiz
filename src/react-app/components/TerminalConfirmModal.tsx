@@ -44,18 +44,21 @@ function TerminalConfirmModal({
           ref={confirmRef}
           type="button"
           onClick={onConfirm}
-          className={styles.confirmButton}
+          className={styles.actionButton}
         >
           Reset Progress
         </button>
         <button
           type="button"
           onClick={onKeepProgress}
-          className={styles.cancelButton}
+          className={styles.actionButton}
         >
           Keep Progress
         </button>
       </div>
+      <button type="button" onClick={onCancel} className={styles.cancelButton}>
+        ×
+      </button>
     </dialog>
   );
 }

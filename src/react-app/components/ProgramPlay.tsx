@@ -150,6 +150,7 @@ function ProgramPlay() {
               ref={selectNewProgramRef}
               type="button"
               onClick={handleSelectNewProgram}
+              disabled={resetSessionMutation.isPending}
               title="Select new program"
             >
               Select new program
