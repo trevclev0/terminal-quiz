@@ -1,11 +1,15 @@
 import type { Ai, AiTextGenerationOutput } from "@cloudflare/workers-types";
 import { MAX_CLUES_PER_GATE } from "@shared/types";
+import { MAX_CLUES_PER_GATE } from "@shared/types";
 import type { Context } from "hono";
 import { env } from "hono/adapter";
 
 // Maximum length for the AI-generated clue to prevent
 // overly verbose responses.
 const MAX_CLUE_LENGTH = 200;
+
+const escapeRegExp = (str: string) =>
+  str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const escapeRegExp = (str: string) =>
   str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -60,6 +64,7 @@ export async function generateClue(
     return null;
   }
 
+<<<<<<< HEAD
   const safeGuess = currentGuess.replace(/"/g, '\\"');
   // Construct the user prompt with all relevant context.
   let userPrompt = `
@@ -68,8 +73,19 @@ Correct Answer (never reveal): "${correctAnswer}"
 Player's current incorrect guess: "${safeGuess}"
 Clue attempt: ${previousClues.length + 1} of ${MAX_CLUES_PER_GATE}
 `.trim();
+=======
+const safeGuess = currentGuess.replace(/"/g, '\\\"');
+let userPrompt = `\nGate Question: \"
+${gateQuestion}\"\nCorrect Answer (never reveal): \"
+${correctAnswer}\"\nPlayer's current incorrect guess: \"
+${safeGuess}\"\nClue attempt:
+${previousClues.length + 1} of
+${MAX_CLUES_PER_GATE}\n`.trim();
+>>>>>>> 3bae02d (:bug: fix: escape user input)
 
   if (previousClues.length > 0) {
+    userPrompt += `\nPrevious clues already given (do not repeat these):
+${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
     userPrompt += `\nPrevious clues already given (do not repeat these):
 ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
   }
