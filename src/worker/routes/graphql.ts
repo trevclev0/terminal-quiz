@@ -14,6 +14,7 @@ import {
 import {
   getInProgressProgram,
   getProgramProgression,
+  getPrograms,
 } from "../graphql/gameplay/queries";
 import type { AppVariables } from "../middleware/db";
 
@@ -40,6 +41,7 @@ const graphQlRouter = new Hono<AppVariables>().use("*", async (c, next) => {
         query: new GraphQLObjectType({
           name: "Query",
           fields: {
+            programs: getPrograms,
             getProgramProgression,
             getInProgressProgram,
           },
