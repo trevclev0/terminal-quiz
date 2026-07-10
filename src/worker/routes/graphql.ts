@@ -1,6 +1,10 @@
 import { graphqlServer } from "@hono/graphql-server";
 import { buildSchema } from "drizzle-graphql";
-import { GraphQLObjectType, GraphQLSchema } from "graphql";
+import {
+  GraphQLObjectType,
+  GraphQLSchema,
+  NoSchemaIntrospectionCustomRule,
+} from "graphql";
 import { Hono } from "hono";
 import {
   requestClue,
@@ -36,7 +40,6 @@ const graphQlRouter = new Hono<AppVariables>().use("*", async (c, next) => {
         query: new GraphQLObjectType({
           name: "Query",
           fields: {
-            ...entities.queries,
             getProgramProgression,
             getInProgressProgram,
           },
@@ -44,7 +47,6 @@ const graphQlRouter = new Hono<AppVariables>().use("*", async (c, next) => {
         mutation: new GraphQLObjectType({
           name: "Mutation",
           fields: {
-            ...entities.mutations,
             submitGuess,
             requestClue,
             resetSession,
@@ -72,6 +74,7 @@ const graphQlRouter = new Hono<AppVariables>().use("*", async (c, next) => {
   return graphqlServer({
     schema: cachedSchema,
     graphiql: !isProduction,
+    validationRules: isProduction ? [NoSchemaIntrospectionCustomRule] : [],
   })(c, next);
 });
 
