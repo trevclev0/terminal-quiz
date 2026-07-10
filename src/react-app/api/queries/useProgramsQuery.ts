@@ -1,5 +1,6 @@
 import type { Program } from "@shared/types";
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import { graphqlFetch } from "../graphQlClient";
 import { PROGRAM_KEYS } from "../queryKeys";
 
 const GET_PROGRAMS_QUERY = `
@@ -13,27 +14,8 @@ const GET_PROGRAMS_QUERY = `
 `;
 
 const fetchPrograms = async (): Promise<Program[]> => {
-  const rsp = await fetch("/api/graphql", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      query: GET_PROGRAMS_QUERY,
-    }),
-  });
-
-  if (!rsp.ok) {
-    throw new Error(`Failed to fetch programs: ${rsp.status}`);
-  }
-
-  const result = await rsp.json();
-
-  if (result.errors) {
-    throw new Error(`GraphQL Error: ${result.errors[0].message}`);
-  }
-
-  return result.data.programs;
+  const data = await graphqlFetch<{ programs: Program[] }>(GET_PROGRAMS_QUERY);
+  return data.programs;
 };
 
 export const programsQueryOptions = queryOptions({
