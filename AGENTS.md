@@ -6,10 +6,7 @@ Terminal Quiz is a full-stack SPA: React + TanStack Router on the frontend, Hono
 
 Live deployment: `https://quiz.clevertrevor.dev`
 
-The app currently has **two parallel gameplay flows**:
-
-1. **`/` (legacy, fully working)** — `App.tsx` fetches all programs+gates once via REST (`GET /api/programs`), then manages all progression client-side through a TanStack Query cache (selecting/solving/resetting a program just mutates the query cache — no further server writes). State persists across reloads in IndexedDB (via `idb-keyval`, MessagePack-encoded) through `PersistQueryClientProvider`.
-2. **`/select` (newer, backend-driven, under construction)** — loads a lightweight program list via GraphQL, intended to track per-session progression server-side (current gate, completed gates, attempt counts) via the `session_progress` table and an `x-session-id` header. Not finished — see "Known Gaps" below.
+There is a **single, server-authoritative gameplay flow**: a session ID is generated client-side (`utils/session.ts`), persisted in `localStorage`, and sent as an `x-session-id` header on every GraphQL request. The server tracks per-session progression (current gate, completed gates, attempt count) in the `session_progress` table. All gameplay mutations — `submitGuess`, `requestClue`, `resetSession` — are resolved server-side and validated against that session's row. There is no client-only or REST-based flow.
 
 ---
 
@@ -19,35 +16,40 @@ The app currently has **two parallel gameplay flows**:
 |---|---|
 | Frontend | React 19, TypeScript, Vite 8, TanStack Router |
 | Backend | Hono 4, Cloudflare Workers |
-| API | REST (Hono RPC) + GraphQL (`drizzle-graphql` auto-schema + custom gameplay resolvers) |
+| API | GraphQL only (`drizzle-graphql` auto-schema + custom gameplay resolvers) |
 | Database | Cloudflare D1 (SQLite), Drizzle ORM |
-| Client cache/state | TanStack Query v5, persisted to IndexedDB (`idb-keyval` + MessagePack) |
-| Package manager | pnpm |
+| AI | Cloudflare Workers AI (`@cf/meta/llama-4-scout-17b-16e-instruct`), used for on-demand clue generation |
+| Client cache/state | TanStack Query v5 |
+| Package manager | Bun |
 | Linter / Formatter | Biome |
 | Testing | Vitest, React Testing Library, MSW, happy-dom |
 | Commits | cz-git + commitlint (gitmoji + conventional commits), Husky |
-| Releases | semantic-release (CalVer: `YYYY.MM.DD`) |
+| Releases | semantic-release + semantic-release-gitmoji (standard semver, tagged `v{version}`) |
 | CI/CD | GitHub Actions (`.github/workflows/`) |
+| Tool/task management | mise (`mise.toml` — wraps every `bun run` script as a `mise run` task) |
 
 ---
 
 ## Local Development Setup
 
 ```bash
-mise install   # provisions node/pnpm pinned in .tool-versions; if `node`/
-                # `pnpm` still don't resolve after this, mise's shims aren't
-                # on PATH — run `mise activate` for your shell, or prefix
-                # commands with `mise exec --`
+mise install    # provisions bun pinned in mise.toml; if `bun` doesn't
+                 # resolve after this, mise's shims aren't on PATH —
+                 # run `mise activate` for your shell, or prefix
+                 # commands with `mise exec --`
 
-pnpm install
-
-pnpm dev
+bun install
 
 cp .env.example .env
 # Set DRIZZLE_DATABASE_URL to the local .wrangler SQLite file path
 
-pnpm migrate:local
-pnpm seed:local
+cp .dev.vars.example .dev.vars
+# Set CLOUDFLARE_API_TOKEN (needed for local Workers AI calls) and ENVIRONMENT
+
+bun run dev
+
+bun run migrate:local
+bun run seed:local
 ```
 
 Dev server: `http://localhost:5173`.
@@ -57,30 +59,32 @@ Dev server: `http://localhost:5173`.
 ## Common Commands
 
 ```bash
-pnpm test run           # run tests once
-pnpm coverage           # single run with V8 coverage
+bun run test --run      # run tests once
+bun run coverage        # single run with V8 coverage
 
-pnpm lint               # biome lint .
-pnpm format             # biome format --write .
-pnpm check:code         # biome check --write . (lint + format + import sort)
-pnpm check              # build + wrangler deploy --dry-run (pre-deploy sanity check)
+bun run lint            # biome lint .
+bun run format          # biome format --write .
+bun run check:code      # biome check --write . (lint + format + import sort)
+bun run check           # build + wrangler deploy --dry-run (pre-deploy sanity check)
 
-pnpm build              # tsc -b && vite build
-pnpm preview            # build, then vite preview
+bun run build           # tsc -b && vite build
+bun run preview         # build, then vite preview
 
-pnpm deploy             # wrangler deploy (production)
-pnpm deploy:preview     # wrangler versions upload --remote
+bun run deploy          # wrangler deploy (production)
+bun run deploy:preview  # wrangler versions upload --remote
 
-pnpm migrate:generate   # drizzle-kit generate, after editing schema.ts
-pnpm migrate:local      # apply migrations to local D1 file
-pnpm migrate:preview    # apply to preview D1
-pnpm migrate:prod       # apply to production D1
+bun run migrate:generate   # drizzle-kit generate, after editing schema.ts
+bun run migrate:local      # apply migrations to local D1 file
+bun run migrate:preview    # apply to preview D1
+bun run migrate:prod       # apply to production D1
 
-pnpm seed:local / seed:preview / seed:prod   # wrangler d1 execute --file=scripts/seed.sql
+bun run seed:local / seed:preview / seed:prod   # wrangler d1 execute --file=scripts/seed.sql
 
-pnpm commit             # git-cz, interactive commit prompt (preferred over `git commit`)
-pnpm cf-typegen         # wrangler types, regenerates worker-configuration.d.ts
+bun run commit           # git-cz, interactive commit prompt (preferred over `git commit`)
+bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 ```
+
+> Every command above also has a matching `mise run <task>` alias defined in `mise.toml` (e.g. `mise run test:run`, `mise run check:code`).
 
 ---
 
@@ -88,36 +92,35 @@ pnpm cf-typegen         # wrangler types, regenerates worker-configuration.d.ts
 
 ```sh
 .
-├── migrations/              # Drizzle SQL migrations + meta/ snapshots
-├── public/                  # Static assets
-├── scripts/                 # One-off scripts (e.g. seed.sql, git-ignored)
+├── migrations/                  # Drizzle SQL migrations + meta/ snapshots
+├── public/                      # Static assets
+├── scripts/                     # One-off scripts (e.g. seed.sql, git-ignored)
 ├── src/
 │   ├── react-app/
 │   │   ├── api/
-│   │   │   ├── client.ts                # Hono RPC client
-│   │   │   ├── graphQlClient.ts         # generic GraphQL fetch helper (adds x-session-id)
-│   │   │   ├── queryClient.ts           # TanStack QueryClient + IndexedDB persister
+│   │   │   ├── graphQlClient.ts             # generic GraphQL fetch helper (adds x-session-id)
+│   │   │   ├── queryClient.ts               # TanStack QueryClient setup
 │   │   │   ├── queryKeys.ts
-│   │   │   └── queries/
-│   │   │       ├── useProgramsQuery.ts          # GraphQL, lightweight — used by /select
-│   │   │       └── useProgramsWithGatesQuery.ts # REST, full gates — used by /
-│   │   ├── components/      # ErrorBoundary, Gate, ProgramSelector, ProgramWithGates(Selector)
-│   │   ├── hooks/           # useGateGuess, usePrograms, useProgramsWithGates, useProgressionScroll, useShake
-│   │   ├── routes/          # TanStack file-based routes: __root, index ("/"), select ("/select")
-│   │   ├── test-utils/      # setupTests, queryTestUtils, reactRouterUtils, testTypes
-│   │   ├── utils/           # getGatesToRender, isGuessCloseEnough, session (client sessionId)
-│   │   ├── App.tsx          # "/" root component
-│   │   └── main.tsx         # bootstrap: ErrorBoundary + PersistQueryClientProvider + RouterProvider
+│   │   │   ├── queries/                     # useProgramsQuery, useProgramProgressionQuery,
+│   │   │   │                                # useInProgressProgramQuery
+│   │   │   └── mutations/                   # useSubmitGuessMutation, useRequestClueMutation
+│   │   ├── components/       # ActiveGate, CompletedGate, ErrorBoundary, ProgramPlay,
+│   │   │                     # ProgramSelector, TerminalConfirmModal
+│   │   ├── hooks/             # useProgramPlay, usePrograms, useProgressionScroll,
+│   │   │                     # useResetSession, useShake
+│   │   ├── routes/            # TanStack file-based routes: __root, index ("/"),
+│   │   │                     # programs/select, programs/$programId
+│   │   ├── test-utils/        # setupTests, queryTestUtils, reactRouterUtils, cssModuleMock
+│   │   └── main.tsx           # bootstrap: ErrorBoundary + QueryClientProvider + RouterProvider
 │   ├── shared/
-│   │   ├── schema.ts        # Drizzle schema — single source of truth for DB + types
-│   │   └── types.ts         # Program, Gate, ProgramWithGates (inferred from schema)
+│   │   ├── schema.ts          # Drizzle schema — single source of truth for DB + types
+│   │   └── types.ts           # Program, Gate, and related types (inferred from schema)
 │   └── worker/
-│       ├── index.ts              # Hono entry, mounts /api/{graphql,programs,gates}
-│       ├── middleware/           # db (Drizzle setup), logger, session (reads x-session-id)
-│       ├── routes/               # gates.ts, graphql.ts, programs.ts
-│       ├── graphql/gameplay/     # getProgramProgression query, submitGuess mutation, types
-│       ├── services/             # gateService.ts (REST guess-processing, race-safe)
-│       └── utils/                # errorHandler, isGuessCloseEnough
+│       ├── index.ts                # Hono entry, mounts /api/graphql
+│       ├── middleware/             # db (Drizzle setup), logger, session (reads x-session-id)
+│       ├── routes/                 # graphql.ts — builds and serves the GraphQL schema
+│       ├── graphql/gameplay/       # queries.ts, mutations.ts, clueEligibility.ts, types.ts
+│       └── services/                # aiService.ts — Workers AI clue generation
 ├── biome.json
 ├── commitlint.config.ts
 ├── drizzle.config.ts
@@ -126,18 +129,18 @@ pnpm cf-typegen         # wrangler types, regenerates worker-configuration.d.ts
 └── wrangler.jsonc
 ```
 
-> There is no `contexts/` directory — state is handled via TanStack Query, not React Context.
-
 ---
 
 ## Code Style
 
-This project uses **Biome** (not ESLint or Prettier), run automatically via `lint-staged`. `pnpm check:code` runs linting, formatting, and import organization together.
+This project uses **Biome** (not ESLint or Prettier), run automatically via `lint-staged`. `bun run check:code` runs linting, formatting, and import organization together.
 
 - Double quotes for JS/TS strings
 - 2-space indentation, LF line endings, UTF-8, final newline (`.editorconfig`)
 - Max line length: 80 characters
 - TypeScript strict mode plus `noUnusedLocals`, `noUnusedParameters`, etc. — do not disable these
+
+See `CONVENTIONS.md` for additional architectural and style rules (e.g. no `useEffect` for data fetching, Hono handlers stay thin, early returns preferred).
 
 ---
 
@@ -146,7 +149,7 @@ This project uses **Biome** (not ESLint or Prettier), run automatically via `lin
 All commits **must** follow the gitmoji + conventional commits format, enforced by `commitlint` and `cz-git`:
 
 ```bash
-pnpm commit
+bun run commit
 # or: git cz
 ```
 
@@ -154,8 +157,8 @@ Husky hooks enforce this on every `git commit`. Headers are capped at 100 charac
 
 ```sh
 ✨ feat(gates): add AI guidance for repeated failed attempts
-🐛 fix(dataManager): handle corrupt localStorage gracefully
-♻️  refactor(hooks): extract clearActiveProgram from useProgramStorage
+🐛 fix(session): reject guesses submitted for a stale gate
+♻️  refactor(hooks): extract useResetSession from useProgramPlay
 📚 docs: update AGENTS.md
 ```
 
@@ -165,41 +168,41 @@ Do **not** bypass hooks with `--no-verify` unless documented.
 
 ## Testing
 
-Tests are co-located with source as `*.spec.ts` / `*.spec.tsx`. Shared helpers live in `src/react-app/test-utils/`; worker tests use plain Vitest with hand-built mock DB objects (no real D1 in unit tests).
+Tests are co-located with source as `*.spec.ts` / `*.spec.tsx`. Shared helpers live in `src/react-app/test-utils/`; worker tests use plain Vitest with hand-built mock DB/Hono context objects (no real D1 in unit tests) via `src/worker/test-utils/mockEnv.ts` (`createMockEnv()`, `createMockHonoContext()`).
 
 ```bash
-pnpm test run          # run tests once
-pnpm coverage          # single run with V8 coverage
+bun run test --run      # run tests once
+bun run coverage        # single run with V8 coverage
 ```
 
-**Stack:** Vitest, React Testing Library + happy-dom, MSW (HTTP mocking, e.g. GraphQL queries in `-select.spec.tsx`), `@testing-library/jest-dom`.
+**Stack:** Vitest, React Testing Library + happy-dom, MSW (HTTP mocking, e.g. GraphQL queries), `@testing-library/jest-dom`.
 
 **Patterns:**
 - Mock external modules at the top of the file with `vi.mock()`
 - Use `createQueryWrapper` (`test-utils/queryTestUtils.tsx`) for hooks consuming TanStack Query
 - Use `createTestRouter` / `renderWithRouter` (`test-utils/reactRouterUtils.tsx`) for route-level integration tests
-- Use `defaultNullishGateProps` / `defaultNullishProgramProps` (`test-utils/testTypes.ts`) when building `Gate` / `Program` fixtures
-- Mocks restore automatically (`restoreMocks: true` in `vite.config.ts`)
+- Mocks restore automatically (`clearMocks: true`, `restoreMocks: true` in `vite.config.ts`)
 - Suppress expected `console.error` from React error boundaries with `vi.spyOn(console, "error").mockImplementation(() => {})` in `beforeEach`
 
-Route files prefixed with `-` (e.g. `-root.spec.tsx`, `-select.spec.tsx`) are test files, not real routes — TanStack Router's file-based routing ignores the `-` prefix.
+Route files prefixed with `-` (e.g. `-root.spec.tsx`, `-select.spec.tsx`, `-$programId.spec.tsx`) are test files, not real routes — TanStack Router's file-based routing ignores the `-` prefix.
 
-Coverage excludes `App.tsx`, `main.tsx`, `vite-env.d.ts`, `shared/schema.ts`, `shared/types.ts`, `routeTree.gen.ts`.
+Coverage excludes `main.tsx`, `vite-env.d.ts`, `shared/schema.ts`, `shared/types.ts`, `routeTree.gen.ts`, `worker/index.ts`, `worker/middleware/**`, `worker/test-utils/**`, and `react-app/api/queryClient.ts` (see `vite.config.ts` for the authoritative list).
 
 ---
 
 ## Database & Migrations
 
-Schema lives in `src/shared/schema.ts` (Drizzle + single source of truth for DB and TS types). Four tables:
+Schema lives in `src/shared/schema.ts` (Drizzle + single source of truth for DB and TS types). Five tables:
 
 - `programs` — top-level quiz sets
 - `gates` — riddles within a program, ordered by `sequence_order` (unique per program)
 - `game_state` — single-row table tracking last global update
-- `session_progress` — per-session progression (`current_gate_id`, `completed_gate_ids` as a JSON string, `status`), unique on `(session_id, program_id)`
+- `session_progress` — per-session progression (`current_gate_id`, `completed_gate_ids` as a JSON string, `attempt_count`, `status`), unique on `(session_id, program_id)`
+- `gate_clues` — AI-generated clues, scoped to a `session_progress_id` + `gate_id`, unique per `(session_progress_id, gate_id, attempt_count_at_request)`
 
 ```bash
-pnpm migrate:generate   # after editing schema.ts
-pnpm migrate:local / migrate:preview / migrate:prod
+bun run migrate:generate   # after editing schema.ts
+bun run migrate:local / migrate:preview / migrate:prod
 ```
 
 Two D1 databases: `terminal-quest` (production, applied on push to `main`) and `terminal-quest-preview` (preview, applied on PR).
@@ -213,9 +216,11 @@ Two D1 databases: `terminal-quest` (production, applied on push to `main`) and `
 | Production | Push to `main` | _(default)_ | `terminal-quest` |
 | Preview | Pull request | `preview` | `terminal-quest-preview` |
 
-Fully automated via `.github/workflows/deploy.yml`; preview deploys patch `wrangler.json` to route to the preview D1 before deploying.
+Fully automated via `.github/workflows/deploy.yml`; preview deploys patch the built `wrangler.json` (in `dist/`) to route to the preview D1 before deploying.
 
 Secrets required in GitHub Actions: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `ADMIN_PAT`, `CODECOV_TOKEN`.
+
+Releases use `semantic-release` + `semantic-release-gitmoji` with standard semver bumps derived from gitmoji (`:boom:` → major, `:sparkles:` → minor, `:bug:`/`:ambulance:`/`:lock:`/`:lipstick:`/`:zap:`/`:recycle:` → patch), tagged `v{version}`.
 
 ---
 
@@ -223,32 +228,22 @@ Secrets required in GitHub Actions: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_
 
 - **Program** — a named collection of gates a player works through in sequence
 - **Gate** — a riddle with `question`, `correctAnswer`, `successMessage`, optional AI guidance (`guidanceEnabled`, `guidancePrompt`, `guidanceThreshold`)
-- **`isSolved`** — once true, locks the gate open (used by the `/` flow only)
 - **`sequenceOrder`** — ordering within a program, enforced by a unique index on `(programId, sequenceOrder)`
-- **`activeProgram`** — the `Program` with `isSelected: true`, derived client-side (`/` flow)
-- **Guess acceptance** — Levenshtein similarity ≥ 0.875 via `leven`, implemented twice: `src/react-app/utils/isGuessCloseEnough.ts` (client-only `/` flow) and `src/worker/utils/isGuessCloseEnough.ts` (server-side checks)
-- **Two unreconciled gameplay backends:**
-  - `gateService.ts` (REST, `POST /api/gates/:id/guess`) mutates `gates.isSolved` directly — global per gate, not session-scoped
-  - GraphQL `submitGuess` mutation tracks progression per session via `session_progress.completed_gate_ids`
-  These are two different designs for the same problem; reconcile before treating `/select` as production-ready.
-- **Client-side caching (`/` flow)** — programs+gates persisted via TanStack Query's `PersistQueryClientProvider`, using a custom `idb-keyval`-backed, MessagePack-encoded persister (`indexedDBMessagePackPersister`) — **IndexedDB, not localStorage**
-- **Session ID** — generated client-side in `utils/session.ts`, stored in `localStorage` under `terminal_quiz_session_id` (falls back to an in-memory UUID if storage is unavailable), sent as `x-session-id` on GraphQL requests
-
----
-
-## Known Gaps (as of this writing)
-
-- `/select` + the GraphQL gameplay resolvers (`getProgramProgression`, `submitGuess`) are not feature-complete and not wired into a finished UI for actually playing through gates session-by-session
-- The REST `gateService.ts` guess flow and the GraphQL `session_progress`-based flow overlap in purpose but track state differently — GraphQL is the preferred path moving forward, specifically once the `/select` flow is complete
+- **Guess acceptance** — Levenshtein similarity ≥ a per-gate `acceptanceThreshold` (default 0.875) via `leven`, checked server-side in `src/worker/utils/isGuessCloseEnough.ts`
+- **Session ID** — generated client-side in `utils/session.ts`, stored in `localStorage` under `terminal_quiz_session_id` (falls back to an in-memory UUID if storage is unavailable), sent as `x-session-id` on every GraphQL request
+- **`submitGuess`** — the authoritative gameplay mutation. It re-validates that the session's `session_progress.currentGateId` matches the submitted `gateId` before checking the guess, rejecting mismatches as a "desync" error. This is what prevents a session from submitting guesses for gates it hasn't reached (IDOR protection) — do not weaken this check
+- **Clue system** — `requestClue` generates an AI hint via Cloudflare Workers AI once `attemptCount` meets a gate's `guidanceThreshold`; eligibility rules (attempt threshold, per-gate cap of `MAX_CLUES_PER_GATE = 3`, no duplicate clue per attempt count) live in `src/worker/graphql/gameplay/clueEligibility.ts` and must stay in sync with any clue-flow changes
+- **`resetSession`** — clears a session's progress on a program, used by both "Play again" and "Select new program" (after a `TerminalConfirmModal` confirmation) at the end of a program
 
 ---
 
 ## What to Avoid
 
-- Do not use `npm` or `yarn` — this project uses `pnpm` exclusively
+- Do not use `npm`, `yarn`, or `pnpm` — this project uses `bun` exclusively
 - Do not add ESLint or Prettier — Biome handles both
-- Do not write tests without proper mock cleanup; rely on the global `restoreMocks: true` config
-- Do not skip `pnpm migrate:generate` after schema changes; never hand-edit migration SQL files
+- Do not write tests without proper mock cleanup; rely on the global `clearMocks`/`restoreMocks` config in `vite.config.ts`
+- Do not skip `bun run migrate:generate` after schema changes; never hand-edit migration SQL files
 - Do not hardcode environment-specific values; use Wrangler bindings and environment variables
 - Do not bypass commit hooks without a documented reason
-- Do not assume the `/select` GraphQL/session-progress flow is finished or production-ready — it's actively in progress
+- Do not weaken the `currentGateId` check in `submitGuess` — it's what makes session-scoped guess submission safe against a session guessing gates out of order
+- Do not introduce a REST or client-only gameplay path — GraphQL is the single source of truth for progression

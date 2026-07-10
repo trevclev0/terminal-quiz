@@ -4,15 +4,17 @@
 
 - TypeScript strict mode. No `any` — use `unknown` and narrow explicitly.
 - Runtime: Cloudflare Workers (not Node.js). Do not use Node-only APIs (`fs`, `path`, `process.env` directly, etc.).
-- Package manager: pnpm. Never suggest npm or yarn commands.
-- Linter/formatter: Biome via `pnpm check:code`. Do not guess style; let the linter enforce it.
+- Package manager: Bun. Never suggest npm, yarn, or pnpm commands.
+- Linter/formatter: Biome via `bun run check:code`. Do not guess style; let the linter enforce it.
 
 ## Architecture
 
 - Full-stack SPA: React frontend + Hono backend, both running on Cloudflare Workers.
 - Database: Cloudflare D1 via Drizzle ORM. All schema changes go through Drizzle migrations.
 - Session state tracked in `session_progress` table — do not use KV for session data.
-- Routing is client-side (via TanStack Router) with backend fallback support. Route structure: /, /programs/select, /programs/:programId.
+- API surface is GraphQL only (`drizzle-graphql` auto-schema + custom gameplay resolvers in `src/worker/graphql/gameplay/`). There is no REST gameplay API — do not add one.
+- Every gameplay session is identified by an `x-session-id` header, validated server-side against `session_progress`. Never trust a client-supplied `gateId`/`programId` without checking it against that session's row.
+- Routing is client-side (via TanStack Router). Route structure: `/`, `/programs/select`, `/programs/$programId`.
 - Do not introduce gate-level URLs or client-side route guards that duplicate server logic.
 
 ## Frontend
@@ -21,14 +23,14 @@
 - TanStack Router for all routing. Use `createFileRoute`; do not use manual route objects.
 - Named exports preferred. Default exports only where TanStack Router file-based routing requires.
 - Do not use `useEffect` for data fetching — use TanStack Query (`useQuery`, `useMutation`).
-- Adjust `staleTime` intentionally; do not leave it at 0 if it causes unnecessary refetches in tests.
+- Adjust `staleTime` intentionally per query based on how fresh that data needs to be (e.g. long `staleTime` for rarely-changing program lists, `staleTime: 0` where session state must always be current); do not leave it at the default if it causes unnecessary refetches in tests or stale reads in the UI.
 
 ## Backend
 
-- Hono for all API routes. Keep route handlers thin — business logic belongs in service functions.
-- GraphQL is used for the play flow. REST endpoints for the legacy flow remain untouched.
-- Do not modify the legacy REST flow unless the task explicitly requires it.
-- Validate all inputs at the Hono layer before touching D1.
+- Hono for all API routes. Keep route handlers thin — business logic belongs in service/resolver functions.
+- GraphQL is the only gameplay API. Do not add REST endpoints for gameplay.
+- Validate all inputs at the Hono/resolver layer before touching D1.
+- Any resolver that mutates session-scoped state must re-check that the request's session owns the row it's mutating (see `submitGuess`'s `currentGateId` check) before applying the change.
 
 ## Code style
 
@@ -44,8 +46,8 @@
 ## Testing
 
 - Vitest only. No Jest APIs.
-- Co-locate tests with source: `foo.test.ts` next to `foo.ts`.
-- Do not use real D1/Workers bindings in unit tests — mock at the service boundary.
+- Co-locate tests with source: `foo.spec.ts` next to `foo.ts`.
+- Do not use real D1/Workers bindings in unit tests — mock at the service/resolver boundary (see `src/worker/test-utils/mockEnv.ts`).
 - Ensure all network requests are fully mocked in tests (e.g., using MSW) to prevent connection errors.
 
 ## Git
@@ -59,12 +61,12 @@
 
 ## Build Verification
 
-After all edits are complete, run `pnpm check` to verify the build (in dry-run mode) passes.
+After all edits are complete, run `bun run check` to verify the build (in dry-run mode) passes.
 If the build fails, the AI should offer to fix the issues automatically before proceeding to the next edit.
 
 ## What NOT to do
 
 - Do not install new dependencies without asking first.
 - Do not change the Drizzle schema without explicit instruction.
-- Do not refactor the legacy REST flow.
+- Do not add a REST gameplay API — GraphQL is the single source of truth for progression.
 - Do not add barrel files speculatively.
