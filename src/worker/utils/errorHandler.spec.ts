@@ -43,12 +43,6 @@ describe("errorHandler", () => {
   });
 
   describe("formatErrorResponse", () => {
-    it("formats response for GraphQL paths", () => {
-      const error = new Error("GraphQL went wrong");
-      const response = formatErrorResponse(error, "/api/graphql");
-
-      expect(response).toEqual({
-  describe("formatErrorResponse", () => {
     let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
@@ -69,27 +63,23 @@ describe("errorHandler", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(error);
     });
   });
-      });
+  it("provides a default message for GraphQL paths if error has no message", () => {
+    const error = new Error();
+    const response = formatErrorResponse(error, "/api/graphql");
+
+    expect(response).toEqual({
+      errors: [{ message: "Internal Server Error" }],
     });
+  });
 
-    it("provides a default message for GraphQL paths if error has no message", () => {
-      const error = new Error();
-      const response = formatErrorResponse(error, "/api/graphql");
+  it("formats response for non-GraphQL paths", () => {
+    const error = new Error("REST API error");
+    const response = formatErrorResponse(error, "/api/users");
 
-      expect(response).toEqual({
-        errors: [{ message: "Internal Server Error" }],
-      });
-    });
-
-    it("formats response for non-GraphQL paths", () => {
-      const error = new Error("REST API error");
-      const response = formatErrorResponse(error, "/api/users");
-
-      expect(response).toEqual({
-        status: "error",
-        message: "Server Error",
-        code: "INTERNAL_SERVER_ERROR",
-      });
+    expect(response).toEqual({
+      status: "error",
+      message: "Server Error",
+      code: "INTERNAL_SERVER_ERROR",
     });
   });
 });

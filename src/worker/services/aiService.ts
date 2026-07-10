@@ -49,11 +49,11 @@ export async function generateClue(
     return null;
   }
 
-const safeGuess = currentGuess.replace(/"/g, '\\\"');
-let userPrompt = `\nGate Question: \"
-${gateQuestion}\"\nCorrect Answer (never reveal): \"
-${correctAnswer}\"\nPlayer's current incorrect guess: \"
-${safeGuess}\"\nClue attempt: 
+  const safeGuess = currentGuess.replace(/"/g, '\\"');
+  let userPrompt = `\nGate Question: "
+${gateQuestion}"\nCorrect Answer (never reveal): "
+${correctAnswer}"\nPlayer's current incorrect guess: "
+${safeGuess}"\nClue attempt: 
 ${previousClues.length + 1} of 
 ${MAX_CLUES_PER_GATE}\n`.trim();
 
@@ -86,7 +86,13 @@ ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
 
     // Basic check to ensure the AI didn't directly reveal the answer.
     // This is a safeguard, as the system prompt should ideally prevent it.
-    const answerRegex = new RegExp(`\\b${escapeRegExp(correctAnswer)}\\b`, "i");
+    const escapedAnswer = escapeRegExp(correctAnswer);
+    const startBoundary = /^\\w/.test(correctAnswer) ? "\\\\b" : "";
+    const endBoundary = /\\w$/.test(correctAnswer) ? "\\\\b" : "";
+    const answerRegex = new RegExp(
+      `${startBoundary}${escapedAnswer}${endBoundary}`,
+      "i",
+    );
     if (answerRegex.test(clueText)) {
       console.warn("AI generated a clue containing the answer. Filtering.");
       return null;
