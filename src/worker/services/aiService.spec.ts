@@ -118,12 +118,12 @@ describe("aiService", () => {
     expect(aiRunMock).toHaveBeenCalledTimes(2);
     const firstCallArgs = aiRunMock.mock.calls[0][1];
     expect(firstCallArgs.messages[1].content).toContain(
-      "Previous clues given:",
+      "Previous clues already given",
     );
 
     const secondCallArgs = aiRunMock.mock.calls[1][1];
     expect(secondCallArgs.messages[1].content).not.toContain(
-      "Previous clues given:",
+      "Previous clues already given",
     );
   });
 });
