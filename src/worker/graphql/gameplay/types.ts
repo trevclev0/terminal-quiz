@@ -6,6 +6,19 @@ import {
   GraphQLObjectType,
   GraphQLString,
 } from "graphql";
+import type { Context } from "hono";
+import type { AppVariables } from "../../middleware/db";
+
+export type AppGraphQLContext = Context<AppVariables>;
+
+export const ProgramListItemType = new GraphQLObjectType({
+  name: "ProgramListItem",
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLString) },
+    name: { type: new GraphQLNonNull(GraphQLString) },
+    isSelected: { type: new GraphQLNonNull(GraphQLBoolean) },
+  },
+});
 
 const ActiveGateType = new GraphQLObjectType({
   name: "ActiveGate",
