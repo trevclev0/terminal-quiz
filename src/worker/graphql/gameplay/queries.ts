@@ -1,11 +1,11 @@
 import { gates, sessionProgress } from "@shared/schema";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
-import { GraphQLNonNull, GraphQLString } from "graphql";
-import type { Context } from "hono";
-import type { AppVariables } from "../../middleware/db";
-import { ProgressionPayloadType } from "./types";
-
-export type AppGraphQLContext = Context<AppVariables>;
+import { GraphQLList, GraphQLNonNull, GraphQLString } from "graphql";
+import {
+  type AppGraphQLContext,
+  ProgramListItemType,
+  ProgressionPayloadType,
+} from "./types";
 
 export const getProgramProgression = {
   type: ProgressionPayloadType,
@@ -125,5 +125,15 @@ export const getInProgressProgram = {
     });
 
     return progress?.programId ?? null;
+  },
+};
+
+export const getPrograms = {
+  type: new GraphQLNonNull(
+    new GraphQLList(new GraphQLNonNull(ProgramListItemType)),
+  ),
+  resolve: async (_: unknown, __: unknown, context: AppGraphQLContext) => {
+    const db = context.get("db");
+    return db.query.programs.findMany();
   },
 };

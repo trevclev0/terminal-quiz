@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { type AppGraphQLContext, getProgramProgression } from "./queries";
+import { getProgramProgression } from "./queries";
+import type { AppGraphQLContext } from "./types";
 
 describe("Gameplay Queries: getProgramProgression", () => {
   let mockDb: unknown;
