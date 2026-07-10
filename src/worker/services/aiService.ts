@@ -1,6 +1,5 @@
 import type { Ai, AiTextGenerationOutput } from "@cloudflare/workers-types";
 import { MAX_CLUES_PER_GATE } from "@shared/types";
-import { MAX_CLUES_PER_GATE } from "@shared/types";
 import type { Context } from "hono";
 import { env } from "hono/adapter";
 
@@ -11,23 +10,9 @@ const MAX_CLUE_LENGTH = 200;
 const escapeRegExp = (str: string) =>
   str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-const escapeRegExp = (str: string) =>
-  str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
 // System prompt instructing the AI on its role and constraints
 // for generating clues.
 const SYSTEM_PROMPT = `
-You are a helpful hint-giver for a text-based riddle game.
-
-Rules:
-1. NEVER state, spell out, or directly paraphrase the correct answer.
-2. Do not reveal answer length, first/last letter, or rhymes unless explicitly asked to nudge that way.
-3. Each clue must add NEW information not present in previous clues — no repeating prior phrasing.
-4. Match clue style to the answer type (e.g. a date gets a time-period hint, a name gets a role/context hint, a phrase gets a meaning hint) — infer this from the gate question and answer.
-5. If the guess is semantically close (synonym, right category, partial match), acknowledge it's "on the right track" before nudging further.
-6. If the guess is far off, redirect toward the correct concept rather than critiquing the wrong guess.
-7. Output ONLY the clue text — no preamble, no labels, no quotes around it.
-8. Keep clues under ${MAX_CLUE_LENGTH} characters.
 You are a helpful hint-giver for a text-based riddle game.
 
 Rules:
@@ -64,43 +49,20 @@ export async function generateClue(
     return null;
   }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const safeGuess = currentGuess.replace(/"/g, '\\"');
-  // Construct the user prompt with all relevant context.
-  let userPrompt = `
-Gate Question: "${gateQuestion}"
-Correct Answer (never reveal): "${correctAnswer}"
-Player's current incorrect guess: "${safeGuess}"
-Clue attempt: ${previousClues.length + 1} of ${MAX_CLUES_PER_GATE}
-`.trim();
-=======
-const safeGuess = currentGuess.replace(/"/g, '\\\"');
-let userPrompt = `\nGate Question: \"
-${gateQuestion}\"\nCorrect Answer (never reveal): \"
-${correctAnswer}\"\nPlayer's current incorrect guess: \"
-${safeGuess}\"\nClue attempt:
-${previousClues.length + 1} of
-=======
   const safeGuess = currentGuess.replace(/"/g, '\\"');
   let userPrompt = `\nGate Question: "
 ${gateQuestion}"\nCorrect Answer (never reveal): "
 ${correctAnswer}"\nPlayer's current incorrect guess: "
-${safeGuess}"\nClue attempt: 
-${previousClues.length + 1} of 
->>>>>>> 3382ff7 (🐛 fix(worker): refine AI regex and error messages)
+${safeGuess}"\nClue attempt:
+${previousClues.length + 1} of
 ${MAX_CLUES_PER_GATE}\n`.trim();
->>>>>>> 3bae02d (:bug: fix: escape user input)
 
   if (previousClues.length > 0) {
-    userPrompt += `\nPrevious clues already given (do not repeat these):
-${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
     userPrompt += `\nPrevious clues already given (do not repeat these):
 ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
   }
 
   // Add a reminder not to reveal the answer directly.
-  userPrompt += `\nGenerate the next clue, strictly better/more specific than the previous ones, without revealing the answer.`;
   userPrompt += `\nGenerate the next clue, strictly better/more specific than the previous ones, without revealing the answer.`;
 
   try {
@@ -125,13 +87,8 @@ ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
     // Basic check to ensure the AI didn't directly reveal the answer.
     // This is a safeguard, as the system prompt should ideally prevent it.
     const escapedAnswer = escapeRegExp(correctAnswer);
-<<<<<<< HEAD
     const startBoundary = /^\w/.test(correctAnswer) ? "\\b" : "";
     const endBoundary = /\w$/.test(correctAnswer) ? "\\b" : "";
-=======
-    const startBoundary = /^\\w/.test(correctAnswer) ? "\\\\b" : "";
-    const endBoundary = /\\w$/.test(correctAnswer) ? "\\\\b" : "";
->>>>>>> 3382ff7 (🐛 fix(worker): refine AI regex and error messages)
     const answerRegex = new RegExp(
       `${startBoundary}${escapedAnswer}${endBoundary}`,
       "i",
