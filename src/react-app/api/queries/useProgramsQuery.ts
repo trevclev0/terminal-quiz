@@ -3,17 +3,11 @@ import { queryOptions, useQuery } from "@tanstack/react-query";
 import { PROGRAM_KEYS } from "../queryKeys";
 
 const GET_PROGRAMS_QUERY = `
-  query GetPrograms($direction: OrderDirection!, $priority: Int!, $limit: Int) {
+  query GetPrograms {
     programs {
       id
       name
       isSelected
-      gates(
-        orderBy: { sequenceOrder: { direction: $direction, priority: $priority } }
-        limit: $limit
-      ) {
-        id
-      }
     }
   }
 `;
@@ -26,11 +20,6 @@ const fetchPrograms = async (): Promise<Program[]> => {
     },
     body: JSON.stringify({
       query: GET_PROGRAMS_QUERY,
-      variables: {
-        direction: "asc",
-        priority: 0,
-        limit: 1,
-      },
     }),
   });
 
