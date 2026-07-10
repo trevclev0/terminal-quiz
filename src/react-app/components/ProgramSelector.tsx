@@ -28,11 +28,7 @@ function ProgramSelector() {
   }, []);
 
   if (programs.length === 0) {
-    return (
-      <h2 id="program-selector" className={styles.warning}>
-        No programs found
-      </h2>
-    );
+    return <h2 className={styles.warning}>No programs found</h2>;
   }
 
   /**
@@ -55,22 +51,24 @@ function ProgramSelector() {
   };
 
   return (
-    <div id="program-selector">
-      <select
-        id="program-selector-select"
-        ref={selectRef}
-        onChange={handleSelect}
-        value={isValidSelection ? programId : ""}
-      >
-        <option value="" disabled hidden>
-          Select your program
-        </option>
-        {programs.map((program) => (
-          <option key={program.id} value={program.id}>
-            {program.name}
+    <div className={styles.programSelector}>
+      <div className={styles.selectContainer}>
+        <select
+          className={styles.select}
+          ref={selectRef}
+          onChange={handleSelect}
+          value={isValidSelection ? programId : ""}
+        >
+          <option value="" disabled hidden>
+            Select your program
           </option>
-        ))}
-      </select>
+          {programs.map((program) => (
+            <option key={program.id} value={program.id}>
+              {program.name}
+            </option>
+          ))}
+        </select>
+      </div>
       {programId && (
         <button
           type="button"

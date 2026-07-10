@@ -57,7 +57,7 @@ function TerminalConfirmModal({
         </button>
       </div>
       <button type="button" onClick={onCancel} className={styles.cancelButton}>
-        ×
+        [x]
       </button>
     </dialog>
   );

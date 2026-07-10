@@ -63,6 +63,9 @@
   color: var(--light-grey);
 }
 
-.gateInput {
-  margin-right: 1.125rem;
+.promptCaret {
+  color: var(--green);
+  margin-right: 0.5rem;
+  width: 1ch;
+  display: inline-block;
 }
