@@ -65,11 +65,11 @@ export default function ActiveGate({
       }
     >
       <details open>
-        <summary>{gate.label}</summary>
+        <summary className={gateStyles.gateSummary}>{gate.label}</summary>
         <form onSubmit={handleSubmit} aria-label={formAriaLabel}>
           <p className="description">{gate.question}</p>
           <div className={gateStyles.promptLine}>
-            <span className={gateStyles.promptCaret} aria-hidden="true">
+            <span className={styles.promptCaret} aria-hidden="true">
               &gt;
             </span>
             <input
@@ -79,7 +79,7 @@ export default function ActiveGate({
               placeholder="enter password..."
               value={guess}
               onChange={changeHandler}
-              className={styles.gateInput}
+              className={gateStyles.gateInput}
               disabled={isPending || isMutationPending}
             />
           </div>

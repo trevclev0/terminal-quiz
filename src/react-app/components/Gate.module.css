@@ -8,15 +8,24 @@
   flex-direction: column;
 }
 
+.gateSummary {
+  font-weight: bold;
+}
+
 .promptLine {
   display: flex;
   align-items: center;
-  margin: 0.75rem 1rem;
+  margin: 0.75rem 2rem 0.75rem 1rem;
+}
+
+.gateInput {
+  margin-right: 1.125rem;
 }
 
 .promptCaret {
   color: var(--green);
+  margin-top: 0.25rem;
   margin-right: 0.5rem;
-  width: 1ch;
+  width: 4ch;
   display: inline-block;
 }
