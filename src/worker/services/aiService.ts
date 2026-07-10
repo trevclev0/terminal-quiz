@@ -65,6 +65,7 @@ export async function generateClue(
   }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   const safeGuess = currentGuess.replace(/"/g, '\\"');
   // Construct the user prompt with all relevant context.
   let userPrompt = `
@@ -80,6 +81,14 @@ ${gateQuestion}\"\nCorrect Answer (never reveal): \"
 ${correctAnswer}\"\nPlayer's current incorrect guess: \"
 ${safeGuess}\"\nClue attempt:
 ${previousClues.length + 1} of
+=======
+  const safeGuess = currentGuess.replace(/"/g, '\\"');
+  let userPrompt = `\nGate Question: "
+${gateQuestion}"\nCorrect Answer (never reveal): "
+${correctAnswer}"\nPlayer's current incorrect guess: "
+${safeGuess}"\nClue attempt: 
+${previousClues.length + 1} of 
+>>>>>>> 3382ff7 (🐛 fix(worker): refine AI regex and error messages)
 ${MAX_CLUES_PER_GATE}\n`.trim();
 >>>>>>> 3bae02d (:bug: fix: escape user input)
 
@@ -116,8 +125,13 @@ ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
     // Basic check to ensure the AI didn't directly reveal the answer.
     // This is a safeguard, as the system prompt should ideally prevent it.
     const escapedAnswer = escapeRegExp(correctAnswer);
+<<<<<<< HEAD
     const startBoundary = /^\w/.test(correctAnswer) ? "\\b" : "";
     const endBoundary = /\w$/.test(correctAnswer) ? "\\b" : "";
+=======
+    const startBoundary = /^\\w/.test(correctAnswer) ? "\\\\b" : "";
+    const endBoundary = /\\w$/.test(correctAnswer) ? "\\\\b" : "";
+>>>>>>> 3382ff7 (🐛 fix(worker): refine AI regex and error messages)
     const answerRegex = new RegExp(
       `${startBoundary}${escapedAnswer}${endBoundary}`,
       "i",
