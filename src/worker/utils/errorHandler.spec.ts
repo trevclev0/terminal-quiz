@@ -48,7 +48,27 @@ describe("errorHandler", () => {
       const response = formatErrorResponse(error, "/api/graphql");
 
       expect(response).toEqual({
+  describe("formatErrorResponse", () => {
+    let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("formats response for GraphQL paths", () => {
+      const error = new Error("GraphQL went wrong");
+      const response = formatErrorResponse(error, "/api/graphql");
+
+      expect(response).toEqual({
         errors: [{ message: "Internal Server Error" }],
+      });
+      expect(consoleErrorSpy).toHaveBeenCalledWith(error);
+    });
+  });
       });
     });
 
