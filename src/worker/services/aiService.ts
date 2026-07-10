@@ -1,15 +1,11 @@
 import type { Ai, AiTextGenerationOutput } from "@cloudflare/workers-types";
 import { MAX_CLUES_PER_GATE } from "@shared/types";
-import { MAX_CLUES_PER_GATE } from "@shared/types";
 import type { Context } from "hono";
 import { env } from "hono/adapter";
 
 // Maximum length for the AI-generated clue to prevent
 // overly verbose responses.
 const MAX_CLUE_LENGTH = 200;
-
-const escapeRegExp = (str: string) =>
-  str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const escapeRegExp = (str: string) =>
   str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
