@@ -49,13 +49,13 @@ export async function generateClue(
     return null;
   }
 
-  // Construct the user prompt with all relevant context.
-  let userPrompt = `
-Gate Question: "${gateQuestion}"
-Correct Answer (never reveal): "${correctAnswer}"
-Player's current incorrect guess: "${currentGuess}"
-Clue attempt: ${previousClues.length + 1} of ${MAX_CLUES_PER_GATE}
-`.trim();
+const safeGuess = currentGuess.replace(/"/g, '\\\"');
+let userPrompt = `\nGate Question: \"
+${gateQuestion}\"\nCorrect Answer (never reveal): \"
+${correctAnswer}\"\nPlayer's current incorrect guess: \"
+${safeGuess}\"\nClue attempt: 
+${previousClues.length + 1} of 
+${MAX_CLUES_PER_GATE}\n`.trim();
 
   if (previousClues.length > 0) {
     userPrompt += `\nPrevious clues already given (do not repeat these):
