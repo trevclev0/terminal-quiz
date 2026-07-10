@@ -48,7 +48,7 @@ describe("errorHandler", () => {
       const response = formatErrorResponse(error, "/api/graphql");
 
       expect(response).toEqual({
-        errors: [{ message: "GraphQL went wrong" }],
+        errors: [{ message: "Internal Server Error" }],
       });
     });
 
