@@ -23,9 +23,6 @@ export default defineConfig({
       "@components": fileURLToPath(
         new URL("./src/react-app/components", import.meta.url),
       ),
-      "@contexts": fileURLToPath(
-        new URL("./src/react-app/contexts", import.meta.url),
-      ),
       "@utils": fileURLToPath(
         new URL("./src/react-app/utils", import.meta.url),
       ),
