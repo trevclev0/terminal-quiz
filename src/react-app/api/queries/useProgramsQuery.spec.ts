@@ -36,6 +36,8 @@ describe("useProgramsQuery", () => {
     const { result } = renderHook(() => useProgramsQuery(), { wrapper });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error?.message).toBe("Failed to fetch programs: 500");
+    expect(result.current.error?.message).toBe(
+      "GraphQL request failed with HTTP 500.",
+    );
   });
 });
