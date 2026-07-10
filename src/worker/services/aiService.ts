@@ -87,8 +87,8 @@ ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
     // Basic check to ensure the AI didn't directly reveal the answer.
     // This is a safeguard, as the system prompt should ideally prevent it.
     const escapedAnswer = escapeRegExp(correctAnswer);
-    const startBoundary = /^\\w/.test(correctAnswer) ? "\\\\b" : "";
-    const endBoundary = /\\w$/.test(correctAnswer) ? "\\\\b" : "";
+    const startBoundary = /^\w/.test(correctAnswer) ? "\\b" : "";
+    const endBoundary = /\w$/.test(correctAnswer) ? "\\b" : "";
     const answerRegex = new RegExp(
       `${startBoundary}${escapedAnswer}${endBoundary}`,
       "i",
