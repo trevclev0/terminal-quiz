@@ -50,12 +50,10 @@ export async function generateClue(
   }
 
   const safeGuess = currentGuess.replace(/"/g, '\\"');
-  let userPrompt = `\nGate Question: "
-${gateQuestion}"\nCorrect Answer (never reveal): "
-${correctAnswer}"\nPlayer's current incorrect guess: "
-${safeGuess}"\nClue attempt: 
-${previousClues.length + 1} of 
-${MAX_CLUES_PER_GATE}\n`.trim();
+  let userPrompt = `Gate Question: "${gateQuestion}"
+Correct Answer (never reveal): "${correctAnswer}"
+Player's current incorrect guess: "${safeGuess}"
+Clue attempt: ${previousClues.length + 1} of ${MAX_CLUES_PER_GATE}`.trim();
 
   if (previousClues.length > 0) {
     userPrompt += `\nPrevious clues already given (do not repeat these):
