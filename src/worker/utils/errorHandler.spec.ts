@@ -62,24 +62,24 @@ describe("errorHandler", () => {
       });
       expect(consoleErrorSpy).toHaveBeenCalledWith(error);
     });
-  });
-  it("provides a default message for GraphQL paths if error has no message", () => {
-    const error = new Error();
-    const response = formatErrorResponse(error, "/api/graphql");
+    it("provides a default message for GraphQL paths if error has no message", () => {
+      const error = new Error();
+      const response = formatErrorResponse(error, "/api/graphql");
 
-    expect(response).toEqual({
-      errors: [{ message: "Internal Server Error" }],
+      expect(response).toEqual({
+        errors: [{ message: "Internal Server Error" }],
+      });
     });
-  });
 
-  it("formats response for non-GraphQL paths", () => {
-    const error = new Error("REST API error");
-    const response = formatErrorResponse(error, "/api/users");
+    it("formats response for non-GraphQL paths", () => {
+      const error = new Error("REST API error");
+      const response = formatErrorResponse(error, "/api/users");
 
-    expect(response).toEqual({
-      status: "error",
-      message: "Server Error",
-      code: "INTERNAL_SERVER_ERROR",
+      expect(response).toEqual({
+        status: "error",
+        message: "Server Error",
+        code: "INTERNAL_SERVER_ERROR",
+      });
     });
   });
 });
