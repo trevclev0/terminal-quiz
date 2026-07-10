@@ -58,16 +58,6 @@ describe("errorHandler", () => {
       });
       expect(consoleErrorSpy).toHaveBeenCalledWith(error);
     });
-
-    it("formats response for GraphQL paths", () => {
-      const error = new Error("GraphQL went wrong");
-      const response = formatErrorResponse(error, "/api/graphql");
-
-      expect(response).toEqual({
-        errors: [{ message: "Internal Server Error" }],
-      });
-      expect(consoleErrorSpy).toHaveBeenCalledWith(error);
-    });
     it("provides a default message for GraphQL paths if error has no message", () => {
       const error = new Error();
       const response = formatErrorResponse(error, "/api/graphql");

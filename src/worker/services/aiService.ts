@@ -63,8 +63,7 @@ export async function generateClue(
     console.error("AI binding not available.");
     return null;
   }
-
-  const safeGuess = currentGuess.replace(/"/g, '\\"');
+  const safeGuess = currentGuess.replace(/"/g, '\\"').replace(/\n/g, " ");
   let userPrompt = `Gate Question: "${gateQuestion}"
 Correct Answer (never reveal): "${correctAnswer}"
 Player's current incorrect guess: "${safeGuess}"
