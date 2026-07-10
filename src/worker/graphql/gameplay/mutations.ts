@@ -37,6 +37,11 @@ export const submitGuess = {
     args: { programId: string; gateId: string; guess: string },
     context: AppGraphQLContext,
   ) => {
+    const MAX_GUESS_LENGTH = 500;
+    if (args.guess.length > MAX_GUESS_LENGTH) {
+      throw new Error("Invalid guess length.");
+    }
+
     const db = context.get("db");
     const sessionId = context.get("sessionId");
 
