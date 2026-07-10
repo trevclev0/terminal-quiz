@@ -13,7 +13,7 @@
   --light-grey: #7fa87f;
   --faded-green: #346335;
   --accent: #4a9999;
-  --font-terminal: "Glass TTY VT220", "Courier New", Courier, monospace;
+  --font-terminal: "Glass TTY VT220", "Courier New", "Courier", monospace;
 }
 
 body {
@@ -109,9 +109,7 @@ input[type="text"]::placeholder {
 
 @media (max-width: 600px) {
   .action-buttons {
-    display: flex;
     flex-direction: column;
-    gap: 1rem;
     width: 100%;
   }
 
