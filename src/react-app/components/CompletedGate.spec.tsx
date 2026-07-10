@@ -23,7 +23,7 @@ describe("CompletedGate", () => {
     expect(screen.getByText("What is 2+2?")).toBeInTheDocument();
   });
 
-  it("input is disabled and shows ✔ {correctAnswer}", () => {
+  it("input is disabled and shows [OK] {correctAnswer}", () => {
     render(<CompletedGate id="gate-0" gate={mockCompletedGate} />);
     const input = screen.getByRole("textbox");
     expect(input).toBeDisabled();

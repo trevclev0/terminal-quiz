@@ -54,6 +54,7 @@ function ProgramSelector() {
     <div className={styles.programSelector}>
       <div className={styles.selectContainer}>
         <select
+          aria-label="Select your program"
           className={styles.select}
           ref={selectRef}
           onChange={handleSelect}
