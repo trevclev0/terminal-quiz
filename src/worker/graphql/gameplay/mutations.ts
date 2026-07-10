@@ -14,6 +14,8 @@ import {
   SubmitGuessPayloadType,
 } from "./types";
 
+const MAX_GUESS_LENGTH = 500;
+
 async function getExistingCluesForGate(
   db: AppGraphQLContext["var"]["db"],
   sessionProgressId: string,
@@ -40,8 +42,10 @@ export const submitGuess = {
     args: { programId: string; gateId: string; guess: string },
     context: AppGraphQLContext,
   ) => {
-    const MAX_GUESS_LENGTH = 500;
-    if (args.guess.length > MAX_GUESS_LENGTH) {
+    if (
+      args.guess.trim().length === 0 ||
+      args.guess.length > MAX_GUESS_LENGTH
+    ) {
       throw new Error("Invalid current guess length.");
     }
 
@@ -179,12 +183,8 @@ export const requestClue = {
     const db = context.get("db");
     const sessionId = context.get("sessionId");
 
-    const MAX_CURRENT_GUESS_LENGTH = 500;
     const currentGuess = args.currentGuess.trim();
-    if (
-      currentGuess.length === 0 ||
-      currentGuess.length > MAX_CURRENT_GUESS_LENGTH
-    ) {
+    if (currentGuess.length === 0 || currentGuess.length > MAX_GUESS_LENGTH) {
       throw new Error("Invalid current guess length.");
     }
 

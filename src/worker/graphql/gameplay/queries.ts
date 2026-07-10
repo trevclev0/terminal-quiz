@@ -133,6 +133,9 @@ export const getPrograms = {
     new GraphQLList(new GraphQLNonNull(ProgramListItemType)),
   ),
   resolve: async (_: unknown, __: unknown, context: AppGraphQLContext) => {
+    const sessionId = context.get("sessionId");
+    if (!sessionId) throw new Error("Unauthorized: Missing Session ID");
+
     const db = context.get("db");
     return db.query.programs.findMany();
   },
