@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { requestClue, submitGuess } from "./mutations";
-import type { AppGraphQLContext } from "./queries";
 
 vi.mock("../../utils/isGuessCloseEnough", () => ({
   default: vi.fn(),
@@ -12,6 +11,7 @@ vi.mock("../../services/aiService", () => ({
 
 import { generateClue } from "../../services/aiService";
 import isGuessCloseEnough from "../../utils/isGuessCloseEnough";
+import type { AppGraphQLContext } from "./types";
 
 type MockDb = {
   query: {

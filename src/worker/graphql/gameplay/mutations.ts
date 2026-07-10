@@ -8,8 +8,11 @@ import {
   computeCluesRemaining,
   MAX_CLUES_PER_GATE,
 } from "./clueEligibility";
-import type { AppGraphQLContext } from "./queries";
-import { RequestClueResultType, SubmitGuessPayloadType } from "./types";
+import {
+  type AppGraphQLContext,
+  RequestClueResultType,
+  SubmitGuessPayloadType,
+} from "./types";
 
 async function getExistingCluesForGate(
   db: AppGraphQLContext["var"]["db"],
