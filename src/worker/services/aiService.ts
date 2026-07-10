@@ -1,4 +1,5 @@
 import type { Ai, AiTextGenerationOutput } from "@cloudflare/workers-types";
+import { MAX_CLUES_PER_GATE } from "@shared/types";
 import type { Context } from "hono";
 import { env } from "hono/adapter";
 
@@ -6,21 +7,23 @@ import { env } from "hono/adapter";
 // overly verbose responses.
 const MAX_CLUE_LENGTH = 200;
 
+const escapeRegExp = (str: string) =>
+  str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 // System prompt instructing the AI on its role and constraints
 // for generating clues.
 const SYSTEM_PROMPT = `
-You are a helpful assistant for a terminal-based riddle game.
-Your goal is to provide hints to the player without directly
-revealing the correct answer.
+You are a helpful hint-giver for a text-based riddle game.
 
-Here are the strict rules you must follow:
-1. NEVER reveal the exact correct answer.
-2. Provide clues that are short, concise, and helpful for a riddle.
-3. Consider the current question, the player's last guess, and any
-   previous clues given.
-4. If the player's guess is very close but incorrect, provide a
-   subtle nudge.
-5. Keep clues under ${MAX_CLUE_LENGTH} characters.
+Rules:
+1. NEVER state, spell out, or directly paraphrase the correct answer.
+2. Do not reveal answer length, first/last letter, or rhymes unless explicitly asked to nudge that way.
+3. Each clue must add NEW information not present in previous clues — no repeating prior phrasing.
+4. Match clue style to the answer type (e.g. a date gets a time-period hint, a name gets a role/context hint, a phrase gets a meaning hint) — infer this from the gate question and answer.
+5. If the guess is semantically close (synonym, right category, partial match), acknowledge it's "on the right track" before nudging further.
+6. If the guess is far off, redirect toward the correct concept rather than critiquing the wrong guess.
+7. Output ONLY the clue text — no preamble, no labels, no quotes around it.
+8. Keep clues under ${MAX_CLUE_LENGTH} characters.
 `.trim();
 
 /**
@@ -49,17 +52,18 @@ export async function generateClue(
   // Construct the user prompt with all relevant context.
   let userPrompt = `
 Gate Question: "${gateQuestion}"
+Correct Answer (never reveal): "${correctAnswer}"
 Player's current incorrect guess: "${currentGuess}"
+Clue attempt: ${previousClues.length + 1} of ${MAX_CLUES_PER_GATE}
 `.trim();
 
   if (previousClues.length > 0) {
-    userPrompt += `\nPrevious clues given:
-${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}
-`;
+    userPrompt += `\nPrevious clues already given (do not repeat these):
+${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
   }
 
   // Add a reminder not to reveal the answer directly.
-  userPrompt += `\nGenerate a new, short, and subtle clue without revealing "${correctAnswer}".`;
+  userPrompt += `\nGenerate the next clue, strictly better/more specific than the previous ones, without revealing the answer.`;
 
   try {
     const response = (await AI.run("@cf/meta/llama-4-scout-17b-16e-instruct", {
@@ -82,7 +86,7 @@ ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}
 
     // Basic check to ensure the AI didn't directly reveal the answer.
     // This is a safeguard, as the system prompt should ideally prevent it.
-    const answerRegex = new RegExp(`\\b${correctAnswer}\\b`, "i");
+    const answerRegex = new RegExp(`\\b${escapeRegExp(correctAnswer)}\\b`, "i");
     if (answerRegex.test(clueText)) {
       console.warn("AI generated a clue containing the answer. Filtering.");
       return null;
