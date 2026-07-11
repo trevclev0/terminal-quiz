@@ -38,6 +38,15 @@ button {
   font-family: inherit;
 }
 
+button:hover {
+  font-weight: bold;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
 #app-root {
   max-width: 800px;
   margin: auto;

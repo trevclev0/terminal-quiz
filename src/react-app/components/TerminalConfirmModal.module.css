@@ -29,9 +29,7 @@
   color: var(--green);
   border: 1px solid var(--green);
   cursor: pointer;
-  transition:
-    background-color 0.2s,
-    color 0.2s;
+  transition: font-weight 0.3s;
 }
 
 .cancelButton {
@@ -44,9 +42,17 @@
   width: auto;
 }
 
+.cancelButton:hover {
+  font-weight: bold;
+}
+
+.cancelButton:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
 .actionButton:hover {
-  background-color: var(--green);
-  color: var(--black);
+  font-weight: bold;
 }
 
 .actionButton:focus-visible {
