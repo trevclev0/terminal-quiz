@@ -46,7 +46,7 @@ export const submitGuess = {
       args.guess.trim().length === 0 ||
       args.guess.length > MAX_GUESS_LENGTH
     ) {
-      throw new Error("Invalid current guess length.");
+      throw new Error("Invalid guess length.");
     }
 
     const db = context.get("db");
