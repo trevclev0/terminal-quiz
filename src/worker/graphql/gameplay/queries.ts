@@ -137,6 +137,12 @@ export const getPrograms = {
     if (!sessionId) throw new Error("Unauthorized: Missing Session ID");
 
     const db = context.get("db");
-    return db.query.programs.findMany();
+    return db.query.programs.findMany({
+      columns: {
+        id: true,
+        name: true,
+        isSelected: true,
+      },
+    });
   },
 };

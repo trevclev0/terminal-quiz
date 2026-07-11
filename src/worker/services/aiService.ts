@@ -25,16 +25,6 @@ Rules:
 7. Output ONLY the clue text — no preamble, no labels, no quotes around it.
 8. Keep clues under ${MAX_CLUE_LENGTH} characters.
 You are a helpful hint-giver for a text-based riddle game.
-
-Rules:
-1. NEVER state, spell out, or directly paraphrase the correct answer.
-2. Do not reveal answer length, first/last letter, or rhymes unless explicitly asked to nudge that way.
-3. Each clue must add NEW information not present in previous clues — no repeating prior phrasing.
-4. Match clue style to the answer type (e.g. a date gets a time-period hint, a name gets a role/context hint, a phrase gets a meaning hint) — infer this from the gate question and answer.
-5. If the guess is semantically close (synonym, right category, partial match), acknowledge it's "on the right track" before nudging further.
-6. If the guess is far off, redirect toward the correct concept rather than critiquing the wrong guess.
-7. Output ONLY the clue text — no preamble, no labels, no quotes around it.
-8. Keep clues under ${MAX_CLUE_LENGTH} characters.
 `.trim();
 
 /**
@@ -68,12 +58,9 @@ Clue attempt: ${previousClues.length + 1} of ${MAX_CLUES_PER_GATE}`.trim();
   if (previousClues.length > 0) {
     userPrompt += `\nPrevious clues already given (do not repeat these):
 ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
-    userPrompt += `\nPrevious clues already given (do not repeat these):
-${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
   }
 
   // Add a reminder not to reveal the answer directly.
-  userPrompt += `\nGenerate the next clue, strictly better/more specific than the previous ones, without revealing the answer.`;
   userPrompt += `\nGenerate the next clue, strictly better/more specific than the previous ones, without revealing the answer.`;
 
   try {
