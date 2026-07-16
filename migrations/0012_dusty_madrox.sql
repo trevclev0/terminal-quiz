@@ -1,0 +1,1 @@
+DROP INDEX `gates_program_sequence_idx`;
