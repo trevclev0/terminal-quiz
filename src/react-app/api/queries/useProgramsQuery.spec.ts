@@ -3,9 +3,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createQueryWrapper } from "../../test-utils/queryTestUtils";
 
-const mockPrograms = [
-  { id: "1", name: "Program A", isSelected: false, gates: [] },
-];
+const mockPrograms = [{ id: "1", name: "Program A" }];
 
 describe("useProgramsQuery", () => {
   beforeEach(() => {
