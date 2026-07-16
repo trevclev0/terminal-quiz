@@ -36,7 +36,9 @@ function createMockDb(): MockDb {
       }),
     }),
     insert: vi.fn().mockReturnValue({
-      values: vi.fn().mockResolvedValue(undefined),
+      values: vi.fn().mockReturnValue({
+        onConflictDoNothing: vi.fn().mockResolvedValue(undefined),
+      }),
     }),
   };
 }
@@ -65,7 +67,6 @@ const defaultProgress = {
   id: "progress-1",
   status: "in_progress",
   currentGateId: "gate-1",
-  completedGateIds: "[]",
   attemptCount: 0,
 };
 

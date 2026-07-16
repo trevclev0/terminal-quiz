@@ -1,4 +1,9 @@
-import { gateClues, gates, sessionProgress } from "@shared/schema";
+import {
+  gateClues,
+  gates,
+  sessionCompletedGates,
+  sessionProgress,
+} from "@shared/schema";
 import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
 import { GraphQLBoolean, GraphQLNonNull, GraphQLString } from "graphql";
 import { generateClue } from "../../services/aiService";
@@ -141,24 +146,21 @@ export const submitGuess = {
         orderBy: [asc(gates.sequenceOrder)],
       })) || null;
 
-    let completedIds: string[] = [];
-    try {
-      const parsed = JSON.parse(progress.completedGateIds || "[]");
-      if (Array.isArray(parsed)) {
-        completedIds = parsed;
-      }
-    } catch (error) {
-      console.error("Error parsing completedGateIds:", error);
-      throw new Error("Internal server error.");
-    }
-    completedIds.push(activeGate.id);
-
     const newStatus = nextGate ? "in_progress" : "completed";
+
+    // Atomic insert into the join table — unique constraint prevents duplicates
+    await db
+      .insert(sessionCompletedGates)
+      .values({
+        sessionProgressId: progress.id,
+        gateId: activeGate.id,
+      })
+      .onConflictDoNothing();
+
     await db
       .update(sessionProgress)
       .set({
         currentGateId: nextGate ? nextGate.id : null,
-        completedGateIds: JSON.stringify(completedIds),
         status: newStatus,
         attemptCount: 0,
         ...(newStatus === "completed" ? { completedAt: new Date() } : {}),
