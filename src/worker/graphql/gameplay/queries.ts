@@ -1,4 +1,4 @@
-import { gates, sessionProgress } from "@shared/schema";
+import { gates, sessionCompletedGates, sessionProgress } from "@shared/schema";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { GraphQLList, GraphQLNonNull, GraphQLString } from "graphql";
 import {
@@ -49,7 +49,6 @@ export const getProgramProgression = {
             sessionId,
             programId: args.programId,
             currentGateId: firstGate.id,
-            completedGateIds: "[]",
           })
           .returning();
         progress = newProgress[0];
@@ -66,24 +65,21 @@ export const getProgramProgression = {
       }
     }
 
-    let completedIds: string[] = [];
-    try {
-      const parsed = JSON.parse(progress.completedGateIds || "[]");
-      if (Array.isArray(parsed)) {
-        completedIds = parsed;
-      }
-    } catch (error) {
-      console.error("Error parsing completedGateIds:", error);
-      throw new Error("Internal server error.");
-    }
-    // Security: only gates in completedGateIds are fetched with correctAnswer.
+    // Security: only gates from sessionCompletedGates are fetched with correctAnswer.
+    const completedEntries = await db.query.sessionCompletedGates.findMany({
+      where: eq(sessionCompletedGates.sessionProgressId, progress.id),
+    });
+
     const completedGates =
-      completedIds.length === 0
+      completedEntries.length === 0
         ? []
         : await db.query.gates.findMany({
             where: and(
               eq(gates.programId, args.programId),
-              inArray(gates.id, completedIds),
+              inArray(
+                gates.id,
+                completedEntries.map((e) => e.gateId),
+              ),
             ),
             orderBy: [asc(gates.sequenceOrder)],
           });

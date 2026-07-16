@@ -11,6 +11,7 @@ describe("Gameplay Queries: getProgramProgression", () => {
       query: {
         gates: { findMany: vi.fn(), findFirst: vi.fn() },
         sessionProgress: { findFirst: vi.fn() },
+        sessionCompletedGates: { findMany: vi.fn() },
       },
       insert: vi.fn(),
     } as unknown;
@@ -38,10 +39,14 @@ describe("Gameplay Queries: getProgramProgression", () => {
   it("fetches and returns the correct progression state", async () => {
     // @ts-expect-error
     mockDb.query.sessionProgress.findFirst.mockResolvedValue({
-      completedGateIds: JSON.stringify(["gate-1"]),
       currentGateId: "gate-2",
       status: "in_progress",
     });
+
+    // @ts-expect-error
+    mockDb.query.sessionCompletedGates.findMany.mockResolvedValue([
+      { gateId: "gate-1" },
+    ]);
 
     // @ts-expect-error
     mockDb.query.gates.findMany.mockResolvedValue([
@@ -96,10 +101,12 @@ describe("Gameplay Queries: getProgramProgression", () => {
   it("skips completed gate query when none are completed", async () => {
     // @ts-expect-error
     mockDb.query.sessionProgress.findFirst.mockResolvedValue({
-      completedGateIds: "[]",
       currentGateId: "gate-1",
       status: "in_progress",
     });
+
+    // @ts-expect-error
+    mockDb.query.sessionCompletedGates.findMany.mockResolvedValue([]);
 
     // @ts-expect-error
     mockDb.query.gates.findFirst.mockResolvedValue({
