@@ -79,7 +79,13 @@ export const submitGuess = {
       throw new Error(`Gate with ID ${args.gateId} not found.`);
     }
 
-    if (!isGuessCloseEnough(args.guess, activeGate.correctAnswer)) {
+    if (
+      !isGuessCloseEnough(
+        args.guess,
+        activeGate.correctAnswer,
+        activeGate.acceptanceThreshold,
+      )
+    ) {
       // Atomic increment of attemptCount to prevent race conditions
       await db
         .update(sessionProgress)
