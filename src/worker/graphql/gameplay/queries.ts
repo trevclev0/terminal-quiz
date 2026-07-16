@@ -141,7 +141,6 @@ export const getPrograms = {
       columns: {
         id: true,
         name: true,
-        isSelected: true,
       },
     });
   },

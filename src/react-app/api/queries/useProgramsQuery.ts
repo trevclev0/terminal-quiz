@@ -8,7 +8,6 @@ const GET_PROGRAMS_QUERY = `
     programs {
       id
       name
-      isSelected
     }
   }
 `;

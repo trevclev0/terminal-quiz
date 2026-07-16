@@ -16,7 +16,6 @@ export const ProgramListItemType = new GraphQLObjectType({
   fields: {
     id: { type: new GraphQLNonNull(GraphQLString) },
     name: { type: new GraphQLNonNull(GraphQLString) },
-    isSelected: { type: new GraphQLNonNull(GraphQLBoolean) },
   },
 });
 
