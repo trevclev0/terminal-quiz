@@ -1,16 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { requestClue, submitGuess } from "./mutations";
 
-vi.mock("../../utils/isGuessCloseEnough", () => ({
+vi.mock("@worker-utils/isGuessCloseEnough", () => ({
   default: vi.fn(),
 }));
 
-vi.mock("../../services/aiService", () => ({
+vi.mock("@worker-services/aiService", () => ({
   generateClue: vi.fn(),
 }));
 
-import { generateClue } from "../../services/aiService";
-import isGuessCloseEnough from "../../utils/isGuessCloseEnough";
+import { generateClue } from "@worker-services/aiService";
+import isGuessCloseEnough from "@worker-utils/isGuessCloseEnough";
 import type { AppGraphQLContext } from "./types";
 
 type MockDb = {

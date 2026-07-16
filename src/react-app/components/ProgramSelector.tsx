@@ -1,7 +1,7 @@
 import usePrograms from "@hooks/usePrograms";
+import { Route } from "@routes/programs/select";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
-import { Route } from "../routes/programs/select";
 import styles from "./ProgramSelector.module.css";
 
 function ProgramSelector() {

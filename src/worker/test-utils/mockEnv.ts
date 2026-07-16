@@ -1,7 +1,7 @@
 import type { Ai, D1Database } from "@cloudflare/workers-types";
 import type { Context } from "hono";
 import { type Mock, vi } from "vitest";
-import type { Env } from "../index";
+import type { Env } from "..";
 
 export function createMockEnv(
   overrides: Partial<Env["Bindings"]> = {},

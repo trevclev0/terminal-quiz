@@ -21,7 +21,7 @@ vi.mock("@tanstack/react-router", () => ({
   useNavigate: vi.fn(() => vi.fn()),
 }));
 
-vi.mock("../routes/programs/$programId", () => ({
+vi.mock("@routes/programs/$programId", () => ({
   Route: {
     useParams: vi.fn(() => ({ programId: "test-program-id" })),
     fullPath: "/programs/test-program-id",

@@ -1,3 +1,4 @@
+import type { AppVariables } from "@worker-middleware/db";
 import {
   GraphQLBoolean,
   GraphQLInt,
@@ -7,7 +8,6 @@ import {
   GraphQLString,
 } from "graphql";
 import type { Context } from "hono";
-import type { AppVariables } from "../../middleware/db";
 
 export type AppGraphQLContext = Context<AppVariables>;
 

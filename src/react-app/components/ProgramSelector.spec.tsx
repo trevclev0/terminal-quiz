@@ -1,10 +1,10 @@
 // src/react-app/components/ProgramSelector.spec.tsx
 import usePrograms from "@hooks/usePrograms";
+import { Route } from "@routes/programs/select";
 import { useNavigate } from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
-import { Route } from "../routes/programs/select";
 import ProgramSelector from "./ProgramSelector";
 
 vi.mock("@hooks/usePrograms");
@@ -13,7 +13,7 @@ vi.mock("@tanstack/react-router", () => ({
   useNavigate: vi.fn(),
 }));
 
-vi.mock("../routes/programs/select", () => ({
+vi.mock("@routes/programs/select", () => ({
   Route: {
     useSearch: vi.fn(),
     fullPath: "/programs/select",

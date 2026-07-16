@@ -5,10 +5,10 @@ import CompletedGate from "@components/CompletedGate";
 import TerminalConfirmModal from "@components/TerminalConfirmModal";
 import useProgramPlay from "@hooks/useProgramPlay";
 import useProgressionScroll from "@hooks/useProgressionScroll";
+import { Route } from "@routes/programs/$programId";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Route } from "../routes/programs/$programId";
 import styles from "./ProgramPlay.module.css";
 
 function ProgramPlay() {

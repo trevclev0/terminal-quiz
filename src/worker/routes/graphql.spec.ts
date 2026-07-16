@@ -1,7 +1,7 @@
+import { setupDb } from "@worker-middleware/db";
 import { type Context, Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Env } from "..";
-import { setupDb } from "../middleware/db";
 import { invalidateCachedSchema } from "./graphql";
 
 vi.mock("@hono/graphql-server", () => ({
