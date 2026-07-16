@@ -71,6 +71,13 @@
       "when": 1784164222944,
       "tag": "0009_whole_quasar",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1784168875620,
+      "tag": "0010_funny_santa_claus",
+      "breakpoints": true
     }
   ]
 }

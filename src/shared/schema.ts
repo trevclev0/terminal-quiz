@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import {
+  check,
   index,
   integer,
   real,
@@ -59,7 +60,6 @@ export const sessionProgress = sqliteTable(
     currentGateId: text("current_gate_id").references(() => gates.id, {
       onDelete: "set null",
     }),
-    completedGateIds: text("completed_gate_ids").default("[]"),
     status: text("status").notNull().default("in_progress"),
     startedAt: integer("started_at", { mode: "timestamp" })
       .notNull()
@@ -72,7 +72,34 @@ export const sessionProgress = sqliteTable(
     // Counter for incorrect guesses for the current gate
     attemptCount: integer("attempt_count").notNull().default(0),
   },
-  (t) => [unique("unique_session_progress").on(t.sessionId, t.programId)],
+  (t) => [
+    unique("unique_session_progress").on(t.sessionId, t.programId),
+    check(
+      "session_status_check",
+      sql`${t.status} IN ('in_progress', 'completed')`,
+    ),
+  ],
+);
+
+export const sessionCompletedGates = sqliteTable(
+  "session_completed_gates",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    sessionProgressId: text("session_progress_id")
+      .notNull()
+      .references(() => sessionProgress.id, { onDelete: "cascade" }),
+    gateId: text("gate_id")
+      .notNull()
+      .references(() => gates.id, { onDelete: "cascade" }),
+    completedAt: integer("completed_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (t) => [
+    unique("unique_session_gate_completion").on(t.sessionProgressId, t.gateId),
+  ],
 );
 
 export const gateClues = sqliteTable(
@@ -129,6 +156,21 @@ export const sessionProgressRelations = relations(
       references: [gates.id],
     }),
     gateClues: many(gateClues),
+    completedGates: many(sessionCompletedGates),
+  }),
+);
+
+export const sessionCompletedGatesRelations = relations(
+  sessionCompletedGates,
+  ({ one }) => ({
+    sessionProgress: one(sessionProgress, {
+      fields: [sessionCompletedGates.sessionProgressId],
+      references: [sessionProgress.id],
+    }),
+    gate: one(gates, {
+      fields: [sessionCompletedGates.gateId],
+      references: [gates.id],
+    }),
   }),
 );
 
