@@ -12,9 +12,15 @@
       "@hooks/*": ["./src/react-app/hooks/*"],
       "@components/*": ["./src/react-app/components/*"],
       "@contexts/*": ["./src/react-app/contexts/*"],
+      "@routes/*": ["./src/react-app/routes/*"],
       "@utils/*": ["./src/react-app/utils/*"],
       "@test-utils/*": ["./src/react-app/test-utils/*"],
-      "@worker/*": ["./src/worker/*"],
+      "@worker-routes/*": ["./src/worker/routes/*"],
+      "@worker-middleware/*": ["./src/worker/middleware/*"],
+      "@worker-services/*": ["./src/worker/services/*"],
+      "@worker-utils/*": ["./src/worker/utils/*"],
+      "@worker-graphql/*": ["./src/worker/graphql/*"],
+      "@worker-test-utils/*": ["./src/worker/test-utils/*"],
       "@shared/*": ["./src/shared/*"]
     },
 

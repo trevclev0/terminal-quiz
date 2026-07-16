@@ -1,5 +1,5 @@
+import { createMockHonoContext } from "@worker-test-utils/mockEnv";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createMockHonoContext } from "../test-utils/mockEnv";
 import { generateClue } from "./aiService";
 
 vi.mock("hono/adapter", () => ({

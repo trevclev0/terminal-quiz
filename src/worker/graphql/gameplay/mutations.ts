@@ -4,10 +4,10 @@ import {
   sessionCompletedGates,
   sessionProgress,
 } from "@shared/schema";
+import { generateClue } from "@worker-services/aiService";
+import isGuessCloseEnough from "@worker-utils/isGuessCloseEnough";
 import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
 import { GraphQLBoolean, GraphQLNonNull, GraphQLString } from "graphql";
-import { generateClue } from "../../services/aiService";
-import isGuessCloseEnough from "../../utils/isGuessCloseEnough";
 import {
   computeCanRequestClue,
   computeCluesRemaining,

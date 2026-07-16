@@ -1,4 +1,15 @@
 import { graphqlServer } from "@hono/graphql-server";
+import {
+  requestClue,
+  resetSession,
+  submitGuess,
+} from "@worker-graphql/gameplay/mutations";
+import {
+  getInProgressProgram,
+  getProgramProgression,
+  getPrograms,
+} from "@worker-graphql/gameplay/queries";
+import type { AppVariables } from "@worker-middleware/db";
 import { buildSchema } from "drizzle-graphql";
 import {
   GraphQLObjectType,
@@ -6,17 +17,6 @@ import {
   NoSchemaIntrospectionCustomRule,
 } from "graphql";
 import { Hono } from "hono";
-import {
-  requestClue,
-  resetSession,
-  submitGuess,
-} from "../graphql/gameplay/mutations";
-import {
-  getInProgressProgram,
-  getProgramProgression,
-  getPrograms,
-} from "../graphql/gameplay/queries";
-import type { AppVariables } from "../middleware/db";
 
 let cachedSchema: GraphQLSchema | null = null;
 

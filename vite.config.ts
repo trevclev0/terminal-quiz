@@ -23,12 +23,32 @@ export default defineConfig({
       "@components": fileURLToPath(
         new URL("./src/react-app/components", import.meta.url),
       ),
+      "@routes": fileURLToPath(
+        new URL("./src/react-app/routes", import.meta.url),
+      ),
       "@utils": fileURLToPath(
         new URL("./src/react-app/utils", import.meta.url),
       ),
       "@api": fileURLToPath(new URL("./src/react-app/api", import.meta.url)),
       "@shared": fileURLToPath(new URL("./src/shared", import.meta.url)),
-      "@worker": fileURLToPath(new URL("./src/worker", import.meta.url)),
+      "@worker-routes": fileURLToPath(
+        new URL("./src/worker/routes", import.meta.url),
+      ),
+      "@worker-middleware": fileURLToPath(
+        new URL("./src/worker/middleware", import.meta.url),
+      ),
+      "@worker-services": fileURLToPath(
+        new URL("./src/worker/services", import.meta.url),
+      ),
+      "@worker-utils": fileURLToPath(
+        new URL("./src/worker/utils", import.meta.url),
+      ),
+      "@worker-graphql": fileURLToPath(
+        new URL("./src/worker/graphql", import.meta.url),
+      ),
+      "@worker-test-utils": fileURLToPath(
+        new URL("./src/worker/test-utils", import.meta.url),
+      ),
     },
   },
   build: {
