@@ -1,0 +1,1 @@
+CREATE INDEX `gates_program_sequence_idx` ON `gates` (`program_id`,`sequence_order`);

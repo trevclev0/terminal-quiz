@@ -78,6 +78,13 @@
       "when": 1784168875620,
       "tag": "0010_funny_santa_claus",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1784171790933,
+      "tag": "0011_stiff_riptide",
+      "breakpoints": true
     }
   ]
 }
