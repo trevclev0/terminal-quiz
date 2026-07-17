@@ -10,8 +10,8 @@ CREATE TABLE `session_completed_gates` (
 CREATE UNIQUE INDEX `unique_session_gate_completion` ON `session_completed_gates` (`session_progress_id`,`gate_id`);--> statement-breakpoint
 -- Extract existing completed_gate_ids JSON data into session_completed_gates
 -- before the column is dropped in the table rebuild below.
-INSERT INTO `session_completed_gates` (`id`, `session_progress_id`, `gate_id`, `completed_at`)
-  SELECT lower(hex(randomblob(16))), `sp`.`id`, `je`.`value`, `sp`.`updated_at`
+INSERT INTO session_completed_gates (id, session_progress_id, gate_id, completed_at)
+  SELECT lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-' || lower(hex(randomblob(2))) || '-' || lower(hex(randomblob(2))) || '-' || lower(hex(randomblob(6))), sp.id, je.value, sp.updated_at
   FROM `session_progress` `sp`, json_each(`sp`.`completed_gate_ids`) AS `je`
   WHERE `sp`.`completed_gate_ids` IS NOT NULL;--> statement-breakpoint
 PRAGMA foreign_keys=OFF;--> statement-breakpoint
