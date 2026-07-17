@@ -71,7 +71,7 @@ bun run build           # tsc -b && vite build
 bun run preview         # build, then vite preview
 
 bun run deploy          # wrangler deploy (production)
-bun run deploy:preview  # wrangler versions upload --remote
+bun run deploy:preview  # build with CLOUDFLARE_ENV=preview, then wrangler deploy --env preview
 
 bun run migrate:generate   # drizzle-kit generate, after editing schema.ts
 bun run migrate:local      # apply migrations to local D1 file
@@ -207,6 +207,8 @@ bun run migrate:local / migrate:preview / migrate:prod
 
 Two D1 databases: `terminal-quest` (production, applied on push to `main`) and `terminal-quest-preview` (preview, applied on PR).
 
+Local development (`mise dev`, `migrate:local`, `seed:local`) runs against a local sqlite file that miniflare keys off `preview_database_id ?? database_id`, so the top-level binding's `preview_database_id` names the local database — not `database_id`. It is load-bearing despite the explicit `env.preview` block; removing it orphans the existing local sqlite (see the comment in `wrangler.jsonc`).
+
 ---
 
 ## Environments & Deployment
@@ -216,7 +218,7 @@ Two D1 databases: `terminal-quest` (production, applied on push to `main`) and `
 | Production | Push to `main` | _(default)_ | `terminal-quest` |
 | Preview | Pull request | `preview` | `terminal-quest-preview` |
 
-Fully automated via `.github/workflows/deploy.yml`; preview deploys patch the built `wrangler.json` (in `dist/`) to route to the preview D1 before deploying.
+Fully automated via `.github/workflows/deploy.yml`; preview builds run with `CLOUDFLARE_ENV=preview` so the Vite plugin flattens the `env.preview` section into the built `dist/quiz_app/wrangler.json`, then `wrangler deploy --env preview` deploys it.
 
 Secrets required in GitHub Actions: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `ADMIN_PAT`, `CODECOV_TOKEN`.
 

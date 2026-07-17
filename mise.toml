@@ -85,6 +85,6 @@ run = "bun run deploy"
 description = "Deploy to production"
 
 [tasks."deploy:preview"]
-depends = ["build"]
+depends = [{ task = "build", env = { CLOUDFLARE_ENV = "preview" } }]
 run = "bun run deploy:preview"
-description = "Deploy to preview"
+description = "Build with CLOUDFLARE_ENV=preview and deploy to preview"

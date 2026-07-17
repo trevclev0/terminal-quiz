@@ -26,7 +26,7 @@
     "migrate:preview": "wrangler d1 migrations apply terminal-quest-preview --remote --env preview",
     "migrate:prod": "wrangler d1 migrations apply terminal-quest --remote",
     "deploy": "wrangler deploy",
-    "deploy:preview": "wrangler versions upload --remote"
+    "deploy:preview": "wrangler deploy --env preview"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.0",
