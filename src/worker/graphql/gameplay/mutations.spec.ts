@@ -55,7 +55,7 @@ function createMockContext(mockDb: MockDb): AppGraphQLContext {
   return {
     get: vi.fn((key: string) => {
       if (key === "db") return mockDb;
-      if (key === "sessionId") return "mock-session-123";
+      if (key === "sessionId") return "mock-session-456";
       return undefined;
     }),
   } as unknown as AppGraphQLContext;
