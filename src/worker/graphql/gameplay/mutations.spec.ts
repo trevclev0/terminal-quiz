@@ -22,7 +22,7 @@ type MockDb = {
   update: ReturnType<typeof vi.fn>;
   insert: ReturnType<typeof vi.fn>;
   delete: ReturnType<typeof vi.fn>;
-  transaction: ReturnType<typeof vi.fn>;
+  batch: ReturnType<typeof vi.fn>;
 };
 
 function createMockDb(): MockDb {
@@ -45,11 +45,8 @@ function createMockDb(): MockDb {
     delete: vi.fn().mockReturnValue({
       where: vi.fn().mockResolvedValue(undefined),
     }),
-    transaction: vi.fn().mockImplementation(function (
-      this: MockDb,
-      cb: (db: MockDb) => unknown,
-    ) {
-      return cb(this);
+    batch: vi.fn().mockImplementation((statements: Promise<unknown>[]) => {
+      return Promise.all(statements);
     }),
   };
 }

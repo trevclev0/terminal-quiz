@@ -22,7 +22,7 @@ import {
 const MAX_GUESS_LENGTH = 500;
 
 async function getExistingCluesForGate(
-  db: Omit<AppGraphQLContext["var"]["db"], "batch">,
+  db: AppGraphQLContext["var"]["db"],
   sessionProgressId: string,
   gateId: string,
 ) {
@@ -59,106 +59,109 @@ export const submitGuess = {
 
     if (!sessionId) throw new Error("Unauthorized: Missing Session ID");
 
-    return db.transaction(async (tx) => {
-      const progress = await tx.query.sessionProgress.findFirst({
+    // NOTE: D1 does not support SQL BEGIN/SAVEPOINT, so db.transaction()
+    // always fails here. Reads run directly on `db`; writes that must
+    // land together are grouped with db.batch() instead.
+    const progress = await db.query.sessionProgress.findFirst({
+      where: and(
+        eq(sessionProgress.sessionId, sessionId),
+        eq(sessionProgress.programId, args.programId),
+      ),
+    });
+
+    if (!progress || progress.status === "completed") {
+      throw new Error(
+        "Invalid state: Program already completed or not started.",
+      );
+    }
+
+    if (progress.currentGateId !== args.gateId) {
+      throw new Error("Desync: Guess submitted for the wrong active gate.");
+    }
+
+    const activeGate = await db.query.gates.findFirst({
+      where: eq(gates.id, args.gateId),
+    });
+
+    if (!activeGate) {
+      throw new Error(`Gate with ID ${args.gateId} not found.`);
+    }
+
+    if (
+      !isGuessCloseEnough(
+        args.guess,
+        activeGate.correctAnswer,
+        activeGate.acceptanceThreshold,
+      )
+    ) {
+      // Atomic increment of attemptCount to prevent race conditions
+      await db
+        .update(sessionProgress)
+        .set({
+          attemptCount: sql`${sessionProgress.attemptCount} + 1`,
+        })
+        .where(eq(sessionProgress.id, progress.id));
+
+      // Re-fetch to get the incremented value
+      const updatedProgress = await db.query.sessionProgress.findFirst({
+        where: eq(sessionProgress.id, progress.id),
+      });
+
+      if (!updatedProgress) {
+        throw new Error("Failed to update attempt count.");
+      }
+
+      const existingClues = await getExistingCluesForGate(
+        db,
+        progress.id,
+        args.gateId,
+      );
+      const mostRecentClueAttemptCount =
+        existingClues[0]?.attemptCountAtRequest ?? null;
+
+      const canRequestClue = computeCanRequestClue({
+        isCorrectGuess: false,
+        guidanceEnabled: activeGate.guidanceEnabled,
+        attemptCount: updatedProgress.attemptCount,
+        guidanceThreshold: activeGate.guidanceThreshold,
+        existingClueCount: existingClues.length,
+        mostRecentClueAttemptCount,
+      });
+
+      return {
+        success: false,
+        message: "ACCESS DENIED. INCORRECT SYNTAX OR VALUE.",
+        nextGate: null,
+        canRequestClue,
+      };
+    }
+
+    // Guess is correct! Advance the state.
+    const nextGate =
+      (await db.query.gates.findFirst({
+        columns: {
+          correctAnswer: false,
+        },
         where: and(
-          eq(sessionProgress.sessionId, sessionId),
-          eq(sessionProgress.programId, args.programId),
+          eq(gates.programId, args.programId),
+          gt(gates.sequenceOrder, activeGate.sequenceOrder), // > current gate
         ),
-      });
+        orderBy: [asc(gates.sequenceOrder)],
+      })) || null;
 
-      if (!progress || progress.status === "completed") {
-        throw new Error(
-          "Invalid state: Program already completed or not started.",
-        );
-      }
+    const newStatus = nextGate ? "in_progress" : "completed";
 
-      if (progress.currentGateId !== args.gateId) {
-        throw new Error("Desync: Guess submitted for the wrong active gate.");
-      }
-
-      const activeGate = await tx.query.gates.findFirst({
-        where: eq(gates.id, args.gateId),
-      });
-
-      if (!activeGate) {
-        throw new Error(`Gate with ID ${args.gateId} not found.`);
-      }
-
-      if (
-        !isGuessCloseEnough(
-          args.guess,
-          activeGate.correctAnswer,
-          activeGate.acceptanceThreshold,
-        )
-      ) {
-        // Atomic increment of attemptCount to prevent race conditions
-        await tx
-          .update(sessionProgress)
-          .set({
-            attemptCount: sql`${sessionProgress.attemptCount} + 1`,
-          })
-          .where(eq(sessionProgress.id, progress.id));
-
-        // Re-fetch to get the incremented value
-        const updatedProgress = await tx.query.sessionProgress.findFirst({
-          where: eq(sessionProgress.id, progress.id),
-        });
-
-        if (!updatedProgress) {
-          throw new Error("Failed to update attempt count.");
-        }
-
-        const existingClues = await getExistingCluesForGate(
-          tx,
-          progress.id,
-          args.gateId,
-        );
-        const mostRecentClueAttemptCount =
-          existingClues[0]?.attemptCountAtRequest ?? null;
-
-        const canRequestClue = computeCanRequestClue({
-          isCorrectGuess: false,
-          guidanceEnabled: activeGate.guidanceEnabled,
-          attemptCount: updatedProgress.attemptCount,
-          guidanceThreshold: activeGate.guidanceThreshold,
-          existingClueCount: existingClues.length,
-          mostRecentClueAttemptCount,
-        });
-
-        return {
-          success: false,
-          message: "ACCESS DENIED. INCORRECT SYNTAX OR VALUE.",
-          nextGate: null,
-          canRequestClue,
-        };
-      }
-
-      // Guess is correct! Advance the state.
-      const nextGate =
-        (await tx.query.gates.findFirst({
-          columns: {
-            correctAnswer: false,
-          },
-          where: and(
-            eq(gates.programId, args.programId),
-            gt(gates.sequenceOrder, activeGate.sequenceOrder), // > current gate
-          ),
-          orderBy: [asc(gates.sequenceOrder)],
-        })) || null;
-
-      const newStatus = nextGate ? "in_progress" : "completed";
-
-      // Atomic insert into the join table — unique constraint prevents duplicates
-      await tx
+    // Both writes must land together — group via D1 batch (sequential,
+    // all-or-nothing), since db.transaction() isn't supported.
+    await db.batch([
+      db
         .insert(sessionCompletedGates)
         .values({
           sessionProgressId: progress.id,
           gateId: activeGate.id,
         })
-        .onConflictDoNothing();
-
-      await tx
+        .onConflictDoNothing(),
+      db
         .update(sessionProgress)
         .set({
           currentGateId: nextGate ? nextGate.id : null,
@@ -166,15 +169,15 @@ export const submitGuess = {
           attemptCount: 0,
           ...(newStatus === "completed" ? { completedAt: new Date() } : {}),
         })
-        .where(eq(sessionProgress.id, progress.id));
+        .where(eq(sessionProgress.id, progress.id)),
+    ]);
 
-      return {
-        success: true,
-        message: activeGate.successMessage,
-        nextGate,
-        canRequestClue: false,
-      };
-    });
+    return {
+      success: true,
+      message: activeGate.successMessage,
+      nextGate,
+      canRequestClue: false,
+    };
   },
 };
 
