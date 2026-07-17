@@ -35,6 +35,9 @@
       "binding": "DB",
       "database_name": "terminal-quest",
       "database_id": "9905dbd8-5e2d-4e87-aac0-d30fe5aa0a10",
+      // Load-bearing for local dev: miniflare keys the local sqlite file off
+      // `preview_database_id ?? database_id`. Removing it orphans the existing
+      // local DB and creates a fresh empty one. Do not remove.
       "preview_database_id": "04e5b1c3-3e5d-498e-aafa-8230c4bbdee0"
     }
   ],

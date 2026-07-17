@@ -262,7 +262,7 @@ The workflow:
 
 ```bash
 bun run deploy           # Deploy to production
-bun run deploy:preview   # Upload a preview version
+bun run deploy:preview   # Build with CLOUDFLARE_ENV=preview and deploy to preview
 ```
 
 ---
