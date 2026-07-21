@@ -60,6 +60,19 @@ jobs:
               || format('deploy --env preview --name quiz-app-preview-pr-{0}', github.event.pull_request.number)
             }}
 
+      - name: Run E2E Tests
+        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deploy.outcome == 'success'
+        run: mise run test:e2e
+        env:
+          BASE_URL: ${{ steps.deploy.outputs.deployment-url }}
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: always() && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deploy.outcome == 'success'
+        with:
+          name: playwright-report-${{ github.event.number }}
+          path: e2e/playwright-report/
+
       - name: Update Deployment (Success)
         uses: chrnorm/deployment-status@v2
         if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deployment.conclusion != 'skipped' && steps.deploy.outcome == 'success'
