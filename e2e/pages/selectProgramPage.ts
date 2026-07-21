@@ -22,7 +22,9 @@ export class SelectProgramPage {
   }
 
   async selectProgram(name: string) {
-    await this.page.getByLabel("Select your program").selectOption(name);
+    await this.page
+      .getByLabel("Select your program")
+      .selectOption({ label: name });
   }
 
   async startProgram() {
