@@ -57,7 +57,7 @@ jobs:
           command: >
             ${{ github.ref == 'refs/heads/main'
               && 'deploy'
-              || 'deploy --env preview'
+              || format('deploy --env preview --name quiz-app-preview-pr-{0}', github.event.pull_request.number)
             }}
 
       - name: Update Deployment (Success)

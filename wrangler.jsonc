@@ -46,7 +46,6 @@
   },
   "env": {
     "preview": {
-      "name": "quiz-app-preview",
       "workers_dev": true,
       "routes": [],
       "d1_databases": [
