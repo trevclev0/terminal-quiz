@@ -1,6 +1,8 @@
 import type { Page } from "@playwright/test";
 
 export class GamePage {
+  private lastSubmittedGateLabel: string | null = null;
+
   constructor(private page: Page) {}
 
   async waitForLoad() {
@@ -36,12 +38,16 @@ export class GamePage {
   /**
    * Submit an answer for the current active gate.
    * Types into the password input and presses Enter.
+   * Stores the submitted gate label for later verification.
    */
   async submitAnswer(answer: string) {
     const activeLabel = await this.getActiveGateLabel();
     if (!activeLabel) {
       throw new Error("No active gate to submit answer to");
     }
+
+    // Store the label before submission for isGuessSuccessful check
+    this.lastSubmittedGateLabel = activeLabel;
 
     // Locate the input within the active gate's form
     const input = this.page.getByLabel(`${activeLabel} password input`);
@@ -65,27 +71,15 @@ export class GamePage {
   }
 
   /**
-   * Check if the most recent guess was successful by checking
-   * whether the gate has transitioned to completed state.
+   * Check if the guess for the most recently submitted gate was successful
+   * by verifying that gate appears in the completed gates list.
    */
   async isGuessSuccessful(): Promise<boolean> {
-    // After a successful guess, the gate form changes to
-    // a completed gate with aria-label ending in "- completed"
-    const label = await this.getActiveGateLabel();
-
-    // If there's no active gate OR the old gate is now completed,
-    // the guess was successful
-    if (label === null) {
-      // No active gate — game might be over or gate was just completed
-      // Check if there's a completed gate form visible
-      const completedForm = this.page.locator(
-        "form[aria-label$='- completed']",
-      );
-      return (await completedForm.count()) > 0;
+    if (!this.lastSubmittedGateLabel) {
+      return false;
     }
-
-    // Active gate still exists — guess was rejected or we advanced
-    return false;
+    const completed = await this.getCompletedGateLabels();
+    return completed.includes(this.lastSubmittedGateLabel);
   }
 
   /**
