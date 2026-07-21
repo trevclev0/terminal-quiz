@@ -13,7 +13,7 @@
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "test:e2e": "playwright test",
+    "test:e2e": "bun run seed:e2e:local && playwright test",
     "seed:e2e:local": "wrangler d1 execute terminal-quest --local --file=scripts/seed-e2e.sql",
     "seed:e2e:preview": "wrangler d1 execute terminal-quest-preview --remote --env preview --file=scripts/seed-e2e.sql",
     "build": "tsc -b && vite build",
