@@ -1,8 +1,6 @@
 import type { Page } from "@playwright/test";
 
 export class GamePage {
-  private lastSubmittedGateLabel: string | null = null;
-
   constructor(private page: Page) {}
 
   async waitForLoad() {
@@ -33,6 +31,39 @@ export class GamePage {
     return ariaLabel
       .replace(/- enter password and press Enter to submit$/, "")
       .trim();
+  }
+
+  /**
+   * Wait for the active gate to become the expected label.
+   * Use after a successful guess to wait for the progression query refetch
+   * to land and the next gate to render.
+   */
+  async waitForActiveGateLabel(expectedLabel: string): Promise<void> {
+    await this.page.waitForFunction(
+      (expected) => {
+        const form = document.querySelector(
+          "form[aria-label$='enter password and press Enter to submit']",
+        );
+        if (!form) return false;
+        const ariaLabel = form.getAttribute("aria-label") || "";
+        const label = ariaLabel
+          .replace(/- enter password and press Enter to submit$/, "")
+          .trim();
+        return label === expected;
+      },
+      expectedLabel,
+      { timeout: 15000 },
+    );
+  }
+
+  /**
+   * Wait for "The End" heading to appear (game complete).
+   * Use after solving the final gate.
+   */
+  async waitForTheEnd(): Promise<void> {
+    await this.page
+      .getByRole("heading", { name: "The End" })
+      .waitFor({ state: "visible", timeout: 15000 });
   }
 
   /**
@@ -71,15 +102,41 @@ export class GamePage {
   }
 
   /**
+   * Wait for verification to complete (status changes from "Verifying..." to result).
+   * Returns the final status text.
+   */
+  async waitForVerificationComplete(): Promise<string | null> {
+    const status = this.page.locator("[role='status']");
+    try {
+      // Wait for status to appear and NOT be "Verifying..."
+      await this.page.waitForFunction(
+        () => {
+          const el = document.querySelector("[role='status']");
+          if (!el) return false;
+          const text = el.textContent || "";
+          return text.trim() !== "Verifying..." && text.trim().length > 0;
+        },
+        { timeout: 15000 },
+      );
+      return await status.textContent();
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * Check if the guess for the most recently submitted gate was successful
-   * by verifying that gate appears in the completed gates list.
+   * by checking the status message for "Correct!" prefix.
    */
   async isGuessSuccessful(): Promise<boolean> {
-    if (!this.lastSubmittedGateLabel) {
+    const status = this.page.locator("[role='status']");
+    try {
+      await status.waitFor({ state: "visible", timeout: 5000 });
+      const text = await status.textContent();
+      return text?.trim().startsWith("Correct!") ?? false;
+    } catch {
       return false;
     }
-    const completed = await this.getCompletedGateLabels();
-    return completed.includes(this.lastSubmittedGateLabel);
   }
 
   /**
