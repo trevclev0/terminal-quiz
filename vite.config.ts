@@ -62,6 +62,7 @@ export default defineConfig({
         new URL("./src/react-app/test-utils", import.meta.url),
       ),
     },
+    include: ["src/**/*.{spec}.{ts,tsx}"],
     clearMocks: true,
     restoreMocks: true,
     coverage: {
