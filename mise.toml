@@ -47,6 +47,10 @@ description = "Run coverage"
 run = "bun run test:ui"
 description = "Run tests with UI"
 
+[tasks."test:e2e"]
+run = "bun run test:e2e"
+description = "Run Playwright E2E tests"
+
 [tasks."cf-typegen"]
 run = "bun run cf-typegen"
 description = "Generate Cloudflare types"
@@ -62,6 +66,14 @@ description = "Seed preview database"
 [tasks."seed:prod"]
 run = "bun run seed:prod"
 description = "Seed production database"
+
+[tasks."seed:e2e:local"]
+run = "bun run seed:e2e:local"
+description = "Seed E2E test data in local D1"
+
+[tasks."seed:e2e:preview"]
+run = "bun run seed:e2e:preview"
+description = "Seed E2E test data in preview D1"
 
 [tasks."migrate:generate"]
 run = "bun run migrate:generate"

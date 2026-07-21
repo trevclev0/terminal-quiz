@@ -32,3 +32,8 @@ seed.sql
 # TanStack Router temporary files
 .tanstack/
 .aider*
+
+# Playwright
+**/playwright-report/
+**/test-results/
+**/.cache/
