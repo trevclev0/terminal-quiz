@@ -8,7 +8,7 @@ export class GamePage {
     await this.page.waitForFunction(() => {
       // Check for either an active gate form or the end state
       const form = document.querySelector(
-        'form[aria-label$="enter password and press Enter to submit"]',
+        "form[aria-label$='enter password and press Enter to submit']",
       );
       const theEnd = document.querySelector("h2#classic-ending");
       return form !== null || theEnd !== null;
@@ -20,7 +20,7 @@ export class GamePage {
    */
   async getActiveGateLabel(): Promise<string | null> {
     const form = this.page.locator(
-      'form[aria-label$="enter password and press Enter to submit"]',
+      "form[aria-label$='enter password and press Enter to submit']",
     );
     const visible = await form.isVisible();
     if (!visible) return null;
@@ -79,7 +79,7 @@ export class GamePage {
       // No active gate — game might be over or gate was just completed
       // Check if there's a completed gate form visible
       const completedForm = this.page.locator(
-        'form[aria-label$="- completed"]',
+        "form[aria-label$='- completed']",
       );
       return (await completedForm.count()) > 0;
     }
@@ -100,7 +100,7 @@ export class GamePage {
    * Get visible completed gate labels (for progress verification).
    */
   async getCompletedGateLabels(): Promise<string[]> {
-    const completedForms = this.page.locator('form[aria-label$="- completed"]');
+    const completedForms = this.page.locator("form[aria-label$='- completed']");
     const count = await completedForms.count();
     const labels: string[] = [];
 
