@@ -51,6 +51,14 @@ description = "Run tests with UI"
 run = "bun run test:e2e"
 description = "Run Playwright E2E tests"
 
+[tasks."test:e2e:ci"]
+depends = ["seed:e2e:preview"]
+run = [
+    "bunx playwright install chromium firefox",
+    "bunx playwright test",
+]
+description = "Seed preview D1, install browsers, run E2E against BASE_URL (for CI)"
+
 [tasks."cf-typegen"]
 run = "bun run cf-typegen"
 description = "Generate Cloudflare types"
