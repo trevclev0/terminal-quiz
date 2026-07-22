@@ -36,6 +36,24 @@ jobs:
         if: always()
         uses: davelosert/vitest-coverage-report-action@v2
 
+  integration-test:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-env
+
+      - name: Run integration tests
+        run: mise run test:integration
+
   commitlint:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'

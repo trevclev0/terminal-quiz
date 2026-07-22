@@ -39,6 +39,10 @@ description = "Run unit tests"
 run = "bun run test --run"
 description = "Run unit tests single run"
 
+[tasks."test:integration"]
+run = "bun run test:integration"
+description = "Run integration tests (pool-workers + real D1)"
+
 [tasks.coverage]
 run = "bun run coverage"
 description = "Run coverage"
