@@ -69,16 +69,12 @@ export class GamePage {
   /**
    * Submit an answer for the current active gate.
    * Types into the password input and presses Enter.
-   * Stores the submitted gate label for later verification.
    */
   async submitAnswer(answer: string) {
     const activeLabel = await this.getActiveGateLabel();
     if (!activeLabel) {
       throw new Error("No active gate to submit answer to");
     }
-
-    // Store the label before submission for isGuessSuccessful check
-    this.lastSubmittedGateLabel = activeLabel;
 
     // Locate the input within the active gate's form
     const input = this.page.getByLabel(`${activeLabel} password input`);
@@ -116,6 +112,7 @@ export class GamePage {
           const text = el.textContent || "";
           return text.trim() !== "Verifying..." && text.trim().length > 0;
         },
+        undefined,
         { timeout: 15000 },
       );
       return await status.textContent();
