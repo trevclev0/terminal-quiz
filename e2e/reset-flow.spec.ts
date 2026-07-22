@@ -45,9 +45,7 @@ test.describe("@full reset flow", () => {
     expect(label).toBe("Gate 1");
   });
 
-  test("Select new program → Keep Progress navigates to /programs/select", async ({
-    page,
-  }) => {
+  test("Select new → Keep preserves completed state", async ({ page }) => {
     const gamePage = await completeE2EProgram(page);
 
     await gamePage.clickSelectNewProgram();
@@ -58,11 +56,13 @@ test.describe("@full reset flow", () => {
     // Should land on program select page
     const selectPage = new SelectProgramPage(page);
     await selectPage.waitForLoad();
+
+    // Re-select and verify progress is preserved (still at The End)
+    const resumedGamePage = await selectPage.selectAndStart("E2E Test Program");
+    await resumedGamePage.waitForTheEnd();
   });
 
-  test("Select new program → Cancel ([x]) closes modal, stays at The End", async ({
-    page,
-  }) => {
+  test("Select new → Cancel ([x]) closes modal", async ({ page }) => {
     const gamePage = await completeE2EProgram(page);
 
     await gamePage.clickSelectNewProgram();
@@ -73,9 +73,7 @@ test.describe("@full reset flow", () => {
     expect(await gamePage.isGameComplete()).toBe(true);
   });
 
-  test("Select new program → Reset Progress resets session and navigates to /programs/select", async ({
-    page,
-  }) => {
+  test("Select new → Reset resets to Gate 1", async ({ page }) => {
     const gamePage = await completeE2EProgram(page);
 
     await gamePage.clickSelectNewProgram();
