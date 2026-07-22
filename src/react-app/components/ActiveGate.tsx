@@ -119,15 +119,17 @@ export default function ActiveGate({
           {clues.length > 0 && (
             <div className={styles.cluesList} aria-live="polite">
               <p className={styles.cluesHeading}>Clues:</p>
-              {clues.map((clue) => (
-                <p
-                  key={clue}
-                  className={styles.clueLine}
-                  data-testid="clue-text"
-                >
-                  {clue}
-                </p>
-              ))}
+              <ul className={styles.cluesBulletList}>
+                {clues.map((clue) => (
+                  <li
+                    key={clue}
+                    className={styles.clueLine}
+                    data-testid="clue-text"
+                  >
+                    {clue}
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </form>

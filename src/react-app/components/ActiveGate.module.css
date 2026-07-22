@@ -58,13 +58,14 @@
   margin: 0 0 0.25rem;
 }
 
+.cluesBulletList {
+  margin: 0;
+  list-style-type: "- ";
+}
+
 .clueLine {
   margin: 0.25rem 0;
   color: var(--light-grey);
-}
-
-.clueLine::before {
-  content: "- ";
 }
 
 .promptCaret {
