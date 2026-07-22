@@ -242,7 +242,7 @@ export class GamePage {
    * Returns the first clue line text (without the "- " prefix).
    */
   async waitForClueText(): Promise<string | null> {
-    const clueLine = this.page.locator('[data-testid="clue-text"]').first();
+    const clueLine = this.page.locator("[data-testid='clue-text']").first();
     try {
       await clueLine.waitFor({ state: "visible", timeout: 15000 });
       return (await clueLine.textContent())?.trim() ?? null;
