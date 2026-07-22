@@ -238,10 +238,11 @@ export class GamePage {
 
   /**
    * Wait for clue text to appear in the clues list.
-   * Returns the first clue line text.
+   * Uses data-testid for resilience against CSS module class name changes.
+   * Returns the first clue line text (without the "- " prefix).
    */
   async waitForClueText(): Promise<string | null> {
-    const clueLine = this.page.locator("p.clueLine").first();
+    const clueLine = this.page.locator('[data-testid="clue-text"]').first();
     try {
       await clueLine.waitFor({ state: "visible", timeout: 15000 });
       return (await clueLine.textContent())?.trim() ?? null;
