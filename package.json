@@ -11,6 +11,7 @@
     "check": "bun run build && wrangler deploy --dry-run",
     "cf-typegen": "wrangler types",
     "test": "vitest",
+    "test:integration": "vitest run --config vitest.config.integration.ts",
     "coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:e2e": "bun run seed:e2e:local && playwright test",
@@ -34,6 +35,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.0",
     "@cloudflare/vite-plugin": "^1.42.0",
+    "@cloudflare/vitest-pool-workers": "^0.18.7",
     "@cloudflare/workers-types": "^4.20260626.1",
     "@commitlint/cli": "^20.5.2",
     "@commitlint/types": "^20.5.0",
