@@ -185,7 +185,16 @@ export class GamePage {
   async waitForDenial(): Promise<string | null> {
     const status = this.page.locator("[role='status']");
     try {
-      await status.waitFor({ state: "visible", timeout: 10000 });
+      await this.page.waitForFunction(
+        () => {
+          const el = document.querySelector("[role='status']");
+          if (!el) return false;
+          const text = el.textContent || "";
+          return text.includes("ACCESS DENIED");
+        },
+        undefined,
+        { timeout: 15000 },
+      );
       return (await status.textContent())?.trim() ?? null;
     } catch {
       return null;
@@ -198,7 +207,7 @@ export class GamePage {
    */
   async submitAnswerAndWaitForDenial(answer: string): Promise<string | null> {
     await this.submitAnswer(answer);
-    return this.waitForVerificationComplete();
+    return this.waitForDenial();
   }
 
   /**
