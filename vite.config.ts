@@ -63,6 +63,7 @@ export default defineConfig({
       ),
     },
     include: ["src/**/*.spec.{ts,tsx}"],
+    exclude: [...configDefaults.exclude, "src/**/*.integration.spec.{ts,tsx}"],
     clearMocks: true,
     restoreMocks: true,
     coverage: {
