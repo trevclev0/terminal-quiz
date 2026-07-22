@@ -61,6 +61,7 @@ jobs:
             }}
 
       - name: Run E2E Tests
+        id: e2e
         if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deploy.outcome == 'success'
         run: mise run test:e2e
         env:
@@ -75,7 +76,7 @@ jobs:
 
       - name: Update Deployment (Success)
         uses: chrnorm/deployment-status@v2
-        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deployment.conclusion != 'skipped' && steps.deploy.outcome == 'success'
+        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deployment.conclusion != 'skipped' && steps.deploy.outcome == 'success' && steps.e2e.outcome == 'success'
         with:
           token: ${{ github.token }}
           environment-url: ${{ steps.deploy.outputs.deployment-url }}
@@ -84,7 +85,7 @@ jobs:
 
       - name: Update Deployment (Failure)
         uses: chrnorm/deployment-status@v2
-        if: always() && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deployment.conclusion != 'skipped' && steps.deploy.outcome != 'success'
+        if: always() && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deployment.conclusion != 'skipped' && (steps.deploy.outcome != 'success' || steps.e2e.outcome == 'failure')
         with:
           token: ${{ github.token }}
           state: 'error'
