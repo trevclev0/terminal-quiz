@@ -7,6 +7,10 @@ import {
 } from "@cloudflare/vitest-pool-workers";
 import { defineConfig } from "vitest/config";
 
+// ESM-compatible __dirname — derived from import.meta.url since
+// __dirname is not a global in ESM modules.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 // Read seed SQL in Node.js context (config runs in Node, not workerd).
 // Strip comment lines — D1's exec() rejects lines that contain no SQL statement.
 const seedSQL = readFileSync(
@@ -69,5 +73,8 @@ export default defineConfig({
   },
   test: {
     include: ["src/**/*.integration.spec.ts"],
+    // Mirror unit test config — automatically reset mocks between tests
+    clearMocks: true,
+    restoreMocks: true,
   },
 });
