@@ -119,10 +119,13 @@ export default function ActiveGate({
           {clues.length > 0 && (
             <div className={styles.cluesList} aria-live="polite">
               <p className={styles.cluesHeading}>Clues:</p>
-              {clues.map((clue, index) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: clues are read-only and order is stable
-                <p key={index} className={styles.clueLine}>
-                  - {clue}
+              {clues.map((clue) => (
+                <p
+                  key={clue}
+                  className={styles.clueLine}
+                  data-testid="clue-text"
+                >
+                  {clue}
                 </p>
               ))}
             </div>
