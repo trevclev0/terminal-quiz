@@ -175,4 +175,123 @@ export class GamePage {
       return null;
     }
   }
+
+  // ─── Wrong answer helpers ──────────────────────────────────────────
+
+  /**
+   * Wait for the denial message after a wrong answer.
+   * Expected text: "ACCESS DENIED. INCORRECT SYNTAX OR VALUE."
+   */
+  async waitForDenial(): Promise<string | null> {
+    const status = this.page.locator("[role='status']");
+    try {
+      await status.waitFor({ state: "visible", timeout: 10000 });
+      return (await status.textContent())?.trim() ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Submit an answer and wait for the denial message.
+   * Returns the denial message text (or null if timeout).
+   */
+  async submitAnswerAndWaitForDenial(answer: string): Promise<string | null> {
+    await this.submitAnswer(answer);
+    return this.waitForVerificationComplete();
+  }
+
+  /**
+   * Check if the active gate div currently has the shake CSS class.
+   * Note: shake auto-clears after ~400ms, so call this immediately
+   * after a wrong answer submission.
+   */
+  async isShaking(): Promise<boolean> {
+    return this.page.locator("[class*='shake']").first().isVisible();
+  }
+
+  // ─── Clue button helpers ───────────────────────────────────────────
+
+  /**
+   * Get the clue button locator (if visible).
+   * Button text is "Get 1st Clue", "Get 2nd Clue", or "Get Final Clue".
+   */
+  getClueButtonLocator() {
+    return this.page.locator("button", { hasText: "Clue" });
+  }
+
+  /**
+   * Check if the clue button is currently visible.
+   */
+  async isClueButtonVisible(): Promise<boolean> {
+    return this.getClueButtonLocator().isVisible();
+  }
+
+  /**
+   * Wait for clue text to appear in the clues list.
+   * Returns the first clue line text.
+   */
+  async waitForClueText(): Promise<string | null> {
+    const clueLine = this.page.locator("p.clueLine").first();
+    try {
+      await clueLine.waitFor({ state: "visible", timeout: 15000 });
+      return (await clueLine.textContent())?.trim() ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  // ─── End-state action helpers ──────────────────────────────────────
+
+  /**
+   * Click "Play program again" button at The End screen.
+   * Resets the session and returns to gate 1.
+   */
+  async clickPlayAgain(): Promise<void> {
+    await this.page.locator('button[title="Play program again"]').click();
+  }
+
+  /**
+   * Click "Select new program" button at The End screen.
+   * Opens the TerminalConfirmModal.
+   */
+  async clickSelectNewProgram(): Promise<void> {
+    await this.page.locator('button[title="Select new program"]').click();
+  }
+
+  // ─── TerminalConfirmModal helpers ──────────────────────────────────
+
+  /**
+   * Check if the reset confirmation dialog is visible.
+   */
+  async isConfirmModalVisible(): Promise<boolean> {
+    const dialog = this.page.locator(
+      'dialog[aria-label="Reset Progress Confirmation"]',
+    );
+    return dialog.isVisible();
+  }
+
+  /**
+   * Click "Reset Progress" in the confirmation modal.
+   * Resets the session and navigates to /programs/select.
+   */
+  async confirmReset(): Promise<void> {
+    await this.page.getByRole("button", { name: "Reset Progress" }).click();
+  }
+
+  /**
+   * Click "Keep Progress" in the confirmation modal.
+   * Navigates to /programs/select without resetting.
+   */
+  async keepProgress(): Promise<void> {
+    await this.page.getByRole("button", { name: "Keep Progress" }).click();
+  }
+
+  /**
+   * Click "[x]" (Cancel) in the confirmation modal.
+   * Closes the modal without action.
+   */
+  async cancelReset(): Promise<void> {
+    await this.page.getByRole("button", { name: "[x]" }).click();
+  }
 }
