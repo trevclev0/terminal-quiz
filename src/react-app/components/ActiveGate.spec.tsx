@@ -193,8 +193,8 @@ describe("Clue Functionality", () => {
   it("renders clues in a list when clues array is not empty", () => {
     renderActiveGate({ clues: ["First Clue", "Second Clue"] });
     expect(screen.getByText("Clues:")).toBeInTheDocument();
-    expect(screen.getByText(/- First Clue/)).toBeInTheDocument();
-    expect(screen.getByText(/- Second Clue/)).toBeInTheDocument();
+    expect(screen.getByText("First Clue")).toBeInTheDocument();
+    expect(screen.getByText("Second Clue")).toBeInTheDocument();
   });
 
   it("renders 'Get Final Clue' button when clues length is MAX_CLUES_PER_GATE - 1", () => {
