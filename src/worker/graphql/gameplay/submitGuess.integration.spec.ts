@@ -3,10 +3,14 @@ import {
   GET_PROGRAM_PROGRESSION_QUERY,
   SUBMIT_GUESS_MUTATION,
 } from "@shared/gqlQueries";
+import { gateClues, sessionProgress } from "@shared/schema";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
+import { drizzle } from "drizzle-orm/d1";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+
+const db = drizzle(env.DB);
 
 const E2E_PROGRAM_ID = "e2e00000-0000-0000-0000-000000000001";
 const E2E_GATE_1_ID = "e2e00001-0000-0000-0000-000000000001";
@@ -20,26 +24,20 @@ function makeSessionId(label: string): string {
 /** Insert a fresh session_progress row for the E2E program. */
 async function insertSession(
   sessionId: string,
-  gateId: string,
+  gateId: string | null,
   overrides: { attemptCount?: number } = {},
 ): Promise<string> {
-  const progressId = crypto.randomUUID();
-  const now = Date.now();
-  await env.DB.prepare(
-    `INSERT INTO session_progress (id, session_id, program_id, current_gate_id, status, attempt_count, started_at, updated_at)
-     VALUES (?, ?, ?, ?, 'in_progress', ?, ?, ?)`,
-  )
-    .bind(
-      progressId,
+  const [progress] = await db
+    .insert(sessionProgress)
+    .values({
       sessionId,
-      E2E_PROGRAM_ID,
-      gateId,
-      overrides.attemptCount ?? 0,
-      now,
-      now,
-    )
-    .run();
-  return progressId;
+      programId: E2E_PROGRAM_ID,
+      currentGateId: gateId,
+      status: "in_progress",
+      attemptCount: overrides.attemptCount ?? 0,
+    })
+    .returning({ id: sessionProgress.id });
+  return progress.id;
 }
 
 interface SubmitGuessData {
@@ -136,19 +134,12 @@ describe("submitGuess mutation", () => {
     progressId: string,
     attemptCountAtRequest: number,
   ): Promise<void> {
-    await env.DB.prepare(
-      `INSERT INTO gate_clues (id, session_progress_id, gate_id, clue_text, attempt_count_at_request, created_at)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-    )
-      .bind(
-        crypto.randomUUID(),
-        progressId,
-        E2E_GATE_1_ID,
-        "test clue text",
-        attemptCountAtRequest,
-        Date.now(),
-      )
-      .run();
+    await db.insert(gateClues).values({
+      sessionProgressId: progressId,
+      gateId: E2E_GATE_1_ID,
+      clueText: "test clue text",
+      attemptCountAtRequest,
+    });
   }
 
   it("wrong guess at attempt threshold enables clue", async () => {

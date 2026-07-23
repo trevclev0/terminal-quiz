@@ -1,9 +1,13 @@
 import { env } from "cloudflare:workers";
 import { REQUEST_CLUE_MUTATION } from "@shared/gqlQueries";
+import { sessionProgress } from "@shared/schema";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
+import { drizzle } from "drizzle-orm/d1";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+
+const db = drizzle(env.DB);
 
 // SPIKE: Test whether vi.mock() works under the workerd runtime.
 // If this works, requestClue integration tests can mock generateClue
@@ -33,12 +37,13 @@ describe("AI mock spike: vi.mock() under workerd", () => {
     const sessionId = `spike-${crypto.randomUUID()}`;
 
     // Insert session at gate 1 with attemptCount=2 (meets guidanceThreshold=2)
-    await env.DB.prepare(
-      `INSERT INTO session_progress (id, session_id, program_id, current_gate_id, status, attempt_count, started_at, updated_at)
-       VALUES (?, ?, ?, ?, 'in_progress', 2, CAST(strftime('%s', 'now') AS INTEGER), CAST(strftime('%s', 'now') AS INTEGER))`,
-    )
-      .bind(crypto.randomUUID(), sessionId, E2E_PROGRAM_ID, E2E_GATE_1_ID)
-      .run();
+    await db.insert(sessionProgress).values({
+      sessionId,
+      programId: E2E_PROGRAM_ID,
+      currentGateId: E2E_GATE_1_ID,
+      status: "in_progress",
+      attemptCount: 2,
+    });
 
     const response = await gqlRequest(REQUEST_CLUE_MUTATION, {
       sessionId,
