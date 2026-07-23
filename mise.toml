@@ -112,3 +112,7 @@ description = "Deploy to production"
 depends = [{ task = "build", env = { CLOUDFLARE_ENV = "preview" } }]
 run = "bun run deploy:preview"
 description = "Build with CLOUDFLARE_ENV=preview and deploy to preview"
+
+[tasks."ci:local"]
+depends = ["check:code", "check", "test:run", "test:integration", "test:e2e"]
+description = "Run full pre-push suite"
