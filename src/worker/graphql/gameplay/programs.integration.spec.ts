@@ -70,7 +70,7 @@ describe("program queries", () => {
 
     const e2eProgram = data.programs.find((p) => p.name === "E2E Test Program");
     expect(e2eProgram).toBeDefined();
-    expect(e2eProgram!.id).toBe(E2E_PROGRAM_ID);
+    expect(e2eProgram?.id).toBe(E2E_PROGRAM_ID);
   });
 
   it("getProgramProgression auto-creates session at gate 1", async () => {
@@ -96,8 +96,8 @@ describe("program queries", () => {
       };
     };
     expect(data.getProgramProgression.currentGate).not.toBeNull();
-    expect(data.getProgramProgression.currentGate!.id).toBe(E2E_GATE_1_ID);
-    expect(data.getProgramProgression.currentGate!.label).toBe("Gate 1");
+    expect(data.getProgramProgression.currentGate?.id).toBe(E2E_GATE_1_ID);
+    expect(data.getProgramProgression.currentGate?.label).toBe("Gate 1");
     expect(data.getProgramProgression.completedGates).toHaveLength(0);
     expect(data.getProgramProgression.status).toBe("in_progress");
   });

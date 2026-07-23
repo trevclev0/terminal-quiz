@@ -240,7 +240,7 @@ describe("requestClue mutation", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.errors).toBeDefined();
-    expect(response.body.errors![0].message).toBe(
+    expect(response.body.errors?.[0].message).toBe(
       "Desync: Clue requested for the wrong active gate.",
     );
 
@@ -261,7 +261,7 @@ describe("requestClue mutation", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.errors).toBeDefined();
-    expect(response.body.errors![0].message).toBe(
+    expect(response.body.errors?.[0].message).toBe(
       "Invalid state: Program already completed or not started.",
     );
   });
