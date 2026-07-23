@@ -76,5 +76,9 @@ export default defineConfig({
     // Mirror unit test config — automatically reset mocks between tests
     clearMocks: true,
     restoreMocks: true,
+    // NOTE: V8 coverage (@vitest/coverage-v8) is incompatible with
+    // @cloudflare/vitest-pool-workers — the workerd runtime does not
+    // support the Node.js inspector protocol required for V8 coverage.
+    // Unit test coverage in vite.config.ts remains the single source.
   },
 });
