@@ -49,9 +49,9 @@ describe("resetSession mutation", () => {
     invalidateCachedSchema();
   });
 
-  it("resets in-progress session — deletes progress row", async () => {
+  it("resets in-progress session to initial state (Gate 1, 0 attempts)", async () => {
     const sessionId = makeSessionId("in-progress");
-    await insertSession(sessionId, E2E_GATE_1_ID);
+    const progressId = await insertSession(sessionId, E2E_GATE_1_ID);
 
     // Verify row exists before reset
     const before = await env.DB.prepare(
@@ -71,13 +71,23 @@ describe("resetSession mutation", () => {
     expect(response.body.errors).toBeUndefined();
     expect(response.body.data).toEqual({ resetSession: true });
 
-    // Verify row deleted
-    const after = await env.DB.prepare(
-      `SELECT COUNT(*) as cnt FROM session_progress WHERE session_id = ? AND program_id = ?`,
+    // Verify row still exists but state is reset
+    const row = await env.DB.prepare(
+      `SELECT current_gate_id, attempt_count, status, completed_at
+       FROM session_progress WHERE id = ?`,
     )
-      .bind(sessionId, E2E_PROGRAM_ID)
-      .first<{ cnt: number }>();
-    expect(after?.cnt).toBe(0);
+      .bind(progressId)
+      .first<{
+        current_gate_id: string;
+        attempt_count: number;
+        status: string;
+        completed_at: unknown;
+      }>();
+    expect(row).not.toBeNull();
+    expect(row?.current_gate_id).toBe(E2E_GATE_1_ID);
+    expect(row?.attempt_count).toBe(0);
+    expect(row?.status).toBe("in_progress");
+    expect(row?.completed_at).toBeNull();
   });
 
   it("reset allows fresh start from gate 1", async () => {
