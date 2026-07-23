@@ -198,7 +198,9 @@ describe("Clue Functionality", () => {
   });
 
   it("renders 'Get Final Clue' button when clues length is MAX_CLUES_PER_GATE - 1", () => {
-    const clues = Array(MAX_CLUES_PER_GATE - 1).fill("Clue");
+    const clues = Array(MAX_CLUES_PER_GATE - 1)
+      .fill(undefined)
+      .map((_, index) => `Clue ${index}`);
     renderActiveGate({ canRequestClue: true, guess: "some guess", clues });
     expect(
       screen.getByRole("button", { name: /get final clue/i }),
