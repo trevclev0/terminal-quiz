@@ -6,32 +6,33 @@ import {
   mockSubmitGuessResponse,
 } from "./fixtures";
 
-const ok = <T>(data: T) => HttpResponse.json({ data });
-
 export const getProgramsHandler = graphql.query("GetPrograms", () =>
-  ok({ programs: mockPrograms() }),
+  HttpResponse.json({ data: { programs: mockPrograms() } }),
 );
 
 export const getProgramProgressionHandler = graphql.query(
   "GetProgramProgression",
-  () => ok({ getProgramProgression: mockProgression() }),
+  () =>
+    HttpResponse.json({
+      data: { getProgramProgression: mockProgression() },
+    }),
 );
 
 export const getInProgressProgramHandler = graphql.query(
   "GetInProgressProgram",
-  () => ok({ getInProgressProgram: null }),
+  () => HttpResponse.json({ data: { getInProgressProgram: null } }),
 );
 
 export const submitGuessHandler = graphql.mutation("SubmitGuess", () =>
-  ok({ submitGuess: mockSubmitGuessResponse() }),
+  HttpResponse.json({ data: { submitGuess: mockSubmitGuessResponse() } }),
 );
 
 export const requestClueHandler = graphql.mutation("RequestClue", () =>
-  ok({ requestClue: mockRequestClueResponse() }),
+  HttpResponse.json({ data: { requestClue: mockRequestClueResponse() } }),
 );
 
 export const resetSessionHandler = graphql.mutation("ResetSession", () =>
-  ok({ resetSession: true }),
+  HttpResponse.json({ data: { resetSession: true } }),
 );
 
 export const handlers = [
