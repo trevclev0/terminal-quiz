@@ -34,7 +34,7 @@ export const mockPrograms = (
 export const mockActiveGate = (
   overrides: Partial<ActiveGate> = {},
 ): ActiveGate => ({
-  id: "gate-1",
+  id: "active-gate-1",
   label: "Gate 1",
   question: "What is 2+2?",
   ...overrides,
@@ -43,7 +43,7 @@ export const mockActiveGate = (
 export const mockCompletedGate = (
   overrides: Partial<CompletedGate> = {},
 ): CompletedGate => ({
-  id: "gate-1",
+  id: "completed-gate-1",
   label: "Gate 1",
   question: "What is 2+2?",
   correctAnswer: "4",
