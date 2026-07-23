@@ -131,6 +131,26 @@ describe("submitGuess mutation", () => {
     expect(row?.attempt_count).toBe(1);
   });
 
+  /** Insert a gate_clues row for a session_progress + gate combination. */
+  async function insertClue(
+    progressId: string,
+    attemptCountAtRequest: number,
+  ): Promise<void> {
+    await env.DB.prepare(
+      `INSERT INTO gate_clues (id, session_progress_id, gate_id, clue_text, attempt_count_at_request, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    )
+      .bind(
+        crypto.randomUUID(),
+        progressId,
+        E2E_GATE_1_ID,
+        "test clue text",
+        attemptCountAtRequest,
+        Date.now(),
+      )
+      .run();
+  }
+
   it("wrong guess at attempt threshold enables clue", async () => {
     // Gate 1: guidanceEnabled=true, guidanceThreshold=2
     // Pre-seed with attemptCount=2 so next wrong guess meets threshold
@@ -154,6 +174,66 @@ describe("submitGuess mutation", () => {
     expect(data.submitGuess.nextGate).toBeNull();
     // attemptCount=3 now meets threshold=2, guidance is enabled → clue available
     expect(data.submitGuess.canRequestClue).toBe(true);
+  });
+
+  it("clue cap: no more clues once MAX_CLUES_PER_GATE reached", async () => {
+    // Seed a session at threshold and 3 existing clues — hitting
+    // MAX_CLUES_PER_GATE=3 → computeCanRequestClue returns false
+    const sessionId = makeSessionId("clue-cap");
+    const progressId = await insertSession(sessionId, E2E_GATE_1_ID, {
+      attemptCount: 2,
+    });
+
+    for (let i = 0; i < 3; i++) {
+      await insertClue(progressId, i + 1);
+    }
+
+    const response: GqlResponse = await gqlRequest(SUBMIT_GUESS_MUTATION, {
+      sessionId,
+      variables: {
+        programId: E2E_PROGRAM_ID,
+        gateId: E2E_GATE_1_ID,
+        guess: "red",
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.errors).toBeUndefined();
+
+    const data = response.body.data as SubmitGuessData;
+    expect(data.submitGuess.success).toBe(false);
+    // All 3 clue slots consumed → canRequestClue must be false
+    expect(data.submitGuess.canRequestClue).toBe(false);
+  });
+
+  it("no duplicate clue for the same attempt count", async () => {
+    // Seed a clue whose attemptCountAtRequest matches the attempt count
+    // the session will have AFTER the wrong guess increments it.
+    // Check: newAttemptCount (5) <= mostRecentClueAttemptCount (5) → false.
+    const sessionId = makeSessionId("duplicate-attempt");
+    const progressId = await insertSession(sessionId, E2E_GATE_1_ID, {
+      attemptCount: 4,
+    });
+    // Seed clue at attemptCountAtRequest=5 — the value the session will
+    // reach after the wrong guess increments attemptCount from 4 to 5.
+    await insertClue(progressId, 5);
+
+    const response: GqlResponse = await gqlRequest(SUBMIT_GUESS_MUTATION, {
+      sessionId,
+      variables: {
+        programId: E2E_PROGRAM_ID,
+        gateId: E2E_GATE_1_ID,
+        guess: "red",
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.errors).toBeUndefined();
+
+    const data = response.body.data as SubmitGuessData;
+    expect(data.submitGuess.success).toBe(false);
+    // attemptCount became 5 <= mostRecentClueAttemptCount (5) → blocked
+    expect(data.submitGuess.canRequestClue).toBe(false);
   });
 
   it("case-insensitive guess is accepted", async () => {
@@ -226,7 +306,7 @@ describe("submitGuess mutation", () => {
     await insertSession(sessionId, E2E_GATE_1_ID);
 
     // Gate 1 → correct
-    await gqlRequest(SUBMIT_GUESS_MUTATION, {
+    const gate1Response: GqlResponse = await gqlRequest(SUBMIT_GUESS_MUTATION, {
       sessionId,
       variables: {
         programId: E2E_PROGRAM_ID,
@@ -234,9 +314,13 @@ describe("submitGuess mutation", () => {
         guess: "blue",
       },
     });
+    expect(gate1Response.body.errors).toBeUndefined();
+    expect(
+      (gate1Response.body.data as SubmitGuessData).submitGuess.success,
+    ).toBe(true);
 
     // Gate 2 → correct
-    await gqlRequest(SUBMIT_GUESS_MUTATION, {
+    const gate2Response: GqlResponse = await gqlRequest(SUBMIT_GUESS_MUTATION, {
       sessionId,
       variables: {
         programId: E2E_PROGRAM_ID,
@@ -244,6 +328,10 @@ describe("submitGuess mutation", () => {
         guess: "4",
       },
     });
+    expect(gate2Response.body.errors).toBeUndefined();
+    expect(
+      (gate2Response.body.data as SubmitGuessData).submitGuess.success,
+    ).toBe(true);
 
     // Gate 3 → correct → program completed
     const finalResponse: GqlResponse = await gqlRequest(SUBMIT_GUESS_MUTATION, {
