@@ -81,7 +81,7 @@ describe("submitGuess mutation", () => {
     );
     expect(data.submitGuess.canRequestClue).toBe(false);
     expect(data.submitGuess.nextGate).not.toBeNull();
-    expect(data.submitGuess.nextGate!.id).toBe(E2E_GATE_2_ID);
+    expect(data.submitGuess.nextGate?.id).toBe(E2E_GATE_2_ID);
 
     // Verify progression via query — current gate moved to Gate 2
     const progResponse = await gqlRequest(GET_PROGRAM_PROGRESSION_QUERY, {
@@ -285,7 +285,7 @@ describe("submitGuess mutation", () => {
     expect(response.status).toBe(200);
     expect(response.body.errors).toBeDefined();
     expect(response.body.errors).toHaveLength(1);
-    expect(response.body.errors![0].message).toBe(
+    expect(response.body.errors?.[0].message).toBe(
       "Desync: Guess submitted for the wrong active gate.",
     );
   });
@@ -352,7 +352,7 @@ describe("submitGuess mutation", () => {
 
     expect(afterCompletion.status).toBe(200);
     expect(afterCompletion.body.errors).toBeDefined();
-    expect(afterCompletion.body.errors![0].message).toBe(
+    expect(afterCompletion.body.errors?.[0].message).toBe(
       "Invalid state: Program already completed or not started.",
     );
   });
@@ -373,7 +373,7 @@ describe("submitGuess mutation", () => {
     expect(response.status).toBe(200);
     expect(response.body.errors).toBeDefined();
     expect(response.body.errors).toHaveLength(1);
-    expect(response.body.errors![0].message).toBe(
+    expect(response.body.errors?.[0].message).toBe(
       "Invalid state: Program already completed or not started.",
     );
   });
