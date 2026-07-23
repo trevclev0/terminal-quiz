@@ -611,8 +611,17 @@ describe("Gameplay Mutations: resetSession", () => {
 
     expect(result).toBe(true);
 
-    // Verify batch was called (deletes + update)
     expect(mockDb.batch).toHaveBeenCalledTimes(1);
+    expect(mockDb.delete).toHaveBeenCalledTimes(2);
+    expect(mockDb.update).toHaveBeenCalledTimes(1);
+
+    const setCall = mockDb.update.mock.results[0]?.value.set;
+    expect(setCall).toHaveBeenCalledWith({
+      currentGateId: "gate-1",
+      attemptCount: 0,
+      status: "in_progress",
+      completedAt: null,
+    });
   });
 
   it("succeeds as no-op when no session exists", async () => {
