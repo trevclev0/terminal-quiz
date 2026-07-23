@@ -1,6 +1,6 @@
-import { graphql, HttpResponse, http } from "msw";
+import { createTestRouter, handlers, renderWithRouter } from "@test-utils";
+import { graphql, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-
 import {
   afterAll,
   afterEach,
@@ -10,39 +10,10 @@ import {
   it,
   vi,
 } from "vitest";
-import {
-  createTestRouter,
-  renderWithRouter,
-} from "../test-utils/reactRouterUtils";
 
-const server = setupServer(
-  http.get("/api/programs", () => {
-    return HttpResponse.json([{ id: 1, name: "Test Program" }]);
-  }),
-  graphql.query("GetInProgressProgram", () => {
-    return HttpResponse.json({
-      data: { getInProgressProgram: null },
-    });
-  }),
-  graphql.query("GetPrograms", () => {
-    return HttpResponse.json({
-      data: { programs: [{ id: "test-program-id", name: "Test Program" }] },
-    });
-  }),
-  graphql.query("GetProgramProgression", () => {
-    return HttpResponse.json({
-      data: {
-        getProgramProgression: {
-          currentGate: null,
-          completedGates: [],
-          status: "completed",
-        },
-      },
-    });
-  }),
-);
+const server = setupServer(...handlers);
 
-beforeAll(() => server.listen());
+beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 

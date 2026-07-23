@@ -1,30 +1,21 @@
 import {
   createTestRouter,
+  handlers,
+  mockCompletedGate,
+  mockProgram,
+  mockProgression,
   renderWithRouter,
-} from "@test-utils/reactRouterUtils";
+} from "@test-utils";
 import { screen, waitFor } from "@testing-library/react";
 import { graphql, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
-const mockProgression = {
-  currentGate: {
-    id: "gate-1",
-    label: "Gate 1",
-    question: "What is 2+2?",
-  },
-  completedGates: [],
-  status: "in_progress",
-};
-
-const mockPrograms = [{ id: "test-program-id", name: "Test Program" }];
-
 const server = setupServer(
-  graphql.query("GetPrograms", () => {
-    return HttpResponse.json({
-      data: { programs: mockPrograms },
-    });
-  }),
+  graphql.query("GetPrograms", () =>
+    HttpResponse.json({ data: { programs: [mockProgram()] } }),
+  ),
+  ...handlers,
 );
 
 describe("Program Play Route Integration", () => {
@@ -33,14 +24,6 @@ describe("Program Play Route Integration", () => {
   afterAll(() => server.close());
 
   it("loads program progression data via the router loader", async () => {
-    server.use(
-      graphql.query("GetProgramProgression", async () => {
-        return HttpResponse.json({
-          data: { getProgramProgression: mockProgression },
-        });
-      }),
-    );
-
     const router = createTestRouter("/programs/test-program-id");
     renderWithRouter(router);
 
@@ -57,19 +40,11 @@ describe("Program Play Route Integration", () => {
       graphql.query("GetProgramProgression", async () => {
         return HttpResponse.json({
           data: {
-            getProgramProgression: {
+            getProgramProgression: mockProgression({
               currentGate: null,
-              completedGates: [
-                {
-                  id: "gate-1",
-                  label: "Gate 1",
-                  question: "What is 2+2?",
-                  correctAnswer: "4",
-                  successMessage: "Correct!",
-                },
-              ],
+              completedGates: [mockCompletedGate()],
               status: "completed",
-            },
+            }),
           },
         });
       }),

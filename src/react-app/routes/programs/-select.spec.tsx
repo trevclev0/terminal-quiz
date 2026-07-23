@@ -1,7 +1,9 @@
 import {
   createTestRouter,
+  handlers,
+  mockPrograms,
   renderWithRouter,
-} from "@test-utils/reactRouterUtils";
+} from "@test-utils";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, graphql, HttpResponse } from "msw";
@@ -9,12 +11,7 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { validateSelectSearch } from "./select";
 
-const mockPrograms = [
-  { id: "1", name: "Program 1" },
-  { id: "2", name: "Program 2" },
-];
-
-const server = setupServer();
+const server = setupServer(...handlers);
 
 describe("Select Route Integration", () => {
   beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
@@ -27,7 +24,7 @@ describe("Select Route Integration", () => {
         // Automatically pause 150ms to simulate a real network call
         await delay(150);
         return HttpResponse.json({
-          data: { programs: mockPrograms },
+          data: { programs: mockPrograms() },
         });
       }),
     );
