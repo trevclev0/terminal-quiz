@@ -3,7 +3,11 @@ import {
   GET_PROGRAM_PROGRESSION_QUERY,
   RESET_SESSION_MUTATION,
 } from "@shared/gqlQueries";
-import { sessionProgress } from "@shared/schema";
+import {
+  gateClues,
+  sessionCompletedGates,
+  sessionProgress,
+} from "@shared/schema";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
@@ -40,6 +44,32 @@ async function insertSession(
   return progress.id;
 }
 
+/** Insert a session_completed_gates row. */
+async function insertCompletedGate(
+  sessionProgressId: string,
+  gateId: string,
+): Promise<void> {
+  await db.insert(sessionCompletedGates).values({
+    sessionProgressId,
+    gateId,
+  });
+}
+
+/** Insert a gate_clues row. */
+async function insertGateClue(
+  sessionProgressId: string,
+  gateId: string,
+  clueText: string,
+  attemptCountAtRequest: number,
+): Promise<void> {
+  await db.insert(gateClues).values({
+    sessionProgressId,
+    gateId,
+    clueText,
+    attemptCountAtRequest,
+  });
+}
+
 describe("resetSession mutation", () => {
   beforeAll(async () => {
     await setupTestDb();
@@ -49,17 +79,31 @@ describe("resetSession mutation", () => {
     invalidateCachedSchema();
   });
 
-  it("resets in-progress session to initial state (Gate 1, 0 attempts)", async () => {
-    const sessionId = makeSessionId("in-progress");
-    const progressId = await insertSession(sessionId, E2E_GATE_1_ID);
+  it("resets to baseline: Gate 1, 0 attempts, child rows removed", async () => {
+    const sessionId = makeSessionId("non-baseline");
+    // Seed non-baseline progress: at Gate 3, 5 attempts
+    const progressId = await insertSession(sessionId, E2E_GATE_3_ID, {
+      attemptCount: 5,
+    });
 
-    // Verify row exists before reset
-    const before = await env.DB.prepare(
-      `SELECT COUNT(*) as cnt FROM session_progress WHERE session_id = ? AND program_id = ?`,
+    // Seed child rows
+    await insertCompletedGate(progressId, E2E_GATE_1_ID);
+    await insertGateClue(progressId, E2E_GATE_1_ID, "some hint", 2);
+
+    // Verify child rows exist before reset
+    const completedBefore = await env.DB.prepare(
+      `SELECT COUNT(*) as cnt FROM session_completed_gates WHERE session_progress_id = ?`,
     )
-      .bind(sessionId, E2E_PROGRAM_ID)
+      .bind(progressId)
       .first<{ cnt: number }>();
-    expect(before?.cnt).toBe(1);
+    expect(completedBefore?.cnt).toBe(1);
+
+    const cluesBefore = await env.DB.prepare(
+      `SELECT COUNT(*) as cnt FROM gate_clues WHERE session_progress_id = ?`,
+    )
+      .bind(progressId)
+      .first<{ cnt: number }>();
+    expect(cluesBefore?.cnt).toBe(1);
 
     // Reset
     const response: GqlResponse = await gqlRequest(RESET_SESSION_MUTATION, {
@@ -71,7 +115,7 @@ describe("resetSession mutation", () => {
     expect(response.body.errors).toBeUndefined();
     expect(response.body.data).toEqual({ resetSession: true });
 
-    // Verify row still exists but state is reset
+    // Verify progress reset to baseline
     const row = await env.DB.prepare(
       `SELECT current_gate_id, attempt_count, status, completed_at
        FROM session_progress WHERE id = ?`,
@@ -88,6 +132,21 @@ describe("resetSession mutation", () => {
     expect(row?.attempt_count).toBe(0);
     expect(row?.status).toBe("in_progress");
     expect(row?.completed_at).toBeNull();
+
+    // Verify child rows removed
+    const completedAfter = await env.DB.prepare(
+      `SELECT COUNT(*) as cnt FROM session_completed_gates WHERE session_progress_id = ?`,
+    )
+      .bind(progressId)
+      .first<{ cnt: number }>();
+    expect(completedAfter?.cnt).toBe(0);
+
+    const cluesAfter = await env.DB.prepare(
+      `SELECT COUNT(*) as cnt FROM gate_clues WHERE session_progress_id = ?`,
+    )
+      .bind(progressId)
+      .first<{ cnt: number }>();
+    expect(cluesAfter?.cnt).toBe(0);
   });
 
   it("reset allows fresh start from gate 1", async () => {
