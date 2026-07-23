@@ -1,4 +1,5 @@
 import type { UseMutationResult } from "@tanstack/react-query";
+import { handlers } from "@test-utils/msw/handlers";
 import { createQueryWrapper } from "@test-utils/queryTestUtils";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -108,16 +109,13 @@ const mockProgression = {
 };
 
 const server = setupServer(
-  graphql.query("GetPrograms", () => {
-    return HttpResponse.json({
-      data: { programs: mockPrograms },
-    });
-  }),
-  graphql.query("GetProgramProgression", () => {
-    return HttpResponse.json({
-      data: { getProgramProgression: mockProgression },
-    });
-  }),
+  graphql.query("GetPrograms", () =>
+    HttpResponse.json({ data: { programs: mockPrograms } }),
+  ),
+  graphql.query("GetProgramProgression", () =>
+    HttpResponse.json({ data: { getProgramProgression: mockProgression } }),
+  ),
+  ...handlers,
 );
 
 describe("ProgramPlay Component", () => {
