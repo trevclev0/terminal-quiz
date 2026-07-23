@@ -4,10 +4,14 @@ import {
   GET_PROGRAM_PROGRESSION_QUERY,
   GET_PROGRAMS_QUERY,
 } from "@shared/gqlQueries";
+import { sessionCompletedGates, sessionProgress } from "@shared/schema";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
+import { drizzle } from "drizzle-orm/d1";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+
+const db = drizzle(env.DB);
 
 const E2E_PROGRAM_ID = "e2e00000-0000-0000-0000-000000000001";
 const E2E_GATE_1_ID = "e2e00001-0000-0000-0000-000000000001";
@@ -27,24 +31,17 @@ async function insertSession(
     attemptCount?: number;
   } = {},
 ): Promise<string> {
-  const progressId = crypto.randomUUID();
-  const now = Date.now();
-  await env.DB.prepare(
-    `INSERT INTO session_progress (id, session_id, program_id, current_gate_id, status, attempt_count, started_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  )
-    .bind(
-      progressId,
+  const [progress] = await db
+    .insert(sessionProgress)
+    .values({
       sessionId,
-      E2E_PROGRAM_ID,
-      gateId,
-      overrides.status ?? "in_progress",
-      overrides.attemptCount ?? 0,
-      now,
-      now,
-    )
-    .run();
-  return progressId;
+      programId: E2E_PROGRAM_ID,
+      currentGateId: gateId,
+      status: overrides.status ?? "in_progress",
+      attemptCount: overrides.attemptCount ?? 0,
+    })
+    .returning({ id: sessionProgress.id });
+  return progress.id;
 }
 
 describe("program queries", () => {
@@ -110,19 +107,14 @@ describe("program queries", () => {
     const progressId = await insertSession(sessionId, E2E_GATE_3_ID);
 
     // Mark gates 1 and 2 as completed for this session
-    const now = Date.now();
-    await env.DB.prepare(
-      `INSERT INTO session_completed_gates (id, session_progress_id, gate_id, completed_at)
-       VALUES (?, ?, ?, ?)`,
-    )
-      .bind(crypto.randomUUID(), progressId, E2E_GATE_1_ID, now)
-      .run();
-    await env.DB.prepare(
-      `INSERT INTO session_completed_gates (id, session_progress_id, gate_id, completed_at)
-       VALUES (?, ?, ?, ?)`,
-    )
-      .bind(crypto.randomUUID(), progressId, E2E_GATE_2_ID, now)
-      .run();
+    await db.insert(sessionCompletedGates).values({
+      sessionProgressId: progressId,
+      gateId: E2E_GATE_1_ID,
+    });
+    await db.insert(sessionCompletedGates).values({
+      sessionProgressId: progressId,
+      gateId: E2E_GATE_2_ID,
+    });
 
     const response: GqlResponse = await gqlRequest(
       GET_PROGRAM_PROGRESSION_QUERY,

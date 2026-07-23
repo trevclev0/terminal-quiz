@@ -3,10 +3,14 @@ import {
   GET_PROGRAM_PROGRESSION_QUERY,
   RESET_SESSION_MUTATION,
 } from "@shared/gqlQueries";
+import { sessionProgress } from "@shared/schema";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
+import { drizzle } from "drizzle-orm/d1";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+
+const db = drizzle(env.DB);
 
 const E2E_PROGRAM_ID = "e2e00000-0000-0000-0000-000000000001";
 const E2E_GATE_1_ID = "e2e00001-0000-0000-0000-000000000001";
@@ -22,25 +26,18 @@ async function insertSession(
   gateId: string | null,
   overrides: { status?: string; attemptCount?: number } = {},
 ): Promise<string> {
-  const progressId = crypto.randomUUID();
-  const now = Date.now();
-  await env.DB.prepare(
-    `INSERT INTO session_progress (id, session_id, program_id, current_gate_id, status, attempt_count, started_at, updated_at, completed_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  )
-    .bind(
-      progressId,
+  const [progress] = await db
+    .insert(sessionProgress)
+    .values({
       sessionId,
-      E2E_PROGRAM_ID,
-      gateId,
-      overrides.status ?? "in_progress",
-      overrides.attemptCount ?? 0,
-      now,
-      now,
-      overrides.status === "completed" ? now : null,
-    )
-    .run();
-  return progressId;
+      programId: E2E_PROGRAM_ID,
+      currentGateId: gateId,
+      status: overrides.status ?? "in_progress",
+      attemptCount: overrides.attemptCount ?? 0,
+      ...(overrides.status === "completed" ? { completedAt: new Date() } : {}),
+    })
+    .returning({ id: sessionProgress.id });
+  return progress.id;
 }
 
 describe("resetSession mutation", () => {
