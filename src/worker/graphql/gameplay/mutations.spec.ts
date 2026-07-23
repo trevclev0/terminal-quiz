@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { requestClue, submitGuess } from "./mutations";
+import { requestClue, resetSession, submitGuess } from "./mutations";
 
 vi.mock("@worker-utils/isGuessCloseEnough", () => ({
   default: vi.fn(),
@@ -566,5 +566,86 @@ describe("Gameplay Mutations: requestClue", () => {
       isClueLimitReached: true,
       cluesRemaining: 0,
     });
+  });
+});
+
+describe("Gameplay Mutations: resetSession", () => {
+  let mockDb: MockDb;
+  let mockContext: AppGraphQLContext;
+
+  beforeEach(() => {
+    mockDb = createMockDb();
+    mockContext = createMockContext(mockDb);
+    // Suppress console.error — resolver's catch block logs on DB errors
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  it("throws when session ID is missing", async () => {
+    const noSessionContext = {
+      get: vi.fn((key: string) => {
+        if (key === "db") return mockDb;
+        return undefined;
+      }),
+    } as unknown as AppGraphQLContext;
+
+    if (!resetSession.resolve) throw new Error("Resolver not defined");
+
+    await expect(
+      resetSession.resolve(null, { programId: "prog-1" }, noSessionContext),
+    ).rejects.toThrow("Unauthorized: Missing Session ID");
+  });
+
+  it("resets session to initial state when session exists", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValueOnce({
+      id: "progress-1",
+    });
+    mockDb.query.gates.findFirst.mockResolvedValueOnce({ id: "gate-1" });
+
+    if (!resetSession.resolve) throw new Error("Resolver not defined");
+
+    const result = await resetSession.resolve(
+      null,
+      { programId: "prog-1" },
+      mockContext,
+    );
+
+    expect(result).toBe(true);
+
+    // Verify batch was called (deletes + update)
+    expect(mockDb.batch).toHaveBeenCalledTimes(1);
+  });
+
+  it("succeeds as no-op when no session exists", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue(null);
+
+    if (!resetSession.resolve) throw new Error("Resolver not defined");
+
+    const result = await resetSession.resolve(
+      null,
+      { programId: "prog-1" },
+      mockContext,
+    );
+
+    expect(result).toBe(true);
+    // Should not touch the database if no session exists
+    expect(mockDb.batch).not.toHaveBeenCalled();
+    expect(mockDb.delete).not.toHaveBeenCalled();
+    expect(mockDb.update).not.toHaveBeenCalled();
+  });
+
+  it("handles database error gracefully", async () => {
+    mockDb.query.sessionProgress.findFirst.mockRejectedValue(
+      new Error("DB connection lost"),
+    );
+
+    if (!resetSession.resolve) throw new Error("Resolver not defined");
+
+    const result = await resetSession.resolve(
+      null,
+      { programId: "prog-1" },
+      mockContext,
+    );
+
+    expect(result).toBe(false);
   });
 });
