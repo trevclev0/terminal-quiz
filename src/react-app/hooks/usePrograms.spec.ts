@@ -45,8 +45,8 @@ describe("usePrograms hook", () => {
   });
 
   it("returns error when the underlying query fails", async () => {
-    globalThis.fetch = vi.fn(() =>
-      Promise.reject(new TypeError("Network error")),
+    vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(
+      new TypeError("Network error"),
     );
 
     const { wrapper } = createQueryWrapper();
