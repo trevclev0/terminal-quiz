@@ -60,4 +60,25 @@ describe("Program Play Route Integration", () => {
     expect(screen.getByText("Select new program")).toBeInTheDocument();
     expect(screen.getByText("Play program again")).toBeEnabled();
   });
+
+  it("shows error fallback when progression query returns GraphQL error", async () => {
+    server.use(
+      graphql.query("GetProgramProgression", () =>
+        HttpResponse.json({
+          errors: [{ message: "Progression fetch failed" }],
+        }),
+      ),
+    );
+
+    const router = createTestRouter("/programs/test-program-id");
+    renderWithRouter(router);
+
+    await waitFor(
+      () => {
+        expect(screen.queryByText("Test Program")).not.toBeInTheDocument();
+        expect(screen.queryByText("Gate 1")).not.toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
+  });
 });
