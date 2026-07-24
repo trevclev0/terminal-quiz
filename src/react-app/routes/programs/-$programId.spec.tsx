@@ -9,7 +9,15 @@ import {
 import { screen, waitFor } from "@testing-library/react";
 import { graphql, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
 const server = setupServer(
   graphql.query("GetPrograms", () =>
@@ -62,6 +70,9 @@ describe("Program Play Route Integration", () => {
   });
 
   it("shows error fallback when progression query returns GraphQL error", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
     server.use(
       graphql.query("GetProgramProgression", () =>
         HttpResponse.json({
