@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { graphqlFetch } from "./graphQlClient";
 
+vi.mock("@utils/session", () => ({
+  getSessionId: () => "test-session-id",
+}));
+
 const mockFetch = vi.fn();
 
 beforeEach(() => {
@@ -37,7 +41,7 @@ describe("graphqlFetch", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-session-id": expect.any(String),
+        "x-session-id": "test-session-id",
       },
       body: JSON.stringify({
         query: "mutation { doThing }",
@@ -64,8 +68,7 @@ describe("graphqlFetch", () => {
 
     const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
     const headers = options.headers as Record<string, string>;
-    expect(headers["x-session-id"]).toEqual(expect.any(String));
-    expect(headers["x-session-id"].length).toBeGreaterThan(0);
+    expect(headers["x-session-id"]).toBe("test-session-id");
   });
 
   it("throws fallback message on HTTP 500 without body", async () => {
