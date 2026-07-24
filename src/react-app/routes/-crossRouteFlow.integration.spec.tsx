@@ -1,3 +1,4 @@
+import { mockCompletedGate, mockProgression } from "@test-utils";
 import {
   createTestRouter,
   renderWithRouter,
@@ -9,11 +10,14 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import type { ProgramProgression } from "../api/queries/useProgramProgressionQuery";
 
-let progressionData: ProgramProgression = {
-  currentGate: { id: "gate-1", label: "Gate 1", question: "What is 2+2?" },
-  completedGates: [],
-  status: "in_progress",
-};
+let progressionData: ProgramProgression = mockProgression();
+
+const initialProgression: ProgramProgression = mockProgression();
+const completedProgression: ProgramProgression = mockProgression({
+  currentGate: null,
+  completedGates: [mockCompletedGate()],
+  status: "completed",
+});
 
 const server = setupServer(
   graphql.query("GetProgramProgression", () =>
@@ -21,19 +25,7 @@ const server = setupServer(
   ),
   graphql.mutation("SubmitGuess", ({ variables }) => {
     if (variables.guess === "4") {
-      progressionData = {
-        currentGate: null,
-        completedGates: [
-          {
-            id: "gate-1",
-            label: "Gate 1",
-            question: "What is 2+2?",
-            correctAnswer: "4",
-            successMessage: "Access Granted.",
-          },
-        ],
-        status: "completed",
-      };
+      progressionData = completedProgression;
       return HttpResponse.json({
         data: {
           submitGuess: {
@@ -57,11 +49,7 @@ const server = setupServer(
     });
   }),
   graphql.mutation("ResetSession", () => {
-    progressionData = {
-      currentGate: { id: "gate-1", label: "Gate 1", question: "What is 2+2?" },
-      completedGates: [],
-      status: "in_progress",
-    };
+    progressionData = initialProgression;
     return HttpResponse.json({ data: { resetSession: true } });
   }),
   graphql.query("GetPrograms", () =>
@@ -94,11 +82,7 @@ describe("Cross-Route Flow", () => {
   beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
   afterEach(() => {
     server.resetHandlers();
-    progressionData = {
-      currentGate: { id: "gate-1", label: "Gate 1", question: "What is 2+2?" },
-      completedGates: [],
-      status: "in_progress",
-    };
+    progressionData = mockProgression();
   });
   afterAll(() => server.close());
 
