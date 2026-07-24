@@ -63,6 +63,8 @@ export default defineConfig({
       ),
     },
     include: ["src/**/*.spec.{ts,tsx}"],
+    // Frontend integration specs (*.integration.spec.tsx) run here (happy-dom).
+    // Backend integration specs (*.integration.spec.ts) excluded; run via test:integration.
     exclude: [...configDefaults.exclude, "src/**/*.integration.spec.ts"],
     clearMocks: true,
     restoreMocks: true,
