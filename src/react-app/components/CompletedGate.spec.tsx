@@ -43,4 +43,38 @@ describe("CompletedGate", () => {
     const details = container.querySelector("details");
     expect(details).toHaveAttribute("open");
   });
+
+  it("renders empty input when correctAnswer is empty string", () => {
+    const gate: CompletedGateType = {
+      ...mockCompletedGate,
+      correctAnswer: "",
+    };
+    render(<CompletedGate id="gate-0" gate={gate} />);
+    const input = screen.getByRole("textbox");
+    expect(input).toHaveValue("");
+  });
+
+  it("renders long answer without truncation", () => {
+    const longAnswer = "a".repeat(500);
+    const gate: CompletedGateType = {
+      ...mockCompletedGate,
+      correctAnswer: longAnswer,
+    };
+    render(<CompletedGate id="gate-0" gate={gate} />);
+    const input = screen.getByRole("textbox");
+    expect(input).toHaveValue(longAnswer);
+  });
+
+  it("renders long question text", () => {
+    const longQuestion =
+      "What is the answer to life, the universe, and everything? "
+        .repeat(5)
+        .trim();
+    const gate: CompletedGateType = {
+      ...mockCompletedGate,
+      question: longQuestion,
+    };
+    render(<CompletedGate id="gate-0" gate={gate} />);
+    expect(screen.getByText(longQuestion)).toBeInTheDocument();
+  });
 });
