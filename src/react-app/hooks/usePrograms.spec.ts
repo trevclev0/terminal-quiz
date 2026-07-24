@@ -43,4 +43,18 @@ describe("usePrograms hook", () => {
       expect(result.current.isLoading).toBe(false);
     });
   });
+
+  it("returns error when the underlying query fails", async () => {
+    globalThis.fetch = vi.fn(() =>
+      Promise.reject(new TypeError("Network error")),
+    );
+
+    const { wrapper } = createQueryWrapper();
+    const { result } = renderHook(() => usePrograms(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.error).toBeDefined();
+      expect(result.current.error?.message).toBe("Network error");
+    });
+  });
 });
