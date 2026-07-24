@@ -1,3 +1,8 @@
+import {
+  mockActiveGate,
+  mockCompletedGate,
+  mockProgression,
+} from "@test-utils/msw/fixtures";
 import { createQueryWrapper } from "@test-utils/queryTestUtils";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -15,9 +20,10 @@ import {
 import type { ProgramProgression } from "../api/queries/useProgramProgressionQuery";
 import ProgramPlay from "./ProgramPlay";
 
-vi.mock("@tanstack/react-router", () => ({
-  useNavigate: vi.fn(() => vi.fn()),
-}));
+vi.mock(import("@tanstack/react-router"), async (importOriginal) => {
+  const actual = await importOriginal();
+  return { ...actual, useNavigate: vi.fn(() => vi.fn()) };
+});
 
 vi.mock("@routes/programs/$programId", () => ({
   Route: {
@@ -27,35 +33,6 @@ vi.mock("@routes/programs/$programId", () => ({
 }));
 
 let progressionData: ProgramProgression = mockProgression();
-
-function mockActiveGate(overrides: Record<string, unknown> = {}) {
-  return {
-    id: "active-gate-1",
-    label: "Gate 1",
-    question: "What is 2+2?",
-    ...overrides,
-  };
-}
-
-function mockCompletedGate(overrides: Record<string, unknown> = {}) {
-  return {
-    id: "completed-gate-1",
-    label: "Gate 1",
-    question: "What is 2+2?",
-    correctAnswer: "4",
-    successMessage: "Correct!",
-    ...overrides,
-  };
-}
-
-function mockProgression(overrides: Record<string, unknown> = {}) {
-  return {
-    currentGate: mockActiveGate(),
-    completedGates: [],
-    status: "in_progress",
-    ...overrides,
-  } as ProgramProgression;
-}
 
 const server = setupServer(
   graphql.query("GetProgramProgression", () =>
