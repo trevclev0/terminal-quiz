@@ -73,12 +73,13 @@ describe("Program Play Route Integration", () => {
     const router = createTestRouter("/programs/test-program-id");
     renderWithRouter(router);
 
-    await waitFor(
-      () => {
-        expect(screen.queryByText("Test Program")).not.toBeInTheDocument();
-        expect(screen.queryByText("Gate 1")).not.toBeInTheDocument();
-      },
-      { timeout: 3000 },
-    );
+    // Wait for loader to settle (error or success)
+    await waitFor(() => {
+      expect(screen.queryByText("Loading Program...")).not.toBeInTheDocument();
+    });
+
+    // Now error path should have executed, not success content
+    expect(screen.queryByText("Test Program")).not.toBeInTheDocument();
+    expect(screen.queryByText("Gate 1")).not.toBeInTheDocument();
   });
 });
