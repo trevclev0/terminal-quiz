@@ -128,6 +128,23 @@ describe("useRequestClueMutation", () => {
     ).rejects.toThrow("Network error");
   });
 
+  it("rejects on HTTP failure", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+    } as Response);
+
+    const { wrapper } = createQueryWrapper();
+    const { result } = renderHook(() => useRequestClueMutation(mockProgramId), {
+      wrapper,
+    });
+
+    await expect(
+      result.current.mutateAsync({ gateId: "gate-1", currentGuess: "5" }),
+    ).rejects.toThrow("GraphQL request failed with HTTP 500.");
+  });
+
   it("does not invalidate query cache (no onSuccess handler)", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
