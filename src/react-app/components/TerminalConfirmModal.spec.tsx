@@ -74,4 +74,46 @@ describe("TerminalConfirmModal", () => {
     fireEvent(dialog, new Event("cancel", { bubbles: true, cancelable: true }));
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
+
+  it("renders error message when provided", () => {
+    render(
+      <TerminalConfirmModal
+        message="Are you sure?"
+        errorMessage="Failed to reset progress"
+        onConfirm={vi.fn()}
+        onKeepProgress={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+    );
+    expect(screen.getByText("Failed to reset progress")).toBeInTheDocument();
+  });
+
+  it("does not render error element when errorMessage is undefined", () => {
+    render(
+      <TerminalConfirmModal
+        message="Are you sure?"
+        onConfirm={vi.fn()}
+        onKeepProgress={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+    );
+    expect(
+      screen.queryByText("Failed to reset progress"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("does not render error element when errorMessage is null", () => {
+    render(
+      <TerminalConfirmModal
+        message="Are you sure?"
+        errorMessage={null}
+        onConfirm={vi.fn()}
+        onKeepProgress={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+    );
+    expect(
+      screen.queryByText("Failed to reset progress"),
+    ).not.toBeInTheDocument();
+  });
 });
