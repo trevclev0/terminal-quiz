@@ -19,6 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Setup Environment
+        uses: ./.github/actions/setup-env
+
       - name: Delete preview worker
         uses: cloudflare/wrangler-action@v3
         with:
