@@ -72,6 +72,7 @@ export default defineConfig({
     },
   },
   test: {
+    // Backend integration specs only. Frontend (*.tsx) excluded — needs happy-dom, not Workerd pool.
     include: ["src/**/*.integration.spec.ts"],
     // Mirror unit test config — automatically reset mocks between tests
     clearMocks: true,
