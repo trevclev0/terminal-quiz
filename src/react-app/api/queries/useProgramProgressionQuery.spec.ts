@@ -91,6 +91,19 @@ describe("programProgressionQueryOptions", () => {
     );
   });
 
+  it("rejects on network failure", async () => {
+    mockFetch.mockRejectedValueOnce(new TypeError("Network error"));
+
+    const { wrapper } = createQueryWrapper();
+    const { result } = renderHook(
+      () => useQuery(programProgressionQueryOptions(mockProgramId)),
+      { wrapper },
+    );
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("Network error");
+  });
+
   it("handles null currentGate (completed program)", async () => {
     const progression = {
       currentGate: null,
