@@ -20,9 +20,7 @@ function TerminalConfirmModal({
   const confirmRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (!dialogRef.current?.open) {
-      dialogRef.current?.showModal();
-    }
+    dialogRef.current?.showModal();
     confirmRef.current?.focus();
   }, []);
 
