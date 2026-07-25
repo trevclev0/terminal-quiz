@@ -96,6 +96,19 @@ describe("aiService", () => {
     expect(result).toHaveLength(200);
   });
 
+  it("handles word boundary regex for non-word-boundary answers", async () => {
+    const { c, aiRunMock } = createMockHonoContext();
+    aiRunMock.mockResolvedValue({ response: "some clue" });
+    const result = await generateClue(
+      c,
+      "What is the answer?",
+      "!hello!",
+      "wrong guess",
+      [],
+    );
+    expect(result).toBe("some clue");
+  });
+
   it("exercises prompt logic with and without previous clues", async () => {
     const { c, aiRunMock } = createMockHonoContext();
     aiRunMock.mockResolvedValue({ response: "clue" });
