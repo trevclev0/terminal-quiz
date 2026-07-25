@@ -398,4 +398,197 @@ describe("ProgramPlay Component", () => {
 
     expect(mockResetSessionMutation.mutateAsync).not.toHaveBeenCalled();
   });
+
+  it("shows error when confirm reset fails", async () => {
+    mockResetSessionMutation.mutateAsync.mockResolvedValue(false);
+
+    const completedProgression = {
+      currentGate: null,
+      completedGates: [
+        {
+          id: "gate-1",
+          label: "Gate 1",
+          question: "What is 2+2?",
+          correctAnswer: "4",
+          successMessage: "Correct!",
+        },
+      ],
+      status: "completed",
+    };
+
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], mockPrograms);
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      completedProgression,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("The End");
+    await userEvent.click(screen.getByText("Select new program"));
+    await userEvent.click(screen.getByText("Reset Progress"));
+
+    const errors = screen.getAllByText(
+      "Failed to reset progress. Please try again.",
+    );
+    expect(errors).toHaveLength(2);
+  });
+
+  it("shows error when confirm reset throws", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    mockResetSessionMutation.mutateAsync.mockRejectedValue(
+      new Error("Network error"),
+    );
+
+    const completedProgression = {
+      currentGate: null,
+      completedGates: [
+        {
+          id: "gate-1",
+          label: "Gate 1",
+          question: "What is 2+2?",
+          correctAnswer: "4",
+          successMessage: "Correct!",
+        },
+      ],
+      status: "completed",
+    };
+
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], mockPrograms);
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      completedProgression,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("The End");
+    await userEvent.click(screen.getByText("Select new program"));
+    await userEvent.click(screen.getByText("Reset Progress"));
+
+    const errors = screen.getAllByText(
+      "Failed to reset progress. Please try again.",
+    );
+    expect(errors).toHaveLength(2);
+  });
+
+  it("closes confirm modal when cancel button is clicked", async () => {
+    const completedProgression = {
+      currentGate: null,
+      completedGates: [
+        {
+          id: "gate-1",
+          label: "Gate 1",
+          question: "What is 2+2?",
+          correctAnswer: "4",
+          successMessage: "Correct!",
+        },
+      ],
+      status: "completed",
+    };
+
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], mockPrograms);
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      completedProgression,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("The End");
+    await userEvent.click(screen.getByText("Select new program"));
+
+    expect(
+      screen.getByText(
+        `Reset your progress on "Test Program" before selecting a new one?`,
+      ),
+    ).toBeInTheDocument();
+
+    await userEvent.click(screen.getByText("[x]"));
+
+    expect(
+      screen.queryByText(
+        `Reset your progress on "Test Program" before selecting a new one?`,
+      ),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows error when play again reset fails", async () => {
+    mockResetSessionMutation.mutateAsync.mockResolvedValue(false);
+
+    const completedProgression = {
+      currentGate: null,
+      completedGates: [
+        {
+          id: "gate-1",
+          label: "Gate 1",
+          question: "What is 2+2?",
+          correctAnswer: "4",
+          successMessage: "Correct!",
+        },
+      ],
+      status: "completed",
+    };
+
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], mockPrograms);
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      completedProgression,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("The End");
+    await userEvent.click(screen.getByText("Play program again"));
+
+    expect(
+      screen.getByText("Failed to reset progress. Please try again."),
+    ).toBeInTheDocument();
+  });
+
+  it("shows error when play again reset throws", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    mockResetSessionMutation.mutateAsync.mockRejectedValue(
+      new Error("Network error"),
+    );
+
+    const completedProgression = {
+      currentGate: null,
+      completedGates: [
+        {
+          id: "gate-1",
+          label: "Gate 1",
+          question: "What is 2+2?",
+          correctAnswer: "4",
+          successMessage: "Correct!",
+        },
+      ],
+      status: "completed",
+    };
+
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], mockPrograms);
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      completedProgression,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("The End");
+    await userEvent.click(screen.getByText("Play program again"));
+
+    expect(
+      screen.getByText("Failed to reset progress. Please try again."),
+    ).toBeInTheDocument();
+  });
 });
