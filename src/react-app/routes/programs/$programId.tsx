@@ -1,5 +1,6 @@
 import { programProgressionQueryOptions } from "@api/queries/useProgramProgressionQuery";
 import { programsQueryOptions } from "@api/queries/useProgramsQuery";
+import RouteErrorFallback from "@components/RouteErrorFallback";
 import { createFileRoute } from "@tanstack/react-router";
 import ProgramPlay from "../../components/ProgramPlay";
 
@@ -16,5 +17,12 @@ export const Route = createFileRoute("/programs/$programId")({
   component: ProgramPlay,
   pendingComponent: () => (
     <h2 className="loading-screen">Loading Program...</h2>
+  ),
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      message="Failed to load program."
+    />
   ),
 });
