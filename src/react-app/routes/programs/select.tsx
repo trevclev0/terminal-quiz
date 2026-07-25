@@ -3,6 +3,25 @@ import ProgramSelector from "@components/ProgramSelector";
 import RouteErrorFallback from "@components/RouteErrorFallback";
 import { createFileRoute } from "@tanstack/react-router";
 
+interface ErrorComponentProps {
+  error: Error;
+  reset: () => void;
+}
+
+function PendingComponent() {
+  return <h2 className="loading-screen">Loading Programs...</h2>;
+}
+
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
+  return (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      message="Failed to load programs."
+    />
+  );
+}
+
 type SelectSearch = {
   programId?: string;
 };
@@ -23,14 +42,6 @@ export const Route = createFileRoute("/programs/select")({
     return {};
   },
   component: ProgramSelector,
-  pendingComponent: () => (
-    <h2 className="loading-screen">Loading Programs...</h2>
-  ),
-  errorComponent: ({ error, reset }) => (
-    <RouteErrorFallback
-      error={error}
-      reset={reset}
-      message="Failed to load programs."
-    />
-  ),
+  pendingComponent: PendingComponent,
+  errorComponent: ErrorComponent,
 });

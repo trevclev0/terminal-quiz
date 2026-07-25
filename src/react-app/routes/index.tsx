@@ -2,6 +2,21 @@ import { inProgressProgramQueryOptions } from "@api/queries/useInProgressProgram
 import RouteErrorFallback from "@components/RouteErrorFallback";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
+interface ErrorComponentProps {
+  error: Error;
+  reset: () => void;
+}
+
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
+  return (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      message="Failed to load in-progress program."
+    />
+  );
+}
+
 export const Route = createFileRoute("/")({
   loader: async ({ context: { queryClient } }) => {
     const inProgressProgramId = await queryClient.fetchQuery(
@@ -19,11 +34,5 @@ export const Route = createFileRoute("/")({
       to: "/programs/select",
     });
   },
-  errorComponent: ({ error, reset }) => (
-    <RouteErrorFallback
-      error={error}
-      reset={reset}
-      message="Failed to load in-progress program."
-    />
-  ),
+  errorComponent: ErrorComponent,
 });
