@@ -10,22 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ProgramsSelectRouteImport } from './routes/programs/select'
 import { Route as ProgramsProgramIdRouteImport } from './routes/programs/$programId'
+import { Route as ProgramsSelectRouteImport } from './routes/programs/select'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProgramsSelectRoute = ProgramsSelectRouteImport.update({
-  id: '/programs/select',
-  path: '/programs/select',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ProgramsProgramIdRoute = ProgramsProgramIdRouteImport.update({
   id: '/programs/$programId',
   path: '/programs/$programId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProgramsSelectRoute = ProgramsSelectRouteImport.update({
+  id: '/programs/select',
+  path: '/programs/select',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -68,18 +68,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/programs/select': {
-      id: '/programs/select'
-      path: '/programs/select'
-      fullPath: '/programs/select'
-      preLoaderRoute: typeof ProgramsSelectRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/programs/$programId': {
       id: '/programs/$programId'
       path: '/programs/$programId'
       fullPath: '/programs/$programId'
       preLoaderRoute: typeof ProgramsProgramIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/programs/select': {
+      id: '/programs/select'
+      path: '/programs/select'
+      fullPath: '/programs/select'
+      preLoaderRoute: typeof ProgramsSelectRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
