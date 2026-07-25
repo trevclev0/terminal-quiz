@@ -19,9 +19,6 @@ function isGuessCloseEnough(
     normalizedGuess.length,
     normalizedAnswer.length,
   );
-  if (longerLength === 0) {
-    return true;
-  }
   const similarity = 1 - distance / longerLength;
 
   return similarity >= threshold;
