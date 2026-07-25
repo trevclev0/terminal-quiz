@@ -41,8 +41,9 @@ vi.mock("@components/CompletedGate", () => ({
   default: vi.fn(() => null),
 }));
 
+const mockMutateAsync = vi.fn().mockResolvedValue(true);
 const mockResetSessionMutation = {
-  mutateAsync: vi.fn().mockResolvedValue(true),
+  mutateAsync: mockMutateAsync,
   isPending: false,
 } as unknown as UseMutationResult<
   boolean,
@@ -400,7 +401,7 @@ describe("ProgramPlay Component", () => {
   });
 
   it("shows error when confirm reset fails", async () => {
-    mockResetSessionMutation.mutateAsync.mockResolvedValue(false);
+    mockMutateAsync.mockResolvedValue(false);
 
     const completedProgression = {
       currentGate: null,
@@ -438,9 +439,7 @@ describe("ProgramPlay Component", () => {
 
   it("shows error when confirm reset throws", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
-    mockResetSessionMutation.mutateAsync.mockRejectedValue(
-      new Error("Network error"),
-    );
+    mockMutateAsync.mockRejectedValue(new Error("Network error"));
 
     const completedProgression = {
       currentGate: null,
@@ -520,7 +519,7 @@ describe("ProgramPlay Component", () => {
   });
 
   it("shows error when play again reset fails", async () => {
-    mockResetSessionMutation.mutateAsync.mockResolvedValue(false);
+    mockMutateAsync.mockResolvedValue(false);
 
     const completedProgression = {
       currentGate: null,
@@ -556,9 +555,7 @@ describe("ProgramPlay Component", () => {
 
   it("shows error when play again reset throws", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
-    mockResetSessionMutation.mutateAsync.mockRejectedValue(
-      new Error("Network error"),
-    );
+    mockMutateAsync.mockRejectedValue(new Error("Network error"));
 
     const completedProgression = {
       currentGate: null,
