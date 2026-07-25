@@ -1,0 +1,29 @@
+.errorScreen {
+  text-align: center;
+  margin-top: 4rem;
+  color: var(--red);
+}
+
+.errorDetails {
+  margin: 1rem auto;
+  max-width: 600px;
+  text-align: left;
+  font-size: 0.75rem;
+  color: var(--light-grey);
+}
+
+.errorDetails summary {
+  cursor: pointer;
+  padding: 0.5rem;
+  text-align: center;
+  color: var(--red);
+}
+
+.errorDetails[open] summary {
+  margin-bottom: 0.5rem;
+}
+
+.retryButton {
+  color: var(--red);
+  border-color: var(--red);
+}
