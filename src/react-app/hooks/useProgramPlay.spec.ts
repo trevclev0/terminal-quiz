@@ -6,11 +6,14 @@ import useProgramPlay from "./useProgramPlay";
 // Mock the mutations
 const mockMutateAsync = vi.fn();
 const mockMutate = vi.fn();
+let mockSubmitIsPending = false;
 
 vi.mock("@api/mutations/useSubmitGuessMutation", () => ({
   useSubmitGuessMutation: vi.fn(() => ({
     mutateAsync: mockMutateAsync,
-    isPending: false,
+    get isPending() {
+      return mockSubmitIsPending;
+    },
   })),
 }));
 
@@ -38,6 +41,7 @@ describe("useProgramPlay", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSubmitIsPending = false;
   });
 
   it("starts with an empty guess", () => {
@@ -118,6 +122,25 @@ describe("useProgramPlay", () => {
     expect(result.current.message).toBe("Correct!");
   });
 
+  it("sets message to null when success message is null", async () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+    mockMutateAsync.mockResolvedValue({
+      success: true,
+      message: null,
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
+    });
+
+    expect(result.current.message).toBeNull();
+  });
+
   it("clears the guess", async () => {
     const { result } = renderHook(
       () => useProgramPlay({ programId, currentGateId }),
@@ -170,6 +193,39 @@ describe("useProgramPlay", () => {
     });
 
     expect(result.current.message).toBe("Wrong!");
+  });
+
+  it("falls back to 'Access Denied.' when error message is null", async () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+    mockMutateAsync.mockResolvedValue({
+      success: false,
+      message: null,
+      canRequestClue: false,
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
+    });
+
+    expect(result.current.message).toBe("Access Denied.");
+  });
+
+  it("does nothing when handleRequestClue is called with no currentGateId", () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId: null }),
+      { wrapper },
+    );
+
+    act(() => {
+      result.current.handleRequestClue();
+    });
+
+    expect(mockMutate).not.toHaveBeenCalled();
   });
 
   it("sets isShaking to true", async () => {
@@ -257,6 +313,40 @@ describe("useProgramPlay", () => {
     });
 
     expect(result.current.canRequestClue).toBe(false);
+  });
+
+  it("returns early when mutation is pending", async () => {
+    mockSubmitIsPending = true;
+
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
+    });
+
+    expect(mockMutateAsync).not.toHaveBeenCalled();
+  });
+
+  it("sets error message when currentGateId is null", async () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId: null }),
+      { wrapper },
+    );
+
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
+    });
+
+    expect(result.current.message).toBe("No active gate to submit guess to");
+    expect(result.current.guessSucceeded).toBe(false);
+    expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
   it("sets message to error text", async () => {
