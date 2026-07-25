@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import styles from "./RouteErrorFallback.module.css";
 
 type RouteErrorFallbackProps = {
@@ -11,10 +12,16 @@ export default function RouteErrorFallback({
   reset,
   message = "Something went wrong.",
 }: RouteErrorFallbackProps) {
+  useEffect(() => {
+    if (error) {
+      console.error("[RouteErrorFallback]", error);
+    }
+  }, [error]);
+
   return (
     <div className={styles.errorScreen}>
       <p>{message}</p>
-      {error && (
+      {import.meta.env.DEV && error && (
         <details className={styles.errorDetails}>
           <summary>Error details</summary>
           <p>{error.message}</p>
