@@ -10,6 +10,7 @@ vi.mock("@worker-services/aiService", () => ({
 }));
 
 import { generateClue } from "@worker-services/aiService";
+import { createMockGraphQLContext } from "@worker-test-utils/mockEnv";
 import isGuessCloseEnough from "@worker-utils/isGuessCloseEnough";
 import type { AppGraphQLContext } from "./types";
 
@@ -51,14 +52,11 @@ function createMockDb(): MockDb {
   };
 }
 
-function createMockContext(mockDb: MockDb): AppGraphQLContext {
-  return {
-    get: vi.fn((key: string) => {
-      if (key === "db") return mockDb;
-      if (key === "sessionId") return "mock-session-456";
-      return undefined;
-    }),
-  } as unknown as AppGraphQLContext;
+function createMockContext(mockDb: MockDb) {
+  return createMockGraphQLContext({
+    db: mockDb,
+    sessionId: "mock-session-456",
+  });
 }
 
 const defaultGate = {
@@ -255,12 +253,7 @@ describe("Gameplay Mutations: submitGuess", () => {
   });
 
   it("throws when session ID is missing for guess submission", async () => {
-    const noSessionContext = {
-      get: vi.fn((key: string) => {
-        if (key === "db") return mockDb;
-        return undefined;
-      }),
-    } as unknown as AppGraphQLContext;
+    const noSessionContext = createMockGraphQLContext({ db: mockDb });
 
     if (!submitGuess.resolve) throw new Error("Resolver not defined");
 
@@ -450,12 +443,7 @@ describe("Gameplay Mutations: requestClue", () => {
   });
 
   it("throws when session ID is missing", async () => {
-    const contextWithoutSession = {
-      get: vi.fn((key: string) => {
-        if (key === "db") return mockDb;
-        return undefined;
-      }),
-    } as unknown as AppGraphQLContext;
+    const contextWithoutSession = createMockGraphQLContext({ db: mockDb });
 
     if (!requestClue.resolve) throw new Error("Resolver not defined");
 
@@ -804,12 +792,7 @@ describe("Gameplay Mutations: resetSession", () => {
   });
 
   it("throws when session ID is missing", async () => {
-    const noSessionContext = {
-      get: vi.fn((key: string) => {
-        if (key === "db") return mockDb;
-        return undefined;
-      }),
-    } as unknown as AppGraphQLContext;
+    const noSessionContext = createMockGraphQLContext({ db: mockDb });
 
     if (!resetSession.resolve) throw new Error("Resolver not defined");
 
