@@ -51,9 +51,9 @@ function contextWith(db: MockDb, sessionId?: string): AppGraphQLContext {
 
 const SID = "mock-session-id";
 
-function resolveField<T>(
-  field: { resolve?: (...args: any[]) => T },
-  ...args: any[]
+function resolveField<T, TArgs extends unknown[]>(
+  field: { resolve?: (...args: TArgs) => T },
+  ...args: TArgs
 ): T {
   if (!field.resolve) throw new Error("Resolver not defined");
   return field.resolve(...args);
