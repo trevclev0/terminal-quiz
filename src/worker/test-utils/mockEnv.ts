@@ -2,6 +2,7 @@ import type { Ai, D1Database } from "@cloudflare/workers-types";
 import type { Context } from "hono";
 import { type Mock, vi } from "vitest";
 import type { Env } from "..";
+import type { AppGraphQLContext } from "../graphql/gameplay/types";
 
 export function createMockEnv(
   overrides: Partial<Env["Bindings"]> = {},
@@ -22,4 +23,18 @@ export function createMockHonoContext(
   const c = { env: mockEnv } as unknown as Context;
 
   return { c, aiRunMock };
+}
+
+export function createMockGraphQLContext(options?: {
+  db?: unknown;
+  sessionId?: string;
+}): AppGraphQLContext {
+  const { db, sessionId } = options || {};
+  return {
+    get: vi.fn((key: string) => {
+      if (key === "db") return db;
+      if (key === "sessionId") return sessionId;
+      return undefined;
+    }),
+  } as unknown as AppGraphQLContext;
 }
