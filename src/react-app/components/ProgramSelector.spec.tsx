@@ -2,7 +2,7 @@
 import usePrograms from "@hooks/usePrograms";
 import { Route } from "@routes/programs/select";
 import { useNavigate } from "@tanstack/react-router";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import ProgramSelector from "./ProgramSelector";
@@ -109,5 +109,19 @@ describe("ProgramSelector Component", () => {
       to: "/programs/$programId",
       params: { programId: "2" },
     });
+  });
+
+  it("does not navigate to program route when Start Program is clicked with invalid selection", () => {
+    (Route.useSearch as Mock).mockReturnValue({ programId: "invalid-id" });
+    render(<ProgramSelector />);
+
+    const startButton = screen.getByText(/Start Program/i);
+    expect(startButton).toBeDisabled();
+
+    fireEvent.click(startButton);
+
+    expect(mockNavigate).not.toHaveBeenCalledWith(
+      expect.objectContaining({ to: "/programs/$programId" }),
+    );
   });
 });
