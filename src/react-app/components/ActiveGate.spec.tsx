@@ -231,4 +231,27 @@ describe("Clue Functionality", () => {
       screen.getByRole("button", { name: /get Final clue/i }),
     ).toBeInTheDocument();
   });
+
+  it("renders 'th' suffix for clues beyond ordinal 3", () => {
+    const manyClues = ["A", "B", "C"];
+    renderActiveGate({
+      canRequestClue: true,
+      guess: "some guess",
+      clues: manyClues,
+    });
+    expect(
+      screen.getByRole("button", { name: /get 4th clue/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("handles undefined requestClueMutation", () => {
+    renderActiveGate({
+      canRequestClue: true,
+      guess: "test",
+      requestClueMutation: undefined,
+    });
+    expect(
+      screen.getByRole("button", { name: /get.*clue/i }),
+    ).not.toBeDisabled();
+  });
 });
