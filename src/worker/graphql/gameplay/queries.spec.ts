@@ -51,6 +51,14 @@ function contextWith(db: MockDb, sessionId?: string): AppGraphQLContext {
 
 const SID = "mock-session-id";
 
+function resolveField<T>(
+  field: { resolve?: (...args: any[]) => T },
+  ...args: any[]
+): T {
+  if (!field.resolve) throw new Error("Resolver not defined");
+  return field.resolve(...args);
+}
+
 describe("getProgramProgression", () => {
   let mockDb: MockDb;
 
@@ -61,10 +69,8 @@ describe("getProgramProgression", () => {
   it("throws when sessionId is missing", async () => {
     const ctx = contextWith(mockDb, undefined);
 
-    if (!getProgramProgression.resolve) throw new Error("Resolver not defined");
-
     await expect(
-      getProgramProgression.resolve(null, { programId: "prog-1" }, ctx),
+      resolveField(getProgramProgression, null, { programId: "prog-1" }, ctx),
     ).rejects.toThrow(/Unauthorized/);
   });
 
@@ -84,9 +90,8 @@ describe("getProgramProgression", () => {
       sequenceOrder: 2,
     });
 
-    if (!getProgramProgression.resolve) throw new Error("Resolver not defined");
-
-    const result = await getProgramProgression.resolve(
+    const result = await resolveField(
+      getProgramProgression,
       null,
       { programId: "prog-1" },
       contextWith(mockDb, SID),
@@ -103,9 +108,8 @@ describe("getProgramProgression", () => {
     mockDb.query.sessionCompletedGates.findMany.mockResolvedValue([]);
     mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
 
-    if (!getProgramProgression.resolve) throw new Error("Resolver not defined");
-
-    const result = await getProgramProgression.resolve(
+    const result = await resolveField(
+      getProgramProgression,
       null,
       { programId: "prog-1" },
       contextWith(mockDb, SID),
@@ -123,9 +127,8 @@ describe("getProgramProgression", () => {
     });
     mockDb.query.sessionCompletedGates.findMany.mockResolvedValue([]);
 
-    if (!getProgramProgression.resolve) throw new Error("Resolver not defined");
-
-    const result = await getProgramProgression.resolve(
+    const result = await resolveField(
+      getProgramProgression,
       null,
       { programId: "prog-1" },
       contextWith(mockDb, SID),
@@ -152,9 +155,8 @@ describe("getProgramProgression", () => {
 
     mockDb.query.sessionCompletedGates.findMany.mockResolvedValue([]);
 
-    if (!getProgramProgression.resolve) throw new Error("Resolver not defined");
-
-    const result = await getProgramProgression.resolve(
+    const result = await resolveField(
+      getProgramProgression,
       null,
       { programId: "prog-1" },
       contextWith(mockDb, SID),
@@ -189,9 +191,8 @@ describe("getProgramProgression", () => {
 
     mockDb.query.sessionCompletedGates.findMany.mockResolvedValue([]);
 
-    if (!getProgramProgression.resolve) throw new Error("Resolver not defined");
-
-    const result = await getProgramProgression.resolve(
+    const result = await resolveField(
+      getProgramProgression,
       null,
       { programId: "prog-1" },
       contextWith(mockDb, SID),
@@ -212,10 +213,9 @@ describe("getProgramProgression", () => {
       values: vi.fn().mockReturnValue({ returning }),
     });
 
-    if (!getProgramProgression.resolve) throw new Error("Resolver not defined");
-
     await expect(
-      getProgramProgression.resolve(
+      resolveField(
+        getProgramProgression,
         null,
         { programId: "prog-1" },
         contextWith(mockDb, SID),
@@ -227,10 +227,9 @@ describe("getProgramProgression", () => {
     mockDb.query.sessionProgress.findFirst.mockResolvedValue(null);
     mockDb.query.gates.findFirst.mockResolvedValue(null);
 
-    if (!getProgramProgression.resolve) throw new Error("Resolver not defined");
-
     await expect(
-      getProgramProgression.resolve(
+      resolveField(
+        getProgramProgression,
         null,
         { programId: "prog-1" },
         contextWith(mockDb, SID),
@@ -249,11 +248,9 @@ describe("getInProgressProgram", () => {
   it("throws when sessionId is missing", async () => {
     const ctx = contextWith(mockDb, undefined);
 
-    if (!getInProgressProgram.resolve) throw new Error("Resolver not defined");
-
-    await expect(getInProgressProgram.resolve(null, {}, ctx)).rejects.toThrow(
-      /Unauthorized/,
-    );
+    await expect(
+      resolveField(getInProgressProgram, null, {}, ctx),
+    ).rejects.toThrow(/Unauthorized/);
   });
 
   it("returns programId when in-progress session exists", async () => {
@@ -261,9 +258,8 @@ describe("getInProgressProgram", () => {
       programId: "prog-1",
     });
 
-    if (!getInProgressProgram.resolve) throw new Error("Resolver not defined");
-
-    const result = await getInProgressProgram.resolve(
+    const result = await resolveField(
+      getInProgressProgram,
       null,
       {},
       contextWith(mockDb, SID),
@@ -275,9 +271,8 @@ describe("getInProgressProgram", () => {
   it("returns null when no in-progress session exists", async () => {
     mockDb.query.sessionProgress.findFirst.mockResolvedValue(null);
 
-    if (!getInProgressProgram.resolve) throw new Error("Resolver not defined");
-
-    const result = await getInProgressProgram.resolve(
+    const result = await resolveField(
+      getInProgressProgram,
       null,
       {},
       contextWith(mockDb, SID),
@@ -297,9 +292,7 @@ describe("getPrograms", () => {
   it("throws when sessionId is missing", async () => {
     const ctx = contextWith(mockDb, undefined);
 
-    if (!getPrograms.resolve) throw new Error("Resolver not defined");
-
-    await expect(getPrograms.resolve(null, {}, ctx)).rejects.toThrow(
+    await expect(resolveField(getPrograms, null, {}, ctx)).rejects.toThrow(
       /Unauthorized/,
     );
   });
@@ -310,9 +303,8 @@ describe("getPrograms", () => {
       { id: "prog-2", name: "Program 2" },
     ]);
 
-    if (!getPrograms.resolve) throw new Error("Resolver not defined");
-
-    const result = await getPrograms.resolve(
+    const result = await resolveField(
+      getPrograms,
       null,
       {},
       contextWith(mockDb, SID),
