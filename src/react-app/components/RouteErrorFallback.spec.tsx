@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { mockCssModuleProxy } from "@test-utils/cssModuleMock";
 import { render, screen } from "@testing-library/react";
@@ -7,10 +7,6 @@ import userEvent from "@testing-library/user-event";
 vi.mock("./RouteErrorFallback.module.css", () => ({
   default: mockCssModuleProxy(),
 }));
-
-afterEach(() => {
-  vi.restoreAllMocks();
-});
 
 import RouteErrorFallback from "./RouteErrorFallback";
 
@@ -30,6 +26,10 @@ describe("RouteErrorFallback", () => {
   });
 
   describe("error details", () => {
+    beforeEach(() => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+    });
+
     it("renders details element with error message when error prop given", () => {
       const error = new Error("Network failure");
       render(<RouteErrorFallback error={error} />);
