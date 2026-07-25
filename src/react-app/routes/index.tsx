@@ -1,4 +1,5 @@
 import { inProgressProgramQueryOptions } from "@api/queries/useInProgressProgramQuery";
+import RouteErrorFallback from "@components/RouteErrorFallback";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
@@ -18,4 +19,11 @@ export const Route = createFileRoute("/")({
       to: "/programs/select",
     });
   },
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      message="Failed to find in-progress program."
+    />
+  ),
 });

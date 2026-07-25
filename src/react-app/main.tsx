@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import { queryClient } from "@api/queryClient";
 import ErrorBoundary from "@components/ErrorBoundary";
+import RouteErrorFallback from "@components/RouteErrorFallback";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 
@@ -15,6 +16,9 @@ const router = createRouter({
   defaultPreload: "intent",
   defaultPendingMinMs: 500,
   defaultPendingComponent: () => <h2 className="loading-screen">Loading...</h2>,
+  defaultErrorComponent: ({ error, reset }) => (
+    <RouteErrorFallback error={error} reset={reset} />
+  ),
   context: {
     queryClient,
   },

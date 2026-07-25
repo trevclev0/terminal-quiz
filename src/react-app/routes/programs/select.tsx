@@ -1,5 +1,6 @@
 import { programsQueryOptions } from "@api/queries/useProgramsQuery";
 import ProgramSelector from "@components/ProgramSelector";
+import RouteErrorFallback from "@components/RouteErrorFallback";
 import { createFileRoute } from "@tanstack/react-router";
 
 type SelectSearch = {
@@ -24,5 +25,12 @@ export const Route = createFileRoute("/programs/select")({
   component: ProgramSelector,
   pendingComponent: () => (
     <h2 className="loading-screen">Loading Programs...</h2>
+  ),
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorFallback
+      error={error}
+      reset={reset}
+      message="Failed to load programs."
+    />
   ),
 });
