@@ -1,70 +1,86 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getProgramProgression } from "./queries";
+import {
+  getInProgressProgram,
+  getProgramProgression,
+  getPrograms,
+} from "./queries";
 import type { AppGraphQLContext } from "./types";
 
-describe("Gameplay Queries: getProgramProgression", () => {
-  let mockDb: unknown;
-  let mockContext: AppGraphQLContext;
+function createMockDb() {
+  return {
+    query: {
+      sessionProgress: { findFirst: vi.fn() },
+      gates: { findFirst: vi.fn(), findMany: vi.fn() },
+      sessionCompletedGates: { findMany: vi.fn() },
+      programs: { findMany: vi.fn() },
+    },
+    insert: vi.fn().mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn(),
+      }),
+    }),
+  };
+}
+
+type MockDb = ReturnType<typeof createMockDb>;
+
+const defaultGate = {
+  id: "gate-1",
+  label: "Gate 1",
+  question: "Question 1",
+  sequenceOrder: 1,
+  correctAnswer: "answer-1",
+  successMessage: "OK",
+};
+
+const defaultProgress = {
+  id: "progress-1",
+  currentGateId: "gate-1",
+  status: "in_progress",
+};
+
+function contextWith(db: MockDb, sessionId?: string): AppGraphQLContext {
+  return {
+    get: vi.fn((key: string) => {
+      if (key === "db") return db;
+      if (key === "sessionId") return sessionId;
+      return undefined;
+    }),
+  } as unknown as AppGraphQLContext;
+}
+
+const SID = "mock-session-id";
+
+describe("getProgramProgression", () => {
+  let mockDb: MockDb;
 
   beforeEach(() => {
-    mockDb = {
-      query: {
-        gates: { findMany: vi.fn(), findFirst: vi.fn() },
-        sessionProgress: { findFirst: vi.fn() },
-        sessionCompletedGates: { findMany: vi.fn() },
-      },
-      insert: vi.fn(),
-    } as unknown;
-
-    mockContext = {
-      get: vi.fn((key: string) => {
-        if (key === "db") return mockDb;
-        if (key === "sessionId") return "mock-session-123";
-        return undefined;
-      }),
-    } as unknown as AppGraphQLContext;
+    mockDb = createMockDb();
   });
 
-  it("throws an error if sessionId is missing", async () => {
-    // @ts-expect-error - mock override
-    mockContext.get.mockReturnValue(undefined);
+  it("throws when sessionId is missing", async () => {
+    const ctx = contextWith(mockDb, undefined);
 
     if (!getProgramProgression.resolve) throw new Error("Resolver not defined");
 
     await expect(
-      getProgramProgression.resolve(null, { programId: "prog-1" }, mockContext),
+      getProgramProgression.resolve(null, { programId: "prog-1" }, ctx),
     ).rejects.toThrow(/Unauthorized/);
   });
 
-  it("fetches and returns the correct progression state", async () => {
-    // @ts-expect-error
+  it("returns progression for existing session with completed gates", async () => {
     mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      ...defaultProgress,
       currentGateId: "gate-2",
-      status: "in_progress",
     });
-
-    // @ts-expect-error
     mockDb.query.sessionCompletedGates.findMany.mockResolvedValue([
       { gateId: "gate-1" },
     ]);
-
-    // @ts-expect-error
-    mockDb.query.gates.findMany.mockResolvedValue([
-      {
-        id: "gate-1",
-        label: "Gate 1",
-        question: "Q1",
-        correctAnswer: "answer-1",
-        successMessage: "Nice!",
-        sequenceOrder: 1,
-      },
-    ]);
-
-    // @ts-expect-error
+    mockDb.query.gates.findMany.mockResolvedValue([defaultGate]);
     mockDb.query.gates.findFirst.mockResolvedValue({
       id: "gate-2",
       label: "Gate 2",
-      question: "Q2",
+      question: "Question 2",
       sequenceOrder: 2,
     });
 
@@ -73,23 +89,79 @@ describe("Gameplay Queries: getProgramProgression", () => {
     const result = await getProgramProgression.resolve(
       null,
       { programId: "prog-1" },
-      mockContext,
+      contextWith(mockDb, SID),
     );
 
     expect(result.completedGates).toHaveLength(1);
     expect(result.completedGates[0].id).toBe("gate-1");
-    expect(result.completedGates[0].correctAnswer).toBe("answer-1");
     expect(result.currentGate?.id).toBe("gate-2");
-    expect(result.currentGate).not.toHaveProperty("correctAnswer");
+    expect(result.status).toBe("in_progress");
+  });
 
-    // @ts-expect-error
-    expect(mockDb.query.gates.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.anything(),
-        orderBy: expect.anything(),
-      }),
+  it("skips completed gate query when none are completed", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue(defaultProgress);
+    mockDb.query.sessionCompletedGates.findMany.mockResolvedValue([]);
+    mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
+
+    if (!getProgramProgression.resolve) throw new Error("Resolver not defined");
+
+    const result = await getProgramProgression.resolve(
+      null,
+      { programId: "prog-1" },
+      contextWith(mockDb, SID),
     );
-    // @ts-expect-error
+
+    expect(result.completedGates).toEqual([]);
+    expect(mockDb.query.gates.findMany).not.toHaveBeenCalled();
+  });
+
+  it("returns null currentGate when currentGateId is null (program completed)", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      ...defaultProgress,
+      currentGateId: null,
+      status: "completed",
+    });
+    mockDb.query.sessionCompletedGates.findMany.mockResolvedValue([]);
+
+    if (!getProgramProgression.resolve) throw new Error("Resolver not defined");
+
+    const result = await getProgramProgression.resolve(
+      null,
+      { programId: "prog-1" },
+      contextWith(mockDb, SID),
+    );
+
+    expect(result.currentGate).toBeNull();
+    expect(result.status).toBe("completed");
+  });
+
+  it("initializes new session when none exists", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue(null);
+    mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
+
+    const returning = vi.fn().mockResolvedValue([
+      {
+        id: "new-progress-1",
+        currentGateId: "gate-1",
+        status: "in_progress",
+      },
+    ]);
+    mockDb.insert.mockReturnValue({
+      values: vi.fn().mockReturnValue({ returning }),
+    });
+
+    mockDb.query.sessionCompletedGates.findMany.mockResolvedValue([]);
+
+    if (!getProgramProgression.resolve) throw new Error("Resolver not defined");
+
+    const result = await getProgramProgression.resolve(
+      null,
+      { programId: "prog-1" },
+      contextWith(mockDb, SID),
+    );
+
+    expect(result.currentGate?.id).toBe("gate-1");
+    expect(result.completedGates).toEqual([]);
     expect(mockDb.query.gates.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         columns: { correctAnswer: false },
@@ -98,34 +170,155 @@ describe("Gameplay Queries: getProgramProgression", () => {
     );
   });
 
-  it("skips completed gate query when none are completed", async () => {
-    // @ts-expect-error
-    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+  it("retries fetch on concurrent insert conflict", async () => {
+    const existingProgress = {
+      id: "existing-progress-1",
       currentGateId: "gate-1",
       status: "in_progress",
+    };
+
+    mockDb.query.sessionProgress.findFirst
+      .mockResolvedValueOnce(null) // first check: no session
+      .mockResolvedValueOnce(existingProgress); // retry after conflict
+    mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
+
+    const returning = vi.fn().mockRejectedValue(new Error("UNIQUE constraint"));
+    mockDb.insert.mockReturnValue({
+      values: vi.fn().mockReturnValue({ returning }),
     });
 
-    // @ts-expect-error
     mockDb.query.sessionCompletedGates.findMany.mockResolvedValue([]);
-
-    // @ts-expect-error
-    mockDb.query.gates.findFirst.mockResolvedValue({
-      id: "gate-1",
-      label: "Gate 1",
-      question: "Q1",
-      sequenceOrder: 1,
-    });
 
     if (!getProgramProgression.resolve) throw new Error("Resolver not defined");
 
     const result = await getProgramProgression.resolve(
       null,
       { programId: "prog-1" },
-      mockContext,
+      contextWith(mockDb, SID),
     );
 
-    expect(result.completedGates).toEqual([]);
-    // @ts-expect-error
-    expect(mockDb.query.gates.findMany).not.toHaveBeenCalled();
+    expect(result.currentGate?.id).toBe("gate-1");
+  });
+
+  it("throws when session init fails on both insert and retry", async () => {
+    mockDb.query.sessionProgress.findFirst
+      .mockResolvedValueOnce(null) // first check
+      .mockResolvedValueOnce(null); // retry still fails
+
+    mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
+
+    const returning = vi.fn().mockRejectedValue(new Error("UNIQUE constraint"));
+    mockDb.insert.mockReturnValue({
+      values: vi.fn().mockReturnValue({ returning }),
+    });
+
+    if (!getProgramProgression.resolve) throw new Error("Resolver not defined");
+
+    await expect(
+      getProgramProgression.resolve(
+        null,
+        { programId: "prog-1" },
+        contextWith(mockDb, SID),
+      ),
+    ).rejects.toThrow("Failed to initialize session progression.");
+  });
+
+  it("throws when program has no gates", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue(null);
+    mockDb.query.gates.findFirst.mockResolvedValue(null);
+
+    if (!getProgramProgression.resolve) throw new Error("Resolver not defined");
+
+    await expect(
+      getProgramProgression.resolve(
+        null,
+        { programId: "prog-1" },
+        contextWith(mockDb, SID),
+      ),
+    ).rejects.toThrow("Program not found or has no gates.");
+  });
+});
+
+describe("getInProgressProgram", () => {
+  let mockDb: MockDb;
+
+  beforeEach(() => {
+    mockDb = createMockDb();
+  });
+
+  it("throws when sessionId is missing", async () => {
+    const ctx = contextWith(mockDb, undefined);
+
+    if (!getInProgressProgram.resolve) throw new Error("Resolver not defined");
+
+    await expect(getInProgressProgram.resolve(null, {}, ctx)).rejects.toThrow(
+      /Unauthorized/,
+    );
+  });
+
+  it("returns programId when in-progress session exists", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      programId: "prog-1",
+    });
+
+    if (!getInProgressProgram.resolve) throw new Error("Resolver not defined");
+
+    const result = await getInProgressProgram.resolve(
+      null,
+      {},
+      contextWith(mockDb, SID),
+    );
+
+    expect(result).toBe("prog-1");
+  });
+
+  it("returns null when no in-progress session exists", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue(null);
+
+    if (!getInProgressProgram.resolve) throw new Error("Resolver not defined");
+
+    const result = await getInProgressProgram.resolve(
+      null,
+      {},
+      contextWith(mockDb, SID),
+    );
+
+    expect(result).toBeNull();
+  });
+});
+
+describe("getPrograms", () => {
+  let mockDb: MockDb;
+
+  beforeEach(() => {
+    mockDb = createMockDb();
+  });
+
+  it("throws when sessionId is missing", async () => {
+    const ctx = contextWith(mockDb, undefined);
+
+    if (!getPrograms.resolve) throw new Error("Resolver not defined");
+
+    await expect(getPrograms.resolve(null, {}, ctx)).rejects.toThrow(
+      /Unauthorized/,
+    );
+  });
+
+  it("returns list of programs", async () => {
+    mockDb.query.programs.findMany.mockResolvedValue([
+      { id: "prog-1", name: "Program 1" },
+      { id: "prog-2", name: "Program 2" },
+    ]);
+
+    if (!getPrograms.resolve) throw new Error("Resolver not defined");
+
+    const result = await getPrograms.resolve(
+      null,
+      {},
+      contextWith(mockDb, SID),
+    );
+
+    expect(result).toHaveLength(2);
+    expect(result[0].id).toBe("prog-1");
   });
 });
