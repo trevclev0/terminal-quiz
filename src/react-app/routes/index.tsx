@@ -23,7 +23,7 @@ export const Route = createFileRoute("/")({
     <RouteErrorFallback
       error={error}
       reset={reset}
-      message="Failed to find in-progress program."
+      message="Failed to load in-progress program."
     />
   ),
 });
