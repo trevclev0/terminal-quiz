@@ -92,5 +92,7 @@ describe("Program Play Route Integration", () => {
     // Now error path should have executed, not success content
     expect(screen.queryByText("Test Program")).not.toBeInTheDocument();
     expect(screen.queryByText("Gate 1")).not.toBeInTheDocument();
+
+    expect(screen.getByText("Failed to load program.")).toBeInTheDocument();
   });
 });
