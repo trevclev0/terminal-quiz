@@ -254,6 +254,156 @@ describe("Gameplay Mutations: submitGuess", () => {
     expect(result.canRequestClue).toBe(true);
   });
 
+  it("throws when session ID is missing for guess submission", async () => {
+    const noSessionContext = {
+      get: vi.fn((key: string) => {
+        if (key === "db") return mockDb;
+        return undefined;
+      }),
+    } as unknown as AppGraphQLContext;
+
+    if (!submitGuess.resolve) throw new Error("Resolver not defined");
+
+    await expect(
+      submitGuess.resolve(
+        null,
+        { programId: "prog-1", gateId: "gate-1", guess: "banana" },
+        noSessionContext,
+      ),
+    ).rejects.toThrow("Unauthorized: Missing Session ID");
+  });
+
+  it("throws when guess is empty", async () => {
+    if (!submitGuess.resolve) throw new Error("Resolver not defined");
+
+    await expect(
+      submitGuess.resolve(
+        null,
+        { programId: "prog-1", gateId: "gate-1", guess: "" },
+        mockContext,
+      ),
+    ).rejects.toThrow("Invalid guess length.");
+  });
+
+  it("throws when guess exceeds max length", async () => {
+    if (!submitGuess.resolve) throw new Error("Resolver not defined");
+
+    await expect(
+      submitGuess.resolve(
+        null,
+        { programId: "prog-1", gateId: "gate-1", guess: "a".repeat(501) },
+        mockContext,
+      ),
+    ).rejects.toThrow("Invalid guess length.");
+  });
+
+  it("throws when program is already completed", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      ...defaultProgress,
+      status: "completed",
+    });
+
+    if (!submitGuess.resolve) throw new Error("Resolver not defined");
+
+    await expect(
+      submitGuess.resolve(
+        null,
+        { programId: "prog-1", gateId: "gate-1", guess: "banana" },
+        mockContext,
+      ),
+    ).rejects.toThrow("Program already completed or not started.");
+  });
+
+  it("throws when guess submitted for wrong active gate", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      ...defaultProgress,
+      currentGateId: "other-gate",
+    });
+
+    if (!submitGuess.resolve) throw new Error("Resolver not defined");
+
+    await expect(
+      submitGuess.resolve(
+        null,
+        { programId: "prog-1", gateId: "gate-1", guess: "banana" },
+        mockContext,
+      ),
+    ).rejects.toThrow("Desync: Guess submitted for the wrong active gate.");
+  });
+
+  it("throws when gate does not exist", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      ...defaultProgress,
+      currentGateId: "nonexistent",
+    });
+    mockDb.query.gates.findFirst.mockResolvedValue(null);
+
+    if (!submitGuess.resolve) throw new Error("Resolver not defined");
+
+    await expect(
+      submitGuess.resolve(
+        null,
+        { programId: "prog-1", gateId: "nonexistent", guess: "banana" },
+        mockContext,
+      ),
+    ).rejects.toThrow("Gate with ID nonexistent not found.");
+  });
+
+  it("throws when attempt count update fails after incorrect guess", async () => {
+    mockDb.query.sessionProgress.findFirst
+      .mockResolvedValueOnce(defaultProgress)
+      .mockResolvedValueOnce(null);
+    mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
+    vi.mocked(isGuessCloseEnough).mockReturnValue(false);
+
+    if (!submitGuess.resolve) throw new Error("Resolver not defined");
+
+    await expect(
+      submitGuess.resolve(
+        null,
+        { programId: "prog-1", gateId: "gate-1", guess: "banana" },
+        mockContext,
+      ),
+    ).rejects.toThrow("Failed to update attempt count.");
+  });
+
+  it("transitions to next gate when correct guess and next gate exists", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      ...defaultProgress,
+      currentGateId: "gate-2",
+      attemptCount: 4,
+    });
+    mockDb.query.gates.findFirst
+      .mockResolvedValueOnce({
+        id: "gate-2",
+        correctAnswer: "banana",
+        sequenceOrder: 2,
+        successMessage: "Nice!",
+        guidanceEnabled: true,
+        guidanceThreshold: 2,
+      })
+      .mockResolvedValueOnce({ id: "gate-3" });
+    vi.mocked(isGuessCloseEnough).mockReturnValue(true);
+
+    if (!submitGuess.resolve) throw new Error("Resolver not defined");
+
+    const result = await submitGuess.resolve(
+      null,
+      { programId: "prog-2", gateId: "gate-2", guess: "banana" },
+      mockContext,
+    );
+
+    expect(result.success).toBe(true);
+    const setCall = mockDb.update.mock.results[0]?.value.set;
+    expect(setCall).toHaveBeenCalledWith(
+      expect.objectContaining({
+        currentGateId: "gate-3",
+        attemptCount: 0,
+        status: "in_progress",
+      }),
+    );
+  });
+
   it("returns true, resets attemptCount, and sets canRequestClue false on correct guess", async () => {
     mockDb.query.sessionProgress.findFirst.mockResolvedValue({
       ...defaultProgress,
@@ -567,6 +717,79 @@ describe("Gameplay Mutations: requestClue", () => {
       cluesRemaining: 0,
     });
   });
+
+  it("throws when program is completed for clue request", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      ...defaultProgress,
+      status: "completed",
+    });
+
+    if (!requestClue.resolve) throw new Error("Resolver not defined");
+
+    await expect(
+      requestClue.resolve(
+        null,
+        {
+          programId: "prog-1",
+          gateId: "gate-1",
+          currentGuess: "banana",
+        },
+        mockContext,
+      ),
+    ).rejects.toThrow("Program already completed or not started.");
+  });
+
+  it("throws when gate does not exist for clue request", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      ...defaultProgress,
+      currentGateId: "nonexistent",
+    });
+    mockDb.query.gates.findFirst.mockResolvedValue(null);
+
+    if (!requestClue.resolve) throw new Error("Resolver not defined");
+
+    await expect(
+      requestClue.resolve(
+        null,
+        {
+          programId: "prog-1",
+          gateId: "nonexistent",
+          currentGuess: "banana",
+        },
+        mockContext,
+      ),
+    ).rejects.toThrow("Gate with ID nonexistent not found.");
+  });
+
+  it("handles duplicate clue insert gracefully", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      ...defaultProgress,
+      attemptCount: 3,
+    });
+    mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
+    mockDb.query.gateClues.findMany.mockResolvedValue([]);
+    vi.mocked(generateClue).mockResolvedValue("A juicy hint.");
+
+    mockDb.insert.mockReturnValue({
+      values: vi.fn().mockRejectedValue(new Error("UNIQUE constraint")),
+    });
+
+    if (!requestClue.resolve) throw new Error("Resolver not defined");
+
+    const result = await requestClue.resolve(
+      null,
+      {
+        programId: "prog-1",
+        gateId: "gate-1",
+        currentGuess: "banana",
+      },
+      mockContext,
+    );
+
+    expect(result.clueText).toBeNull();
+    expect(result.isClueLimitReached).toBe(false);
+  });
 });
 
 describe("Gameplay Mutations: resetSession", () => {
@@ -656,5 +879,26 @@ describe("Gameplay Mutations: resetSession", () => {
     );
 
     expect(result).toBe(false);
+  });
+
+  it("resets to null currentGate when no first gate is found", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValueOnce({
+      id: "progress-1",
+    });
+    mockDb.query.gates.findFirst.mockResolvedValueOnce(null);
+
+    if (!resetSession.resolve) throw new Error("Resolver not defined");
+
+    const result = await resetSession.resolve(
+      null,
+      { programId: "prog-empty" },
+      mockContext,
+    );
+
+    expect(result).toBe(true);
+    const setCall = mockDb.update.mock.results[0]?.value.set;
+    expect(setCall).toHaveBeenCalledWith(
+      expect.objectContaining({ currentGateId: null }),
+    );
   });
 });
