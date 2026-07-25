@@ -87,6 +87,12 @@ export default defineConfig({
         "**/test-utils/**",
       ],
       reporter: ["text", "json-summary", "json"],
+      thresholds: {
+        statements: 99,
+        branches: 95,
+        functions: 96,
+        lines: 99,
+      },
     },
   },
 });
