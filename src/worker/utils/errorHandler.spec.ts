@@ -40,6 +40,29 @@ describe("errorHandler", () => {
         "D1 connection failed",
       );
     });
+
+    it("logs the error object when error has no message", () => {
+      const error = new Error();
+      logError(error, "GET", "/test");
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "[Error on GET /test]:",
+        error,
+      );
+    });
+
+    it("logs the cause object when cause has no message", () => {
+      const cause = new Error();
+      const error = new Error("Main error");
+      error.cause = cause;
+
+      logError(error, "POST", "/api/data");
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Underlying D1 Cause:",
+        cause,
+      );
+    });
   });
 
   describe("formatErrorResponse", () => {
