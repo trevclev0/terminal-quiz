@@ -8,7 +8,15 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { delay, graphql, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { validateSelectSearch } from "./select";
 
 const server = setupServer(...handlers);
@@ -62,6 +70,28 @@ describe("Select Route Integration", () => {
     renderWithRouter(router);
 
     expect(await screen.findByText("No programs found")).toBeInTheDocument();
+  });
+
+  it("shows error fallback when programs query returns GraphQL error", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    server.use(
+      graphql.query("GetPrograms", () =>
+        HttpResponse.json({
+          errors: [{ message: "Failed to fetch programs" }],
+        }),
+      ),
+    );
+
+    const router = createTestRouter("/programs/select");
+    renderWithRouter(router);
+
+    await waitFor(() => {
+      expect(screen.queryByText("Loading Programs...")).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Failed to load programs.")).toBeInTheDocument();
   });
 });
 
