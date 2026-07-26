@@ -65,7 +65,7 @@ jobs:
         if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deploy.outcome == 'success'
         run: echo "version=$(bunx playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
 
-      - name: Cache Playwright browsers
+      - name: Cache Playwright browsers (restore-only)
         uses: actions/cache@v6
         id: playwright-cache
         if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deploy.outcome == 'success'
@@ -73,9 +73,14 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
 
+      - name: Install Playwright system dependencies
+        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deploy.outcome == 'success'
+        run: bunx playwright install-deps chromium firefox
+
       - name: Install Playwright browsers
+        id: playwright-install
         if: steps.playwright-cache.outputs.cache-hit != 'true' && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deploy.outcome == 'success'
-        run: bunx playwright install --with-deps chromium firefox
+        run: bunx playwright install chromium firefox
 
       - name: Run E2E Tests
         id: e2e
@@ -104,7 +109,7 @@ jobs:
 
       - name: Update Deployment (Failure)
         uses: chrnorm/deployment-status@v2
-        if: always() && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deployment.conclusion != 'skipped' && (steps.deploy.outcome != 'success' || steps.e2e.outcome == 'failure')
+        if: always() && github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.deployment.conclusion != 'skipped' && (steps.deploy.outcome != 'success' || steps.e2e.outcome == 'failure' || steps.playwright-version.outcome == 'failure' || steps.playwright-cache.outcome == 'failure' || steps.playwright-install.outcome == 'failure')
         with:
           token: ${{ github.token }}
           state: 'error'
