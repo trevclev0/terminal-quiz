@@ -1,10 +1,12 @@
 import useCrtPreferences from "@hooks/useCrtPreferences";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./CrtOverlay.module.css";
 
 function CrtOverlay() {
   const { settings, presetLabel, cyclePreset, isFirstVisit } =
     useCrtPreferences();
+
+  const isFullPreset = useMemo(() => presetLabel === "full", [presetLabel]);
 
   const [booted, setBooted] = useState(!settings.powerOn);
   const [firstVisitDone, setFirstVisitDone] = useState(false);
@@ -25,6 +27,24 @@ function CrtOverlay() {
     return () => clearTimeout(timer);
   }, [isFirstVisit]);
 
+  /* Apply text glow + chromatic aberration to document root */
+  useEffect(() => {
+    const el = document.documentElement;
+    const parts: string[] = [];
+
+    if (settings.textGlow) {
+      parts.push("0 0 2px rgba(0,255,0,0.4)", "0 0 8px rgba(0,255,0,0.2)");
+    }
+    if (settings.chromaticAberration) {
+      parts.push("1px 0 0 rgba(255,0,0,0.35)", "-1px 0 0 rgba(0,0,255,0.35)");
+    }
+    const prev = el.style.textShadow;
+    el.style.textShadow = parts.length > 0 ? parts.join(", ") : "";
+    return () => {
+      el.style.textShadow = prev;
+    };
+  }, [settings.textGlow, settings.chromaticAberration]);
+
   const handleStatusClick = useCallback(() => {
     cyclePreset();
     setFlashing(true);
@@ -36,7 +56,7 @@ function CrtOverlay() {
 
   const showHint = isFirstVisit && !firstVisitDone;
   const message = showHint
-    ? `CRT: ${presetLabel}  [Ctrl+Shift+T]`
+    ? `CRT: ${presetLabel}  [Ctrl+Shift+,]`
     : `CRT: ${presetLabel}`;
 
   const statusBar = (
@@ -46,7 +66,7 @@ function CrtOverlay() {
       onClick={handleStatusClick}
       onAnimationEnd={handleFlashEnd}
       data-testid="crt-status"
-      title="Toggle CRT effect (Ctrl+Shift+T)"
+      title="Toggle CRT effect (Ctrl+Shift+,)"
     >
       {message}
     </button>
@@ -58,10 +78,16 @@ function CrtOverlay() {
     return statusBar;
   }
 
+  const scanlinesClass = isFullPreset
+    ? styles.scanlinesHeavy
+    : styles.scanlines;
+
+  const glowClass = isFullPreset ? styles.glowHeavy : styles.glow;
+
   const classNames = [
     styles.crtOverlay,
-    settings.scanlines && styles.scanlines,
-    settings.glow && styles.glow,
+    settings.scanlines && scanlinesClass,
+    settings.glow && glowClass,
     settings.flicker && styles.flicker,
   ]
     .filter(Boolean)

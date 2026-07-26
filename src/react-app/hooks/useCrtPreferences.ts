@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 export interface CrtSettings {
   scanlines: boolean;
   glow: boolean;
+  textGlow: boolean;
+  chromaticAberration: boolean;
   flicker: boolean;
   powerOn: boolean;
 }
@@ -10,18 +12,57 @@ export interface CrtSettings {
 const STORAGE_KEY = "terminal_quiz_crt_settings";
 
 const PRESETS: CrtSettings[] = [
-  { scanlines: false, glow: false, flicker: false, powerOn: false },
-  { scanlines: true, glow: false, flicker: false, powerOn: false },
-  { scanlines: true, glow: true, flicker: false, powerOn: false },
-  { scanlines: true, glow: true, flicker: true, powerOn: true },
+  {
+    scanlines: false,
+    glow: false,
+    textGlow: false,
+    chromaticAberration: false,
+    flicker: false,
+    powerOn: false,
+  },
+  {
+    scanlines: true,
+    glow: false,
+    textGlow: false,
+    chromaticAberration: false,
+    flicker: false,
+    powerOn: false,
+  },
+  {
+    scanlines: true,
+    glow: true,
+    textGlow: true,
+    chromaticAberration: false,
+    flicker: false,
+    powerOn: false,
+  },
+  {
+    scanlines: true,
+    glow: true,
+    textGlow: true,
+    chromaticAberration: true,
+    flicker: true,
+    powerOn: true,
+  },
 ];
 
 const PRESET_LABELS = ["off", "light", "medium", "full"] as const;
 
+function normalizeSettings(raw: Partial<CrtSettings>): CrtSettings {
+  return {
+    scanlines: raw.scanlines ?? false,
+    glow: raw.glow ?? false,
+    textGlow: raw.textGlow ?? false,
+    chromaticAberration: raw.chromaticAberration ?? false,
+    flicker: raw.flicker ?? false,
+    powerOn: raw.powerOn ?? false,
+  };
+}
+
 function readSettings(): CrtSettings | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as CrtSettings;
+    if (raw) return normalizeSettings(JSON.parse(raw));
   } catch {}
   return null;
 }
@@ -36,6 +77,8 @@ function settingsMatch(a: CrtSettings, b: CrtSettings): boolean {
   return (
     a.scanlines === b.scanlines &&
     a.glow === b.glow &&
+    a.textGlow === b.textGlow &&
+    a.chromaticAberration === b.chromaticAberration &&
     a.flicker === b.flicker &&
     a.powerOn === b.powerOn
   );
@@ -43,7 +86,7 @@ function settingsMatch(a: CrtSettings, b: CrtSettings): boolean {
 
 export default function useCrtPreferences() {
   const [settings, setSettingsState] = useState<CrtSettings>(
-    () => readSettings() ?? PRESETS[0],
+    () => readSettings() ?? PRESETS[3],
   );
 
   useEffect(() => {
@@ -60,7 +103,7 @@ export default function useCrtPreferences() {
   const cyclePreset = useCallback(() => {
     setSettingsState((prev) => {
       const idx = PRESETS.findIndex((p) => settingsMatch(p, prev));
-      const next = (idx + 1) % PRESETS.length;
+      const next = idx === 0 ? PRESETS.length - 1 : idx - 1;
       return PRESETS[next];
     });
   }, []);
@@ -71,7 +114,7 @@ export default function useCrtPreferences() {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "t") {
+      if (e.ctrlKey && e.shiftKey && e.code === "Comma") {
         e.preventDefault();
         cyclePreset();
       }
