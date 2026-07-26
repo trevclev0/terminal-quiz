@@ -33,65 +33,63 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+const FULL_SETTINGS = {
+  scanlines: true,
+  glow: true,
+  textGlow: true,
+  chromaticAberration: true,
+  flicker: true,
+  powerOn: true,
+};
+
 describe("CrtOverlay", () => {
-  it("renders status bar showing default preset", () => {
+  it("renders status bar showing default preset (full)", () => {
     render(<CrtOverlay />);
-    expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: off");
+    expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: full");
   });
 
   it("shows hotkey hint on first visit", () => {
     render(<CrtOverlay />);
-    expect(screen.getByTestId("crt-status")).toHaveTextContent("Ctrl+Shift+T");
+    expect(screen.getByTestId("crt-status")).toHaveTextContent("Ctrl+Shift+,");
   });
 
   it("hides hint and shows only preset after timeout", () => {
     render(<CrtOverlay />);
-    expect(screen.getByTestId("crt-status")).toHaveTextContent("Ctrl+Shift+T");
+    expect(screen.getByTestId("crt-status")).toHaveTextContent("Ctrl+Shift+,");
 
     act(() => vi.advanceTimersByTime(5000));
 
-    expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: off");
+    expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: full");
     expect(screen.getByTestId("crt-status")).not.toHaveTextContent(
-      "Ctrl+Shift+T",
+      "Ctrl+Shift+,",
     );
   });
 
   it("does not show hint on return visit", () => {
-    // Simulate returning user with stored settings
     localStorage.setItem(
       "terminal_quiz_crt_settings",
-      JSON.stringify({
-        scanlines: true,
-        glow: false,
-        flicker: false,
-        powerOn: false,
-      }),
+      JSON.stringify(FULL_SETTINGS),
     );
     render(<CrtOverlay />);
-    expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: light");
+    expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: full");
     expect(screen.getByTestId("crt-status")).not.toHaveTextContent(
-      "Ctrl+Shift+T",
+      "Ctrl+Shift+,",
     );
   });
 
-  it("cycles preset on status bar click", () => {
+  it("cycles preset on status bar click (descending)", () => {
     render(<CrtOverlay />);
-    expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: off");
+    expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: full");
 
     fireEvent.click(screen.getByTestId("crt-status"));
 
-    expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: light");
+    expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: medium");
   });
 
   it("renders power-on boot layer when powerOn setting is active", () => {
     localStorage.setItem(
       "terminal_quiz_crt_settings",
-      JSON.stringify({
-        scanlines: true,
-        glow: true,
-        flicker: true,
-        powerOn: true,
-      }),
+      JSON.stringify(FULL_SETTINGS),
     );
     render(<CrtOverlay />);
     expect(screen.getByTestId("crt-poweron")).toBeInTheDocument();
@@ -100,12 +98,7 @@ describe("CrtOverlay", () => {
   it("removes power-on layer after 1 second", () => {
     localStorage.setItem(
       "terminal_quiz_crt_settings",
-      JSON.stringify({
-        scanlines: true,
-        glow: true,
-        flicker: true,
-        powerOn: true,
-      }),
+      JSON.stringify(FULL_SETTINGS),
     );
     render(<CrtOverlay />);
     expect(screen.getByTestId("crt-poweron")).toBeInTheDocument();
@@ -116,11 +109,33 @@ describe("CrtOverlay", () => {
   });
 
   it("does not render power-on layer when powerOn is off", () => {
+    localStorage.setItem(
+      "terminal_quiz_crt_settings",
+      JSON.stringify({
+        scanlines: true,
+        glow: false,
+        textGlow: false,
+        chromaticAberration: false,
+        flicker: false,
+        powerOn: false,
+      }),
+    );
     render(<CrtOverlay />);
     expect(screen.queryByTestId("crt-poweron")).not.toBeInTheDocument();
   });
 
   it("does not render overlay wrapper when all effects off", () => {
+    localStorage.setItem(
+      "terminal_quiz_crt_settings",
+      JSON.stringify({
+        scanlines: false,
+        glow: false,
+        textGlow: false,
+        chromaticAberration: false,
+        flicker: false,
+        powerOn: false,
+      }),
+    );
     render(<CrtOverlay />);
     expect(screen.queryByTestId("crt-overlay")).not.toBeInTheDocument();
   });
@@ -131,6 +146,8 @@ describe("CrtOverlay", () => {
       JSON.stringify({
         scanlines: true,
         glow: false,
+        textGlow: false,
+        chromaticAberration: false,
         flicker: false,
         powerOn: false,
       }),
@@ -139,11 +156,70 @@ describe("CrtOverlay", () => {
     expect(screen.getByTestId("crt-overlay")).toBeInTheDocument();
   });
 
+  it("applies text glow to document root when textGlow is on", () => {
+    localStorage.setItem(
+      "terminal_quiz_crt_settings",
+      JSON.stringify({
+        scanlines: true,
+        glow: true,
+        textGlow: true,
+        chromaticAberration: false,
+        flicker: false,
+        powerOn: false,
+      }),
+    );
+    render(<CrtOverlay />);
+    expect(document.documentElement.style.textShadow).toContain(
+      "rgba(0,255,0,0.4)",
+    );
+  });
+
+  it("applies chromatic aberration to document root when chromAb is on", () => {
+    localStorage.setItem(
+      "terminal_quiz_crt_settings",
+      JSON.stringify(FULL_SETTINGS),
+    );
+    render(<CrtOverlay />);
+    expect(document.documentElement.style.textShadow).toContain(
+      "rgba(255,0,0,0.35)",
+    );
+    expect(document.documentElement.style.textShadow).toContain(
+      "rgba(0,0,255,0.35)",
+    );
+  });
+
+  it("clears text shadow from document root on unmount", () => {
+    // off preset — no text effects, starts empty
+    localStorage.setItem(
+      "terminal_quiz_crt_settings",
+      JSON.stringify({
+        scanlines: false,
+        glow: false,
+        textGlow: false,
+        chromaticAberration: false,
+        flicker: false,
+        powerOn: false,
+      }),
+    );
+    const { unmount } = render(<CrtOverlay />);
+    expect(document.documentElement.style.textShadow).toBe("");
+    unmount();
+  });
+
+  it("applies heavy scanlines class for full preset", () => {
+    localStorage.setItem(
+      "terminal_quiz_crt_settings",
+      JSON.stringify(FULL_SETTINGS),
+    );
+    render(<CrtOverlay />);
+    expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: full");
+  });
+
   it("status bar has title tooltip with hotkey hint", () => {
     render(<CrtOverlay />);
     expect(screen.getByTestId("crt-status")).toHaveAttribute(
       "title",
-      "Toggle CRT effect (Ctrl+Shift+T)",
+      "Toggle CRT effect (Ctrl+Shift+,)",
     );
   });
 });

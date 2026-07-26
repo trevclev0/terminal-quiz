@@ -30,16 +30,20 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+const FULL_SETTINGS = {
+  scanlines: true,
+  glow: true,
+  textGlow: true,
+  chromaticAberration: true,
+  flicker: true,
+  powerOn: true,
+};
+
 describe("useCrtPreferences", () => {
-  it("defaults to off preset when no stored settings", () => {
+  it("defaults to full preset when no stored settings", () => {
     const { result } = renderHook(() => useCrtPreferences());
-    expect(result.current.settings).toEqual({
-      scanlines: false,
-      glow: false,
-      flicker: false,
-      powerOn: false,
-    });
-    expect(result.current.presetLabel).toBe("off");
+    expect(result.current.settings).toEqual(FULL_SETTINGS);
+    expect(result.current.presetLabel).toBe("full");
   });
 
   it("marks first visit when localStorage is empty", () => {
@@ -50,15 +54,25 @@ describe("useCrtPreferences", () => {
   it("does NOT mark first visit when settings exist", () => {
     localStorage.setItem(
       "terminal_quiz_crt_settings",
-      JSON.stringify({
-        scanlines: true,
-        glow: false,
-        flicker: false,
-        powerOn: false,
-      }),
+      JSON.stringify(FULL_SETTINGS),
     );
     const { result } = renderHook(() => useCrtPreferences());
     expect(result.current.isFirstVisit).toBe(false);
+  });
+
+  it("normalizes stored settings missing new fields", () => {
+    localStorage.setItem(
+      "terminal_quiz_crt_settings",
+      JSON.stringify({
+        scanlines: true,
+        glow: true,
+        textGlow: true,
+        flicker: true,
+        powerOn: true,
+      }),
+    );
+    const { result } = renderHook(() => useCrtPreferences());
+    expect(result.current.settings.chromaticAberration).toBe(false);
   });
 
   it("restores persisted settings", () => {
@@ -67,6 +81,8 @@ describe("useCrtPreferences", () => {
       JSON.stringify({
         scanlines: true,
         glow: true,
+        textGlow: true,
+        chromaticAberration: false,
         flicker: false,
         powerOn: false,
       }),
@@ -75,26 +91,38 @@ describe("useCrtPreferences", () => {
     expect(result.current.presetLabel).toBe("medium");
   });
 
-  it("cycles presets in order: off -> light -> medium -> full -> off", () => {
+  it("cycles presets in descending order: full -> medium -> light -> off -> full", () => {
     const { result } = renderHook(() => useCrtPreferences());
-    const labels: string[] = [];
-    for (let i = 0; i < 5; i++) {
-      labels.push(result.current.presetLabel);
-      act(() => result.current.cyclePreset());
-    }
-    expect(labels).toEqual(["off", "light", "medium", "full", "off"]);
+    // Start at full (default)
+    expect(result.current.presetLabel).toBe("full");
+    act(() => result.current.cyclePreset());
+    expect(result.current.presetLabel).toBe("medium");
+    act(() => result.current.cyclePreset());
+    expect(result.current.presetLabel).toBe("light");
+    act(() => result.current.cyclePreset());
+    expect(result.current.presetLabel).toBe("off");
+    act(() => result.current.cyclePreset());
+    expect(result.current.presetLabel).toBe("full");
+  });
+
+  it("full preset has all effects enabled", () => {
+    const { result } = renderHook(() => useCrtPreferences());
+    expect(result.current.settings).toEqual(FULL_SETTINGS);
   });
 
   it("persists settings to localStorage after cycle", () => {
     const { result } = renderHook(() => useCrtPreferences());
+    // Start at full, cycle to medium
     act(() => result.current.cyclePreset());
-    expect(result.current.presetLabel).toBe("light");
+    expect(result.current.presetLabel).toBe("medium");
     const raw = localStorage.getItem("terminal_quiz_crt_settings");
     expect(raw).not.toBeNull();
     const stored = JSON.parse(raw as string);
     expect(stored).toEqual({
       scanlines: true,
-      glow: false,
+      glow: true,
+      textGlow: true,
+      chromaticAberration: false,
       flicker: false,
       powerOn: false,
     });
@@ -106,6 +134,8 @@ describe("useCrtPreferences", () => {
       result.current.setSettings({
         scanlines: true,
         glow: false,
+        textGlow: false,
+        chromaticAberration: false,
         flicker: true,
         powerOn: false,
       });
@@ -113,38 +143,39 @@ describe("useCrtPreferences", () => {
     expect(result.current.presetLabel).toBe("custom");
   });
 
-  it("responds to Ctrl+Shift+T hotkey", () => {
+  it("responds to Ctrl+Shift+, hotkey", () => {
     const { result } = renderHook(() => useCrtPreferences());
-    expect(result.current.presetLabel).toBe("off");
+    expect(result.current.presetLabel).toBe("full");
     act(() => {
       window.dispatchEvent(
         new KeyboardEvent("keydown", {
-          key: "t",
+          code: "Comma",
           ctrlKey: true,
           shiftKey: true,
           bubbles: true,
         }),
       );
     });
-    expect(result.current.presetLabel).toBe("light");
+    // Should cycle down to medium
+    expect(result.current.presetLabel).toBe("medium");
   });
 
-  it("does not respond to 't' alone", () => {
+  it("does not respond to comma alone without modifiers", () => {
     const { result } = renderHook(() => useCrtPreferences());
     act(() => {
       window.dispatchEvent(
         new KeyboardEvent("keydown", {
-          key: "t",
+          code: "Comma",
           ctrlKey: false,
           shiftKey: false,
           bubbles: true,
         }),
       );
     });
-    expect(result.current.presetLabel).toBe("off");
+    expect(result.current.presetLabel).toBe("full");
   });
 
-  it("falls back to default when localStorage throws", () => {
+  it("falls back to full default when localStorage throws", () => {
     vi.stubGlobal("localStorage", {
       getItem: vi.fn(() => {
         throw new Error("unavailable");
@@ -152,11 +183,6 @@ describe("useCrtPreferences", () => {
       setItem: vi.fn(),
     });
     const { result } = renderHook(() => useCrtPreferences());
-    expect(result.current.settings).toEqual({
-      scanlines: false,
-      glow: false,
-      flicker: false,
-      powerOn: false,
-    });
+    expect(result.current.settings).toEqual(FULL_SETTINGS);
   });
 });
