@@ -86,7 +86,7 @@ Curated feature candidates for Terminal Quiz, organized by impact level.
 
 **Solution:** ASCII progress bar at top of `ProgramPlay`:
 
-```
+```text
 PROGRESS: [██████░░░░] 6/14
 ```
 
@@ -185,12 +185,13 @@ PROGRESS: [██████░░░░] 6/14
 
 **Problem:** `requestClue` hits Workers AI on every call. No per-minute throttle. Malicious or buggy client could burn through AI quota.
 
-**Solution:** Per-session rate limit using D1 or in-memory counter. Max 1 clue per 10 seconds, per gate.
+**Solution:** Per-session rate limit using D1 transaction. Max 1 clue per 10 seconds, per gate. Atomic claim ensures concurrent Worker invocations cannot both pass the gate.
 
 **Changes:**
-- Backend: check `gate_clues.created_at` for the most recent clue from this session. Reject if < 10s old.
+- Backend: D1 transaction — `INSERT INTO gate_clues ...` with a `SELECT CASE WHEN EXISTS ...` guard that rejects if a clue was created within the last 10s for this session+gate. Transaction rollback on rejection avoids orphan rows.
+- The `gate_clues` unique index on `(session_progress_id, gate_id, attempt_count_at_request)` provides an additional integrity layer.
 
-**Effort:** Small. One check in `requestClue` resolver.
+**Effort:** Small. One transaction in `requestClue` resolver.
 
 ---
 
@@ -311,7 +312,7 @@ Opt-in on first interaction (browser autoplay policy).
 
 **Solution:** "Export Log" button on completion screen. Generates a terminal-styled text file:
 
-```
+```text
 TERMINAL QUIZ LOG — 2026-07-26
 PROGRAM: "Tech History"
 STATUS: COMPLETED
@@ -340,7 +341,7 @@ Gate 02 [OK] What does ENIAC stand for?
 
 **Changes:**
 - Backend: script using Workers AI + schema validation.
-- Not exposed to end users initially — run via `mise run seed:generate`.
+- Not exposed to end users initially — run via `bun run seed:generate`.
 
 **Effort:** Medium.
 

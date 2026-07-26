@@ -162,7 +162,7 @@ bun run seed:e2e:local
 | `bun run test:ui` | Run the Vitest UI |
 | `bun run test:e2e` | Seed local D1 with E2E fixtures, then run the Playwright suite against `http://localhost:5173` |
 | `bun run coverage` | Run the unit test suite and generate a V8 coverage report |
-| `bun run seed:e2e:local` / `seed:e2e:preview` | Seed the E2E fixture program (`scripts/seed-e2e.sql`) into local/preview D1 |
+| `bun run seed:e2e:local` / `bun run seed:e2e:preview` | Seed the E2E fixture program (`scripts/seed-e2e.sql`) into local/preview D1 |
 | `bun run commit` | Launch the interactive Commitizen prompt (preferred over `git commit`) |
 | `bun run cf-typegen` | Regenerate Wrangler/Workers type bindings |
 

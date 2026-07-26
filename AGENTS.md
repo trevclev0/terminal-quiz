@@ -81,8 +81,11 @@ bun run migrate:local      # apply migrations to local D1 file
 bun run migrate:preview    # apply to preview D1
 bun run migrate:prod       # apply to production D1
 
-bun run seed:local / seed:preview / seed:prod         # wrangler d1 execute --file=scripts/seed.sql
-bun run seed:e2e:local / seed:e2e:preview              # wrangler d1 execute --file=scripts/seed-e2e.sql
+bun run seed:local       # wrangler d1 execute --file=scripts/seed.sql (local D1)
+bun run seed:preview     # wrangler d1 execute --file=scripts/seed.sql (preview D1)
+bun run seed:prod        # wrangler d1 execute --file=scripts/seed.sql (production D1)
+bun run seed:e2e:local   # wrangler d1 execute --file=scripts/seed-e2e.sql (local D1)
+bun run seed:e2e:preview # wrangler d1 execute --file=scripts/seed-e2e.sql (preview D1)
 
 bun run commit           # git-cz, interactive commit prompt (preferred over `git commit`)
 bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
