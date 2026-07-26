@@ -40,7 +40,7 @@ Live at **[quiz.clevertrevor.dev](https://quiz.clevertrevor.dev)**
 | Database | Cloudflare D1 (SQLite), Drizzle ORM |
 | AI | Cloudflare Workers AI (`@cf/meta/llama-4-scout-17b-16e-instruct`) for clue generation |
 | Client cache | TanStack Query v5 |
-| Testing | Vitest, React Testing Library, MSW, happy-dom |
+| Testing | Vitest (unit + Workers-pool integration), Playwright (E2E), React Testing Library, MSW, happy-dom |
 | Linting / Formatting | Biome |
 | Commits | cz-git + commitlint, gitmoji, Husky |
 | CI / CD | GitHub Actions |
@@ -62,23 +62,28 @@ src/
 │   ├── utils/
 │   └── test-utils/
 ├── shared/
-│   ├── schema.ts   # Drizzle schema (single source of truth for DB + types)
-│   └── types.ts
+│   ├── schema.ts    # Drizzle schema (single source of truth for DB + types)
+│   ├── types.ts
+│   └── gqlQueries.ts # Canonical GraphQL strings, shared with integration tests
 └── worker/
-    ├── graphql/    # Gameplay resolvers (queries, mutations, clue eligibility)
+    ├── graphql/    # Gameplay resolvers (queries, mutations, clue eligibility) + integration specs
     ├── middleware/
     ├── routes/
-    └── services/   # AI clue-generation service
+    ├── services/   # AI clue-generation service
+    ├── utils/      # Guess-matching, error formatting
+    └── test-utils/ # Mocks for unit tests, D1/GraphQL helpers for integration tests
+
+e2e/                # Playwright specs + page objects
 ```
 
 **Request flow:**
 
 1. The Cloudflare Worker serves the static React SPA via the `assets` binding.
 2. On first load, a session ID is generated client-side and persisted in `localStorage`, then sent as an `x-session-id` header on every GraphQL request.
-3. Selecting a program creates a `session_progress` row on the server, tracking the current gate, completed gates, and attempt count for that session.
+3. Selecting a program creates a `session_progress` row on the server, tracking the current gate and attempt count for that session; completed gates are recorded in a separate `session_completed_gates` join table.
 4. Each guess is submitted via the `submitGuess` GraphQL mutation, which validates it server-side against the active gate for that session — a guess for any other gate is rejected.
 5. If a player struggles on a gate, `requestClue` generates an AI hint (up to 3 per gate) once an attempt threshold is met.
-6. On completing a program, players can replay it or pick a new one via `resetSession`, which clears session progress after an in-app confirmation.
+6. On completing a program, players can replay it or pick a new one via `resetSession`, which clears session progress (and its completed-gate/clue rows) after an in-app confirmation.
 
 There is a single, server-authoritative gameplay flow — there is no client-only or REST-based fallback.
 
@@ -133,6 +138,12 @@ bun run migrate:local   # Apply schema migrations
 bun run seed:local      # Populate with initial program/gate data
 ```
 
+To run the Playwright E2E suite locally, also seed the E2E fixture program (or just run `bun run test:e2e`, which does this automatically):
+
+```bash
+bun run seed:e2e:local
+```
+
 ---
 
 ## Development
@@ -145,9 +156,13 @@ bun run seed:local      # Populate with initial program/gate data
 | `bun run build` | Type-check and build both the client and worker bundles |
 | `bun run check` | Build and run a wrangler dry-run deploy (pre-deploy sanity check) |
 | `bun run check:code` | Run Biome linting and formatting checks, auto-fixing where safe |
-| `bun run test` | Run the Vitest test suite in watch mode |
-| `bun run test --run` | Run the Vitest test suite once |
-| `bun run coverage` | Run the full test suite and generate a coverage report |
+| `bun run test` | Run the Vitest unit/component test suite in watch mode |
+| `bun run test --run` | Run the Vitest unit/component test suite once |
+| `bun run test:integration` | Run backend integration tests against a real D1 instance (`@cloudflare/vitest-pool-workers`) |
+| `bun run test:ui` | Run the Vitest UI |
+| `bun run test:e2e` | Seed local D1 with E2E fixtures, then run the Playwright suite against `http://localhost:5173` |
+| `bun run coverage` | Run the unit test suite and generate a V8 coverage report |
+| `bun run seed:e2e:local` / `seed:e2e:preview` | Seed the E2E fixture program (`scripts/seed-e2e.sql`) into local/preview D1 |
 | `bun run commit` | Launch the interactive Commitizen prompt (preferred over `git commit`) |
 | `bun run cf-typegen` | Regenerate Wrangler/Workers type bindings |
 
@@ -166,13 +181,15 @@ Commits follow the [gitmoji](https://gitmoji.dev/) convention, enforced by commi
 
 ## Testing
 
-The project uses Vitest with happy-dom as the test environment.
+The project has three layers of tests: Vitest unit/component tests (happy-dom), Vitest integration tests against a real D1 instance, and Playwright end-to-end tests.
 
 ```bash
-bun run test          # Watch mode
-bun run test --run    # Run tests once
-bun run coverage      # Single run with coverage (outputs to ./coverage)
-bun run test:ui       # Browser-based Vitest UI
+bun run test              # Unit/component tests, watch mode
+bun run test --run        # Unit/component tests, single run
+bun run test:integration  # Backend integration tests (real D1 via cloudflare:test)
+bun run coverage          # Unit tests with V8 coverage (outputs to ./coverage)
+bun run test:ui           # Browser-based Vitest UI
+bun run test:e2e          # Playwright E2E suite (against local dev server)
 ```
 
 ### Testing approach
@@ -180,7 +197,9 @@ bun run test:ui       # Browser-based Vitest UI
 - **Unit tests** for pure utilities (`isGuessCloseEnough`, `clueEligibility`, etc.)
 - **Hook tests** using `renderHook` from React Testing Library, with TanStack Query wrappers and MSW for GraphQL mocking where needed
 - **Component tests** using React Testing Library, with module-level `vi.mock` calls to isolate dependencies
-- **Worker/GraphQL resolver tests** using plain Vitest with manually constructed mock DB/Hono context objects
+- **Worker/GraphQL resolver unit tests** using plain Vitest with manually constructed mock DB/Hono context objects
+- **Backend integration tests** (`src/worker/graphql/gameplay/*.integration.spec.ts`) run via a dedicated config (`vitest.config.integration.ts`) using `@cloudflare/vitest-pool-workers`. These exercise the real Hono middleware stack and GraphQL schema against a real in-memory D1 database, with migrations and `scripts/seed-e2e.sql` applied per test file
+- **End-to-end tests** (`e2e/*.spec.ts`) using Playwright, driven through page objects in `e2e/pages/`, covering the full gameplay loop, wrong-answer handling, clue requests, and the reset/replay flow
 
 Test utilities live in `src/react-app/test-utils/`:
 
@@ -190,8 +209,17 @@ Test utilities live in `src/react-app/test-utils/`:
 | `queryTestUtils.tsx` | Factory for a fresh `QueryClient` + `QueryClientProvider` wrapper per test |
 | `reactRouterUtils.tsx` | Factory for a test router + render helper for route-level integration tests |
 | `cssModuleMock.ts` | Mock for CSS module imports in tests |
+| `msw/` | MSW handlers and fixtures for mocking the GraphQL API |
 
-Coverage is collected for all files under `src/` except entry points, the Drizzle schema, shared type definitions, generated route trees, and worker middleware/index wiring.
+Backend test utilities live in `src/worker/test-utils/`:
+
+| File | Purpose |
+|---|---|
+| `mockEnv.ts` | Mock D1/Hono/GraphQL contexts for unit tests |
+| `setupDb.ts` | Applies migrations + `scripts/seed-e2e.sql` to a real D1 instance for integration tests |
+| `gqlRequest.ts` | Sends a request through the real worker `fetch()` handler for integration tests |
+
+Coverage (unit tests only — the Workers pool used for integration tests doesn't support V8 coverage) excludes `main.tsx`, `vite-env.d.ts`, `shared/schema.ts`, `shared/types.ts`, `shared/gqlQueries.ts`, `routeTree.gen.ts`, `worker/index.ts`, `worker/middleware/**`, `worker/routes/graphql.ts`, `react-app/routes/__root.tsx`, `react-app/api/queryClient.ts`, and `**/test-utils/**` (see `vite.config.ts` for the authoritative list).
 
 ---
 
@@ -203,11 +231,14 @@ Schema is defined in `src/shared/schema.ts` using Drizzle ORM and is the single 
 
 | Table | Purpose |
 |---|---|
-| `programs` | Top-level quiz sets; each has a name and a selected/completed status |
+| `programs` | Top-level quiz sets; each has a name |
 | `gates` | Individual riddles belonging to a program, ordered by `sequence_order` |
-| `game_state` | Single-row table tracking when the game state last changed |
-| `session_progress` | Per-session progression — current gate, completed gate IDs, attempt count, and status; unique per `(session_id, program_id)` |
+| `session_progress` | Per-session progression — current gate, attempt count, and status; unique per `(session_id, program_id)` |
+| `session_completed_gates` | Join table recording which gates a session has completed; unique per `(session_progress_id, gate_id)` |
 | `gate_clues` | AI-generated clues issued for a given gate within a session's progress, keyed to the attempt count they were issued at |
+
+> [!NOTE]
+> There is no `game_state` table — an earlier single-row global state table was removed once progression became fully session-scoped (migration `0009_whole_quasar`).
 
 ### Migration workflow
 
@@ -224,12 +255,14 @@ bun run migrate:prod     # Remote production D1 database
 ### Seeding
 
 ```bash
-bun run seed:local    # Seed local dev database
-bun run seed:preview  # Seed remote preview database
-bun run seed:prod     # Seed remote production database
+bun run seed:local              # Seed local dev database with real program/gate data
+bun run seed:preview            # Seed remote preview database
+bun run seed:prod               # Seed remote production database
+bun run seed:e2e:local          # Seed the local database with the fixed "E2E Test Program" used by Playwright
+bun run seed:e2e:preview        # Seed the preview database with the same fixtures (used by CI E2E runs)
 ```
 
-Seed data is read from `scripts/seed.sql` (git-ignored; generate it from your own data source).
+Seed data for normal use is read from `scripts/seed.sql` (git-ignored; generate it from your own data source). E2E fixture data comes from `scripts/seed-e2e.sql`, which **is** checked into the repo and safe to run repeatedly (upserts, no destructive drops).
 
 ---
 
@@ -247,7 +280,10 @@ The workflow:
 2. Patches the generated `wrangler.jsonc` for preview deployments (different D1 database, `workers_dev: true`).
 3. Applies any pending D1 migrations to the appropriate database.
 4. Deploys via `cloudflare/wrangler-action`.
-5. Updates the GitHub Deployment status with the live URL.
+5. For non-fork pull requests, seeds the preview D1 with `scripts/seed-e2e.sql` and runs the full Playwright E2E suite against the deployed preview URL.
+6. Updates the GitHub Deployment status with the live URL — a failing E2E run marks the deployment as failed.
+
+Preview Workers are torn down automatically on PR close via `.github/workflows/preview-cleanup.yml`.
 
 **Required repository secrets:**
 
@@ -274,19 +310,24 @@ bun run deploy:preview   # Build with CLOUDFLARE_ENV=preview and deploy to previ
 ├── .github/
 │   ├── actions/setup-env/       # Composite action: install tools via mise, cache bun install
 │   └── workflows/
-│       ├── ci.yml               # Lint, test, coverage, commitlint on push/PR
-│       ├── deploy.yml           # Build and deploy to Cloudflare
+│       ├── ci.yml               # Lint, unit tests + coverage, integration tests, commitlint on push/PR
+│       ├── deploy.yml           # Build, deploy to Cloudflare, then run Playwright E2E against the deployment
+│       ├── preview-cleanup.yml  # Deletes the preview Worker when a PR closes
 │       └── release.yml          # semantic-release on push to main
+├── e2e/                          # Playwright specs (smoke, gameplay, wrong-answer, clue, reset-flow) + page objects
 ├── migrations/                  # Drizzle-generated SQL migration files
+├── scripts/                     # seed.sql (git-ignored) and seed-e2e.sql (checked in, used by Playwright + CI)
 ├── src/
 │   ├── react-app/               # React SPA
-│   ├── shared/                  # Schema and types shared between SPA and Worker
+│   ├── shared/                  # Schema, types, and canonical GraphQL strings shared with tests
 │   └── worker/                  # Hono Cloudflare Worker
 ├── biome.json                   # Biome linter/formatter config
 ├── commitlint.config.ts         # commitlint + gitmoji rules
 ├── drizzle.config.ts            # Drizzle Kit config (reads DRIZZLE_DATABASE_URL)
+├── playwright.config.ts         # Playwright E2E config
 ├── release.config.mjs           # semantic-release config
-├── vite.config.ts               # Vite + Vitest config
+├── vite.config.ts               # Vite + unit/component Vitest config
+├── vitest.config.integration.ts # Backend integration test config (@cloudflare/vitest-pool-workers)
 └── wrangler.jsonc                # Cloudflare Workers / D1 binding config
 ```
 
