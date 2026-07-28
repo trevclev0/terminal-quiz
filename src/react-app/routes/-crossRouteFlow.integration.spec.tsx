@@ -5,7 +5,7 @@ import {
 } from "@test-utils/reactRouterUtils";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { graphql, HttpResponse } from "msw";
+import { graphql, HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import type { ProgramProgression } from "../api/queries/useProgramProgressionQuery";
@@ -19,7 +19,12 @@ const completedProgression: ProgramProgression = mockProgression({
   status: "completed",
 });
 
+const getSessionHandler = http.get("/api/auth/get-session", () =>
+  HttpResponse.json(null),
+);
+
 const server = setupServer(
+  getSessionHandler,
   graphql.query("GetProgramProgression", () =>
     HttpResponse.json({ data: { getProgramProgression: progressionData } }),
   ),

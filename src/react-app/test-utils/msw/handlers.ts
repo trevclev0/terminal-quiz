@@ -1,4 +1,4 @@
-import { graphql, HttpResponse } from "msw";
+import { graphql, HttpResponse, http } from "msw";
 import {
   mockPrograms,
   mockProgression,
@@ -35,6 +35,10 @@ export const resetSessionHandler = graphql.mutation("ResetSession", () =>
   HttpResponse.json({ data: { resetSession: true } }),
 );
 
+const getSessionHandler = http.get("/api/auth/get-session", () =>
+  HttpResponse.json(null),
+);
+
 export const handlers = [
   getProgramsHandler,
   getProgramProgressionHandler,
@@ -42,4 +46,5 @@ export const handlers = [
   submitGuessHandler,
   requestClueHandler,
   resetSessionHandler,
+  getSessionHandler,
 ];
