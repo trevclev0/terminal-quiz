@@ -1,20 +1,29 @@
+import type { Program } from "@shared/types";
+import type { AuthUser } from "@worker-middleware/db";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   getInProgressProgram,
   getProgramProgression,
   getPrograms,
   me,
+  myPrograms,
 } from "./queries";
 import type { AppGraphQLContext } from "./types";
 
 function createMockDb() {
+  const mockOrderBy = vi.fn();
+  const mockWhere = vi.fn().mockReturnValue({ orderBy: mockOrderBy });
+  const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
   return {
     query: {
       sessionProgress: { findFirst: vi.fn() },
       gates: { findFirst: vi.fn(), findMany: vi.fn() },
       sessionCompletedGates: { findMany: vi.fn() },
-      programs: { findMany: vi.fn() },
     },
+    select: vi.fn().mockReturnValue({ from: mockFrom }),
+    mockOrderBy,
+    mockWhere,
+    mockFrom,
     insert: vi.fn().mockReturnValue({
       values: vi.fn().mockReturnValue({
         returning: vi.fn(),
@@ -40,11 +49,16 @@ const defaultProgress = {
   status: "in_progress",
 };
 
-function contextWith(db: MockDb, sessionId?: string): AppGraphQLContext {
+function contextWith(
+  db: MockDb,
+  sessionId?: string,
+  user?: AuthUser,
+): AppGraphQLContext {
   return {
     get: vi.fn((key: string) => {
       if (key === "db") return db;
       if (key === "sessionId") return sessionId;
+      if (key === "user") return user;
       return undefined;
     }),
   } as unknown as AppGraphQLContext;
@@ -290,29 +304,157 @@ describe("getPrograms", () => {
     mockDb = createMockDb();
   });
 
-  it("throws when sessionId is missing", async () => {
-    const ctx = contextWith(mockDb, undefined);
-
-    await expect(resolveField(getPrograms, null, {}, ctx)).rejects.toThrow(
-      /Unauthorized/,
-    );
-  });
-
-  it("returns list of programs", async () => {
-    mockDb.query.programs.findMany.mockResolvedValue([
-      { id: "prog-1", name: "Program 1" },
-      { id: "prog-2", name: "Program 2" },
-    ]);
+  it("returns public programs when unauthenticated", async () => {
+    const publicPrograms = [
+      { id: "prog-1", name: "Program 1", visibility: "public", authorId: null },
+      { id: "prog-2", name: "Program 2", visibility: "public", authorId: null },
+    ];
+    mockDb.mockOrderBy.mockResolvedValue(publicPrograms);
 
     const result = await resolveField(
       getPrograms,
       null,
       {},
-      contextWith(mockDb, SID),
+      contextWith(mockDb),
     );
 
     expect(result).toHaveLength(2);
     expect(result[0].id).toBe("prog-1");
+  });
+
+  it("includes owned programs when authenticated", async () => {
+    const user: AuthUser = {
+      id: "user-1",
+      email: "test@example.com",
+      name: "Test",
+    };
+    const programs = [
+      { id: "prog-1", name: "Public", visibility: "public", authorId: null },
+      {
+        id: "prog-2",
+        name: "Owned",
+        visibility: "unlisted",
+        authorId: "user-1",
+      },
+    ];
+    mockDb.mockOrderBy.mockResolvedValue(programs);
+
+    const result = await resolveField(
+      getPrograms,
+      null,
+      {},
+      contextWith(mockDb, undefined, user),
+    );
+
+    expect(result).toHaveLength(2);
+  });
+
+  it("calls db.select with or filter for public or owned", async () => {
+    const user: AuthUser = {
+      id: "user-1",
+      email: "test@example.com",
+      name: "Test",
+    };
+    mockDb.mockOrderBy.mockResolvedValue([]);
+
+    await resolveField(
+      getPrograms,
+      null,
+      {},
+      contextWith(mockDb, undefined, user),
+    );
+
+    expect(mockDb.mockWhere).toHaveBeenCalledOnce();
+  });
+});
+
+describe("myPrograms", () => {
+  let mockDb: MockDb;
+
+  beforeEach(() => {
+    mockDb = createMockDb();
+  });
+
+  it("returns null when unauthenticated", async () => {
+    const result = await resolveField(
+      myPrograms,
+      null,
+      {},
+      contextWith(mockDb),
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it("returns empty array when authenticated but has no programs", async () => {
+    const user: AuthUser = {
+      id: "user-1",
+      email: "test@example.com",
+      name: "Test",
+    };
+    mockDb.mockOrderBy.mockResolvedValue([]);
+
+    const result = await resolveField(
+      myPrograms,
+      null,
+      {},
+      contextWith(mockDb, undefined, user),
+    );
+
+    expect(result).toEqual([]);
+  });
+
+  it("returns list of owned programs", async () => {
+    const user: AuthUser = {
+      id: "user-1",
+      email: "test@example.com",
+      name: "Test",
+    };
+    const owned = [
+      {
+        id: "prog-1",
+        name: "My Program",
+        visibility: "public",
+        authorId: "user-1",
+      },
+      {
+        id: "prog-2",
+        name: "Secret Program",
+        visibility: "unlisted",
+        authorId: "user-1",
+      },
+    ];
+    mockDb.mockOrderBy.mockResolvedValue(owned);
+
+    const result = await resolveField(
+      myPrograms,
+      null,
+      {},
+      contextWith(mockDb, undefined, user),
+    );
+
+    const programs = result as Program[];
+    expect(programs).toHaveLength(2);
+    expect(programs[0].id).toBe("prog-1");
+    expect(programs[1].visibility).toBe("unlisted");
+  });
+
+  it("filters by authorId", async () => {
+    const user: AuthUser = {
+      id: "user-42",
+      email: "test@example.com",
+      name: "Test",
+    };
+    mockDb.mockOrderBy.mockResolvedValue([]);
+
+    await resolveField(
+      myPrograms,
+      null,
+      {},
+      contextWith(mockDb, undefined, user),
+    );
+
+    expect(mockDb.mockWhere).toHaveBeenCalledOnce();
   });
 });
 
