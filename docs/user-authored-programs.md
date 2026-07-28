@@ -1,6 +1,6 @@
 # Program Management & Authentication — Implementation Plan
 
-**Status:** Active — Phase 3a in progress
+**Status:** Active — Phase 3a complete (awaiting merge)
 **Owner:** clevertrevor
 **Scope:** Add user authentication and let authenticated users author/manage their own Programs and Gates, while keeping existing anonymous gameplay untouched.
 
@@ -182,13 +182,13 @@ No structural change — `programs` query already filters correctly server-side 
 - **Done when:** existing seeded Programs still work unchanged; logged-in users see their own unlisted content in the right places.
 
 ### Phase 3a — Backend: Mutations & Authorization
-- [ ] `authorizeProgramMutation()` helper — fetches program, verifies `authorId === userId`, throws on null/mismatch.
-- [ ] `ProgramManagementType` + `GateManagementType` GraphQL types.
-- [ ] 7 management mutations (`createProgram`, `updateProgram`, `deleteProgram`, `createGate`, `updateGate`, `deleteGate`, `reorderGates`) — all auth-guarded via `authorizeProgramMutation()`, input-validated, in separate `managementMutations.ts`.
-- [ ] `reorderGates`: two-pass atomic rewrite (negative temp offsets → final values) to dodge `unique(programId, sequenceOrder)` constraint.
-- [ ] Wire all 7 mutations into GraphQL schema.
-- [ ] Mutation strings in `src/shared/gqlQueries.ts`.
-- [ ] Unit tests for authorization helper + all 7 mutations (~24 tests).
+- [x] `authorizeProgramMutation()` helper — fetches program, verifies `authorId === userId`, throws on null/mismatch.
+- [x] `ProgramManagementType` + `GateManagementType` GraphQL types.
+- [x] 7 management mutations (`createProgram`, `updateProgram`, `deleteProgram`, `createGate`, `updateGate`, `deleteGate`, `reorderGates`) — all auth-guarded via `authorizeProgramMutation()`, input-validated, in separate `managementMutations.ts`.
+- [x] `reorderGates`: atomic `db.batch()` with two-pass (negative temp offsets → final values) to dodge `unique(programId, sequenceOrder)` constraint.
+- [x] Wire all 7 mutations into GraphQL schema.
+- [x] Mutation strings in `src/shared/gqlQueries.ts`.
+- [x] Unit tests for authorization helper + all 7 mutations (31 tests).
 - **Touch point:** `ProgramListItemType` kept lean. Management mutations return new `ProgramManagementType` with `createdAt`. Gate mutations return `GateManagementType` with all fields.
 - **Done when:** all mutations are testable via GraphiQL/integration tests — correct paths succeed, auth failures reject, reorderGates handles edge cases.
 
