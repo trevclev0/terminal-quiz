@@ -11,6 +11,7 @@ export default defineConfig({
       autoCodeSplitting: true,
       routesDirectory: "./src/react-app/routes",
       generatedRouteTree: "./src/react-app/routeTree.gen.ts",
+      quoteStyle: "double",
     }),
     react(),
     !process.env.VITEST && cloudflare(),

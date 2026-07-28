@@ -8,58 +8,58 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as ProgramsProgramIdRouteImport } from './routes/programs/$programId'
-import { Route as ProgramsSelectRouteImport } from './routes/programs/select'
+import { Route as rootRouteImport } from "./routes/__root"
+import { Route as IndexRouteImport } from "./routes/index"
+import { Route as LoginRouteImport } from "./routes/login"
+import { Route as ProgramsProgramIdRouteImport } from "./routes/programs/$programId"
+import { Route as ProgramsSelectRouteImport } from "./routes/programs/select"
 
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+  id: "/login",
+  path: "/login",
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProgramsProgramIdRoute = ProgramsProgramIdRouteImport.update({
-  id: '/programs/$programId',
-  path: '/programs/$programId',
+  id: "/programs/$programId",
+  path: "/programs/$programId",
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProgramsSelectRoute = ProgramsSelectRouteImport.update({
-  id: '/programs/select',
-  path: '/programs/select',
+  id: "/programs/select",
+  path: "/programs/select",
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/login': typeof LoginRoute
-  '/programs/$programId': typeof ProgramsProgramIdRoute
-  '/programs/select': typeof ProgramsSelectRoute
+  "/": typeof IndexRoute
+  "/login": typeof LoginRoute
+  "/programs/$programId": typeof ProgramsProgramIdRoute
+  "/programs/select": typeof ProgramsSelectRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/login': typeof LoginRoute
-  '/programs/$programId': typeof ProgramsProgramIdRoute
-  '/programs/select': typeof ProgramsSelectRoute
+  "/": typeof IndexRoute
+  "/login": typeof LoginRoute
+  "/programs/$programId": typeof ProgramsProgramIdRoute
+  "/programs/select": typeof ProgramsSelectRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/login': typeof LoginRoute
-  '/programs/$programId': typeof ProgramsProgramIdRoute
-  '/programs/select': typeof ProgramsSelectRoute
+  "/": typeof IndexRoute
+  "/login": typeof LoginRoute
+  "/programs/$programId": typeof ProgramsProgramIdRoute
+  "/programs/select": typeof ProgramsSelectRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/programs/$programId' | '/programs/select'
+  fullPaths: "/" | "/login" | "/programs/$programId" | "/programs/select"
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/programs/$programId' | '/programs/select'
-  id: '__root__' | '/' | '/login' | '/programs/$programId' | '/programs/select'
+  to: "/" | "/login" | "/programs/$programId" | "/programs/select"
+  id: "__root__" | "/" | "/login" | "/programs/$programId" | "/programs/select"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -69,33 +69,33 @@ export interface RootRouteChildren {
   ProgramsSelectRoute: typeof ProgramsSelectRoute
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
+    "/": {
+      id: "/"
+      path: "/"
+      fullPath: "/"
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
+    "/login": {
+      id: "/login"
+      path: "/login"
+      fullPath: "/login"
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/programs/$programId': {
-      id: '/programs/$programId'
-      path: '/programs/$programId'
-      fullPath: '/programs/$programId'
+    "/programs/$programId": {
+      id: "/programs/$programId"
+      path: "/programs/$programId"
+      fullPath: "/programs/$programId"
       preLoaderRoute: typeof ProgramsProgramIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/programs/select': {
-      id: '/programs/select'
-      path: '/programs/select'
-      fullPath: '/programs/select'
+    "/programs/select": {
+      id: "/programs/select"
+      path: "/programs/select"
+      fullPath: "/programs/select"
       preLoaderRoute: typeof ProgramsSelectRouteImport
       parentRoute: typeof rootRouteImport
     }
