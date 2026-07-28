@@ -35,6 +35,12 @@ export default defineConfig({
           compatibilityFlags: ["nodejs_compat"],
           bindings: {
             ENVIRONMENT: "test",
+            BETTER_AUTH_SECRET: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+            BETTER_AUTH_URL: "http://localhost:5173",
+            GOOGLE_CLIENT_ID: "test-google-client-id",
+            GOOGLE_CLIENT_SECRET: "test-google-client-secret",
+            GITHUB_CLIENT_ID: "test-github-client-id",
+            GITHUB_CLIENT_SECRET: "test-github-client-secret",
             // Pass migrations + seed SQL as bindings for runtime application
             TEST_MIGRATIONS: migrations,
             TEST_SEED_SQL: seedSQL,
