@@ -26,6 +26,8 @@ export const ProgramListItemType = new GraphQLObjectType({
   fields: {
     id: { type: new GraphQLNonNull(GraphQLString) },
     name: { type: new GraphQLNonNull(GraphQLString) },
+    visibility: { type: new GraphQLNonNull(GraphQLString) },
+    authorId: { type: GraphQLString },
   },
 });
 
