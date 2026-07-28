@@ -59,7 +59,9 @@
         "binding": "AI"
       },
       "vars": {
-        "ENVIRONMENT": "preview"
+        "ENVIRONMENT": "preview",
+        "BETTER_AUTH_SECRET": "preview-placeholder-not-for-production",
+        "BETTER_AUTH_URL": "https://quiz.clevertrevor.dev"
       }
     }
   }
