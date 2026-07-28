@@ -1,6 +1,6 @@
 # Program Management & Authentication — Implementation Plan
 
-**Status:** Active — Phase 2 complete
+**Status:** Active — Phase 3a in progress
 **Owner:** clevertrevor
 **Scope:** Add user authentication and let authenticated users author/manage their own Programs and Gates, while keeping existing anonymous gameplay untouched.
 
@@ -169,7 +169,7 @@ No structural change — `programs` query already filters correctly server-side 
 - [x] Test-only auth bypass for CI/preview (§8).
 - **Done when:** you can log in with Google or GitHub locally and in prod, and `me` reflects it. No Program changes yet.
 
-#### Deferred tests (Phase 3)
+#### Deferred tests (Phase 3c)
 - [ ] Unit test: `authMiddleware` bypass logic (mock Hono context).
 - [ ] Unit test: OAuth token stripping hook (adapter-level mock).
 - [ ] Component test: `NavBar` — login/logout states.
@@ -181,12 +181,39 @@ No structural change — `programs` query already filters correctly server-side 
 - [x] `myPrograms` query.
 - **Done when:** existing seeded Programs still work unchanged; logged-in users see their own unlisted content in the right places.
 
-### Phase 3 — Authoring UI/API
-- [ ] Program + Gate CRUD mutations with ownership checks.
-- [ ] `/programs/manage` and `/programs/manage/$programId` routes.
-- [ ] Playwright spec: login → create → play.
-- **Touch point:** `ProgramListItemType` currently exposes `id`, `name`, `visibility`, `authorId`. Phase 3's management page likely needs more fields (created date, gate count, etc.) — rename/re-scope the type or create a dedicated management type rather than bloating the list-item shape.
-- **Done when:** a real user can create a Program with Gates from scratch and play it, without touching the DB by hand.
+### Phase 3a — Backend: Mutations & Authorization
+- [ ] `authorizeProgramMutation()` helper — fetches program, verifies `authorId === userId`, throws on null/mismatch.
+- [ ] `ProgramManagementType` + `GateManagementType` GraphQL types.
+- [ ] 7 management mutations (`createProgram`, `updateProgram`, `deleteProgram`, `createGate`, `updateGate`, `deleteGate`, `reorderGates`) — all auth-guarded via `authorizeProgramMutation()`, input-validated, in separate `managementMutations.ts`.
+- [ ] `reorderGates`: two-pass atomic rewrite (negative temp offsets → final values) to dodge `unique(programId, sequenceOrder)` constraint.
+- [ ] Wire all 7 mutations into GraphQL schema.
+- [ ] Mutation strings in `src/shared/gqlQueries.ts`.
+- [ ] Unit tests for authorization helper + all 7 mutations (~24 tests).
+- **Touch point:** `ProgramListItemType` kept lean. Management mutations return new `ProgramManagementType` with `createdAt`. Gate mutations return `GateManagementType` with all fields.
+- **Done when:** all mutations are testable via GraphiQL/integration tests — correct paths succeed, auth failures reject, reorderGates handles edge cases.
+
+### Phase 3b — Frontend: Routes, Components, Hooks
+- [ ] NavBar: add "My Programs" link when authenticated.
+- [ ] `login.tsx`: add `"/programs/manage"` to `ALLOWED_REDIRECT_PATHS`.
+- [ ] `/programs/manage` route + `<ManageProgramsList>` component — list user's programs, create/delete.
+- [ ] `/programs/manage/$programId` route + `<ManageProgramEditor>` component — edit program metadata, add/edit/delete/reorder gates. Each edit saves individually. Reorder arrows disabled while mutation inflight.
+- [ ] API hooks for all mutations (TanStack Query pattern).
+- [ ] Route guards: redirect to `/login?return_to=...` if unauthenticated.
+- [ ] Component tests for list + editor + API hooks.
+- **Depends on:** Phase 3a merged.
+- **Done when:** a logged-in user can create, edit, delete programs and gates through the browser UI.
+
+### Phase 3c — Test Debt + E2E
+- [ ] Deferred Phase 1 tests (4 items moved from Phase 1):
+  - `authMiddleware` bypass unit test (mock Hono context).
+  - OAuth token stripping hook unit test (adapter-level mock).
+  - `NavBar` component test (login/logout states).
+  - `LoginPage` component test (social buttons + redirect).
+- [ ] Playwright spec: login → create program → add gates → play through.
+  - Auth bypass headers configured via `AUTH_TEST_BYPASS_SECRET` from CI secret.
+  - Preview Worker has matching secret via wrangler secret/deploy workflow.
+- **No dependency on Phase 3a or 3b.** Can land in parallel with 3a.
+- **Done when:** all 4 deferred tests pass; E2E validates full create-edit-play cycle in preview CI.
 
 ### Phase 4 — Polish
 - [ ] Copy-link affordance for unlisted Programs.
