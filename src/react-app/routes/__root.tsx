@@ -1,3 +1,4 @@
+import NavBar from "@components/NavBar";
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 
@@ -12,6 +13,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 export function RootComponent() {
   return (
     <>
+      <NavBar />
       <main>
         <Outlet />
       </main>
