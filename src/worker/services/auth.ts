@@ -10,31 +10,40 @@ type AuthInstance = ReturnType<typeof betterAuth>;
 let authInstance: AuthInstance | null = null;
 
 function validateAuthBindings(bindings: Env["Bindings"]): void {
-  const required = [
-    "BETTER_AUTH_SECRET",
-    "BETTER_AUTH_URL",
-    "GOOGLE_CLIENT_ID",
-    "GOOGLE_CLIENT_SECRET",
-    "GITHUB_CLIENT_ID",
-    "GITHUB_CLIENT_SECRET",
-  ] as const;
+  const { ENVIRONMENT, BETTER_AUTH_SECRET, BETTER_AUTH_URL } = bindings;
+  const isProd = ENVIRONMENT === "production";
 
-  for (const key of required) {
-    const value = bindings[key as keyof Env["Bindings"]];
-    if (!value) {
-      throw new Error(
-        `Missing required auth binding: ${key}. Ensure it is set in .dev.vars or wrangler secret.`,
-      );
-    }
+  if (!BETTER_AUTH_SECRET) {
+    throw new Error(
+      "Missing required auth binding: BETTER_AUTH_SECRET. Set it in wrangler.jsonc vars or .dev.vars.",
+    );
+  }
+  if (!BETTER_AUTH_URL) {
+    throw new Error(
+      "Missing required auth binding: BETTER_AUTH_URL. Set it in wrangler.jsonc vars or .dev.vars.",
+    );
   }
 
-  if (
-    bindings.ENVIRONMENT === "production" &&
-    bindings.BETTER_AUTH_SECRET.length < 32
-  ) {
-    throw new Error(
-      "BETTER_AUTH_SECRET must be at least 32 characters in production. Generate one with `npx auth secret` or `openssl rand -base64 32`.",
-    );
+  if (isProd) {
+    const oauthKeys = [
+      "GOOGLE_CLIENT_ID",
+      "GOOGLE_CLIENT_SECRET",
+      "GITHUB_CLIENT_ID",
+      "GITHUB_CLIENT_SECRET",
+    ] as const;
+    for (const key of oauthKeys) {
+      if (!bindings[key]) {
+        throw new Error(
+          `Missing required auth binding: ${key}. Set it via \`wrangler secret put ${key}\`.`,
+        );
+      }
+    }
+
+    if (BETTER_AUTH_SECRET.length < 32) {
+      throw new Error(
+        "BETTER_AUTH_SECRET must be at least 32 characters in production. Generate one with `npx auth secret` or `openssl rand -base64 32`.",
+      );
+    }
   }
 }
 
