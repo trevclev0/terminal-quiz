@@ -8,6 +8,7 @@ import {
   getInProgressProgram,
   getProgramProgression,
   getPrograms,
+  me,
 } from "@worker-graphql/gameplay/queries";
 import type { AppVariables } from "@worker-middleware/db";
 import { buildSchema } from "drizzle-graphql";
@@ -41,6 +42,7 @@ const graphQlRouter = new Hono<AppVariables>().use("*", async (c, next) => {
         query: new GraphQLObjectType({
           name: "Query",
           fields: {
+            me,
             programs: getPrograms,
             getProgramProgression,
             getInProgressProgram,

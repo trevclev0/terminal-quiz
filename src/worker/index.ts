@@ -1,8 +1,10 @@
 import type { Ai, D1Database } from "@cloudflare/workers-types";
+import { authMiddleware } from "@worker-middleware/auth";
 import { type AppVariables, setupDb } from "@worker-middleware/db";
 import { conditionalLogger } from "@worker-middleware/logger";
 import { sessionMiddleware } from "@worker-middleware/session";
 import graphQlRouter from "@worker-routes/graphql";
+import { getAuth } from "@worker-services/auth";
 import { formatErrorResponse, logError } from "@worker-utils/errorHandler";
 import { Hono } from "hono";
 
@@ -11,6 +13,14 @@ export type Env = {
     DB: D1Database;
     AI?: Ai;
     ENVIRONMENT?: string;
+    BETTER_AUTH_SECRET: string;
+    BETTER_AUTH_URL: string;
+    GOOGLE_CLIENT_ID: string;
+    GOOGLE_CLIENT_SECRET: string;
+    GITHUB_CLIENT_ID: string;
+    GITHUB_CLIENT_SECRET: string;
+    AUTH_TEST_BYPASS_ENABLED?: string;
+    AUTH_TEST_BYPASS_SECRET?: string;
   };
 };
 
@@ -26,6 +36,11 @@ app.onError((err, c) => {
 const api = new Hono<AppVariables>()
   .use("*", setupDb)
   .use("*", sessionMiddleware)
+  .all("/auth/*", async (c) => {
+    const auth = getAuth(c);
+    return auth.handler(c.req.raw);
+  })
+  .use("/graphql", authMiddleware)
   .route("/graphql", graphQlRouter);
 
 // Must use chaining in order for Hono RPC to work
