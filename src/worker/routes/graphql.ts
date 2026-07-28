@@ -1,5 +1,14 @@
 import { graphqlServer } from "@hono/graphql-server";
 import {
+  createGate,
+  createProgram,
+  deleteGate,
+  deleteProgram,
+  reorderGates,
+  updateGate,
+  updateProgram,
+} from "@worker-graphql/gameplay/managementMutations";
+import {
   requestClue,
   resetSession,
   submitGuess,
@@ -56,6 +65,13 @@ const graphQlRouter = new Hono<AppVariables>().use("*", async (c, next) => {
             submitGuess,
             requestClue,
             resetSession,
+            createProgram,
+            updateProgram,
+            deleteProgram,
+            createGate,
+            updateGate,
+            deleteGate,
+            reorderGates,
           },
         }),
         types: [
