@@ -8,6 +8,7 @@ GOOGLE_CLIENT_SECRET=<YOUR_GOOGLE_CLIENT_SECRET>
 GITHUB_CLIENT_ID=<YOUR_GITHUB_CLIENT_ID>
 GITHUB_CLIENT_SECRET=<YOUR_GITHUB_CLIENT_SECRET>
 
-# Auth test bypass — only enabled when ENVIRONMENT != production
+# Auth test bypass — disabled by default. Only enable for CI/test environments
+# with a dedicated test secret, not for general preview/staging deployments.
 # AUTH_TEST_BYPASS_ENABLED=true
 # AUTH_TEST_BYPASS_SECRET=<YOUR_TEST_BYPASS_SECRET>
