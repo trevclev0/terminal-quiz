@@ -354,6 +354,46 @@ describe("createGate", () => {
       ),
     ).rejects.toThrow("Sequence order 1 is already taken");
   });
+
+  it("throws when sequenceOrder is zero", async () => {
+    mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
+
+    await expect(
+      resolveField(
+        createGate,
+        null,
+        {
+          programId: "prog-1",
+          label: "Gate",
+          question: "Q?",
+          correctAnswer: "A",
+          successMessage: "OK",
+          sequenceOrder: 0,
+        },
+        mockContext,
+      ),
+    ).rejects.toThrow("sequenceOrder must be a positive integer.");
+  });
+
+  it("throws when sequenceOrder is negative", async () => {
+    mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
+
+    await expect(
+      resolveField(
+        createGate,
+        null,
+        {
+          programId: "prog-1",
+          label: "Gate",
+          question: "Q?",
+          correctAnswer: "A",
+          successMessage: "OK",
+          sequenceOrder: -1,
+        },
+        mockContext,
+      ),
+    ).rejects.toThrow("sequenceOrder must be a positive integer.");
+  });
 });
 
 describe("updateGate", () => {
@@ -453,6 +493,24 @@ describe("updateGate", () => {
     await expect(
       resolveField(updateGate, null, { id: "gate-1" }, mockContext),
     ).rejects.toThrow("No fields to update.");
+  });
+
+  it("throws when sequenceOrder is zero", async () => {
+    mockDb.query.gates.findFirst.mockResolvedValue({
+      id: "gate-1",
+      programId: "prog-1",
+      sequenceOrder: 1,
+    });
+    mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
+
+    await expect(
+      resolveField(
+        updateGate,
+        null,
+        { id: "gate-1", sequenceOrder: 0 },
+        mockContext,
+      ),
+    ).rejects.toThrow("sequenceOrder must be a positive integer.");
   });
 });
 
@@ -633,5 +691,27 @@ describe("reorderGates", () => {
         mockContext,
       ),
     ).rejects.toThrow("exact permutation");
+  });
+
+  it("returns true immediately for zero-gate program", async () => {
+    mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
+    const mockOrderBy = vi.fn().mockResolvedValue([]);
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          orderBy: mockOrderBy,
+        }),
+      }),
+    });
+
+    const result = await resolveField(
+      reorderGates,
+      null,
+      { programId: "prog-1", orderedGateIds: [] },
+      mockContext,
+    );
+
+    expect(result).toBe(true);
+    expect(mockDb.batch).not.toHaveBeenCalled();
   });
 });
