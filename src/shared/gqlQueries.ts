@@ -85,3 +85,105 @@ export const MY_PROGRAMS_QUERY = `
     }
   }
 `;
+
+export const CREATE_PROGRAM_MUTATION = `
+  mutation CreateProgram($name: String!, $visibility: String) {
+    createProgram(name: $name, visibility: $visibility) {
+      id
+      name
+      visibility
+      authorId
+      createdAt
+    }
+  }
+`;
+
+export const UPDATE_PROGRAM_MUTATION = `
+  mutation UpdateProgram($id: String!, $name: String, $visibility: String) {
+    updateProgram(id: $id, name: $name, visibility: $visibility) {
+      id
+      name
+      visibility
+    }
+  }
+`;
+
+export const DELETE_PROGRAM_MUTATION = `
+  mutation DeleteProgram($id: String!) {
+    deleteProgram(id: $id)
+  }
+`;
+
+export const CREATE_GATE_MUTATION = `
+  mutation CreateGate(
+    $programId: String!
+    $label: String!
+    $question: String!
+    $correctAnswer: String!
+    $successMessage: String!
+    $sequenceOrder: Int!
+    $acceptanceThreshold: Float
+    $guidanceEnabled: Boolean
+    $guidanceThreshold: Int
+  ) {
+    createGate(
+      programId: $programId
+      label: $label
+      question: $question
+      correctAnswer: $correctAnswer
+      successMessage: $successMessage
+      sequenceOrder: $sequenceOrder
+      acceptanceThreshold: $acceptanceThreshold
+      guidanceEnabled: $guidanceEnabled
+      guidanceThreshold: $guidanceThreshold
+    ) {
+      id
+      programId
+      label
+      question
+      sequenceOrder
+    }
+  }
+`;
+
+export const UPDATE_GATE_MUTATION = `
+  mutation UpdateGate(
+    $id: String!
+    $label: String
+    $question: String
+    $correctAnswer: String
+    $successMessage: String
+    $sequenceOrder: Int
+    $acceptanceThreshold: Float
+    $guidanceEnabled: Boolean
+    $guidanceThreshold: Int
+  ) {
+    updateGate(
+      id: $id
+      label: $label
+      question: $question
+      correctAnswer: $correctAnswer
+      successMessage: $successMessage
+      sequenceOrder: $sequenceOrder
+      acceptanceThreshold: $acceptanceThreshold
+      guidanceEnabled: $guidanceEnabled
+      guidanceThreshold: $guidanceThreshold
+    ) {
+      id
+      label
+      sequenceOrder
+    }
+  }
+`;
+
+export const DELETE_GATE_MUTATION = `
+  mutation DeleteGate($id: String!) {
+    deleteGate(id: $id)
+  }
+`;
+
+export const REORDER_GATES_MUTATION = `
+  mutation ReorderGates($programId: String!, $orderedGateIds: [String!]!) {
+    reorderGates(programId: $programId, orderedGateIds: $orderedGateIds)
+  }
+`;
