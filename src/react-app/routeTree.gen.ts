@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ProgramsProgramIdRouteImport } from './routes/programs/$programId'
 import { Route as ProgramsSelectRouteImport } from './routes/programs/select'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProgramsProgramIdRoute = ProgramsProgramIdRouteImport.update({
@@ -31,30 +37,34 @@ const ProgramsSelectRoute = ProgramsSelectRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/programs/$programId': typeof ProgramsProgramIdRoute
   '/programs/select': typeof ProgramsSelectRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/programs/$programId': typeof ProgramsProgramIdRoute
   '/programs/select': typeof ProgramsSelectRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/programs/$programId': typeof ProgramsProgramIdRoute
   '/programs/select': typeof ProgramsSelectRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/programs/$programId' | '/programs/select'
+  fullPaths: '/' | '/login' | '/programs/$programId' | '/programs/select'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/programs/$programId' | '/programs/select'
-  id: '__root__' | '/' | '/programs/$programId' | '/programs/select'
+  to: '/' | '/login' | '/programs/$programId' | '/programs/select'
+  id: '__root__' | '/' | '/login' | '/programs/$programId' | '/programs/select'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
   ProgramsProgramIdRoute: typeof ProgramsProgramIdRoute
   ProgramsSelectRoute: typeof ProgramsSelectRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/programs/$programId': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
   ProgramsProgramIdRoute: ProgramsProgramIdRoute,
   ProgramsSelectRoute: ProgramsSelectRoute,
 }
