@@ -5,7 +5,7 @@ type LoginSearch = {
   return_to?: string;
 };
 
-const ALLOWED_REDIRECT_PATHS = ["/programs/select", "/programs/manage", "/"];
+const ALLOWED_REDIRECT_PATHS = ["/programs/select", "/"];
 
 function validateReturnTo(value: string): string | undefined {
   try {
