@@ -1,6 +1,6 @@
 # Program Management & Authentication — Implementation Plan
 
-**Status:** Draft for review
+**Status:** Active — Phase 2 complete
 **Owner:** clevertrevor
 **Scope:** Add user authentication and let authenticated users author/manage their own Programs and Gates, while keeping existing anonymous gameplay untouched.
 
@@ -156,17 +156,17 @@ No structural change — `programs` query already filters correctly server-side 
 ## 9. Phased Roadmap
 
 ### Phase 0 — Prerequisites
-- [ ] Register OAuth apps in Google Cloud Console and GitHub Developer Settings; capture redirect URIs for prod + local dev.
-- [ ] Generate `BETTER_AUTH_SECRET`; add all secrets via `wrangler secret put` + update `.dev.vars.example`.
-- [ ] `bun add better-auth` (+ Cloudflare adapter if using one).
+- [x] Register OAuth apps in Google Cloud Console and GitHub Developer Settings; capture redirect URIs for prod + local dev.
+- [x] Generate `BETTER_AUTH_SECRET`; add all secrets via `wrangler secret put` + update `.dev.vars.example`.
+- [x] `bun add better-auth` (+ Cloudflare adapter if using one).
 
 ### Phase 1 — Core auth infrastructure
-- [ ] Generate Better Auth schema (own file, own Drizzle instance — see §3).
-- [ ] Migration for `user`/`account`/`session`/`verification`.
-- [ ] Mount `/api/auth/*`; add `authMiddleware`.
-- [ ] `/login` route + nav chrome in `__root.tsx`.
-- [ ] `me` query.
-- [ ] Test-only auth bypass for CI/preview (§8).
+- [x] Generate Better Auth schema (own file, own Drizzle instance — see §3).
+- [x] Migration for `user`/`account`/`session`/`verification`.
+- [x] Mount `/api/auth/*`; add `authMiddleware`.
+- [x] `/login` route + nav chrome in `__root.tsx`.
+- [x] `me` query.
+- [x] Test-only auth bypass for CI/preview (§8).
 - **Done when:** you can log in with Google or GitHub locally and in prod, and `me` reflects it. No Program changes yet.
 
 #### Deferred tests (Phase 3)
@@ -176,15 +176,16 @@ No structural change — `programs` query already filters correctly server-side 
 - [ ] Component test: `LoginPage` — social buttons render and fire correct auth calls.
 
 ### Phase 2 — Program ownership & visibility
-- [ ] `author_id` + `visibility` columns on `programs`, migration.
-- [ ] Update `programs` query filter.
-- [ ] `myPrograms` query.
+- [x] `author_id` + `visibility` columns on `programs`, migration.
+- [x] Update `programs` query filter.
+- [x] `myPrograms` query.
 - **Done when:** existing seeded Programs still work unchanged; logged-in users see their own unlisted content in the right places.
 
 ### Phase 3 — Authoring UI/API
 - [ ] Program + Gate CRUD mutations with ownership checks.
 - [ ] `/programs/manage` and `/programs/manage/$programId` routes.
 - [ ] Playwright spec: login → create → play.
+- **Touch point:** `ProgramListItemType` currently exposes `id`, `name`, `visibility`, `authorId`. Phase 3's management page likely needs more fields (created date, gate count, etc.) — rename/re-scope the type or create a dedicated management type rather than bloating the list-item shape.
 - **Done when:** a real user can create a Program with Gates from scratch and play it, without touching the DB by hand.
 
 ### Phase 4 — Polish
