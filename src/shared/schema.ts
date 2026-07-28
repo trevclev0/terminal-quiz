@@ -8,6 +8,7 @@ import {
   text,
   unique,
 } from "drizzle-orm/sqlite-core";
+import { user } from "./authSchema";
 
 export const gates = sqliteTable(
   "gates",
@@ -37,15 +38,30 @@ export const gates = sqliteTable(
   (t) => [unique("unique_program_sequence").on(t.programId, t.sequenceOrder)],
 );
 
-export const programs = sqliteTable("programs", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  name: text("name").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER))`),
-});
+export const programs = sqliteTable(
+  "programs",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    name: text("name").notNull(),
+    authorId: text("author_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    visibility: text("visibility").notNull().default("public"),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(
+        sql`(CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER))`,
+      ),
+  },
+  (t) => [
+    check(
+      "program_visibility_check",
+      sql`${t.visibility} IN ('public', 'unlisted')`,
+    ),
+  ],
+);
 
 export const sessionProgress = sqliteTable(
   "session_progress",

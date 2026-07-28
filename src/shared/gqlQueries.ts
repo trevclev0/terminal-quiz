@@ -74,3 +74,14 @@ export const GET_IN_PROGRESS_PROGRAM_QUERY = `
     getInProgressProgram
   }
 `;
+
+export const MY_PROGRAMS_QUERY = `
+  query MyPrograms {
+    myPrograms {
+      id
+      name
+      visibility
+      authorId
+    }
+  }
+`;
