@@ -3,9 +3,19 @@ import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { GraphQLList, GraphQLNonNull, GraphQLString } from "graphql";
 import {
   type AppGraphQLContext,
+  MeType,
   ProgramListItemType,
   ProgressionPayloadType,
 } from "./types";
+
+export const me = {
+  type: MeType,
+  resolve: (_: unknown, __: unknown, context: AppGraphQLContext) => {
+    const user = context.get("user");
+    if (!user) return null;
+    return user;
+  },
+};
 
 export const getProgramProgression = {
   type: ProgressionPayloadType,
