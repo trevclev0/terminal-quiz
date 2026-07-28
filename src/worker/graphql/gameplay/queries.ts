@@ -1,5 +1,10 @@
-import { gates, sessionCompletedGates, sessionProgress } from "@shared/schema";
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import {
+  gates,
+  programs,
+  sessionCompletedGates,
+  sessionProgress,
+} from "@shared/schema";
+import { and, asc, desc, eq, inArray, or } from "drizzle-orm";
 import { GraphQLList, GraphQLNonNull, GraphQLString } from "graphql";
 import {
   type AppGraphQLContext,
@@ -139,15 +144,36 @@ export const getPrograms = {
     new GraphQLList(new GraphQLNonNull(ProgramListItemType)),
   ),
   resolve: async (_: unknown, __: unknown, context: AppGraphQLContext) => {
-    const sessionId = context.get("sessionId");
-    if (!sessionId) throw new Error("Unauthorized: Missing Session ID");
-
     const db = context.get("db");
-    return db.query.programs.findMany({
-      columns: {
-        id: true,
-        name: true,
-      },
-    });
+    const user = context.get("user");
+
+    const conditions = [eq(programs.visibility, "public")];
+    if (user?.id) {
+      conditions.push(eq(programs.authorId, user.id));
+    }
+
+    return db
+      .select()
+      .from(programs)
+      .where(or(...conditions))
+      .orderBy(asc(programs.createdAt));
+  },
+};
+
+export const myPrograms = {
+  type: new GraphQLList(ProgramListItemType),
+  resolve: async (_: unknown, __: unknown, context: AppGraphQLContext) => {
+    const db = context.get("db");
+    const user = context.get("user");
+
+    if (!user?.id) return null;
+
+    const results = await db
+      .select()
+      .from(programs)
+      .where(eq(programs.authorId, user.id))
+      .orderBy(asc(programs.createdAt));
+
+    return results.length > 0 ? results : [];
   },
 };
