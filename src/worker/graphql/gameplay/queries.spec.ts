@@ -3,6 +3,7 @@ import {
   getInProgressProgram,
   getProgramProgression,
   getPrograms,
+  me,
 } from "./queries";
 import type { AppGraphQLContext } from "./types";
 
@@ -312,5 +313,34 @@ describe("getPrograms", () => {
 
     expect(result).toHaveLength(2);
     expect(result[0].id).toBe("prog-1");
+  });
+});
+
+describe("me", () => {
+  it("returns null when no user in context", async () => {
+    const ctx = contextWith(createMockDb());
+
+    const result = await resolveField(me, null, {}, ctx);
+
+    expect(result).toBeNull();
+  });
+
+  it("returns user when user is set in context", async () => {
+    const mockUser = {
+      id: "user-1",
+      email: "test@example.com",
+      name: "Test",
+      image: null,
+    };
+    const ctx = {
+      get: vi.fn((key: string) => {
+        if (key === "user") return mockUser;
+        return undefined;
+      }),
+    } as unknown as AppGraphQLContext;
+
+    const result = await resolveField(me, null, {}, ctx);
+
+    expect(result).toEqual(mockUser);
   });
 });

@@ -11,6 +11,16 @@ import type { Context } from "hono";
 
 export type AppGraphQLContext = Context<AppVariables>;
 
+export const MeType = new GraphQLObjectType({
+  name: "Me",
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLString) },
+    email: { type: new GraphQLNonNull(GraphQLString) },
+    name: { type: new GraphQLNonNull(GraphQLString) },
+    image: { type: GraphQLString },
+  },
+});
+
 export const ProgramListItemType = new GraphQLObjectType({
   name: "ProgramListItem",
   fields: {
