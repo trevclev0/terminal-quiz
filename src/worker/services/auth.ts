@@ -9,7 +9,40 @@ import type { Env } from "..";
 type AuthInstance = ReturnType<typeof betterAuth>;
 let authInstance: AuthInstance | null = null;
 
+function validateAuthBindings(bindings: Env["Bindings"]): void {
+  const required = [
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "GITHUB_CLIENT_ID",
+    "GITHUB_CLIENT_SECRET",
+  ] as const;
+
+  for (const key of required) {
+    const value = bindings[key as keyof Env["Bindings"]];
+    if (!value) {
+      throw new Error(
+        `Missing required auth binding: ${key}. Ensure it is set in .dev.vars or wrangler secret.`,
+      );
+    }
+  }
+
+  if (
+    bindings.ENVIRONMENT === "production" &&
+    bindings.BETTER_AUTH_SECRET.length < 32
+  ) {
+    throw new Error(
+      "BETTER_AUTH_SECRET must be at least 32 characters in production. Generate one with `npx auth secret` or `openssl rand -base64 32`.",
+    );
+  }
+}
+
 function createAuth(c: Context<AppVariables>): AuthInstance {
+  const env = c.env as Env["Bindings"];
+
+  validateAuthBindings(env);
+
   const {
     BETTER_AUTH_SECRET,
     BETTER_AUTH_URL,
@@ -18,21 +51,22 @@ function createAuth(c: Context<AppVariables>): AuthInstance {
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
     ENVIRONMENT,
-  } = c.env as Env["Bindings"];
+  } = env;
 
-  const isProduction = ENVIRONMENT === "production";
+  // Default to secure cookies. Only allow insecure for explicit local dev.
+  const useSecureCookies = ENVIRONMENT !== "development";
   const authDb = drizzle(c.env.DB, { schema: authSchema });
 
   return betterAuth({
     database: drizzleAdapter(authDb, { provider: "sqlite" }),
-    secret: BETTER_AUTH_SECRET ?? "",
-    baseURL: BETTER_AUTH_URL ?? "http://localhost:5173",
+    secret: BETTER_AUTH_SECRET,
+    baseURL: BETTER_AUTH_URL,
     advanced: {
-      useSecureCookies: isProduction,
+      useSecureCookies,
       cookiePrefix: "terminal-quiz",
       defaultCookieAttributes: {
         httpOnly: true,
-        secure: isProduction,
+        secure: useSecureCookies,
         sameSite: "lax",
       },
     },
@@ -48,12 +82,12 @@ function createAuth(c: Context<AppVariables>): AuthInstance {
     },
     socialProviders: {
       github: {
-        clientId: GITHUB_CLIENT_ID ?? "",
-        clientSecret: GITHUB_CLIENT_SECRET ?? "",
+        clientId: GITHUB_CLIENT_ID,
+        clientSecret: GITHUB_CLIENT_SECRET,
       },
       google: {
-        clientId: GOOGLE_CLIENT_ID ?? "",
-        clientSecret: GOOGLE_CLIENT_SECRET ?? "",
+        clientId: GOOGLE_CLIENT_ID,
+        clientSecret: GOOGLE_CLIENT_SECRET,
       },
     },
     databaseHooks: {
@@ -65,6 +99,7 @@ function createAuth(c: Context<AppVariables>): AuthInstance {
                 ...account,
                 accessToken: undefined,
                 refreshToken: undefined,
+                idToken: undefined,
               },
             };
           },
