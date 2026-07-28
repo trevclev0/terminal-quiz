@@ -3,6 +3,7 @@ import type { Context } from "hono";
 import { type Mock, vi } from "vitest";
 import type { Env } from "..";
 import type { AppGraphQLContext } from "../graphql/gameplay/types";
+import type { AuthUser } from "../middleware/db";
 
 export function createMockEnv(
   overrides: Partial<Env["Bindings"]> = {},
@@ -34,12 +35,14 @@ export function createMockHonoContext(
 export function createMockGraphQLContext(options?: {
   db?: unknown;
   sessionId?: string;
+  user?: AuthUser;
 }): AppGraphQLContext {
-  const { db, sessionId } = options || {};
+  const { db, sessionId, user } = options || {};
   return {
     get: vi.fn((key: string) => {
       if (key === "db") return db;
       if (key === "sessionId") return sessionId;
+      if (key === "user") return user;
       return undefined;
     }),
   } as unknown as AppGraphQLContext;
