@@ -3,10 +3,18 @@ import { type DrizzleD1Database, drizzle } from "drizzle-orm/d1";
 import type { Context, Next } from "hono";
 import type { Env } from "..";
 
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  image?: string | null;
+}
+
 export type AppVariables = Env & {
   Variables: {
     db: DrizzleD1Database<typeof schema>;
     sessionId?: string;
+    user?: AuthUser;
   };
 };
 
