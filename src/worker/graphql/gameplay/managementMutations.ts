@@ -149,6 +149,10 @@ export const createGate = {
 
     await authorizeProgramMutation(db, args.programId, userId);
 
+    if (args.sequenceOrder < 1) {
+      throw new Error("sequenceOrder must be a positive integer.");
+    }
+
     const existing = await db.query.gates.findFirst({
       where: and(
         eq(gates.programId, args.programId),
@@ -218,20 +222,22 @@ export const updateGate = {
 
     await authorizeProgramMutation(db, gate.programId, userId);
 
-    if (
-      args.sequenceOrder !== undefined &&
-      args.sequenceOrder !== gate.sequenceOrder
-    ) {
-      const collision = await db.query.gates.findFirst({
-        where: and(
-          eq(gates.programId, gate.programId),
-          eq(gates.sequenceOrder, args.sequenceOrder),
-        ),
-      });
-      if (collision) {
-        throw new Error(
-          `Sequence order ${args.sequenceOrder} is already taken for this program.`,
-        );
+    if (args.sequenceOrder !== undefined) {
+      if (args.sequenceOrder < 1) {
+        throw new Error("sequenceOrder must be a positive integer.");
+      }
+      if (args.sequenceOrder !== gate.sequenceOrder) {
+        const collision = await db.query.gates.findFirst({
+          where: and(
+            eq(gates.programId, gate.programId),
+            eq(gates.sequenceOrder, args.sequenceOrder),
+          ),
+        });
+        if (collision) {
+          throw new Error(
+            `Sequence order ${args.sequenceOrder} is already taken for this program.`,
+          );
+        }
       }
     }
 
@@ -318,6 +324,8 @@ export const reorderGates = {
 
     const existingIds = existingGates.map((g) => g.id);
     const submittedIds = args.orderedGateIds;
+
+    if (existingIds.length === 0) return true;
 
     if (existingIds.length !== submittedIds.length) {
       throw new Error(
