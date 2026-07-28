@@ -169,6 +169,12 @@ No structural change — `programs` query already filters correctly server-side 
 - [ ] Test-only auth bypass for CI/preview (§8).
 - **Done when:** you can log in with Google or GitHub locally and in prod, and `me` reflects it. No Program changes yet.
 
+#### Deferred tests (Phase 3)
+- [ ] Unit test: `authMiddleware` bypass logic (mock Hono context).
+- [ ] Unit test: OAuth token stripping hook (adapter-level mock).
+- [ ] Component test: `NavBar` — login/logout states.
+- [ ] Component test: `LoginPage` — social buttons render and fire correct auth calls.
+
 ### Phase 2 — Program ownership & visibility
 - [ ] `author_id` + `visibility` columns on `programs`, migration.
 - [ ] Update `programs` query filter.
