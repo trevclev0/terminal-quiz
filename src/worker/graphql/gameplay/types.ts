@@ -1,6 +1,7 @@
 import type { AppVariables } from "@worker-middleware/db";
 import {
   GraphQLBoolean,
+  GraphQLFloat,
   GraphQLInt,
   GraphQLList,
   GraphQLNonNull,
@@ -28,6 +29,33 @@ export const ProgramListItemType = new GraphQLObjectType({
     name: { type: new GraphQLNonNull(GraphQLString) },
     visibility: { type: new GraphQLNonNull(GraphQLString) },
     authorId: { type: GraphQLString },
+  },
+});
+
+const ProgramManagementType = new GraphQLObjectType({
+  name: "ProgramManagement",
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLString) },
+    name: { type: new GraphQLNonNull(GraphQLString) },
+    visibility: { type: new GraphQLNonNull(GraphQLString) },
+    authorId: { type: GraphQLString },
+    createdAt: { type: new GraphQLNonNull(GraphQLFloat) },
+  },
+});
+
+const GateManagementType = new GraphQLObjectType({
+  name: "GateManagement",
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLString) },
+    programId: { type: new GraphQLNonNull(GraphQLString) },
+    sequenceOrder: { type: new GraphQLNonNull(GraphQLInt) },
+    label: { type: new GraphQLNonNull(GraphQLString) },
+    question: { type: new GraphQLNonNull(GraphQLString) },
+    correctAnswer: { type: new GraphQLNonNull(GraphQLString) },
+    successMessage: { type: new GraphQLNonNull(GraphQLString) },
+    acceptanceThreshold: { type: new GraphQLNonNull(GraphQLFloat) },
+    guidanceEnabled: { type: new GraphQLNonNull(GraphQLBoolean) },
+    guidanceThreshold: { type: new GraphQLNonNull(GraphQLInt) },
   },
 });
 
@@ -84,6 +112,8 @@ const RequestClueResultType = new GraphQLObjectType({
 });
 
 export {
+  GateManagementType,
+  ProgramManagementType,
   ProgressionPayloadType,
   RequestClueResultType,
   SubmitGuessPayloadType,
