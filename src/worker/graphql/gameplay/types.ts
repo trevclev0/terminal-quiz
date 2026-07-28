@@ -39,7 +39,13 @@ const ProgramManagementType = new GraphQLObjectType({
     name: { type: new GraphQLNonNull(GraphQLString) },
     visibility: { type: new GraphQLNonNull(GraphQLString) },
     authorId: { type: GraphQLString },
-    createdAt: { type: new GraphQLNonNull(GraphQLFloat) },
+    createdAt: {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve: (source: Record<string, unknown>) =>
+        source.createdAt instanceof Date
+          ? source.createdAt.toISOString()
+          : String(source.createdAt),
+    },
   },
 });
 

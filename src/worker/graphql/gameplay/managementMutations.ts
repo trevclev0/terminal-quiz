@@ -82,6 +82,10 @@ export const updateProgram = {
     if (args.name !== undefined) updateData.name = args.name;
     if (args.visibility !== undefined) updateData.visibility = args.visibility;
 
+    if (Object.keys(updateData).length === 0) {
+      throw new Error("No fields to update.");
+    }
+
     const [result] = await db
       .update(programs)
       .set(updateData)
@@ -247,6 +251,10 @@ export const updateGate = {
     if (args.guidanceThreshold !== undefined)
       updateData.guidanceThreshold = args.guidanceThreshold;
 
+    if (Object.keys(updateData).length === 0) {
+      throw new Error("No fields to update.");
+    }
+
     const [result] = await db
       .update(gates)
       .set(updateData)
@@ -329,21 +337,23 @@ export const reorderGates = {
       );
     }
 
-    // Two-pass atomic rewrite to avoid unique(programId, sequenceOrder) collisions:
-    // Pass 1: set all sequence_orders to negative temp values
-    // Pass 2: set final sequence_orders
-    for (let i = 0; i < submittedIds.length; i++) {
-      await db
+    // Two-pass atomic rewrite to avoid unique(programId, sequenceOrder) collisions.
+    // Wrapped in a single db.batch() — D1 executes batch in one transaction.
+    const tempUpdates = submittedIds.map((id, index) =>
+      db
         .update(gates)
-        .set({ sequenceOrder: -(i + 1) * 1000 })
-        .where(eq(gates.id, submittedIds[i]));
-    }
-    for (let i = 0; i < submittedIds.length; i++) {
-      await db
+        .set({ sequenceOrder: -(index + 1) * 1000 })
+        .where(eq(gates.id, id)),
+    );
+    const finalUpdates = submittedIds.map((id, index) =>
+      db
         .update(gates)
-        .set({ sequenceOrder: i + 1 })
-        .where(eq(gates.id, submittedIds[i]));
-    }
+        .set({ sequenceOrder: index + 1 })
+        .where(eq(gates.id, id)),
+    );
+    await db.batch([...tempUpdates, ...finalUpdates] as unknown as Parameters<
+      typeof db.batch
+    >[0]);
 
     return true;
   },

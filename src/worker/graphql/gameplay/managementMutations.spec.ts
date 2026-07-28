@@ -209,6 +209,14 @@ describe("updateProgram", () => {
       ),
     ).rejects.toThrow('Invalid visibility "invalid"');
   });
+
+  it("throws when no fields to update", async () => {
+    mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
+
+    await expect(
+      resolveField(updateProgram, null, { id: "prog-1" }, mockContext),
+    ).rejects.toThrow("No fields to update.");
+  });
 });
 
 describe("deleteProgram", () => {
@@ -401,6 +409,51 @@ describe("updateGate", () => {
 
     expect(result.label).toBe("New Label");
   });
+
+  it("throws when gate not found", async () => {
+    mockDb.query.gates.findFirst.mockResolvedValue(null);
+
+    await expect(
+      resolveField(
+        updateGate,
+        null,
+        { id: "missing", label: "Nope" },
+        mockContext,
+      ),
+    ).rejects.toThrow("Gate not found.");
+  });
+
+  it("throws when user does not own the gate's program", async () => {
+    mockDb.query.gates.findFirst.mockResolvedValue({
+      id: "gate-1",
+      programId: "prog-1",
+    });
+    mockDb.query.programs.findFirst.mockResolvedValue({
+      ...OWNED_PROGRAM,
+      authorId: OTHER_USER.id,
+    });
+
+    await expect(
+      resolveField(
+        updateGate,
+        null,
+        { id: "gate-1", label: "Nope" },
+        mockContext,
+      ),
+    ).rejects.toThrow("You do not own this program");
+  });
+
+  it("throws when no fields to update", async () => {
+    mockDb.query.gates.findFirst.mockResolvedValue({
+      id: "gate-1",
+      programId: "prog-1",
+    });
+    mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
+
+    await expect(
+      resolveField(updateGate, null, { id: "gate-1" }, mockContext),
+    ).rejects.toThrow("No fields to update.");
+  });
 });
 
 describe("deleteGate", () => {
@@ -437,6 +490,29 @@ describe("deleteGate", () => {
     expect(result).toBe(true);
     expect(mockDb.delete).toHaveBeenCalled();
   });
+
+  it("throws when gate not found", async () => {
+    mockDb.query.gates.findFirst.mockResolvedValue(null);
+
+    await expect(
+      resolveField(deleteGate, null, { id: "missing" }, mockContext),
+    ).rejects.toThrow("Gate not found.");
+  });
+
+  it("throws when user does not own the gate's program", async () => {
+    mockDb.query.gates.findFirst.mockResolvedValue({
+      id: "gate-1",
+      programId: "prog-1",
+    });
+    mockDb.query.programs.findFirst.mockResolvedValue({
+      ...OWNED_PROGRAM,
+      authorId: OTHER_USER.id,
+    });
+
+    await expect(
+      resolveField(deleteGate, null, { id: "gate-1" }, mockContext),
+    ).rejects.toThrow("You do not own this program");
+  });
 });
 
 describe("reorderGates", () => {
@@ -461,7 +537,7 @@ describe("reorderGates", () => {
     ).rejects.toThrow("Authentication required");
   });
 
-  it("reorders gates with two-pass sequential updates", async () => {
+  it("reorders gates atomically via single db.batch", async () => {
     mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
     const mockOrderBy = vi
       .fn()
@@ -486,8 +562,8 @@ describe("reorderGates", () => {
     );
 
     expect(result).toBe(true);
-    // 6 total update calls: 3 for pass 1 (negative temps) + 3 for pass 2 (final order)
     expect(mockDb.update).toHaveBeenCalledTimes(6);
+    expect(mockDb.batch).toHaveBeenCalledTimes(1);
   });
 
   it("throws on wrong number of gate IDs", async () => {
