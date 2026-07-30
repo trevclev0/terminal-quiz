@@ -14,6 +14,7 @@ import {
   afterAll,
   afterEach,
   beforeAll,
+  beforeEach,
   describe,
   expect,
   it,
@@ -40,15 +41,13 @@ const server = setupServer(
 );
 
 describe("Manage Routes Integration", () => {
-  beforeAll(() => {
-    server.listen({ onUnhandledRequest: "error" });
+  beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+  beforeEach(() => {
     vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
   });
   afterEach(() => server.resetHandlers());
-  afterAll(() => {
-    server.close();
-    vi.restoreAllMocks();
-  });
+  afterAll(() => server.close());
 
   it("renders program list on /programs/manage", async () => {
     const router = createTestRouter("/programs/manage");
