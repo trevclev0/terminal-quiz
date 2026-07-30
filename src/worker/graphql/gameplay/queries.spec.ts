@@ -7,6 +7,7 @@ import {
   getPrograms,
   me,
   myPrograms,
+  programGates,
 } from "./queries";
 import type { AppGraphQLContext } from "./types";
 
@@ -17,6 +18,7 @@ function createMockDb() {
   return {
     query: {
       sessionProgress: { findFirst: vi.fn() },
+      programs: { findFirst: vi.fn() },
       gates: { findFirst: vi.fn(), findMany: vi.fn() },
       sessionCompletedGates: { findMany: vi.fn() },
     },
@@ -484,5 +486,104 @@ describe("me", () => {
     const result = await resolveField(me, null, {}, ctx);
 
     expect(result).toEqual(mockUser);
+  });
+});
+
+describe("programGates", () => {
+  let mockDb: MockDb;
+
+  beforeEach(() => {
+    mockDb = createMockDb();
+  });
+
+  it("throws when unauthenticated", async () => {
+    await expect(
+      resolveField(
+        programGates,
+        null,
+        { programId: "prog-1" },
+        contextWith(mockDb),
+      ),
+    ).rejects.toThrow("Unauthorized: Authentication required.");
+  });
+
+  it("returns gates when authorized", async () => {
+    const user = {
+      id: "user-1",
+      email: "test@example.com",
+      name: "Test",
+    };
+    const ownedProgram = {
+      id: "prog-1",
+      name: "My Program",
+      authorId: "user-1",
+      visibility: "public",
+      createdAt: new Date(),
+    };
+    const gateRows = [
+      {
+        id: "gate-1",
+        programId: "prog-1",
+        sequenceOrder: 1,
+        label: "Gate 1",
+        question: "Question 1",
+        correctAnswer: "answer-1",
+        successMessage: "OK",
+        acceptanceThreshold: 0.875,
+        guidanceEnabled: false,
+        guidanceThreshold: 3,
+      },
+      {
+        id: "gate-2",
+        programId: "prog-1",
+        sequenceOrder: 2,
+        label: "Gate 2",
+        question: "Question 2",
+        correctAnswer: "answer-2",
+        successMessage: "OK",
+        acceptanceThreshold: 0.875,
+        guidanceEnabled: false,
+        guidanceThreshold: 3,
+      },
+    ];
+
+    mockDb.query.programs.findFirst.mockResolvedValue(ownedProgram);
+    mockDb.mockOrderBy.mockResolvedValue(gateRows);
+
+    const result = await resolveField(
+      programGates,
+      null,
+      { programId: "prog-1" },
+      contextWith(mockDb, undefined, user),
+    );
+
+    expect(result).toHaveLength(2);
+    expect(result[0].id).toBe("gate-1");
+    expect(result[1].id).toBe("gate-2");
+    expect(result[0].sequenceOrder).toBe(1);
+  });
+
+  it("orders gates by sequenceOrder", async () => {
+    const user = {
+      id: "user-1",
+      email: "test@example.com",
+      name: "Test",
+    };
+    mockDb.query.programs.findFirst.mockResolvedValue({
+      id: "prog-1",
+      name: "My Program",
+      authorId: "user-1",
+      visibility: "public",
+      createdAt: new Date(),
+    });
+
+    await resolveField(
+      programGates,
+      null,
+      { programId: "prog-1" },
+      contextWith(mockDb, undefined, user),
+    );
+
+    expect(mockDb.mockOrderBy).toHaveBeenCalledOnce();
   });
 });
