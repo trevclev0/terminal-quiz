@@ -55,8 +55,8 @@ describe("LoginPage", () => {
     });
   });
 
-  it("uses default redirect when redirectTo is not provided", async () => {
-    render(<LoginPage redirectTo="/programs/select" />);
+  it("uses default redirect /programs/select when redirectTo omitted", async () => {
+    render(<LoginPage />);
 
     await userEvent.click(
       screen.getByRole("button", { name: /continue with github/i }),

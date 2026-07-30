@@ -1,6 +1,10 @@
 import { authClient } from "@api/authClient";
 
-export default function LoginPage({ redirectTo }: { redirectTo: string }) {
+export default function LoginPage({
+  redirectTo = "/programs/select",
+}: {
+  redirectTo?: string;
+}) {
   return (
     <div
       style={{
