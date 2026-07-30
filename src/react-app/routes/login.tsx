@@ -42,7 +42,7 @@ export const Route = createFileRoute("/login")({
   validateSearch: validateLoginSearch,
   component: () => {
     const { return_to } = Route.useSearch();
-    return <LoginPage redirectTo={return_to ?? "/programs/select"} />;
+    return <LoginPage redirectTo={return_to} />;
   },
   ssr: false,
 });
