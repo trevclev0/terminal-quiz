@@ -34,6 +34,9 @@ export default function NavBar() {
             <Link to="/programs/select" style={linkStyle}>
               Programs
             </Link>
+            <Link to="/programs/manage" style={linkStyle}>
+              My Programs
+            </Link>
             <button
               type="button"
               onClick={() => authClient.signOut()}
