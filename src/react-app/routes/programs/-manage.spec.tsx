@@ -1,0 +1,94 @@
+import {
+  createTestRouter,
+  handlers,
+  mockGateManagement,
+  mockMe,
+  mockMyPrograms,
+  renderWithRouter,
+} from "@test-utils";
+import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { graphql, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+
+const server = setupServer(
+  graphql.query("Me", () => HttpResponse.json({ data: { me: mockMe() } })),
+  graphql.query("MyPrograms", () =>
+    HttpResponse.json({ data: { myPrograms: mockMyPrograms() } }),
+  ),
+  graphql.query("ProgramGates", () =>
+    HttpResponse.json({
+      data: {
+        programGates: [mockGateManagement()],
+      },
+    }),
+  ),
+  ...handlers,
+);
+
+describe("Manage Routes Integration", () => {
+  beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+  afterEach(() => server.resetHandlers());
+  afterAll(() => server.close());
+
+  it("renders program list on /programs/manage", async () => {
+    const router = createTestRouter("/programs/manage");
+    renderWithRouter(router);
+
+    await waitFor(() =>
+      expect(screen.getByText("My First Program")).toBeInTheDocument(),
+    );
+
+    expect(screen.getByText("Create Program")).toBeInTheDocument();
+  });
+
+  it("renders gate editor on /programs/manage/$programId", async () => {
+    const router = createTestRouter("/programs/manage/program-1");
+    renderWithRouter(router);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Edit:/)).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Program Settings")).toBeInTheDocument();
+    expect(screen.getByText(/Gates \(1\)/)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Gate A")).toBeInTheDocument();
+    });
+  });
+
+  it("navigates from list to editor and shows gates", async () => {
+    const router = createTestRouter("/programs/manage");
+    renderWithRouter(router);
+
+    await waitFor(() =>
+      expect(screen.getByText("My First Program")).toBeInTheDocument(),
+    );
+
+    await userEvent.click(screen.getByText("My First Program"));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Edit:/)).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Gate A")).toBeInTheDocument();
+    });
+  });
+
+  it("shows empty state when program has no gates", async () => {
+    server.use(
+      graphql.query("ProgramGates", () =>
+        HttpResponse.json({ data: { programGates: [] } }),
+      ),
+    );
+
+    const router = createTestRouter("/programs/manage/program-1");
+    renderWithRouter(router);
+
+    expect(
+      await screen.findByText("No gates yet. Add one below."),
+    ).toBeInTheDocument();
+  });
+});
