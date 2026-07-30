@@ -75,6 +75,23 @@ export const GET_IN_PROGRESS_PROGRAM_QUERY = `
   }
 `;
 
+export const PROGRAM_GATES_QUERY = `
+  query ProgramGates($programId: String!) {
+    programGates(programId: $programId) {
+      id
+      programId
+      sequenceOrder
+      label
+      question
+      correctAnswer
+      successMessage
+      acceptanceThreshold
+      guidanceEnabled
+      guidanceThreshold
+    }
+  }
+`;
+
 export const MY_PROGRAMS_QUERY = `
   query MyPrograms {
     myPrograms {
