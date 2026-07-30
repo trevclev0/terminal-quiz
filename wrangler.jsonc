@@ -63,8 +63,7 @@
         "ENVIRONMENT": "preview",
         "BETTER_AUTH_SECRET": "preview-placeholder-not-for-production",
         "BETTER_AUTH_URL": "https://quiz.clevertrevor.dev",
-        "AUTH_TEST_BYPASS_ENABLED": "true",
-        "AUTH_TEST_BYPASS_SECRET": "e2e-test-secret"
+        "AUTH_TEST_BYPASS_ENABLED": "true"
       }
     }
   }
