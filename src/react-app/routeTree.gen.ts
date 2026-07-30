@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from "./routes/__root"
 import { Route as IndexRouteImport } from "./routes/index"
 import { Route as LoginRouteImport } from "./routes/login"
 import { Route as ProgramsProgramIdRouteImport } from "./routes/programs/$programId"
+import { Route as ProgramsManageRouteImport } from "./routes/programs/manage"
 import { Route as ProgramsSelectRouteImport } from "./routes/programs/select"
+import { Route as ProgramsManageProgramIdRouteImport } from "./routes/programs/manage_.$programId"
 
 const IndexRoute = IndexRouteImport.update({
   id: "/",
@@ -29,9 +31,19 @@ const ProgramsProgramIdRoute = ProgramsProgramIdRouteImport.update({
   path: "/programs/$programId",
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProgramsManageRoute = ProgramsManageRouteImport.update({
+  id: "/programs/manage",
+  path: "/programs/manage",
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProgramsSelectRoute = ProgramsSelectRouteImport.update({
   id: "/programs/select",
   path: "/programs/select",
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProgramsManageProgramIdRoute = ProgramsManageProgramIdRouteImport.update({
+  id: "/programs/manage_/$programId",
+  path: "/programs/manage/$programId",
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -39,34 +51,61 @@ export interface FileRoutesByFullPath {
   "/": typeof IndexRoute
   "/login": typeof LoginRoute
   "/programs/$programId": typeof ProgramsProgramIdRoute
+  "/programs/manage": typeof ProgramsManageRoute
   "/programs/select": typeof ProgramsSelectRoute
+  "/programs/manage/$programId": typeof ProgramsManageProgramIdRoute
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute
   "/login": typeof LoginRoute
   "/programs/$programId": typeof ProgramsProgramIdRoute
+  "/programs/manage": typeof ProgramsManageRoute
   "/programs/select": typeof ProgramsSelectRoute
+  "/programs/manage/$programId": typeof ProgramsManageProgramIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   "/": typeof IndexRoute
   "/login": typeof LoginRoute
   "/programs/$programId": typeof ProgramsProgramIdRoute
+  "/programs/manage": typeof ProgramsManageRoute
   "/programs/select": typeof ProgramsSelectRoute
+  "/programs/manage_/$programId": typeof ProgramsManageProgramIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/" | "/login" | "/programs/$programId" | "/programs/select"
+  fullPaths:
+    | "/"
+    | "/login"
+    | "/programs/$programId"
+    | "/programs/manage"
+    | "/programs/select"
+    | "/programs/manage/$programId"
   fileRoutesByTo: FileRoutesByTo
-  to: "/" | "/login" | "/programs/$programId" | "/programs/select"
-  id: "__root__" | "/" | "/login" | "/programs/$programId" | "/programs/select"
+  to:
+    | "/"
+    | "/login"
+    | "/programs/$programId"
+    | "/programs/manage"
+    | "/programs/select"
+    | "/programs/manage/$programId"
+  id:
+    | "__root__"
+    | "/"
+    | "/login"
+    | "/programs/$programId"
+    | "/programs/manage"
+    | "/programs/select"
+    | "/programs/manage_/$programId"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   ProgramsProgramIdRoute: typeof ProgramsProgramIdRoute
+  ProgramsManageRoute: typeof ProgramsManageRoute
   ProgramsSelectRoute: typeof ProgramsSelectRoute
+  ProgramsManageProgramIdRoute: typeof ProgramsManageProgramIdRoute
 }
 
 declare module "@tanstack/react-router" {
@@ -92,11 +131,25 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof ProgramsProgramIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    "/programs/manage": {
+      id: "/programs/manage"
+      path: "/programs/manage"
+      fullPath: "/programs/manage"
+      preLoaderRoute: typeof ProgramsManageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     "/programs/select": {
       id: "/programs/select"
       path: "/programs/select"
       fullPath: "/programs/select"
       preLoaderRoute: typeof ProgramsSelectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    "/programs/manage_/$programId": {
+      id: "/programs/manage_/$programId"
+      path: "/programs/manage/$programId"
+      fullPath: "/programs/manage/$programId"
+      preLoaderRoute: typeof ProgramsManageProgramIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -106,7 +159,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   ProgramsProgramIdRoute: ProgramsProgramIdRoute,
+  ProgramsManageRoute: ProgramsManageRoute,
   ProgramsSelectRoute: ProgramsSelectRoute,
+  ProgramsManageProgramIdRoute: ProgramsManageProgramIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
