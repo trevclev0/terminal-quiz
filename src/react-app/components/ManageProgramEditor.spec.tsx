@@ -289,4 +289,53 @@ describe("ManageProgramEditor", () => {
     render(<ManageProgramEditor programId={PROGRAM_ID} />);
     expect(screen.getByText("Program not found.")).toBeInTheDocument();
   });
+
+  it("shows error when program metadata save fails", () => {
+    setupMocks({
+      updateProgram: { isError: true, error: new Error("Save failed") },
+    });
+
+    render(<ManageProgramEditor programId={PROGRAM_ID} />);
+    expect(screen.getByText("Failed to save: Save failed")).toBeInTheDocument();
+  });
+
+  it("shows error when reorder fails", () => {
+    setupMocks({
+      reorderGates: { isError: true, error: new Error("Reorder failed") },
+    });
+
+    render(<ManageProgramEditor programId={PROGRAM_ID} />);
+    expect(
+      screen.getByText("Failed to reorder: Reorder failed"),
+    ).toBeInTheDocument();
+  });
+
+  it("shows error when gate update fails", () => {
+    setupMocks({
+      updateGate: { isError: true, error: new Error("Update failed") },
+    });
+
+    render(<ManageProgramEditor programId={PROGRAM_ID} />);
+    expect(screen.getAllByText(/Failed to save/).length).toBeGreaterThan(0);
+  });
+
+  it("shows error when gate delete fails", () => {
+    setupMocks({
+      deleteGate: { isError: true, error: new Error("Delete failed") },
+    });
+
+    render(<ManageProgramEditor programId={PROGRAM_ID} />);
+    expect(screen.getAllByText(/Failed to delete/).length).toBeGreaterThan(0);
+  });
+
+  it("shows error when gate creation fails", () => {
+    setupMocks({
+      createGate: { isError: true, error: new Error("Create failed") },
+    });
+
+    render(<ManageProgramEditor programId={PROGRAM_ID} />);
+    expect(
+      screen.getByText("Failed to add: Create failed"),
+    ).toBeInTheDocument();
+  });
 });

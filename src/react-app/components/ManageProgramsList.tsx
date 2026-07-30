@@ -13,6 +13,7 @@ export default function ManageProgramsList() {
 
   const [newName, setNewName] = useState("");
   const [newVisibility, setNewVisibility] = useState("public");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +30,18 @@ export default function ManageProgramsList() {
       });
     } catch {
       // Error handled via createMutation.error below
+    }
+  };
+
+  const handleCopyLink = async (id: string) => {
+    try {
+      await navigator.clipboard.writeText(
+        `${window.location.origin}/programs/${id}`,
+      );
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      // Clipboard unavailable in non-secure context
     }
   };
 
@@ -91,7 +104,10 @@ export default function ManageProgramsList() {
       )}
 
       {programs && programs.length === 0 ? (
-        <p className={styles.empty}>No programs yet. Create one above.</p>
+        <p className={styles.empty}>
+          No programs yet. Type a name above, choose visibility, and click
+          Create Program to begin.
+        </p>
       ) : (
         <div className={styles.list}>
           {programs?.map((program) => (
@@ -112,6 +128,15 @@ export default function ManageProgramsList() {
               >
                 {program.visibility}
               </span>
+              {program.visibility === "unlisted" && (
+                <button
+                  type="button"
+                  onClick={() => handleCopyLink(program.id)}
+                  className={styles.copyLinkButton}
+                >
+                  {copiedId === program.id ? "Copied!" : "Copy Link"}
+                </button>
+              )}
               <Link
                 to="/programs/manage/$programId"
                 params={{ programId: program.id }}

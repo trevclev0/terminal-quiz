@@ -8,6 +8,8 @@ Live deployment: `https://quiz.clevertrevor.dev`
 
 There is a **single, server-authoritative gameplay flow**: a session ID is generated client-side (`utils/session.ts`), persisted in `localStorage`, and sent as an `x-session-id` header on every GraphQL request. The server tracks per-session progression (current gate, completed gates, attempt count) in the `session_progress` / `session_completed_gates` tables. All gameplay mutations — `submitGuess`, `requestClue`, `resetSession` — are resolved server-side and validated against that session's row. There is no client-only or REST-based flow.
 
+**User authentication** (Better Auth, OAuth-only: Google + GitHub) is layered on top for content authorship only — gameplay stays anonymous. Auth middleware sets `user` in Hono context; route guards (`requireUser` in `-requireUser.ts`) protect management routes. Two identity systems coexist: `x-session-id` for gameplay, Better Auth session cookie for authorship. Management mutations (`createProgram`, `updateProgram`, `deleteProgram`, `createGate`, `updateGate`, `deleteGate`, `reorderGates`) are auth-guarded via `authorizeProgramMutation()` which verifies `program.authorId === userId`.
+
 ---
 
 ## Stack
@@ -44,7 +46,8 @@ cp .env.example .env
 # Set DRIZZLE_DATABASE_URL to the local .wrangler SQLite file path
 
 cp .dev.vars.example .dev.vars
-# Set CLOUDFLARE_API_TOKEN (needed for local Workers AI calls) and ENVIRONMENT
+# Set CLOUDFLARE_API_TOKEN (needed for local Workers AI calls), ENVIRONMENT,
+# BETTER_AUTH_SECRET, BETTER_AUTH_URL, and OAuth client IDs/secrets
 
 bun run dev
 
@@ -109,28 +112,37 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 │   │   │   ├── graphQlClient.ts             # generic GraphQL fetch helper (adds x-session-id)
 │   │   │   ├── queryClient.ts               # TanStack QueryClient setup
 │   │   │   ├── queryKeys.ts
-│   │   │   ├── queries/                     # useProgramsQuery, useProgramProgressionQuery,
-│   │   │   │                                # useInProgressProgramQuery
-│   │   │   └── mutations/                   # useSubmitGuessMutation, useRequestClueMutation
+│   │   │   ├── queries/                     # useProgramsQuery, useProgramQuery,
+│   │   │   │                                # useProgramProgressionQuery,
+│   │   │   │                                # useInProgressProgramQuery,
+│   │   │   │                                # useMyProgramsQuery, useProgramGatesQuery
+│   │   │   └── mutations/                   # useSubmitGuessMutation, useRequestClueMutation,
+│   │   │                                    # useCreateProgramMutation, etc.
 │   │   ├── components/       # ActiveGate, CompletedGate, ErrorBoundary, ProgramPlay,
-│   │   │                     # ProgramSelector, RouteErrorFallback, TerminalConfirmModal
+│   │   │                     # ProgramSelector, RouteErrorFallback, TerminalConfirmModal,
+│   │   │                     # ManageProgramsList, ManageProgramEditor, NavBar, LoginPage
 │   │   ├── hooks/             # useProgramPlay, usePrograms, useProgressionScroll,
 │   │   │                     # useResetSession, useShake
-│   │   ├── routes/            # TanStack file-based routes: __root, index ("/"),
-│   │   │                     # programs/select, programs/$programId
+│   │   ├── routes/            # TanStack file-based routes: __root, index, login,
+│   │   │                     # programs/select, programs/$programId,
+│   │   │                     # programs/manage, programs/manage/$programId
 │   │   ├── test-utils/        # setupTests, queryTestUtils, reactRouterUtils, cssModuleMock, msw/
 │   │   └── main.tsx           # bootstrap: ErrorBoundary + QueryClientProvider + RouterProvider
 │   ├── shared/
 │   │   ├── schema.ts          # Drizzle schema — single source of truth for DB + types
+│   │   ├── authSchema.ts      # Better Auth tables (user, account, session, verification)
 │   │   ├── types.ts           # Program, Gate, and related types (inferred from schema)
 │   │   └── gqlQueries.ts      # Canonical GraphQL query/mutation strings, shared with integration tests
 │   └── worker/
-│       ├── index.ts                # Hono entry, mounts /api/graphql
-│       ├── middleware/             # db (Drizzle setup), logger, session (reads x-session-id)
+│       ├── index.ts                # Hono entry, mounts /api/auth/* + /api/graphql
+│       ├── middleware/             # db (Drizzle setup), logger, session (reads x-session-id),
+│       │                          # auth (Better Auth session resolution)
 │       ├── routes/                 # graphql.ts — builds and serves the GraphQL schema
 │       ├── graphql/gameplay/       # queries.ts, mutations.ts, clueEligibility.ts, types.ts,
+│       │                          # authorizeProgram.ts, managementMutations.ts,
 │       │                          # plus *.integration.spec.ts files (real D1 via cloudflare:test)
-│       ├── services/                # aiService.ts — Workers AI clue generation
+│       ├── services/                # aiService.ts — Workers AI clue generation,
+│       │                           # auth.ts — Better Auth lifecycle (create, get, clear, validate)
 │       ├── utils/                   # isGuessCloseEnough.ts, errorHandler.ts
 │       └── test-utils/              # mockEnv.ts (unit-test mocks), setupDb.ts + gqlRequest.ts (integration helpers)
 ├── biome.json
@@ -250,6 +262,20 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 
 ---
 
+## Auth & Authoring
+
+- **Authentication**: Better Auth, OAuth-only (Google + GitHub), self-hosted on the same Worker. Mounted at `/api/auth/*`. No passwords in MVP. Auth tables (`user`, `account`, `session`, `verification`) live in `src/shared/authSchema.ts` — separate Drizzle instance, never exposed via GraphQL.
+- **Auth middleware** (`src/worker/middleware/auth.ts`): resolves Better Auth session cookie, sets `user` in Hono context. Parallel to `sessionMiddleware` (anonymous gameplay identity) — two identity systems, decoupled.
+- **Route guard** (`src/react-app/routes/programs/-requireUser.ts`): `requireUser(queryClient, returnTo)` — fetches `me` query, throws TanStack Router `redirect` to `/login?return_to=...` if unauthenticated. Used by `/programs/manage` and `/programs/manage/$programId` routes.
+- **Server-side authorization** (`src/worker/graphql/gameplay/authorizeProgram.ts`): `authorizeProgramMutation(db, programId, userId)` — fetches program, verifies `authorId === userId`, throws on null/mismatch. Used by all 7 management mutations.
+- **Management mutations** (in `src/worker/graphql/gameplay/managementMutations.ts`): `createProgram`, `updateProgram`, `deleteProgram`, `createGate`, `updateGate`, `deleteGate`, `reorderGates`. All auth-guarded, input-validated.
+- **Program visibility**: `public` (listed for everyone) or `unlisted` (not listed, playable by direct link). Managed via `visibility` column on `programs` table. Copy-link affordance in management UI.
+- **`program(id)` query**: returns a program by ID without auth check — unlisted programs are playable via direct link (security-through-obscurity, same model as unlisted YouTube videos). No ACL; add one via backlogged join table if needed later.
+- **Login redirect safety** (`src/react-app/routes/login.tsx`): `validateReturnTo()` parses URL, rejects cross-origin, protocol-relative, and backslash-based variants. `isAllowedPath()` checks against allowlist. Falls back to `/programs/select` on invalid input.
+- **Auth test bypass**: `AUTH_TEST_BYPASS_ENABLED` flag + `AUTH_TEST_BYPASS_SECRET` for CI/preview E2E. Fail-closed — not enabled based on `ENVIRONMENT !== "production"`. Uses build-time conditional where possible.
+
+---
+
 ## Key Domain Concepts
 
 - **Program** — a named collection of gates a player works through in sequence
@@ -274,3 +300,7 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - Do not weaken the `currentGateId` check in `submitGuess` — it's what makes session-scoped guess submission safe against a session guessing gates out of order
 - Do not introduce a REST or client-only gameplay path — GraphQL is the single source of truth for progression
 - Do not reintroduce a shared/global `game_state`-style table — progression is session-scoped only
+- Do not expose Better Auth tables through the auto-GraphQL schema — keep `authSchema.ts` on its own Drizzle instance, never passed to `buildSchema()`
+- Do not weaken `authorizeProgramMutation()` — every management mutation must re-verify `authorId` server-side, never trust client-supplied program/gate IDs without ownership check
+- Do not introduce REST endpoints for authoring — management mutations are GraphQL only, same as gameplay
+- Do not allow open redirects in `/login` — `validateReturnTo()` must reject cross-origin, protocol-relative, and backslash-based return_to values

@@ -10,7 +10,19 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { graphql, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+
+vi.mock("@components/LoginPage", () => ({
+  default: () => <div>Login Page Mock</div>,
+}));
 
 const server = setupServer(
   graphql.query("Me", () => HttpResponse.json({ data: { me: mockMe() } })),
@@ -28,9 +40,15 @@ const server = setupServer(
 );
 
 describe("Manage Routes Integration", () => {
-  beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+  beforeAll(() => {
+    server.listen({ onUnhandledRequest: "error" });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
   afterEach(() => server.resetHandlers());
-  afterAll(() => server.close());
+  afterAll(() => {
+    server.close();
+    vi.restoreAllMocks();
+  });
 
   it("renders program list on /programs/manage", async () => {
     const router = createTestRouter("/programs/manage");
@@ -87,8 +105,60 @@ describe("Manage Routes Integration", () => {
     const router = createTestRouter("/programs/manage/program-1");
     renderWithRouter(router);
 
-    expect(
-      await screen.findByText("No gates yet. Add one below."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/No gates yet/)).toBeInTheDocument();
+  });
+
+  it("redirects to login when not authenticated", async () => {
+    server.use(
+      graphql.query("Me", () => HttpResponse.json({ data: { me: null } })),
+    );
+
+    const router = createTestRouter("/programs/manage");
+    renderWithRouter(router);
+
+    await waitFor(() => {
+      expect(screen.getByText("Login Page Mock")).toBeInTheDocument();
+    });
+
+    expect(router.state.location.pathname).toBe("/login");
+    expect(router.state.location.search).toEqual({
+      return_to: "/programs/manage",
+    });
+  });
+
+  it("redirects to login with correct return_to for editor route", async () => {
+    server.use(
+      graphql.query("Me", () => HttpResponse.json({ data: { me: null } })),
+    );
+
+    const router = createTestRouter("/programs/manage/program-1");
+    renderWithRouter(router);
+
+    await waitFor(() => {
+      expect(screen.getByText("Login Page Mock")).toBeInTheDocument();
+    });
+
+    expect(router.state.location.pathname).toBe("/login");
+    expect(router.state.location.search).toEqual({
+      return_to: "/programs/manage/program-1",
+    });
+  });
+
+  it("shows error state when myPrograms query fails", async () => {
+    server.use(
+      graphql.query("MyPrograms", () =>
+        HttpResponse.json(
+          { errors: [{ message: "Server error" }] },
+          { status: 500 },
+        ),
+      ),
+    );
+
+    const router = createTestRouter("/programs/manage");
+    renderWithRouter(router);
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed to load programs.")).toBeInTheDocument();
+    });
   });
 });

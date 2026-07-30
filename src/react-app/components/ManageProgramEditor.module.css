@@ -84,6 +84,12 @@
   padding: 0.375rem 1rem;
 }
 
+.copyLinkButton {
+  padding: 0.375rem 1rem;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .gateList {
   display: flex;
   flex-direction: column;

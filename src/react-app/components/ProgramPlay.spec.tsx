@@ -41,6 +41,10 @@ vi.mock("@components/CompletedGate", () => ({
   default: vi.fn(() => null),
 }));
 
+vi.mock("@api/queries/useProgramQuery", () => ({
+  useProgramQuery: vi.fn(),
+}));
+
 const mockMutateAsync = vi.fn().mockResolvedValue(true);
 const mockResetSessionMutation = {
   mutateAsync: mockMutateAsync,
@@ -52,6 +56,7 @@ const mockResetSessionMutation = {
   unknown
 >;
 
+import { useProgramQuery } from "@api/queries/useProgramQuery";
 import ActiveGate from "@components/ActiveGate";
 import CompletedGate from "@components/CompletedGate";
 import useProgramPlay from "@hooks/useProgramPlay";
@@ -127,6 +132,31 @@ describe("ProgramPlay Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useProgramPlay).mockReturnValue(mockUseProgramPlay);
+    vi.mocked(useProgramQuery).mockReturnValue({
+      data: { id: "test-program-id", name: "Test Program" },
+      isLoading: false,
+      isFetching: false,
+      isError: false,
+      error: null,
+      dataUpdatedAt: 0,
+      errorUpdatedAt: 0,
+      failureCount: 0,
+      failureReason: null,
+      errorUpdateCount: 0,
+      isFetched: true,
+      isFetchedAfterMount: true,
+      isLoadingError: false,
+      isPaused: false,
+      isPending: false,
+      isPlaceholderData: false,
+      isRefetchError: false,
+      isRefetching: false,
+      isStale: false,
+      isSuccess: true,
+      status: "success",
+      refetch: vi.fn(),
+      promise: Promise.resolve({ id: "test-program-id", name: "Test Program" }),
+    } as unknown as ReturnType<typeof useProgramQuery>);
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -253,6 +283,32 @@ describe("ProgramPlay Component", () => {
   });
 
   it("falls back to programId when name not found in cache", async () => {
+    vi.mocked(useProgramQuery).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isFetching: false,
+      isError: false,
+      error: null,
+      dataUpdatedAt: 0,
+      errorUpdatedAt: 0,
+      failureCount: 0,
+      failureReason: null,
+      errorUpdateCount: 0,
+      isFetched: true,
+      isFetchedAfterMount: true,
+      isLoadingError: false,
+      isPaused: false,
+      isPending: false,
+      isPlaceholderData: false,
+      isRefetchError: false,
+      isRefetching: false,
+      isStale: false,
+      isSuccess: true,
+      status: "success",
+      refetch: vi.fn(),
+      promise: Promise.resolve(undefined),
+    } as unknown as ReturnType<typeof useProgramQuery>);
+
     const { queryClient, wrapper } = createQueryWrapper();
 
     queryClient.setQueryData(["programs"], []);

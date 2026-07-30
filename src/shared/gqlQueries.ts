@@ -75,6 +75,15 @@ export const GET_IN_PROGRESS_PROGRAM_QUERY = `
   }
 `;
 
+export const PROGRAM_QUERY = `
+  query Program($id: String!) {
+    program(id: $id) {
+      id
+      name
+    }
+  }
+`;
+
 export const PROGRAM_GATES_QUERY = `
   query ProgramGates($programId: String!) {
     programGates(programId: $programId) {

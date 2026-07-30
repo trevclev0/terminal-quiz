@@ -23,6 +23,9 @@ const server = setupServer(
   graphql.query("GetPrograms", () =>
     HttpResponse.json({ data: { programs: [mockProgram()] } }),
   ),
+  graphql.query("Program", () =>
+    HttpResponse.json({ data: { program: mockProgram() } }),
+  ),
   ...handlers,
 );
 

@@ -72,9 +72,7 @@ describe("ManageProgramsList", () => {
       error: null,
     });
     render(<ManageProgramsList />);
-    expect(
-      screen.getByText("No programs yet. Create one above."),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/No programs yet/)).toBeInTheDocument();
   });
 
   it("shows loading state", () => {
@@ -136,5 +134,52 @@ describe("ManageProgramsList", () => {
     await userEvent.click(deleteButtons[0]);
 
     expect(mockDeleteMutate).toHaveBeenCalledWith({ id: "prog-1" });
+  });
+
+  it("does not call delete mutation when confirm is cancelled", async () => {
+    vi.stubGlobal(
+      "confirm",
+      vi.fn(() => false),
+    );
+
+    render(<ManageProgramsList />);
+
+    const deleteButtons = screen.getAllByText("Delete");
+    await userEvent.click(deleteButtons[0]);
+
+    expect(mockDeleteMutate).not.toHaveBeenCalled();
+  });
+
+  it("shows error when create mutation fails", () => {
+    (useCreateProgramMutation as Mock).mockReturnValue({
+      mutateAsync: mockCreateMutateAsync,
+      isError: true,
+      isPending: false,
+      error: new Error("Create error"),
+    });
+
+    render(<ManageProgramsList />);
+    expect(
+      screen.getByText("Failed to create: Create error"),
+    ).toBeInTheDocument();
+  });
+
+  it("shows error when delete mutation fails", () => {
+    (useDeleteProgramMutation as Mock).mockReturnValue({
+      mutate: mockDeleteMutate,
+      isError: true,
+      isPending: false,
+      error: new Error("Delete error"),
+    });
+
+    render(<ManageProgramsList />);
+    expect(
+      screen.getByText("Failed to delete: Delete error"),
+    ).toBeInTheDocument();
+  });
+
+  it("renders copy link button for unlisted but not public programs", () => {
+    render(<ManageProgramsList />);
+    expect(screen.getAllByText("Copy Link")).toHaveLength(1);
   });
 });

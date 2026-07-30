@@ -32,6 +32,17 @@
 - Validate all inputs at the Hono/resolver layer before touching D1.
 - Any resolver that mutates session-scoped state must re-check that the request's session owns the row it's mutating (see `submitGuess`'s `currentGateId` check) before applying the change.
 
+## Auth & Authoring
+
+- Two identity systems coexist: `x-session-id` for anonymous gameplay, Better Auth session cookie for authorship. Auth is additive to gameplay, never a dependency.
+- **Route guards**: Use `requireUser(queryClient, returnTo)` from `-requireUser.ts` for any route that needs authentication. Throws TanStack Router `redirect` to `/login?return_to=...` if unauthenticated.
+- **Server-side auth**: Every management mutation must call `authorizeProgramMutation(db, programId, userId)` to verify program ownership before mutating. Never trust client-supplied IDs without this check.
+- **Program visibility**: `public` programs appear in the global list. `unlisted` programs are accessible only via direct link (`program(id)` resolver). No ACL table — visibility is a simple column check, not a permissions system.
+- **Login redirect safety**: `validateReturnTo()` must reject cross-origin, protocol-relative (`//evil.com`), and backslash-based return_to values. Only same-origin relative paths matching `ALLOWED_REDIRECT_PATHS` or `ALLOWED_REDIRECT_PREFIXES` are accepted.
+- **Management routes**: `/programs/manage` (list + create) and `/programs/manage/$programId` (edit gates) are guarded by `requireUser`. Do not add REST endpoints for authoring — management is GraphQL only, same as gameplay.
+- **Auth schema isolation**: Better Auth tables (`user`, `account`, `session`, `verification`) live in `src/shared/authSchema.ts` on a separate Drizzle instance. Never pass this instance to `drizzle-graphql`'s `buildSchema()` — it must never be introspectable via GraphQL.
+- **Test auth bypass**: Use `AUTH_TEST_BYPASS_ENABLED` + `AUTH_TEST_BYPASS_SECRET` for E2E tests. Fail-closed — never enable based on `ENVIRONMENT !== "production"` alone.
+
 ## Code style
 
 - Prefer early returns over nested conditionals.

@@ -19,6 +19,7 @@ import {
   getPrograms,
   me,
   myPrograms,
+  program,
   programGates,
 } from "@worker-graphql/gameplay/queries";
 import type { AppVariables } from "@worker-middleware/db";
@@ -55,6 +56,7 @@ const graphQlRouter = new Hono<AppVariables>().use("*", async (c, next) => {
           fields: {
             me,
             myPrograms,
+            program,
             programs: getPrograms,
             programGates,
             getProgramProgression,
