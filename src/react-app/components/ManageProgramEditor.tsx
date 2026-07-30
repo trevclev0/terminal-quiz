@@ -46,6 +46,7 @@ export default function ManageProgramEditor({
   const [programVisibility, setProgramVisibility] = useState("public");
 
   const [gateDrafts, setGateDrafts] = useState<Record<string, GateForm>>({});
+  const [copied, setCopied] = useState(false);
   const [newGate, setNewGate] = useState<NewGateForm>({
     label: "",
     question: "",
@@ -126,6 +127,18 @@ export default function ManageProgramEditor({
     });
   };
 
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(
+        `${window.location.origin}/programs/${programId}`,
+      );
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard unavailable in non-secure context
+    }
+  };
+
   const handleAddGate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newGate.label.trim()) return;
@@ -203,6 +216,15 @@ export default function ManageProgramEditor({
           >
             {updateProgram.isPending ? "Saving..." : "Save"}
           </button>
+          {programVisibility === "unlisted" && (
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className={styles.copyLinkButton}
+            >
+              {copied ? "Copied!" : "Copy Link"}
+            </button>
+          )}
         </div>
         {updateProgram.isError && (
           <p className={styles.errorText}>
@@ -216,7 +238,10 @@ export default function ManageProgramEditor({
         <h2 className={styles.sectionTitle}>Gates ({gates?.length ?? 0})</h2>
 
         {(!gates || gates.length === 0) && (
-          <p className={styles.empty}>No gates yet. Add one below.</p>
+          <p className={styles.empty}>
+            No gates yet. Fill out the Add Gate form below to create your first
+            riddle.
+          </p>
         )}
 
         {reorderGates.isError && (

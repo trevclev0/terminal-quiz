@@ -25,6 +25,11 @@ const getSessionHandler = http.get("/api/auth/get-session", () =>
 
 const server = setupServer(
   getSessionHandler,
+  graphql.query("Program", () =>
+    HttpResponse.json({
+      data: { program: { id: "1", name: "Program 1" } },
+    }),
+  ),
   graphql.query("GetProgramProgression", () =>
     HttpResponse.json({ data: { getProgramProgression: progressionData } }),
   ),

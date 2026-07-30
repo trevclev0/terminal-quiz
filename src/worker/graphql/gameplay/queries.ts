@@ -180,6 +180,26 @@ export const myPrograms = {
   },
 };
 
+export const program = {
+  type: ProgramListItemType,
+  args: {
+    id: { type: new GraphQLNonNull(GraphQLString) },
+  },
+  resolve: async (
+    _: unknown,
+    args: { id: string },
+    context: AppGraphQLContext,
+  ) => {
+    const db = context.get("db");
+    const result = await db
+      .select()
+      .from(programs)
+      .where(eq(programs.id, args.id))
+      .limit(1);
+    return result[0] ?? null;
+  },
+};
+
 export const programGates = {
   type: new GraphQLNonNull(
     new GraphQLList(new GraphQLNonNull(GateManagementType)),

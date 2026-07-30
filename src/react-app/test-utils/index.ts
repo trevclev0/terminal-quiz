@@ -13,6 +13,7 @@ export {
 } from "./msw/fixtures";
 export {
   getInProgressProgramHandler,
+  getProgramHandler,
   getProgramProgressionHandler,
   getProgramsHandler,
   handlers,

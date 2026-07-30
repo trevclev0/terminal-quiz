@@ -1,5 +1,5 @@
 import { programProgressionQueryOptions } from "@api/queries/useProgramProgressionQuery";
-import { programsQueryOptions } from "@api/queries/useProgramsQuery";
+import { useProgramQuery } from "@api/queries/useProgramQuery";
 import ActiveGate from "@components/ActiveGate";
 import CompletedGate from "@components/CompletedGate";
 import TerminalConfirmModal from "@components/TerminalConfirmModal";
@@ -19,7 +19,7 @@ function ProgramPlay() {
     programProgressionQueryOptions(programId),
   );
 
-  const { data: programsData } = useQuery(programsQueryOptions);
+  const { data: program } = useProgramQuery(programId);
 
   const currentGate = progression?.currentGate ?? null;
   const completedGates = progression?.completedGates ?? [];
@@ -48,8 +48,6 @@ function ProgramPlay() {
   const inputRef = useRef<HTMLInputElement>(null);
   const selectNewProgramRef = useRef<HTMLButtonElement>(null);
 
-  // Look up program name from cached programs list
-  const program = programsData?.find((p) => p.id === programId);
   const programName = program?.name ?? programId;
 
   // Calculate next gate index for scrolling

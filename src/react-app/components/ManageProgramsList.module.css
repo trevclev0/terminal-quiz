@@ -84,6 +84,13 @@
   font-size: 0.85em;
 }
 
+.copyLinkButton {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85em;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .empty {
   color: var(--light-grey);
 }

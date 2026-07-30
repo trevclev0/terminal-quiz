@@ -1,10 +1,15 @@
 import { graphql, HttpResponse, http } from "msw";
 import {
+  mockProgram,
   mockPrograms,
   mockProgression,
   mockRequestClueResponse,
   mockSubmitGuessResponse,
 } from "./fixtures";
+
+export const getProgramHandler = graphql.query("Program", () =>
+  HttpResponse.json({ data: { program: mockProgram() } }),
+);
 
 export const getProgramsHandler = graphql.query("GetPrograms", () =>
   HttpResponse.json({ data: { programs: mockPrograms() } }),
@@ -40,6 +45,7 @@ const getSessionHandler = http.get("/api/auth/get-session", () =>
 );
 
 export const handlers = [
+  getProgramHandler,
   getProgramsHandler,
   getProgramProgressionHandler,
   getInProgressProgramHandler,

@@ -35,6 +35,11 @@ vi.mock("@routes/programs/$programId", () => ({
 let progressionData: ProgramProgression = mockProgression();
 
 const server = setupServer(
+  graphql.query("Program", () =>
+    HttpResponse.json({
+      data: { program: { id: "test-program-id", name: "Test Program" } },
+    }),
+  ),
   graphql.query("GetProgramProgression", () =>
     HttpResponse.json({ data: { getProgramProgression: progressionData } }),
   ),
