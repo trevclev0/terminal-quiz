@@ -9,6 +9,21 @@ import type { Env } from "..";
 type AuthInstance = ReturnType<typeof betterAuth>;
 let authInstance: AuthInstance | null = null;
 
+export function stripAccountTokens<T extends Record<string, unknown>>(
+  account: T,
+): Omit<T, "accessToken" | "refreshToken" | "idToken"> & {
+  accessToken: undefined;
+  refreshToken: undefined;
+  idToken: undefined;
+} {
+  return {
+    ...account,
+    accessToken: undefined,
+    refreshToken: undefined,
+    idToken: undefined,
+  };
+}
+
 function validateAuthBindings(bindings: Env["Bindings"]): void {
   const { ENVIRONMENT, BETTER_AUTH_SECRET, BETTER_AUTH_URL } = bindings;
   const isProd = ENVIRONMENT === "production";
@@ -102,16 +117,7 @@ function createAuth(c: Context<AppVariables>): AuthInstance {
     databaseHooks: {
       account: {
         create: {
-          before: async (account) => {
-            return {
-              data: {
-                ...account,
-                accessToken: undefined,
-                refreshToken: undefined,
-                idToken: undefined,
-              },
-            };
-          },
+          before: async (account) => ({ data: stripAccountTokens(account) }),
         },
       },
     },
