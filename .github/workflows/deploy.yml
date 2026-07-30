@@ -57,7 +57,7 @@ jobs:
           command: >
             ${{ github.ref == 'refs/heads/main'
               && 'deploy'
-              || format('deploy --env preview --name quiz-app-preview-pr-{0}', github.event.pull_request.number)
+              || format('deploy --env preview --name quiz-app-preview-pr-{0} --var AUTH_TEST_BYPASS_SECRET:{1}', github.event.pull_request.number, secrets.AUTH_TEST_BYPASS_SECRET)
             }}
 
       - name: Get Playwright version
@@ -90,6 +90,7 @@ jobs:
           BASE_URL: ${{ steps.deploy.outputs.deployment-url }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          AUTH_TEST_BYPASS_SECRET: ${{ secrets.AUTH_TEST_BYPASS_SECRET }}
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4
