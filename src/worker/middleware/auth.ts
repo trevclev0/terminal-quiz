@@ -32,12 +32,17 @@ export const authMiddleware = createMiddleware<AppVariables>(
       }
     }
 
-    const auth = getAuth(c);
-    const session = await auth.api.getSession({
-      headers: c.req.raw.headers,
-    });
-    if (session?.user) {
-      c.set("user", session.user);
+    try {
+      const auth = getAuth(c);
+      const session = await auth.api.getSession({
+        headers: c.req.raw.headers,
+      });
+      if (session?.user) {
+        c.set("user", session.user);
+      }
+    } catch {
+      // Auth unavailable (missing binding, transient error) —
+      // treat as unauthenticated without crashing the request.
     }
     await next();
   },
