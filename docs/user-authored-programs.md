@@ -1,6 +1,6 @@
 # Program Management & Authentication — Implementation Plan
 
-**Status:** Phase 3c complete (PR #187). Phase 4 — polish + test debt deferred items below.
+**Status:** Phase 4 complete (PR #187 + follow-up polish). All test coverage debt resolved. Full test suite passing with zero stderr noise.
 **Owner:** clevertrevor
 **Scope:** Add user authentication and let authenticated users author/manage their own Programs and Gates, while keeping existing anonymous gameplay untouched.
 
@@ -169,11 +169,7 @@ No structural change — `programs` query already filters correctly server-side 
 - [x] Test-only auth bypass for CI/preview (§8).
 - **Done when:** you can log in with Google or GitHub locally and in prod, and `me` reflects it. No Program changes yet.
 
-#### Deferred tests (Phase 3c)
-- [ ] Unit test: `authMiddleware` bypass logic (mock Hono context).
-- [ ] Unit test: OAuth token stripping hook (adapter-level mock).
-- [ ] Component test: `NavBar` — login/logout states.
-- [ ] Component test: `LoginPage` — social buttons render and fire correct auth calls.
+*Deferred to Phase 3c "Test Debt + E2E" below — all 4 items completed there.*
 
 ### Phase 2 — Program ownership & visibility
 - [x] `author_id` + `visibility` columns on `programs`, migration.
@@ -217,20 +213,23 @@ No structural change — `programs` query already filters correctly server-side 
 - **Done when:** all 4 deferred tests pass; E2E validates full create-edit-play cycle in preview CI.
 
 ### Phase 4 — Polish
-- [ ] Copy-link affordance for unlisted Programs.
+- [x] Copy-link affordance for unlisted Programs (ManageProgramEditor + ManageProgramsList, clipboard API with "Copied!" feedback).
 - [x] Error feedback for all mutations in ManageProgramsList + ManageProgramEditor.
 - [x] Input bounds validation (`acceptanceThreshold` 0–1, `guidanceThreshold` ≥ 0).
-- [ ] Loading states on management page (spinner/skeleton for fetch).
-- [ ] Empty state copy improvements (currently basic "No programs yet").
-- [ ] Update `AGENTS.md`/`CONVENTIONS.md`/`README.md` with the new auth/authoring sections.
+- [x] Loading states on management page (text-only `<h2 className="loading-screen">` — consistent with deferred spinner, per `feature-ideas.md` §1.2).
+- [x] Empty state copy improvements (ManageProgramsList "No programs yet. Create your first program to get started." + ManageProgramEditor "No gates yet. Add your first gate below.").
+- [x] Update `AGENTS.md`/`CONVENTIONS.md`/`README.md` with the new auth/authoring sections.
+- [x] Bug fix: `validateReturnTo` backslash check moved before URL parsing (was getting percent-encoded, bypassed the guard).
+- [x] Bug fix: `isAllowedPath` now strips query string before matching allowlist (preserved query strings in `return_to` were incorrectly rejected).
+- [x] Test stderr noise elimination: added missing MSW `Program` query handler to `ProgramPlay.integration.spec.tsx`; silenced expected `console.warn`/`console.error` in manage route tests (root cause: `restoreMocks: true` in vitest config wiped `beforeAll` spies after test 1).
 
-#### Test coverage debt (identified in Phase 3c coverage evaluation)
-- [ ] **Worker auth lifecycle** — `worker/services/auth.ts`: `validateAuthBindings()`, `createAuth()`, `getAuth()`, `clearAuthInstance()` all untested (7.69% stmts, 0% branches).
-- [ ] **Login route URL validation** — `login.tsx`: `validateReturnTo()`, `isAllowedPath()`, `validateLoginSearch()` have no route-level tests (16.66% stmts).
-- [ ] **Auth guard redirect path** — `-requireUser.ts`: auth-failure redirect-to-login branch never exercised (75% stmts, 50% branches).
-- [ ] **Management route states** — `manage.tsx` + `manage_.$programId.tsx`: pending/error components not per-route tested (77%/81% stmts).
-- [ ] **ManageProgramEditor error states** — gates query error, mutation failure UX untested (80% stmts).
-- [ ] **ManageProgramsList edge cases** — cancel-on-confirm, mutation failure paths untested (92% stmts).
+#### Test coverage debt (identified in Phase 3c coverage evaluation) — all resolved
+- [x] **Worker auth lifecycle** — `worker/services/auth-lifecycle.spec.ts` with 7 tests covering missing binding, short secret, singleton cache, `clearAuthInstance`, and restore behavior (mocked `better-auth` + `drizzle-orm/d1`).
+- [x] **Login route URL validation** — `routes/-login.spec.tsx` with 18 tests covering all `validateReturnTo`, `isAllowedPath`, `validateLoginSearch` edge cases (cross-origin, protocol-relative, backslash, query string preservation, allowlist, prefix matching).
+- [x] **Auth guard redirect path** — `routes/programs/-manage.spec.tsx` with 2 redirect tests asserting `return_to` search params for both `/programs/manage` and `/programs/manage/$programId`.
+- [x] **Management route states** — `routes/programs/-manage.spec.tsx` testing error state rendering ("Failed to load programs.") via MSW 500 response.
+- [x] **ManageProgramEditor error states** — 5 mutation error state tests (program save, gate update, gate delete, gate create, reorder).
+- [x] **ManageProgramsList edge cases** — cancel-on-confirm, mutation error display, copy-link rendering tests.
 
 ### Backlog (deliberately deferred — additive, no rework required)
 
