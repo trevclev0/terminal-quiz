@@ -1,15 +1,19 @@
 import type { Page } from "@playwright/test";
 
 const AUTH_BYPASS_USER_ID = "e2e-test-user";
-const AUTH_BYPASS_SECRET = "e2e-test-secret";
 
 export async function setupAuthBypass(page: Page): Promise<void> {
-  await page.route("**/api/graphql", (route) => {
-    route.continue({
+  const secret = process.env.AUTH_TEST_BYPASS_SECRET;
+  if (!secret) {
+    throw new Error("AUTH_TEST_BYPASS_SECRET environment variable is not set");
+  }
+
+  await page.route("**/api/graphql", async (route) => {
+    await route.continue({
       headers: {
         ...route.request().headers(),
         "x-auth-test-user-id": AUTH_BYPASS_USER_ID,
-        "x-auth-test-user-secret": AUTH_BYPASS_SECRET,
+        "x-auth-test-user-secret": secret,
       },
     });
   });
