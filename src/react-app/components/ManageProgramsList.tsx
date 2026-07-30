@@ -17,15 +17,19 @@ export default function ManageProgramsList() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim()) return;
-    const result = await createMutation.mutateAsync({
-      name: newName.trim(),
-      visibility: newVisibility,
-    });
-    setNewName("");
-    navigate({
-      to: "/programs/manage/$programId",
-      params: { programId: result.id },
-    });
+    try {
+      const result = await createMutation.mutateAsync({
+        name: newName.trim(),
+        visibility: newVisibility,
+      });
+      setNewName("");
+      navigate({
+        to: "/programs/manage/$programId",
+        params: { programId: result.id },
+      });
+    } catch {
+      // Error handled via createMutation.error below
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -64,6 +68,7 @@ export default function ManageProgramsList() {
           required
         />
         <select
+          aria-label="Visibility"
           value={newVisibility}
           onChange={(e) => setNewVisibility(e.target.value)}
           className={styles.select}
@@ -79,6 +84,11 @@ export default function ManageProgramsList() {
           {createMutation.isPending ? "Creating..." : "Create Program"}
         </button>
       </form>
+      {createMutation.isError && (
+        <p className={styles.errorText}>
+          Failed to create: {createMutation.error?.message}
+        </p>
+      )}
 
       {programs && programs.length === 0 ? (
         <p className={styles.empty}>No programs yet. Create one above.</p>
@@ -119,6 +129,11 @@ export default function ManageProgramsList() {
               </button>
             </div>
           ))}
+          {deleteMutation.isError && (
+            <p className={styles.errorText}>
+              Failed to delete: {deleteMutation.error?.message}
+            </p>
+          )}
         </div>
       )}
     </div>

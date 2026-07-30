@@ -5,7 +5,8 @@ type LoginSearch = {
   return_to?: string;
 };
 
-const ALLOWED_REDIRECT_PATHS = ["/programs/select", "/programs/manage", "/"];
+const ALLOWED_REDIRECT_PATHS = ["/programs/select", "/"];
+const ALLOWED_REDIRECT_PREFIXES = ["/programs/manage/"];
 
 function validateReturnTo(value: string): string | undefined {
   try {
@@ -20,13 +21,20 @@ function validateReturnTo(value: string): string | undefined {
   }
 }
 
+function isAllowedPath(path: string): boolean {
+  if (ALLOWED_REDIRECT_PATHS.includes(path)) return true;
+  for (const prefix of ALLOWED_REDIRECT_PREFIXES) {
+    if (path.startsWith(prefix)) return true;
+  }
+  return false;
+}
+
 function validateLoginSearch(search: Record<string, unknown>): LoginSearch {
   const raw =
     typeof search.return_to === "string" ? search.return_to : undefined;
   const valid = raw ? validateReturnTo(raw) : undefined;
   return {
-    return_to:
-      valid && ALLOWED_REDIRECT_PATHS.includes(valid) ? valid : undefined,
+    return_to: valid && isAllowedPath(valid) ? valid : undefined,
   };
 }
 

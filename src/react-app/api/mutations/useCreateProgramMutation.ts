@@ -1,18 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CREATE_PROGRAM_MUTATION } from "../../../shared/gqlQueries";
 import { graphqlFetch } from "../graphQlClient";
 import { MANAGEMENT_KEYS } from "../queryKeys";
-
-const CREATE_PROGRAM_MUTATION = `
-  mutation CreateProgram($name: String!, $visibility: String) {
-    createProgram(name: $name, visibility: $visibility) {
-      id
-      name
-      visibility
-      authorId
-      createdAt
-    }
-  }
-`;
 
 export type CreateProgramResponse = {
   id: string;

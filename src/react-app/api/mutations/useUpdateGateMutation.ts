@@ -1,36 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { UPDATE_GATE_MUTATION } from "../../../shared/gqlQueries";
 import { graphqlFetch } from "../graphQlClient";
 import { MANAGEMENT_KEYS } from "../queryKeys";
-
-const UPDATE_GATE_MUTATION = `
-  mutation UpdateGate(
-    $id: String!
-    $label: String
-    $question: String
-    $correctAnswer: String
-    $successMessage: String
-    $sequenceOrder: Int
-    $acceptanceThreshold: Float
-    $guidanceEnabled: Boolean
-    $guidanceThreshold: Int
-  ) {
-    updateGate(
-      id: $id
-      label: $label
-      question: $question
-      correctAnswer: $correctAnswer
-      successMessage: $successMessage
-      sequenceOrder: $sequenceOrder
-      acceptanceThreshold: $acceptanceThreshold
-      guidanceEnabled: $guidanceEnabled
-      guidanceThreshold: $guidanceThreshold
-    ) {
-      id
-      label
-      sequenceOrder
-    }
-  }
-`;
 
 export type UpdateGateVariables = {
   id: string;

@@ -1,13 +1,9 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createQueryWrapper } from "../../test-utils/queryTestUtils";
 import { useMeQuery } from "./useMeQuery";
 
 describe("useMeQuery", () => {
-  beforeEach(() => {
-    globalThis.fetch = vi.fn();
-  });
-
   it("returns user when authenticated", async () => {
     const mockUser = { id: "1", email: "a@b.com", name: "Test", image: null };
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
