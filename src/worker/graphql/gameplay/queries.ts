@@ -6,8 +6,10 @@ import {
 } from "@shared/schema";
 import { and, asc, desc, eq, inArray, or } from "drizzle-orm";
 import { GraphQLList, GraphQLNonNull, GraphQLString } from "graphql";
+import { authorizeProgramMutation } from "./authorizeProgram";
 import {
   type AppGraphQLContext,
+  GateManagementType,
   MeType,
   ProgramListItemType,
   ProgressionPayloadType,
@@ -175,5 +177,34 @@ export const myPrograms = {
       .orderBy(asc(programs.createdAt));
 
     return results.length > 0 ? results : [];
+  },
+};
+
+export const programGates = {
+  type: new GraphQLNonNull(
+    new GraphQLList(new GraphQLNonNull(GateManagementType)),
+  ),
+  args: {
+    programId: { type: new GraphQLNonNull(GraphQLString) },
+  },
+  resolve: async (
+    _: unknown,
+    args: { programId: string },
+    context: AppGraphQLContext,
+  ) => {
+    const db = context.get("db");
+    const user = context.get("user");
+
+    if (!user?.id) {
+      throw new Error("Unauthorized: Authentication required.");
+    }
+
+    await authorizeProgramMutation(db, args.programId, user.id);
+
+    return db
+      .select()
+      .from(gates)
+      .where(eq(gates.programId, args.programId))
+      .orderBy(asc(gates.sequenceOrder));
   },
 };
