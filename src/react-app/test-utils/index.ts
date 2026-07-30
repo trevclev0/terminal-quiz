@@ -2,6 +2,9 @@ export { mockCssModuleProxy } from "./cssModuleMock";
 export {
   mockActiveGate,
   mockCompletedGate,
+  mockGateManagement,
+  mockMe,
+  mockMyPrograms,
   mockProgram,
   mockPrograms,
   mockProgression,
