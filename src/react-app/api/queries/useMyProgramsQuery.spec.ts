@@ -1,13 +1,9 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createQueryWrapper } from "../../test-utils/queryTestUtils";
 import { useMyProgramsQuery } from "./useMyProgramsQuery";
 
 describe("useMyProgramsQuery", () => {
-  beforeEach(() => {
-    globalThis.fetch = vi.fn();
-  });
-
   it("fetches and returns my programs", async () => {
     const mockPrograms = [
       { id: "1", name: "My Program", visibility: "public", authorId: "user-1" },

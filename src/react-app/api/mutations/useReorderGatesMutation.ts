@@ -1,12 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { REORDER_GATES_MUTATION } from "../../../shared/gqlQueries";
 import { graphqlFetch } from "../graphQlClient";
 import { MANAGEMENT_KEYS } from "../queryKeys";
-
-const REORDER_GATES_MUTATION = `
-  mutation ReorderGates($programId: String!, $orderedGateIds: [String!]!) {
-    reorderGates(programId: $programId, orderedGateIds: $orderedGateIds)
-  }
-`;
 
 export type ReorderGatesVariables = {
   programId: string;

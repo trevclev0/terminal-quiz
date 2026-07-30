@@ -5,7 +5,7 @@ import { useUpdateGateMutation } from "@api/mutations/useUpdateGateMutation";
 import { useUpdateProgramMutation } from "@api/mutations/useUpdateProgramMutation";
 import { useMyProgramsQuery } from "@api/queries/useMyProgramsQuery";
 import { useProgramGatesQuery } from "@api/queries/useProgramGatesQuery";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import ManageProgramEditor from "./ManageProgramEditor";
@@ -158,16 +158,19 @@ describe("ManageProgramEditor", () => {
     const saveGateButtons = screen.getAllByText("Save Gate");
     await userEvent.click(saveGateButtons[0]);
 
-    expect(mockUpdateGate.mutate).toHaveBeenCalledWith({
-      id: "gate-1",
-      label: "Updated Gate",
-      question: "First question?",
-      correctAnswer: "answer-1",
-      successMessage: "Correct!",
-      acceptanceThreshold: 0.875,
-      guidanceEnabled: false,
-      guidanceThreshold: 3,
-    });
+    expect(mockUpdateGate.mutate).toHaveBeenCalledWith(
+      {
+        id: "gate-1",
+        label: "Updated Gate",
+        question: "First question?",
+        correctAnswer: "answer-1",
+        successMessage: "Correct!",
+        acceptanceThreshold: 0.875,
+        guidanceEnabled: false,
+        guidanceThreshold: 3,
+      },
+      expect.objectContaining({ onSettled: expect.any(Function) }),
+    );
   });
 
   it("deletes a gate after confirm", async () => {
@@ -234,22 +237,28 @@ describe("ManageProgramEditor", () => {
 
     render(<ManageProgramEditor programId={PROGRAM_ID} />);
 
-    // DOM order of textboxes (input[text] + textarea):
-    // 0: program name, 1: gate1 label, 2: gate1 question,
-    // 3: gate1 correctAnswer, 4: gate1 successMessage,
-    // 5: gate2 label, 6: gate2 question, 7: gate2 correctAnswer,
-    // 8: gate2 successMessage, 9: add label, 10: add question,
-    // 11: add correctAnswer, 12: add successMessage
-    const textboxes = screen.getAllByRole("textbox");
-    expect(textboxes.length).toBe(13);
+    const addGateForm = screen.getByRole("form", { name: "Add Gate" });
 
-    await userEvent.type(textboxes[9], "New Gate");
-    await userEvent.type(textboxes[10], "New question?");
-    await userEvent.type(textboxes[11], "new-answer");
-    await userEvent.type(textboxes[12], "Well done!");
+    await userEvent.type(
+      within(addGateForm).getByLabelText("Label"),
+      "New Gate",
+    );
+    await userEvent.type(
+      within(addGateForm).getByLabelText("Question"),
+      "New question?",
+    );
+    await userEvent.type(
+      within(addGateForm).getByLabelText("Correct Answer"),
+      "new-answer",
+    );
+    await userEvent.type(
+      within(addGateForm).getByLabelText("Success Message"),
+      "Well done!",
+    );
 
-    const addButton = screen.getByRole("button", { name: "Add Gate" });
-    await userEvent.click(addButton);
+    await userEvent.click(
+      within(addGateForm).getByRole("button", { name: "Add Gate" }),
+    );
 
     expect(mockCreateGate.mutate).toHaveBeenCalledWith(
       expect.objectContaining({

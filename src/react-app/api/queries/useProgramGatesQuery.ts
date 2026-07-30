@@ -1,23 +1,7 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import { PROGRAM_GATES_QUERY } from "../../../shared/gqlQueries";
 import { graphqlFetch } from "../graphQlClient";
 import { MANAGEMENT_KEYS } from "../queryKeys";
-
-const PROGRAM_GATES_QUERY = `
-  query ProgramGates($programId: String!) {
-    programGates(programId: $programId) {
-      id
-      programId
-      sequenceOrder
-      label
-      question
-      correctAnswer
-      successMessage
-      acceptanceThreshold
-      guidanceEnabled
-      guidanceThreshold
-    }
-  }
-`;
 
 export type GateManagement = {
   id: string;

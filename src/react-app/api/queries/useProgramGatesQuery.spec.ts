@@ -1,13 +1,9 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createQueryWrapper } from "../../test-utils/queryTestUtils";
 import { useProgramGatesQuery } from "./useProgramGatesQuery";
 
 describe("useProgramGatesQuery", () => {
-  beforeEach(() => {
-    globalThis.fetch = vi.fn();
-  });
-
   it("fetches and returns gates for a program", async () => {
     const mockGates = [
       {

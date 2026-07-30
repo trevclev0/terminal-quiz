@@ -40,9 +40,8 @@ export const authMiddleware = createMiddleware<AppVariables>(
       if (session?.user) {
         c.set("user", session.user);
       }
-    } catch {
-      // Auth unavailable (missing binding, transient error) —
-      // treat as unauthenticated without crashing the request.
+    } catch (error) {
+      console.error("[authMiddleware] getSession failed:", error);
     }
     await next();
   },

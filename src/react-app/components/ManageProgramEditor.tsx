@@ -52,6 +52,7 @@ export default function ManageProgramEditor({
     correctAnswer: "",
     successMessage: "",
   });
+  const [savingGateId, setSavingGateId] = useState<string | null>(null);
 
   useEffect(() => {
     if (program) {
@@ -62,19 +63,28 @@ export default function ManageProgramEditor({
 
   useEffect(() => {
     if (gates) {
-      const drafts: Record<string, GateForm> = {};
-      for (const gate of gates) {
-        drafts[gate.id] = {
-          label: gate.label,
-          question: gate.question,
-          correctAnswer: gate.correctAnswer,
-          successMessage: gate.successMessage,
-          acceptanceThreshold: gate.acceptanceThreshold,
-          guidanceEnabled: gate.guidanceEnabled,
-          guidanceThreshold: gate.guidanceThreshold,
-        };
-      }
-      setGateDrafts(drafts);
+      setGateDrafts((prev) => {
+        const next = { ...prev };
+        for (const gate of gates) {
+          if (!next[gate.id]) {
+            next[gate.id] = {
+              label: gate.label,
+              question: gate.question,
+              correctAnswer: gate.correctAnswer,
+              successMessage: gate.successMessage,
+              acceptanceThreshold: gate.acceptanceThreshold,
+              guidanceEnabled: gate.guidanceEnabled,
+              guidanceThreshold: gate.guidanceThreshold,
+            };
+          }
+        }
+        for (const id of Object.keys(next)) {
+          if (!gates.some((g) => g.id === id)) {
+            delete next[id];
+          }
+        }
+        return next;
+      });
     }
   }, [gates]);
 
@@ -89,7 +99,13 @@ export default function ManageProgramEditor({
   const handleSaveGate = (gateId: string) => {
     const draft = gateDrafts[gateId];
     if (!draft) return;
-    updateGate.mutate({ id: gateId, ...draft });
+    setSavingGateId(gateId);
+    updateGate.mutate(
+      { id: gateId, ...draft },
+      {
+        onSettled: () => setSavingGateId(null),
+      },
+    );
   };
 
   const handleDeleteGate = (gateId: string) => {
@@ -188,6 +204,11 @@ export default function ManageProgramEditor({
             {updateProgram.isPending ? "Saving..." : "Save"}
           </button>
         </div>
+        {updateProgram.isError && (
+          <p className={styles.errorText}>
+            Failed to save: {updateProgram.error?.message}
+          </p>
+        )}
       </section>
 
       {/* Gates */}
@@ -198,11 +219,16 @@ export default function ManageProgramEditor({
           <p className={styles.empty}>No gates yet. Add one below.</p>
         )}
 
+        {reorderGates.isError && (
+          <p className={styles.errorText}>
+            Failed to reorder: {reorderGates.error?.message}
+          </p>
+        )}
+
         <div className={styles.gateList}>
           {gates?.map((gate, idx) => {
             const draft = gateDrafts[gate.id];
             if (!draft) return null;
-            const isSaving = updateGate.isPending;
             const isFirst = idx === 0;
             const isLast = idx === gates.length - 1;
 
@@ -313,7 +339,10 @@ export default function ManageProgramEditor({
                             ...prev,
                             [gate.id]: {
                               ...prev[gate.id],
-                              acceptanceThreshold: Number(e.target.value),
+                              acceptanceThreshold: Math.min(
+                                1,
+                                Math.max(0, Number(e.target.value)),
+                              ),
                             },
                           }))
                         }
@@ -349,7 +378,10 @@ export default function ManageProgramEditor({
                             ...prev,
                             [gate.id]: {
                               ...prev[gate.id],
-                              guidanceThreshold: Number(e.target.value),
+                              guidanceThreshold: Math.max(
+                                0,
+                                Number(e.target.value),
+                              ),
                             },
                           }))
                         }
@@ -363,10 +395,10 @@ export default function ManageProgramEditor({
                   <button
                     type="button"
                     onClick={() => handleSaveGate(gate.id)}
-                    disabled={isSaving}
+                    disabled={savingGateId !== null}
                     className={styles.button}
                   >
-                    {isSaving ? "Saving..." : "Save Gate"}
+                    {savingGateId === gate.id ? "Saving..." : "Save Gate"}
                   </button>
                   <button
                     type="button"
@@ -377,14 +409,33 @@ export default function ManageProgramEditor({
                     Delete Gate
                   </button>
                 </div>
+                {updateGate.isError && (
+                  <p className={styles.errorText}>
+                    Failed to save: {updateGate.error?.message}
+                  </p>
+                )}
+                {deleteGate.isError && (
+                  <p className={styles.errorText}>
+                    Failed to delete: {deleteGate.error?.message}
+                  </p>
+                )}
               </div>
             );
           })}
         </div>
 
         {/* Add Gate */}
-        <form onSubmit={handleAddGate} className={styles.addGateForm}>
+        <form
+          onSubmit={handleAddGate}
+          className={styles.addGateForm}
+          aria-label="Add Gate"
+        >
           <h3 className={styles.addGateTitle}>Add Gate</h3>
+          {createGate.isError && (
+            <p className={styles.errorText}>
+              Failed to add: {createGate.error?.message}
+            </p>
+          )}
           <label className={styles.field}>
             Label
             <input
@@ -394,6 +445,7 @@ export default function ManageProgramEditor({
                 setNewGate((prev) => ({ ...prev, label: e.target.value }))
               }
               className={styles.input}
+              disabled={createGate.isPending}
               required
             />
           </label>
@@ -406,6 +458,7 @@ export default function ManageProgramEditor({
               }
               className={styles.textarea}
               rows={3}
+              disabled={createGate.isPending}
               required
             />
           </label>
@@ -421,6 +474,7 @@ export default function ManageProgramEditor({
                 }))
               }
               className={styles.input}
+              disabled={createGate.isPending}
               required
             />
           </label>
@@ -436,6 +490,7 @@ export default function ManageProgramEditor({
               }
               className={styles.textarea}
               rows={2}
+              disabled={createGate.isPending}
               required
             />
           </label>

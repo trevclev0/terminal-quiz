@@ -1,6 +1,6 @@
 # Program Management & Authentication — Implementation Plan
 
-**Status:** Active — Phase 3a complete (awaiting merge)
+**Status:** Active — Phase 3a + 3b complete (PR #183 open, addressing review feedback)
 **Owner:** clevertrevor
 **Scope:** Add user authentication and let authenticated users author/manage their own Programs and Gates, while keeping existing anonymous gameplay untouched.
 
@@ -193,14 +193,13 @@ No structural change — `programs` query already filters correctly server-side 
 - **Done when:** all mutations are testable via GraphiQL/integration tests — correct paths succeed, auth failures reject, reorderGates handles edge cases.
 
 ### Phase 3b — Frontend: Routes, Components, Hooks
-- [ ] NavBar: add "My Programs" link when authenticated.
-- [ ] `login.tsx`: add `"/programs/manage"` to `ALLOWED_REDIRECT_PATHS`.
-- [ ] `/programs/manage` route + `<ManageProgramsList>` component — list user's programs, create/delete.
-- [ ] `/programs/manage/$programId` route + `<ManageProgramEditor>` component — edit program metadata, add/edit/delete/reorder gates. Each edit saves individually. Reorder arrows disabled while mutation inflight.
-- [ ] API hooks for all mutations (TanStack Query pattern).
-- [ ] Route guards: redirect to `/login?return_to=...` if unauthenticated.
-- [ ] Component tests for list + editor + API hooks.
-- **Depends on:** Phase 3a merged.
+- [x] NavBar: add "My Programs" link when authenticated.
+- [x] `login.tsx`: add `"/programs/manage"` to `ALLOWED_REDIRECT_PATHS`.
+- [x] `/programs/manage` route + `<ManageProgramsList>` component — list user's programs, create/delete.
+- [x] `/programs/manage/$programId` route + `<ManageProgramEditor>` component — edit program metadata, add/edit/delete/reorder gates. Each edit saves individually. Reorder arrows disabled while mutation inflight.
+- [x] API hooks for all mutations (TanStack Query pattern).
+- [x] Route guards: redirect to `/login?return_to=...` if unauthenticated.
+- [x] Component tests for list + editor + API hooks.
 - **Done when:** a logged-in user can create, edit, delete programs and gates through the browser UI.
 
 ### Phase 3c — Test Debt + E2E
@@ -212,12 +211,15 @@ No structural change — `programs` query already filters correctly server-side 
 - [ ] Playwright spec: login → create program → add gates → play through.
   - Auth bypass headers configured via `AUTH_TEST_BYPASS_SECRET` from CI secret.
   - Preview Worker has matching secret via wrangler secret/deploy workflow.
-- **No dependency on Phase 3a or 3b.** Can land in parallel with 3a.
+- **Dependency:** Phase 3a + 3b in review (PR #183). Tests can be authored against what's landed so far.
 - **Done when:** all 4 deferred tests pass; E2E validates full create-edit-play cycle in preview CI.
 
 ### Phase 4 — Polish
 - [ ] Copy-link affordance for unlisted Programs.
-- [ ] Empty states, validation errors, loading states on the management page.
+- [x] Error feedback for all mutations in ManageProgramsList + ManageProgramEditor.
+- [x] Input bounds validation (`acceptanceThreshold` 0–1, `guidanceThreshold` ≥ 0).
+- [ ] Loading states on management page (spinner/skeleton for fetch).
+- [ ] Empty state copy improvements (currently basic "No programs yet").
 - [ ] Update `AGENTS.md`/`CONVENTIONS.md`/`README.md` with the new auth/authoring sections.
 
 ### Backlog (deliberately deferred — additive, no rework required)
