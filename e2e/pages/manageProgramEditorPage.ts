@@ -1,7 +1,16 @@
-import type { Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 export class ManageProgramEditorPage {
-  constructor(private page: Page) {}
+  readonly programId: string;
+
+  constructor(private page: Page) {
+    const match = page.url().match(/\/programs\/manage\/(.+)/);
+    if (!match)
+      throw new Error(
+        `ManageProgramEditorPage: cannot extract programId from "${page.url()}"`,
+      );
+    this.programId = match[1];
+  }
 
   async waitForLoad() {
     await this.page.getByRole("heading", { name: /Edit:/ }).waitFor({
@@ -20,14 +29,14 @@ export class ManageProgramEditorPage {
     await form.getByLabel("Question").fill(gate.question);
     await form.getByLabel("Correct Answer").fill(gate.correctAnswer);
     await form.getByLabel("Success Message").fill(gate.successMessage);
+
+    const gateCards = this.page.locator("[class*='gateCard']");
+    const previousCount = await gateCards.count();
+
     await form.getByRole("button", { name: "Add Gate" }).click();
-    // Wait for the mutation response AND the programGates refetch
-    await this.page.waitForResponse((resp) =>
-      resp.url().includes("/api/graphql"),
-    );
-    await this.page.waitForResponse((resp) =>
-      resp.url().includes("/api/graphql"),
-    );
+
+    // Wait for new gate card to appear in the DOM (mutation + refetch done)
+    await expect(gateCards).toHaveCount(previousCount + 1);
   }
 
   async getGateLabels(): Promise<string[]> {
@@ -42,15 +51,7 @@ export class ManageProgramEditorPage {
     return labels;
   }
 
-  async getProgramUrl(): Promise<string> {
-    return this.page.url();
-  }
-
   async clickPlay() {
-    const url = this.page.url();
-    const match = url.match(/\/programs\/manage\/(.+)/);
-    if (match) {
-      await this.page.goto(`/programs/${match[1]}`);
-    }
+    await this.page.goto(`/programs/${this.programId}`);
   }
 }

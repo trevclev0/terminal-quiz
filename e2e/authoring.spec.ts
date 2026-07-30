@@ -7,12 +7,12 @@ test.describe("@full", () => {
   test("create program → add gates → play through", async ({ page }) => {
     await setupAuthBypass(page);
 
-    // Step 1: Navigate directly to My Programs
-    await page.goto("/programs/manage");
+    // Step 1: Navigate to My Programs via page object
+    const managePage = new ManageProgramsPage(page);
+    await managePage.goto();
+    await managePage.waitForLoad();
 
     // Step 2: Create a new program
-    const managePage = new ManageProgramsPage(page);
-    await managePage.waitForLoad();
     const editorPage = await managePage.createProgram("E2E Authored Program");
 
     // Step 3: Add gates
@@ -35,10 +35,8 @@ test.describe("@full", () => {
     expect(gateLabels).toContain("Math Gate");
     expect(gateLabels).toContain("Geography Gate");
 
-    // Step 4: Navigate to play the program
-    const programUrl = await editorPage.getProgramUrl();
-    const programId = programUrl.split("/").pop();
-    await page.goto(`/programs/${programId}`);
+    // Step 4: Navigate to play via page object
+    await editorPage.clickPlay();
 
     // Step 5: Solve both gates
     const gamePage = new GamePage(page);
