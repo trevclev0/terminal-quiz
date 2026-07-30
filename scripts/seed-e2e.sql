@@ -2,6 +2,17 @@
 -- programs: INSERT OR IGNORE so multiple PRs don't clash
 -- gates: ON CONFLICT DO UPDATE so seed changes apply without FK cascade
 
+-- Test user for auth bypass (x-auth-test-user-id=e2e-test-user)
+INSERT OR IGNORE INTO user (id, name, email, email_verified, created_at, updated_at)
+VALUES (
+  'e2e-test-user',
+  'e2e-test-user',
+  'e2e-test-user@test.example.com',
+  1,
+  CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER),
+  CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)
+);
+
 INSERT OR IGNORE INTO programs (id, name, created_at)
 VALUES (
   'e2e00000-0000-0000-0000-000000000001',
