@@ -1,6 +1,6 @@
 # Program Management & Authentication — Implementation Plan
 
-**Status:** Active — Phase 3a + 3b complete (PR #183 open, addressing review feedback)
+**Status:** Phase 3c complete (PR #187). Phase 4 — polish + test debt deferred items below.
 **Owner:** clevertrevor
 **Scope:** Add user authentication and let authenticated users author/manage their own Programs and Gates, while keeping existing anonymous gameplay untouched.
 
@@ -203,15 +203,17 @@ No structural change — `programs` query already filters correctly server-side 
 - **Done when:** a logged-in user can create, edit, delete programs and gates through the browser UI.
 
 ### Phase 3c — Test Debt + E2E
-- [ ] Deferred Phase 1 tests (4 items moved from Phase 1):
-  - `authMiddleware` bypass unit test (mock Hono context).
-  - OAuth token stripping hook unit test (adapter-level mock).
-  - `NavBar` component test (login/logout states).
-  - `LoginPage` component test (social buttons + redirect).
-- [ ] Playwright spec: login → create program → add gates → play through.
+- [x] Deferred Phase 1 tests (4 items moved from Phase 1):
+  - [x] `authMiddleware` bypass unit test (mock Hono context).
+  - [x] OAuth token stripping hook unit test (adapter-level mock).
+  - [x] `NavBar` component test (login/logout states).
+  - [x] `LoginPage` component test (social buttons + redirect).
+- [x] Playwright spec: login → create program → add gates → play through (`e2e/authoring.spec.ts`).
   - Auth bypass headers configured via `AUTH_TEST_BYPASS_SECRET` from CI secret.
   - Preview Worker has matching secret via wrangler secret/deploy workflow.
+- [x] Coverage evaluation completed across all layers (see Phase 4 for remaining gaps).
 - **Dependency:** Phase 3a + 3b in review (PR #183). Tests can be authored against what's landed so far.
+- **Dependencies met:** Phase 3a + 3b merged (PR #183). All deferred tests + E2E authoring spec passing.
 - **Done when:** all 4 deferred tests pass; E2E validates full create-edit-play cycle in preview CI.
 
 ### Phase 4 — Polish
@@ -221,6 +223,14 @@ No structural change — `programs` query already filters correctly server-side 
 - [ ] Loading states on management page (spinner/skeleton for fetch).
 - [ ] Empty state copy improvements (currently basic "No programs yet").
 - [ ] Update `AGENTS.md`/`CONVENTIONS.md`/`README.md` with the new auth/authoring sections.
+
+#### Test coverage debt (identified in Phase 3c coverage evaluation)
+- [ ] **Worker auth lifecycle** — `worker/services/auth.ts`: `validateAuthBindings()`, `createAuth()`, `getAuth()`, `clearAuthInstance()` all untested (7.69% stmts, 0% branches).
+- [ ] **Login route URL validation** — `login.tsx`: `validateReturnTo()`, `isAllowedPath()`, `validateLoginSearch()` have no route-level tests (16.66% stmts).
+- [ ] **Auth guard redirect path** — `-requireUser.ts`: auth-failure redirect-to-login branch never exercised (75% stmts, 50% branches).
+- [ ] **Management route states** — `manage.tsx` + `manage_.$programId.tsx`: pending/error components not per-route tested (77%/81% stmts).
+- [ ] **ManageProgramEditor error states** — gates query error, mutation failure UX untested (80% stmts).
+- [ ] **ManageProgramsList edge cases** — cancel-on-confirm, mutation failure paths untested (92% stmts).
 
 ### Backlog (deliberately deferred — additive, no rework required)
 
