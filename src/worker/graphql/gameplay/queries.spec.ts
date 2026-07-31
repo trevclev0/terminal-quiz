@@ -1,14 +1,9 @@
 import type { Program } from "@shared/types";
 import type { AuthUser } from "@worker-middleware/db";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  getInProgressProgram,
-  getProgramProgression,
-  getPrograms,
-  me,
-  myPrograms,
-  programGates,
-} from "./queries";
+import { me } from "./authQueries";
+import { getPrograms, myPrograms, programGates } from "./programQueries";
+import { getInProgressProgram, getProgramProgression } from "./sessionQueries";
 import type { AppGraphQLContext } from "./types";
 
 function createMockDb() {
