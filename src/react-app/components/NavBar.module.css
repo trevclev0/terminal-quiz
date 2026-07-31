@@ -1,0 +1,36 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--faded-green);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.link {
+  color: var(--green);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.homeLink {
+  color: var(--green);
+  text-decoration: none;
+  text-underline-offset: 4px;
+}
+
+.nav {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.userName {
+  color: var(--light-grey);
+  font-size: 0.8em;
+}
+
+.logoutButton {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8em;
+}

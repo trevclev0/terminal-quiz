@@ -91,11 +91,7 @@ export default function ManageProgramsList() {
   }
 
   if (error) {
-    return (
-      <p className="response" style={{ color: "var(--red)" }}>
-        Failed to load programs.
-      </p>
-    );
+    return <p className={styles.errorText}>Failed to load programs.</p>;
   }
 
   return (

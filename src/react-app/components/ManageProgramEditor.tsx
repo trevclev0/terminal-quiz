@@ -204,11 +204,7 @@ export default function ManageProgramEditor({
   }
 
   if (!program) {
-    return (
-      <p className="response" style={{ color: "var(--red)" }}>
-        Program not found.
-      </p>
-    );
+    return <p className={styles.errorText}>Program not found.</p>;
   }
 
   return (
