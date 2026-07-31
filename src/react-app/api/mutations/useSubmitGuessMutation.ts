@@ -1,21 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { SUBMIT_GUESS_MUTATION } from "../../../shared/gqlQueries";
 import { graphqlFetch } from "../graphQlClient";
 import { PROGRAM_KEYS } from "../queryKeys";
-
-const SUBMIT_GUESS_MUTATION = `
-  mutation SubmitGuess($programId: String!, $gateId: String!, $guess: String!) {
-    submitGuess(programId: $programId, gateId: $gateId, guess: $guess) {
-      success
-      message
-      canRequestClue
-      nextGate {
-        id
-        label
-        question
-      }
-    }
-  }
-`;
 
 export type SubmitGuessResponse = {
   success: boolean;

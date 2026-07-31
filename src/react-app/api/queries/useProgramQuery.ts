@@ -1,17 +1,8 @@
 import type { Program } from "@shared/types";
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import { PROGRAM_QUERY } from "../../../shared/gqlQueries";
 import { graphqlFetch } from "../graphQlClient";
 import { PROGRAM_KEYS } from "../queryKeys";
-
-// Keep in sync with shared/gqlQueries.ts PROGRAM_QUERY
-const PROGRAM_QUERY = `
-  query Program($id: String!) {
-    program(id: $id) {
-      id
-      name
-    }
-  }
-`;
 
 const fetchProgram = async (id: string): Promise<Program | null> => {
   const data = await graphqlFetch<{ program: Program | null }>(PROGRAM_QUERY, {

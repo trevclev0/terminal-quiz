@@ -1,25 +1,6 @@
+import { GET_PROGRAM_PROGRESSION_QUERY } from "../../../shared/gqlQueries";
 import { graphqlFetch } from "../graphQlClient";
 import { PROGRAM_KEYS } from "../queryKeys";
-
-const GET_PROGRAM_PROGRESSION_QUERY = `
-  query GetProgramProgression($programId: String!) {
-    getProgramProgression(programId: $programId) {
-      currentGate {
-        id
-        label
-        question
-      }
-      completedGates {
-        id
-        label
-        question
-        correctAnswer
-        successMessage
-      }
-      status
-    }
-  }
-`;
 
 export type ActiveGate = {
   id: string;

@@ -1,16 +1,6 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import { ME_QUERY } from "../../../shared/gqlQueries";
 import { graphqlFetch } from "../graphQlClient";
-
-const ME_QUERY = `
-  query Me {
-    me {
-      id
-      email
-      name
-      image
-    }
-  }
-`;
 
 export type Me = {
   id: string;

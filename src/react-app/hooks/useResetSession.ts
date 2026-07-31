@@ -1,12 +1,7 @@
 import { graphqlFetch } from "@api/graphQlClient";
 import { programProgressionQueryOptions } from "@api/queries/useProgramProgressionQuery";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-const RESET_SESSION_MUTATION = `
-  mutation ResetSession($programId: String!) {
-    resetSession(programId: $programId)
-  }
-`;
+import { RESET_SESSION_MUTATION } from "../../shared/gqlQueries";
 
 type ResetSessionVariables = {
   programId: string;
