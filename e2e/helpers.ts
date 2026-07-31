@@ -1,7 +1,6 @@
 import type { Page } from "@playwright/test";
 import { DELETE_PROGRAM_MUTATION } from "../src/shared/gqlQueries";
-
-const AUTH_BYPASS_USER_ID = "e2e-test-user";
+import { AUTH_BYPASS_USER_ID } from "../src/worker/test-utils/testConstants";
 
 function getAuthBypassSecret(): string {
   const secret = process.env.AUTH_TEST_BYPASS_SECRET;

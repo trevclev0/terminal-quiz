@@ -36,6 +36,11 @@ export async function gqlRequest(
   if (opts.sessionId) {
     headers["x-session-id"] = opts.sessionId;
   }
+  if (Boolean(opts.testUserId) !== Boolean(opts.testSecret)) {
+    throw new Error(
+      "gqlRequest: testUserId and testSecret must be provided together",
+    );
+  }
   if (opts.testUserId && opts.testSecret) {
     headers["x-auth-test-user-id"] = opts.testUserId;
     headers["x-auth-test-user-secret"] = opts.testSecret;
