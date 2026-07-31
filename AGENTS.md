@@ -139,7 +139,8 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 │       │                          # auth (Better Auth session resolution)
 │       ├── routes/                 # graphql.ts — builds and serves the GraphQL schema
 │       ├── graphql/gameplay/       # queries.ts, mutations.ts, clueEligibility.ts, types.ts,
-│       │                          # authorizeProgram.ts, managementMutations.ts,
+│       │                          # authorizeProgram.ts, programMutations.ts, gateMutations.ts,
+│       │                          # reorderGatesMutation.ts, managementHelpers.ts,
 │       │                          # plus *.integration.spec.ts files (real D1 via cloudflare:test)
 │       ├── services/                # aiService.ts — Workers AI clue generation,
 │       │                           # auth.ts — Better Auth lifecycle (create, get, clear, validate)
@@ -268,7 +269,11 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - **Auth middleware** (`src/worker/middleware/auth.ts`): resolves Better Auth session cookie, sets `user` in Hono context. Parallel to `sessionMiddleware` (anonymous gameplay identity) — two identity systems, decoupled.
 - **Route guard** (`src/react-app/routes/programs/-requireUser.ts`): `requireUser(queryClient, returnTo)` — fetches `me` query, throws TanStack Router `redirect` to `/login?return_to=...` if unauthenticated. Used by `/programs/manage` and `/programs/manage/$programId` routes.
 - **Server-side authorization** (`src/worker/graphql/gameplay/authorizeProgram.ts`): `authorizeProgramMutation(db, programId, userId)` — fetches program, verifies `authorId === userId`, throws on null/mismatch. Used by all 7 management mutations.
-- **Management mutations** (in `src/worker/graphql/gameplay/managementMutations.ts`): `createProgram`, `updateProgram`, `deleteProgram`, `createGate`, `updateGate`, `deleteGate`, `reorderGates`. All auth-guarded, input-validated.
+- **Management mutations** (in `src/worker/graphql/gameplay/programMutations.ts`,
+  `gateMutations.ts`, `reorderGatesMutation.ts`, shared auth/validation helpers in
+  `managementHelpers.ts`): `createProgram`, `updateProgram`, `deleteProgram`,
+  `createGate`, `updateGate`, `deleteGate`, `reorderGates`. All auth-guarded,
+  input-validated.
 - **Program visibility**: `public` (listed for everyone) or `unlisted` (not listed, playable by direct link). Managed via `visibility` column on `programs` table. Copy-link affordance in management UI.
 - **`program(id)` query**: returns a program by ID without auth check — unlisted programs are playable via direct link (security-through-obscurity, same model as unlisted YouTube videos). No ACL; add one via backlogged join table if needed later.
 - **Login redirect safety** (`src/react-app/routes/login.tsx`): `validateReturnTo()` parses URL, rejects cross-origin, protocol-relative, and backslash-based variants. `isAllowedPath()` checks against allowlist. Falls back to `/programs/select` on invalid input.
