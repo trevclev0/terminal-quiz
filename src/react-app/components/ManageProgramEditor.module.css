@@ -17,146 +17,11 @@
   padding-bottom: 0.5rem;
 }
 
-.metaRow {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-end;
-  flex-wrap: wrap;
-}
-
-.label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  color: var(--light-grey);
-  font-size: 0.85em;
-}
-
-.input {
-  border: 1px solid var(--green);
-  background-color: inherit;
-  color: var(--green);
-  font-family: inherit;
-  font-size: inherit;
-  padding: 0.375rem 0.5rem;
-  min-width: 180px;
-}
-
-.inputSmall {
-  border: 1px solid var(--green);
-  background-color: inherit;
-  color: var(--green);
-  font-family: inherit;
-  font-size: inherit;
-  padding: 0.375rem 0.5rem;
-  width: 80px;
-}
-
-.textarea {
-  border: 1px solid var(--green);
-  background-color: inherit;
-  color: var(--green);
-  font-family: inherit;
-  font-size: inherit;
-  padding: 0.375rem 0.5rem;
-  resize: vertical;
-  min-width: 180px;
-}
-
-.select {
-  border: 1px solid var(--green);
-  background-color: inherit;
-  color: var(--green);
-  font-family: inherit;
-  font-size: inherit;
-  padding: 0.375rem 0.5rem;
-  cursor: pointer;
-}
-
-.checkbox {
-  width: 1.25rem;
-  height: 1.25rem;
-  cursor: pointer;
-  accent-color: var(--green);
-}
-
-.button {
-  padding: 0.375rem 1rem;
-}
-
-.copyLinkButton {
-  padding: 0.375rem 1rem;
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
 .gateList {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   margin-bottom: 2rem;
-}
-
-.gateCard {
-  border: 1px solid var(--faded-green);
-  padding: 1rem;
-}
-
-.gateHeader {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.gateIndex {
-  color: var(--accent);
-  font-weight: bold;
-  margin-right: 0.5rem;
-}
-
-.reorderButton {
-  padding: 0.125rem 0.5rem;
-  font-size: 1em;
-  cursor: pointer;
-}
-
-.reorderButton:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.gateFields {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  color: var(--light-grey);
-  font-size: 0.85em;
-}
-
-.inlineFields {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  align-items: flex-start;
-}
-
-.gateActions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.deleteButton {
-  padding: 0.375rem 1rem;
-  color: var(--red);
-  border-color: var(--red);
 }
 
 .empty {
@@ -168,16 +33,4 @@
   color: var(--red);
   font-size: 0.85em;
   margin-top: 0.5rem;
-}
-
-.addGateForm {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  border: 1px dashed var(--faded-green);
-  padding: 1rem;
-}
-
-.addGateTitle {
-  margin: 0 0 0.5rem;
 }

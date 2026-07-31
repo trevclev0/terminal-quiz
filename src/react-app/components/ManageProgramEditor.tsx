@@ -5,25 +5,12 @@ import { useUpdateGateMutation } from "@api/mutations/useUpdateGateMutation";
 import { useUpdateProgramMutation } from "@api/mutations/useUpdateProgramMutation";
 import { useMyProgramsQuery } from "@api/queries/useMyProgramsQuery";
 import { useProgramGatesQuery } from "@api/queries/useProgramGatesQuery";
-import { useEffect, useRef, useState } from "react";
+import { useGateDrafts } from "@hooks/useGateDrafts";
+import { useEffect, useState } from "react";
+import AddGateForm, { type NewGateForm } from "./AddGateForm";
+import GateEditorCard from "./GateEditorCard";
 import styles from "./ManageProgramEditor.module.css";
-
-type GateForm = {
-  label: string;
-  question: string;
-  correctAnswer: string;
-  successMessage: string;
-  acceptanceThreshold: number;
-  guidanceEnabled: boolean;
-  guidanceThreshold: number;
-};
-
-type NewGateForm = {
-  label: string;
-  question: string;
-  correctAnswer: string;
-  successMessage: string;
-};
+import ProgramSettingsForm from "./ProgramSettingsForm";
 
 export default function ManageProgramEditor({
   programId,
@@ -45,17 +32,14 @@ export default function ManageProgramEditor({
   const [programName, setProgramName] = useState("");
   const [programVisibility, setProgramVisibility] = useState("public");
 
-  const [gateDrafts, setGateDrafts] = useState<Record<string, GateForm>>({});
-  const [copied, setCopied] = useState(false);
-  const [copyFailed, setCopyFailed] = useState(false);
-  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [gateDrafts, setGateDrafts] = useGateDrafts(gates);
+  const [savingGateId, setSavingGateId] = useState<string | null>(null);
   const [newGate, setNewGate] = useState<NewGateForm>({
     label: "",
     question: "",
     correctAnswer: "",
     successMessage: "",
   });
-  const [savingGateId, setSavingGateId] = useState<string | null>(null);
 
   useEffect(() => {
     if (program) {
@@ -63,33 +47,6 @@ export default function ManageProgramEditor({
       setProgramVisibility(program.visibility);
     }
   }, [program]);
-
-  useEffect(() => {
-    if (gates) {
-      setGateDrafts((prev) => {
-        const next = { ...prev };
-        for (const gate of gates) {
-          if (!next[gate.id]) {
-            next[gate.id] = {
-              label: gate.label,
-              question: gate.question,
-              correctAnswer: gate.correctAnswer,
-              successMessage: gate.successMessage,
-              acceptanceThreshold: gate.acceptanceThreshold,
-              guidanceEnabled: gate.guidanceEnabled,
-              guidanceThreshold: gate.guidanceThreshold,
-            };
-          }
-        }
-        for (const id of Object.keys(next)) {
-          if (!gates.some((g) => g.id === id)) {
-            delete next[id];
-          }
-        }
-        return next;
-      });
-    }
-  }, [gates]);
 
   const handleSaveProgram = () => {
     updateProgram.mutate({
@@ -128,47 +85,6 @@ export default function ManageProgramEditor({
       orderedGateIds: newOrder.map((g) => g.id),
     });
   };
-
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(
-        `${window.location.origin}/programs/${programId}`,
-      );
-      setCopied(true);
-    } catch {
-      setCopyFailed(true);
-    }
-  };
-
-  useEffect(() => {
-    if (copied) {
-      copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
-    }
-    return () => {
-      if (copyTimerRef.current !== null) {
-        clearTimeout(copyTimerRef.current);
-      }
-    };
-  }, [copied]);
-
-  useEffect(() => {
-    if (copyFailed) {
-      copyTimerRef.current = setTimeout(() => setCopyFailed(false), 2000);
-    }
-    return () => {
-      if (copyTimerRef.current !== null) {
-        clearTimeout(copyTimerRef.current);
-      }
-    };
-  }, [copyFailed]);
-
-  useEffect(() => {
-    return () => {
-      if (copyTimerRef.current !== null) {
-        clearTimeout(copyTimerRef.current);
-      }
-    };
-  }, []);
 
   const handleAddGate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -211,56 +127,21 @@ export default function ManageProgramEditor({
     <div className={styles.container}>
       <h1 className={styles.heading}>Edit: {program.name}</h1>
 
-      {/* Program metadata */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Program Settings</h2>
-        <div className={styles.metaRow}>
-          <label className={styles.label}>
-            Name
-            <input
-              type="text"
-              value={programName}
-              onChange={(e) => setProgramName(e.target.value)}
-              className={styles.input}
-            />
-          </label>
-          <label className={styles.label}>
-            Visibility
-            <select
-              value={programVisibility}
-              onChange={(e) => setProgramVisibility(e.target.value)}
-              className={styles.select}
-            >
-              <option value="public">Public</option>
-              <option value="unlisted">Unlisted</option>
-            </select>
-          </label>
-          <button
-            type="button"
-            onClick={handleSaveProgram}
-            disabled={updateProgram.isPending}
-            className={styles.button}
-          >
-            {updateProgram.isPending ? "Saving..." : "Save"}
-          </button>
-          {programVisibility === "unlisted" && (
-            <button
-              type="button"
-              onClick={handleCopyLink}
-              className={styles.copyLinkButton}
-            >
-              {copyFailed ? "Failed" : copied ? "Copied!" : "Copy Link"}
-            </button>
-          )}
-        </div>
-        {updateProgram.isError && (
-          <p className={styles.errorText}>
-            Failed to save: {updateProgram.error?.message}
-          </p>
-        )}
+        <ProgramSettingsForm
+          programName={programName}
+          programVisibility={programVisibility}
+          onProgramNameChange={setProgramName}
+          onProgramVisibilityChange={setProgramVisibility}
+          onSave={handleSaveProgram}
+          isSaving={updateProgram.isPending}
+          isUnlisted={programVisibility === "unlisted"}
+          copyUrl={`${window.location.origin}/programs/${programId}`}
+          updateError={updateProgram.error?.message}
+        />
       </section>
 
-      {/* Gates */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Gates ({gates?.length ?? 0})</h2>
 
@@ -281,279 +162,42 @@ export default function ManageProgramEditor({
           {gates?.map((gate, idx) => {
             const draft = gateDrafts[gate.id];
             if (!draft) return null;
-            const isFirst = idx === 0;
-            const isLast = idx === gates.length - 1;
-
             return (
-              <div key={gate.id} className={styles.gateCard}>
-                <div className={styles.gateHeader}>
-                  <span className={styles.gateIndex}>#{idx + 1}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleReorder(idx, "up")}
-                    disabled={isFirst || isReorderPending}
-                    className={styles.reorderButton}
-                    aria-label="Move gate up"
-                  >
-                    [^]
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleReorder(idx, "down")}
-                    disabled={isLast || isReorderPending}
-                    className={styles.reorderButton}
-                    aria-label="Move gate down"
-                  >
-                    [v]
-                  </button>
-                </div>
-
-                <div className={styles.gateFields}>
-                  <label className={styles.field}>
-                    Label
-                    <input
-                      type="text"
-                      value={draft.label}
-                      onChange={(e) =>
-                        setGateDrafts((prev) => ({
-                          ...prev,
-                          [gate.id]: {
-                            ...prev[gate.id],
-                            label: e.target.value,
-                          },
-                        }))
-                      }
-                      className={styles.input}
-                    />
-                  </label>
-                  <label className={styles.field}>
-                    Question
-                    <textarea
-                      value={draft.question}
-                      onChange={(e) =>
-                        setGateDrafts((prev) => ({
-                          ...prev,
-                          [gate.id]: {
-                            ...prev[gate.id],
-                            question: e.target.value,
-                          },
-                        }))
-                      }
-                      className={styles.textarea}
-                      rows={3}
-                    />
-                  </label>
-                  <label className={styles.field}>
-                    Correct Answer
-                    <input
-                      type="text"
-                      value={draft.correctAnswer}
-                      onChange={(e) =>
-                        setGateDrafts((prev) => ({
-                          ...prev,
-                          [gate.id]: {
-                            ...prev[gate.id],
-                            correctAnswer: e.target.value,
-                          },
-                        }))
-                      }
-                      className={styles.input}
-                    />
-                  </label>
-                  <label className={styles.field}>
-                    Success Message
-                    <textarea
-                      value={draft.successMessage}
-                      onChange={(e) =>
-                        setGateDrafts((prev) => ({
-                          ...prev,
-                          [gate.id]: {
-                            ...prev[gate.id],
-                            successMessage: e.target.value,
-                          },
-                        }))
-                      }
-                      className={styles.textarea}
-                      rows={2}
-                    />
-                  </label>
-                  <div className={styles.inlineFields}>
-                    <label className={styles.field}>
-                      Acceptance
-                      <input
-                        type="number"
-                        step="0.001"
-                        min="0"
-                        max="1"
-                        value={draft.acceptanceThreshold}
-                        onChange={(e) =>
-                          setGateDrafts((prev) => ({
-                            ...prev,
-                            [gate.id]: {
-                              ...prev[gate.id],
-                              acceptanceThreshold: Math.min(
-                                1,
-                                Math.max(0, Number(e.target.value)),
-                              ),
-                            },
-                          }))
-                        }
-                        className={styles.inputSmall}
-                      />
-                    </label>
-                    <label className={styles.field}>
-                      Guidance Enabled
-                      <input
-                        type="checkbox"
-                        checked={draft.guidanceEnabled}
-                        onChange={(e) =>
-                          setGateDrafts((prev) => ({
-                            ...prev,
-                            [gate.id]: {
-                              ...prev[gate.id],
-                              guidanceEnabled: e.target.checked,
-                            },
-                          }))
-                        }
-                        className={styles.checkbox}
-                      />
-                    </label>
-                    <label className={styles.field}>
-                      Guidance Threshold
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        value={draft.guidanceThreshold}
-                        onChange={(e) =>
-                          setGateDrafts((prev) => ({
-                            ...prev,
-                            [gate.id]: {
-                              ...prev[gate.id],
-                              guidanceThreshold: Math.max(
-                                0,
-                                Number(e.target.value),
-                              ),
-                            },
-                          }))
-                        }
-                        className={styles.inputSmall}
-                      />
-                    </label>
-                  </div>
-                </div>
-
-                <div className={styles.gateActions}>
-                  <button
-                    type="button"
-                    onClick={() => handleSaveGate(gate.id)}
-                    disabled={savingGateId !== null}
-                    className={styles.button}
-                  >
-                    {savingGateId === gate.id ? "Saving..." : "Save Gate"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteGate(gate.id)}
-                    disabled={deleteGate.isPending}
-                    className={styles.deleteButton}
-                  >
-                    Delete Gate
-                  </button>
-                </div>
-                {updateGate.isError && (
-                  <p className={styles.errorText}>
-                    Failed to save: {updateGate.error?.message}
-                  </p>
-                )}
-                {deleteGate.isError && (
-                  <p className={styles.errorText}>
-                    Failed to delete: {deleteGate.error?.message}
-                  </p>
-                )}
-              </div>
+              <GateEditorCard
+                key={gate.id}
+                gate={gate}
+                draft={draft}
+                index={idx}
+                isFirst={idx === 0}
+                isLast={idx === gates.length - 1}
+                isReorderPending={isReorderPending}
+                isDeletePending={deleteGate.isPending}
+                savingGateId={savingGateId}
+                onReorder={handleReorder}
+                onSave={handleSaveGate}
+                onDelete={handleDeleteGate}
+                onDraftChange={(patch) =>
+                  setGateDrafts((prev) => ({
+                    ...prev,
+                    [gate.id]: { ...prev[gate.id], ...patch },
+                  }))
+                }
+                updateError={updateGate.error?.message}
+                deleteError={deleteGate.error?.message}
+              />
             );
           })}
         </div>
 
-        {/* Add Gate */}
-        <form
+        <AddGateForm
+          newGate={newGate}
+          onNewGateChange={(patch) =>
+            setNewGate((prev) => ({ ...prev, ...patch }))
+          }
           onSubmit={handleAddGate}
-          className={styles.addGateForm}
-          aria-label="Add Gate"
-        >
-          <h3 className={styles.addGateTitle}>Add Gate</h3>
-          {createGate.isError && (
-            <p className={styles.errorText}>
-              Failed to add: {createGate.error?.message}
-            </p>
-          )}
-          <label className={styles.field}>
-            Label
-            <input
-              type="text"
-              value={newGate.label}
-              onChange={(e) =>
-                setNewGate((prev) => ({ ...prev, label: e.target.value }))
-              }
-              className={styles.input}
-              disabled={createGate.isPending}
-              required
-            />
-          </label>
-          <label className={styles.field}>
-            Question
-            <textarea
-              value={newGate.question}
-              onChange={(e) =>
-                setNewGate((prev) => ({ ...prev, question: e.target.value }))
-              }
-              className={styles.textarea}
-              rows={3}
-              disabled={createGate.isPending}
-              required
-            />
-          </label>
-          <label className={styles.field}>
-            Correct Answer
-            <input
-              type="text"
-              value={newGate.correctAnswer}
-              onChange={(e) =>
-                setNewGate((prev) => ({
-                  ...prev,
-                  correctAnswer: e.target.value,
-                }))
-              }
-              className={styles.input}
-              disabled={createGate.isPending}
-              required
-            />
-          </label>
-          <label className={styles.field}>
-            Success Message
-            <textarea
-              value={newGate.successMessage}
-              onChange={(e) =>
-                setNewGate((prev) => ({
-                  ...prev,
-                  successMessage: e.target.value,
-                }))
-              }
-              className={styles.textarea}
-              rows={2}
-              disabled={createGate.isPending}
-              required
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={createGate.isPending || !newGate.label.trim()}
-            className={styles.button}
-          >
-            {createGate.isPending ? "Adding..." : "Add Gate"}
-          </button>
-        </form>
+          isPending={createGate.isPending}
+          createError={createGate.error?.message}
+        />
       </section>
     </div>
   );
