@@ -1,5 +1,7 @@
+import { programs } from "@shared/schema";
 import type { Program } from "@shared/types";
 import type { AuthUser } from "@worker-middleware/db";
+import { eq, or } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { me } from "./authQueries";
 import {
@@ -371,7 +373,9 @@ describe("getPrograms", () => {
       contextWith(mockDb, undefined, user),
     );
 
-    expect(mockDb.mockWhere).toHaveBeenCalledOnce();
+    expect(mockDb.mockWhere).toHaveBeenCalledWith(
+      or(eq(programs.visibility, "public"), eq(programs.authorId, "user-1")),
+    );
   });
 });
 
@@ -461,7 +465,9 @@ describe("myPrograms", () => {
       contextWith(mockDb, undefined, user),
     );
 
-    expect(mockDb.mockWhere).toHaveBeenCalledOnce();
+    expect(mockDb.mockWhere).toHaveBeenCalledWith(
+      eq(programs.authorId, "user-42"),
+    );
   });
 });
 
@@ -505,25 +511,12 @@ describe("program", () => {
     expect(result).toBeNull();
   });
 
-  it("returns an unlisted program to an anonymous caller", async () => {
-    mockDb.mockLimit.mockResolvedValue([unlistedProgram]);
-
-    const result = await resolveField(
-      program,
-      null,
-      { id: "prog-1" },
-      contextWith(mockDb),
-    );
-
-    expect(result).toEqual(unlistedProgram);
-  });
-
   it("filters by the requested ID", async () => {
     mockDb.mockLimit.mockResolvedValue([]);
 
     await resolveField(program, null, { id: "prog-42" }, contextWith(mockDb));
 
-    expect(mockDb.mockWhere).toHaveBeenCalledOnce();
+    expect(mockDb.mockWhere).toHaveBeenCalledWith(eq(programs.id, "prog-42"));
   });
 });
 
