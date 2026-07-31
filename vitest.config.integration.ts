@@ -6,6 +6,7 @@ import {
   readD1Migrations,
 } from "@cloudflare/vitest-pool-workers";
 import { defineConfig } from "vitest/config";
+import { INTEGRATION_TEST_SECRET } from "./src/worker/test-utils/testConstants";
 
 // ESM-compatible __dirname — derived from import.meta.url since
 // __dirname is not a global in ESM modules.
@@ -44,7 +45,7 @@ export default defineConfig({
             // Test auth bypass — authenticated resolver tests use
             // x-auth-test-user-id/x-auth-test-user-secret headers.
             AUTH_TEST_BYPASS_ENABLED: "true",
-            AUTH_TEST_BYPASS_SECRET: "integration-test-secret",
+            AUTH_TEST_BYPASS_SECRET: INTEGRATION_TEST_SECRET,
             // Pass migrations + seed SQL as bindings for runtime application
             TEST_MIGRATIONS: migrations,
             TEST_SEED_SQL: seedSQL,
