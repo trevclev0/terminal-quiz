@@ -1,6 +1,11 @@
 import type { AppGraphQLContext } from "./types";
 
-const VALID_VISIBILITY = new Set(["public", "unlisted"]);
+export type Visibility = "public" | "unlisted";
+
+const VALID_VISIBILITY: ReadonlySet<Visibility> = new Set([
+  "public",
+  "unlisted",
+]);
 
 function requireUser(user: AppGraphQLContext["var"]["user"]): string {
   if (!user?.id) {
@@ -9,8 +14,8 @@ function requireUser(user: AppGraphQLContext["var"]["user"]): string {
   return user.id;
 }
 
-function assertVisibility(value: string): void {
-  if (!VALID_VISIBILITY.has(value)) {
+function assertVisibility(value: string): asserts value is Visibility {
+  if (!VALID_VISIBILITY.has(value as Visibility)) {
     throw new Error(
       `Invalid visibility "${value}". Must be "public" or "unlisted".`,
     );

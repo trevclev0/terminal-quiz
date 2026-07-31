@@ -73,9 +73,7 @@ export const reorderGates = {
         .set({ sequenceOrder: index + 1 })
         .where(eq(gates.id, id)),
     );
-    await db.batch([...tempUpdates, ...finalUpdates] as unknown as Parameters<
-      typeof db.batch
-    >[0]);
+    await db.batch([tempUpdates[0], ...tempUpdates.slice(1), ...finalUpdates]);
 
     return true;
   },
