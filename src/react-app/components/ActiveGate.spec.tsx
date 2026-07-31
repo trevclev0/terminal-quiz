@@ -4,7 +4,7 @@ import "@testing-library/jest-dom/vitest";
 import type { ActiveGate as ActiveGateType } from "@api/queries/useProgramProgressionQuery";
 import { MAX_CLUES_PER_GATE } from "@shared/types";
 import { mockCssModuleProxy } from "@test-utils/cssModuleMock";
-import { createRef } from "react";
+import { createRef, type SubmitEvent } from "react";
 import ActiveGate from "./ActiveGate";
 
 vi.mock("./ActiveGate.module.css", () => ({ default: mockCssModuleProxy() }));
@@ -17,7 +17,7 @@ const mockActiveGate: ActiveGateType = {
 };
 
 const mockChangeHandler = vi.fn();
-const mockSubmitHandler = vi.fn((e: React.FormEvent) => e.preventDefault());
+const mockSubmitHandler = vi.fn((e: SubmitEvent) => e.preventDefault());
 const mockInputRef = createRef<HTMLInputElement>();
 
 const mockRequestClueMutation = {

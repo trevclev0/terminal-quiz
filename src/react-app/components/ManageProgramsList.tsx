@@ -2,7 +2,7 @@ import { useCreateProgramMutation } from "@api/mutations/useCreateProgramMutatio
 import { useDeleteProgramMutation } from "@api/mutations/useDeleteProgramMutation";
 import { useMyProgramsQuery } from "@api/queries/useMyProgramsQuery";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { type SubmitEvent, useEffect, useRef, useState } from "react";
 import styles from "./ManageProgramsList.module.css";
 
 export default function ManageProgramsList() {
@@ -17,7 +17,7 @@ export default function ManageProgramsList() {
   const [copyFailedId, setCopyFailedId] = useState<string | null>(null);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreate = async (e: SubmitEvent) => {
     e.preventDefault();
     if (!newName.trim()) return;
     try {

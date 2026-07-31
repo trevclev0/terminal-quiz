@@ -185,7 +185,13 @@ describe("ManageProgramEditor", () => {
     const deleteButtons = screen.getAllByText("Delete Gate");
     await userEvent.click(deleteButtons[0]);
 
-    expect(mockDeleteGate.mutate).toHaveBeenCalledWith({ id: "gate-1" });
+    expect(mockDeleteGate.mutate).toHaveBeenCalledWith(
+      { id: "gate-1" },
+      expect.objectContaining({
+        onSuccess: expect.any(Function),
+        onError: expect.any(Function),
+      }),
+    );
   });
 
   it("reorders gates up", async () => {
@@ -310,26 +316,50 @@ describe("ManageProgramEditor", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows error when gate update fails", () => {
+  it("shows error when gate update fails", async () => {
     setupMocks({
-      updateGate: { isError: true, error: new Error("Update failed") },
+      updateGate: {
+        isError: true,
+        error: new Error("Update failed"),
+        mutate: vi.fn((_payload: unknown, options?: { onError?: () => void }) =>
+          options?.onError?.(),
+        ),
+      },
     });
 
     render(<ManageProgramEditor programId={PROGRAM_ID} />);
+
+    const saveGateButtons = screen.getAllByText("Save Gate");
+    await userEvent.click(saveGateButtons[0]);
+
     expect(
-      screen.getAllByText("Failed to save: Update failed").length,
-    ).toBeGreaterThan(0);
+      screen.getByText("Failed to save: Update failed"),
+    ).toBeInTheDocument();
   });
 
-  it("shows error when gate delete fails", () => {
+  it("shows error when gate delete fails", async () => {
     setupMocks({
-      deleteGate: { isError: true, error: new Error("Delete failed") },
+      deleteGate: {
+        isError: true,
+        error: new Error("Delete failed"),
+        mutate: vi.fn((_payload: unknown, options?: { onError?: () => void }) =>
+          options?.onError?.(),
+        ),
+      },
     });
+    vi.stubGlobal(
+      "confirm",
+      vi.fn(() => true),
+    );
 
     render(<ManageProgramEditor programId={PROGRAM_ID} />);
+
+    const deleteButtons = screen.getAllByText("Delete Gate");
+    await userEvent.click(deleteButtons[0]);
+
     expect(
-      screen.getAllByText("Failed to delete: Delete failed").length,
-    ).toBeGreaterThan(0);
+      screen.getByText("Failed to delete: Delete failed"),
+    ).toBeInTheDocument();
   });
 
   it("shows error when gate creation fails", () => {

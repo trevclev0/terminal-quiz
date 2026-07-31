@@ -8,7 +8,7 @@ import { useProgramGatesQuery } from "@api/queries/useProgramGatesQuery";
 import { useGateDrafts } from "@hooks/useGateDrafts";
 import { useNewGateForm } from "@hooks/useNewGateForm";
 import { useProgramSettings } from "@hooks/useProgramSettings";
-import { useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import AddGateForm from "./AddGateForm";
 import GateEditorCard from "./GateEditorCard";
 import styles from "./ManageProgramEditor.module.css";
@@ -40,6 +40,7 @@ export default function ManageProgramEditor({
 
   const [gateDrafts, setGateDrafts] = useGateDrafts(gates);
   const [savingGateId, setSavingGateId] = useState<string | null>(null);
+  const [lastFailedGateId, setLastFailedGateId] = useState<string | null>(null);
   const { newGate, onNewGateChange, resetNewGate } = useNewGateForm();
 
   const handleSaveProgram = () => {
@@ -57,6 +58,8 @@ export default function ManageProgramEditor({
     updateGate.mutate(
       { id: gateId, ...draft },
       {
+        onSuccess: () => setLastFailedGateId(null),
+        onError: () => setLastFailedGateId(gateId),
         onSettled: () => setSavingGateId(null),
       },
     );
@@ -64,7 +67,13 @@ export default function ManageProgramEditor({
 
   const handleDeleteGate = (gateId: string) => {
     if (window.confirm("Delete this gate? This cannot be undone.")) {
-      deleteGate.mutate({ id: gateId });
+      deleteGate.mutate(
+        { id: gateId },
+        {
+          onSuccess: () => setLastFailedGateId(null),
+          onError: () => setLastFailedGateId(gateId),
+        },
+      );
     }
   };
 
@@ -80,7 +89,7 @@ export default function ManageProgramEditor({
     });
   };
 
-  const handleAddGate = (e: React.FormEvent) => {
+  const handleAddGate = (e: SubmitEvent) => {
     e.preventDefault();
     if (!newGate.label.trim()) return;
     const maxOrder =
@@ -167,8 +176,16 @@ export default function ManageProgramEditor({
                     [gate.id]: { ...prev[gate.id], ...patch },
                   }))
                 }
-                updateError={updateGate.error?.message}
-                deleteError={deleteGate.error?.message}
+                updateError={
+                  updateGate.isError && lastFailedGateId === gate.id
+                    ? updateGate.error?.message
+                    : undefined
+                }
+                deleteError={
+                  deleteGate.isError && lastFailedGateId === gate.id
+                    ? deleteGate.error?.message
+                    : undefined
+                }
               />
             );
           })}

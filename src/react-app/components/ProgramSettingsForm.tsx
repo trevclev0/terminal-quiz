@@ -26,44 +26,39 @@ export default function ProgramSettingsForm({
 }: ProgramSettingsFormProps) {
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
-  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copyFailedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (copied) {
-      copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
+      copiedTimerRef.current = setTimeout(() => setCopied(false), 2000);
     }
     return () => {
-      if (copyTimerRef.current !== null) {
-        clearTimeout(copyTimerRef.current);
+      if (copiedTimerRef.current !== null) {
+        clearTimeout(copiedTimerRef.current);
       }
     };
   }, [copied]);
 
   useEffect(() => {
     if (copyFailed) {
-      copyTimerRef.current = setTimeout(() => setCopyFailed(false), 2000);
+      copyFailedTimerRef.current = setTimeout(() => setCopyFailed(false), 2000);
     }
     return () => {
-      if (copyTimerRef.current !== null) {
-        clearTimeout(copyTimerRef.current);
+      if (copyFailedTimerRef.current !== null) {
+        clearTimeout(copyFailedTimerRef.current);
       }
     };
   }, [copyFailed]);
-
-  useEffect(() => {
-    return () => {
-      if (copyTimerRef.current !== null) {
-        clearTimeout(copyTimerRef.current);
-      }
-    };
-  }, []);
 
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(copyUrl);
       setCopied(true);
+      setCopyFailed(false);
     } catch {
       setCopyFailed(true);
+      setCopied(false);
     }
   };
 

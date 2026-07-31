@@ -1,7 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import GateEditorCard, { type GateForm } from "./GateEditorCard";
+import GateEditorCard from "./GateEditorCard";
+import type { GateForm } from "./manageEditorTypes";
 
 const gate = { id: "gate-1" };
 
