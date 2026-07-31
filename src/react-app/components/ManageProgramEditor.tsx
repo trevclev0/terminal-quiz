@@ -6,8 +6,10 @@ import { useUpdateProgramMutation } from "@api/mutations/useUpdateProgramMutatio
 import { useMyProgramsQuery } from "@api/queries/useMyProgramsQuery";
 import { useProgramGatesQuery } from "@api/queries/useProgramGatesQuery";
 import { useGateDrafts } from "@hooks/useGateDrafts";
-import { useEffect, useState } from "react";
-import AddGateForm, { type NewGateForm } from "./AddGateForm";
+import { useNewGateForm } from "@hooks/useNewGateForm";
+import { useProgramSettings } from "@hooks/useProgramSettings";
+import { useState } from "react";
+import AddGateForm from "./AddGateForm";
 import GateEditorCard from "./GateEditorCard";
 import styles from "./ManageProgramEditor.module.css";
 import ProgramSettingsForm from "./ProgramSettingsForm";
@@ -29,24 +31,16 @@ export default function ManageProgramEditor({
 
   const program = programs?.find((p) => p.id === programId);
 
-  const [programName, setProgramName] = useState("");
-  const [programVisibility, setProgramVisibility] = useState("public");
+  const {
+    programName,
+    setProgramName,
+    programVisibility,
+    setProgramVisibility,
+  } = useProgramSettings(program);
 
   const [gateDrafts, setGateDrafts] = useGateDrafts(gates);
   const [savingGateId, setSavingGateId] = useState<string | null>(null);
-  const [newGate, setNewGate] = useState<NewGateForm>({
-    label: "",
-    question: "",
-    correctAnswer: "",
-    successMessage: "",
-  });
-
-  useEffect(() => {
-    if (program) {
-      setProgramName(program.name);
-      setProgramVisibility(program.visibility);
-    }
-  }, [program]);
+  const { newGate, onNewGateChange, resetNewGate } = useNewGateForm();
 
   const handleSaveProgram = () => {
     updateProgram.mutate({
@@ -86,7 +80,7 @@ export default function ManageProgramEditor({
     });
   };
 
-  const handleAddGate = async (e: React.FormEvent) => {
+  const handleAddGate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newGate.label.trim()) return;
     const maxOrder =
@@ -102,16 +96,7 @@ export default function ManageProgramEditor({
         successMessage: newGate.successMessage.trim(),
         sequenceOrder: maxOrder + 1,
       },
-      {
-        onSuccess: () => {
-          setNewGate({
-            label: "",
-            question: "",
-            correctAnswer: "",
-            successMessage: "",
-          });
-        },
-      },
+      { onSuccess: resetNewGate },
     );
   };
 
@@ -191,9 +176,7 @@ export default function ManageProgramEditor({
 
         <AddGateForm
           newGate={newGate}
-          onNewGateChange={(patch) =>
-            setNewGate((prev) => ({ ...prev, ...patch }))
-          }
+          onNewGateChange={onNewGateChange}
           onSubmit={handleAddGate}
           isPending={createGate.isPending}
           createError={createGate.error?.message}
