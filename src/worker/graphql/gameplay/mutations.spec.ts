@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { requestClue, resetSession, submitGuess } from "./mutations";
+import { requestClue } from "./requestClueMutation";
+import { resetSession } from "./resetSessionMutation";
+import { submitGuess } from "./submitGuessMutation";
 
 vi.mock("@worker-utils/isGuessCloseEnough", () => ({
   default: vi.fn(),

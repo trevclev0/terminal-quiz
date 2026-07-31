@@ -5,11 +5,6 @@ import {
   updateGate,
 } from "@worker-graphql/gameplay/gateMutations";
 import {
-  requestClue,
-  resetSession,
-  submitGuess,
-} from "@worker-graphql/gameplay/mutations";
-import {
   createProgram,
   deleteProgram,
   updateProgram,
@@ -24,6 +19,9 @@ import {
   programGates,
 } from "@worker-graphql/gameplay/queries";
 import { reorderGates } from "@worker-graphql/gameplay/reorderGatesMutation";
+import { requestClue } from "@worker-graphql/gameplay/requestClueMutation";
+import { resetSession } from "@worker-graphql/gameplay/resetSessionMutation";
+import { submitGuess } from "@worker-graphql/gameplay/submitGuessMutation";
 import type { AppVariables } from "@worker-middleware/db";
 import { buildSchema } from "drizzle-graphql";
 import {
