@@ -1,4 +1,5 @@
 import { authClient } from "@api/authClient";
+import styles from "./LoginPage.module.css";
 
 export default function LoginPage({
   redirectTo = "/programs/select",
@@ -6,25 +7,9 @@ export default function LoginPage({
   redirectTo?: string;
 }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "2rem",
-        paddingTop: "4rem",
-      }}
-    >
+    <div className={styles.container}>
       <h1>login</h1>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-          width: "100%",
-          maxWidth: "300px",
-        }}
-      >
+      <div className={styles.buttonGroup}>
         <button
           type="button"
           onClick={() =>
