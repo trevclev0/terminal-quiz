@@ -2,10 +2,13 @@
 
 Refactor the oversized source files to keep every logic file under ~200 lines.
 
-**Status:** Phases 1-3 complete. Phase 4 (queries) pending.
+**Status:** Phases 1-4 complete. All oversized logic files split.
 Split on single responsibility, not mechanically. Declarative data files
 (`schema.ts`, `gqlQueries.ts`, `types.ts`) and test files are exempt from the
 target — long is normal for those.
+
+A final cleanup feature branch/PR is planned (post-Phase-4) to address leftover
+gaps + deferred items — see the Phase 4 result section's known-gap note.
 
 ## Current state (audited Jul 2026)
 
@@ -14,7 +17,7 @@ target — long is normal for those.
 | `src/react-app/components/ManageProgramEditor.tsx` | 560 → 204 | Logic (container) | ✅ Split (Phase 1, Jul 2026) |
 | `src/worker/graphql/gameplay/managementMutations.ts` | 368 | Logic (7 GraphQL resolvers) | ✅ Split (Phase 2, Jul 2026) |
 | `src/worker/graphql/gameplay/mutations.ts` | 366 | Logic (3 resolvers, complex) | ✅ Split (Phase 3, Jul 2026) |
-| `src/worker/graphql/gameplay/queries.ts` | 230 | Logic (7 resolvers, small) | 🟠 Pending (Phase 4) |
+| `src/worker/graphql/gameplay/queries.ts` | 230 | Logic (7 resolvers, small) | ✅ Split (Phase 4, Jul 2026) |
 | `src/shared/gqlQueries.ts` | 222 | Data (17 query strings) | 🟢 Keep |
 | `src/shared/schema.ts` | 202 | Data (5 table definitions) | 🟢 Keep |
 
@@ -267,7 +270,7 @@ Verification: `check:code`, `build`, `test --run` (470 pass), `test:integration`
 
 ---
 
-## Phase 4 — Backend: split `queries.ts` (230)
+## Phase 4 — Backend: split `queries.ts` (230) — ✅ DONE (Jul 2026)
 
 Domain split: auth, programs, session.
 
@@ -294,6 +297,32 @@ Do NOT route them through `loadActiveSession`. Only the trivial 3-line
 `findFirst({ where: sessionId + programId })` lookup + "Missing Session ID"
 guard overlap; decide then whether to extract that lookup or leave it
 duplicated (3 lines each).
+
+### Phase 4 result (Jul 2026)
+
+| File | Lines |
+|---|---|
+| `authQueries.ts` | 12 |
+| `sessionQueries.ts` | 129 |
+| `programQueries.ts` | 99 |
+
+- **`queries.ts` deleted** — replaced by the 3 files above; both importers
+  (`graphql.ts`, `queries.spec.ts`) updated. Spec file name kept (it covers all
+  queries collectively).
+- **Session lookup NOT extracted** — per the Phase 4 note, confirmed during
+  execution: predicates differ (`sessionId + programId` vs
+  `sessionId + status`), and `getProgramProgression` is lenient/seeding vs
+  `loadActiveSession`'s strict/throw. Only shared line is the 1-line sessionId
+  guard; left duplicated.
+- **Known gap (deferred)**: the `program` resolver has no unit test
+  (`queries.spec.ts` imports 6 of 7 resolvers, `program` absent) and no
+  explicit integration test. Integration specs cover `getPrograms`,
+  `getProgramProgression`, `getInProgressProgram` via the real worker. Defer
+  `program` coverage to the planned final cleanup feature branch/PR
+  (post-Phase-4) that will address leftover gaps + deferred items.
+
+Verification: `check:code`, `build`, `test --run` (470 pass), `test:integration`
+(27 pass) all green.
 
 ---
 
