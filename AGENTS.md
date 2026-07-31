@@ -8,7 +8,7 @@ Live deployment: `https://quiz.clevertrevor.dev`
 
 There is a **single, server-authoritative gameplay flow**: a session ID is generated client-side (`utils/session.ts`), persisted in `localStorage`, and sent as an `x-session-id` header on every GraphQL request. The server tracks per-session progression (current gate, completed gates, attempt count) in the `session_progress` / `session_completed_gates` tables. All gameplay mutations — `submitGuess`, `requestClue`, `resetSession` — are resolved server-side and validated against that session's row. There is no client-only or REST-based flow.
 
-**User authentication** (Better Auth, OAuth-only: Google + GitHub) is layered on top for content authorship only — gameplay stays anonymous. Auth middleware sets `user` in Hono context; route guards (`requireUser` in `-requireUser.ts`) protect management routes. Two identity systems coexist: `x-session-id` for gameplay, Better Auth session cookie for authorship. Management mutations (`createProgram`, `updateProgram`, `deleteProgram`, `createGate`, `updateGate`, `deleteGate`, `reorderGates`) are auth-guarded via `authorizeProgramMutation()` which verifies `program.authorId === userId`.
+**User authentication** (Better Auth, OAuth-only: Google + GitHub) is layered on top for content authorship only — gameplay stays anonymous. Auth middleware sets `user` in Hono context; route guards (`requireUser` in `-requireUser.ts`) protect management routes. Two identity systems coexist: `x-session-id` for gameplay, Better Auth session cookie for authorship. Management mutations (`createProgram`, `updateProgram`, `deleteProgram`, `createGate`, `updateGate`, `deleteGate`, `reorderGates`) are auth-guarded via `requireUser`; the six existing-program mutations (all except `createProgram`) re-verify ownership via `authorizeProgramMutation()`, which checks `program.authorId === userId`, while `createProgram` uses `requireUser` + `assertVisibility`.
 
 ---
 
@@ -268,7 +268,7 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - **Authentication**: Better Auth, OAuth-only (Google + GitHub), self-hosted on the same Worker. Mounted at `/api/auth/*`. No passwords in MVP. Auth tables (`user`, `account`, `session`, `verification`) live in `src/shared/authSchema.ts` — separate Drizzle instance, never exposed via GraphQL.
 - **Auth middleware** (`src/worker/middleware/auth.ts`): resolves Better Auth session cookie, sets `user` in Hono context. Parallel to `sessionMiddleware` (anonymous gameplay identity) — two identity systems, decoupled.
 - **Route guard** (`src/react-app/routes/programs/-requireUser.ts`): `requireUser(queryClient, returnTo)` — fetches `me` query, throws TanStack Router `redirect` to `/login?return_to=...` if unauthenticated. Used by `/programs/manage` and `/programs/manage/$programId` routes.
-- **Server-side authorization** (`src/worker/graphql/gameplay/authorizeProgram.ts`): `authorizeProgramMutation(db, programId, userId)` — fetches program, verifies `authorId === userId`, throws on null/mismatch. Used by all 7 management mutations.
+- **Server-side authorization** (`src/worker/graphql/gameplay/authorizeProgram.ts`): `authorizeProgramMutation(db, programId, userId)` — fetches program, verifies `authorId === userId`, throws on null/mismatch. Used by 6 of 7 management mutations — all except `createProgram`, which has no existing program to authorize and instead uses `requireUser` + `assertVisibility`.
 - **Management mutations** (in `src/worker/graphql/gameplay/programMutations.ts`,
   `gateMutations.ts`, `reorderGatesMutation.ts`, shared auth/validation helpers in
   `managementHelpers.ts`): `createProgram`, `updateProgram`, `deleteProgram`,
@@ -306,7 +306,7 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - Do not introduce a REST or client-only gameplay path — GraphQL is the single source of truth for progression
 - Do not reintroduce a shared/global `game_state`-style table — progression is session-scoped only
 - Do not expose Better Auth tables through the auto-GraphQL schema — keep `authSchema.ts` on its own Drizzle instance, never passed to `buildSchema()`
-- Do not weaken `authorizeProgramMutation()` — every management mutation must re-verify `authorId` server-side, never trust client-supplied program/gate IDs without ownership check
+- Do not weaken `authorizeProgramMutation()` — every management mutation operating on an existing program/gate must re-verify `authorId` server-side (all except `createProgram`), never trust client-supplied program/gate IDs without ownership check
 - Do not introduce REST endpoints for authoring — management mutations are GraphQL only, same as gameplay
 - Do not allow open redirects in `/login` — `validateReturnTo()` must reject cross-origin, protocol-relative, and backslash-based return_to values
 - Do not define GraphQL query/mutation strings inline in frontend files — they belong in `src/shared/gqlQueries.ts` and are imported by hooks/api files and integration tests.

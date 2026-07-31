@@ -180,7 +180,7 @@ No structural change — `programs` query already filters correctly server-side 
 ### Phase 3a — Backend: Mutations & Authorization
 - [x] `authorizeProgramMutation()` helper — fetches program, verifies `authorId === userId`, throws on null/mismatch.
 - [x] `ProgramManagementType` + `GateManagementType` GraphQL types.
-- [x] 7 management mutations (`createProgram`, `updateProgram`, `deleteProgram`, `createGate`, `updateGate`, `deleteGate`, `reorderGates`) — all auth-guarded via `authorizeProgramMutation()`, input-validated, split across `programMutations.ts`, `gateMutations.ts`, `reorderGatesMutation.ts` (+ shared `managementHelpers.ts`).
+- [x] 7 management mutations (`createProgram`, `updateProgram`, `deleteProgram`, `createGate`, `updateGate`, `deleteGate`, `reorderGates`) — all auth-guarded via `requireUser`; 6 of 7 (all except `createProgram`) re-verify ownership via `authorizeProgramMutation()`, while `createProgram` uses `requireUser` + `assertVisibility`; input-validated, split across `programMutations.ts`, `gateMutations.ts`, `reorderGatesMutation.ts` (+ shared `managementHelpers.ts`).
 - [x] `reorderGates`: atomic `db.batch()` with two-pass (negative temp offsets → final values) to dodge `unique(programId, sequenceOrder)` constraint.
 - [x] Wire all 7 mutations into GraphQL schema.
 - [x] Mutation strings in `src/shared/gqlQueries.ts`.
