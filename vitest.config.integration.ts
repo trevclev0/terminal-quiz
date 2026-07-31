@@ -41,6 +41,10 @@ export default defineConfig({
             GOOGLE_CLIENT_SECRET: "test-google-client-secret",
             GITHUB_CLIENT_ID: "test-github-client-id",
             GITHUB_CLIENT_SECRET: "test-github-client-secret",
+            // Test auth bypass — authenticated resolver tests use
+            // x-auth-test-user-id/x-auth-test-user-secret headers.
+            AUTH_TEST_BYPASS_ENABLED: "true",
+            AUTH_TEST_BYPASS_SECRET: "integration-test-secret",
             // Pass migrations + seed SQL as bindings for runtime application
             TEST_MIGRATIONS: migrations,
             TEST_SEED_SQL: seedSQL,
