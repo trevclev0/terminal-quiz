@@ -40,7 +40,12 @@ export default function ManageProgramEditor({
 
   const [gateDrafts, setGateDrafts] = useGateDrafts(gates);
   const [savingGateId, setSavingGateId] = useState<string | null>(null);
-  const [lastFailedGateId, setLastFailedGateId] = useState<string | null>(null);
+  const [lastSaveFailedGateId, setLastSaveFailedGateId] = useState<
+    string | null
+  >(null);
+  const [lastDeleteFailedGateId, setLastDeleteFailedGateId] = useState<
+    string | null
+  >(null);
   const { newGate, onNewGateChange, resetNewGate } = useNewGateForm();
 
   const handleSaveProgram = () => {
@@ -58,8 +63,8 @@ export default function ManageProgramEditor({
     updateGate.mutate(
       { id: gateId, ...draft },
       {
-        onSuccess: () => setLastFailedGateId(null),
-        onError: () => setLastFailedGateId(gateId),
+        onSuccess: () => setLastSaveFailedGateId(null),
+        onError: () => setLastSaveFailedGateId(gateId),
         onSettled: () => setSavingGateId(null),
       },
     );
@@ -70,8 +75,8 @@ export default function ManageProgramEditor({
       deleteGate.mutate(
         { id: gateId },
         {
-          onSuccess: () => setLastFailedGateId(null),
-          onError: () => setLastFailedGateId(gateId),
+          onSuccess: () => setLastDeleteFailedGateId(null),
+          onError: () => setLastDeleteFailedGateId(gateId),
         },
       );
     }
@@ -177,12 +182,12 @@ export default function ManageProgramEditor({
                   }))
                 }
                 updateError={
-                  updateGate.isError && lastFailedGateId === gate.id
+                  updateGate.isError && lastSaveFailedGateId === gate.id
                     ? updateGate.error?.message
                     : undefined
                 }
                 deleteError={
-                  deleteGate.isError && lastFailedGateId === gate.id
+                  deleteGate.isError && lastDeleteFailedGateId === gate.id
                     ? deleteGate.error?.message
                     : undefined
                 }

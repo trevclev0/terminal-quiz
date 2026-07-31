@@ -6,12 +6,14 @@ export function useProgramSettings(
   const [programName, setProgramName] = useState("");
   const [programVisibility, setProgramVisibility] = useState("public");
 
+  const name = program?.name;
+  const visibility = program?.visibility;
+
   useEffect(() => {
-    if (program) {
-      setProgramName(program.name);
-      setProgramVisibility(program.visibility);
-    }
-  }, [program]);
+    if (name === undefined || visibility === undefined) return;
+    setProgramName(name);
+    setProgramVisibility(visibility);
+  }, [name, visibility]);
 
   return {
     programName,
