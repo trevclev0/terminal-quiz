@@ -65,61 +65,106 @@
   box-shadow: inset 0 0 100px rgba(0, 255, 0, 0.08);
 }
 
-/* Flicker animation applied to scan lines */
-.scanlines.flicker::after,
-.scanlinesHeavy.flicker::after {
-  animation: quiz-crt-flicker 0.1s infinite;
+/* Flicker pulse applied to scan lines — rare, random cadence */
+.scanlines.flickerPulse::after,
+.scanlinesHeavy.flickerPulse::after {
+  animation: quiz-crt-flicker-pulse 0.15s ease-out;
 }
 
-@keyframes quiz-crt-flicker {
-  0%,
+@keyframes quiz-crt-flicker-pulse {
+  0% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.9;
+  }
   100% {
     opacity: 1;
   }
-  44% {
-    opacity: 0.97;
-  }
-  48% {
-    opacity: 0.98;
-  }
 }
 
-/* Power-on boot layer */
-.powerOnLayer {
+/* Power-on boot sequence — staged (flash → cursor → banner) */
+.bootLayer {
   position: fixed;
   inset: 0;
   z-index: 2;
-  background: #000;
+  background: var(--black);
   pointer-events: none;
-  animation: quiz-crt-power-on 1s ease-out forwards;
 }
 
-@keyframes quiz-crt-power-on {
+/* Glow vignette — mirrors .glowHeavy::before */
+.bootLayer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 60%,
+    rgba(0, 25, 0, 0.45) 100%
+  );
+  box-shadow: inset 0 0 100px rgba(0, 255, 0, 0.08);
+}
+
+/* Scan lines — mirrors .scanlinesHeavy::after */
+.bootLayer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: repeating-linear-gradient(
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 20, 0, 0.25) 2px,
+    rgba(0, 0, 0, 0.4) 4px
+  );
+}
+
+.bootContent {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.bootFlash {
+  position: absolute;
+  inset: 0 0 50% 0;
+  z-index: 1;
+  background: repeating-linear-gradient(0deg, #9f9, #063 2px, #9f9 4px);
+  animation: boot-flash-collapse 0.15s ease-in forwards;
+}
+
+@keyframes boot-flash-collapse {
   0% {
     opacity: 1;
-    background: #000;
-  }
-  3% {
-    background: #fff;
-    opacity: 1;
-  }
-  5% {
-    background: #000;
-    opacity: 0.9;
-  }
-  10% {
-    opacity: 0.6;
-    box-shadow: inset 0 0 150px rgba(0, 255, 0, 0.3);
-  }
-  30% {
-    opacity: 0.3;
-  }
-  60% {
-    opacity: 0.1;
+    transform: scaleY(1);
   }
   100% {
     opacity: 0;
+    transform: scaleY(0);
   }
+}
+
+.bootCursor {
+  display: inline-block;
+  width: 14px;
+  height: 24px;
+  background: var(--green);
+}
+
+.bootBanner {
+  color: var(--green);
+  font-family: var(--font-terminal);
+  font-size: 24pt;
+}
+
+.bootBannerInverse {
+  background: var(--green);
+  color: var(--black);
+  padding: 0 4px;
+  display: inline-block;
 }
 
 /* Status bar */
@@ -167,16 +212,26 @@
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .powerOnLayer {
-    animation: none;
+  .bootLayer {
     opacity: 0;
   }
 
-  .scanlines.flicker::after {
+  .scanlines.flickerPulse::after {
     animation: none;
   }
 
   .statusBarFlash {
     animation: none;
+  }
+}
+
+/* Compact status bar on small screens */
+@media (max-width: 600px) {
+  .statusBar {
+    left: auto;
+    width: auto;
+    height: 22px;
+    font-size: 12px;
+    padding: 0 10px calc(4px + env(safe-area-inset-bottom, 0px));
   }
 }

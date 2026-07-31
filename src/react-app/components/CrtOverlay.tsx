@@ -2,24 +2,61 @@ import useCrtPreferences from "@hooks/useCrtPreferences";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./CrtOverlay.module.css";
 
+const BOOT_STAGES = ["flash", "blackout", "cursor", "banner", "done"] as const;
+type BootStage = (typeof BOOT_STAGES)[number];
+
 function CrtOverlay() {
   const { settings, presetLabel, cyclePreset, isFirstVisit } =
     useCrtPreferences();
 
   const isFullPreset = useMemo(() => presetLabel === "full", [presetLabel]);
 
-  const [booted, setBooted] = useState(!settings.powerOn);
+  const [bootStage, setBootStage] = useState<BootStage>(
+    settings.powerOn ? "flash" : "done",
+  );
+  const [flickerPulse, setFlickerPulse] = useState(false);
   const [firstVisitDone, setFirstVisitDone] = useState(false);
   const [flashing, setFlashing] = useState(false);
 
   useEffect(() => {
     if (!settings.powerOn) {
-      setBooted(true);
+      setBootStage("done");
       return;
     }
-    const timer = setTimeout(() => setBooted(true), 1000);
-    return () => clearTimeout(timer);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setBootStage("done");
+      return;
+    }
+    setBootStage("flash");
+    const timers = [
+      setTimeout(() => setBootStage("blackout"), 150),
+      setTimeout(() => setBootStage("cursor"), 500),
+      setTimeout(() => setBootStage("banner"), 1100),
+      setTimeout(() => setBootStage("done"), 1750),
+    ];
+    return () => timers.forEach(clearTimeout);
   }, [settings.powerOn]);
+
+  useEffect(() => {
+    if (!settings.flicker) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let offTimer: ReturnType<typeof setTimeout> | undefined;
+    const schedule = () => {
+      const delay = 4000 + Math.random() * 5000;
+      timer = setTimeout(() => {
+        setFlickerPulse(true);
+        offTimer = setTimeout(() => setFlickerPulse(false), 120);
+        schedule();
+      }, delay);
+    };
+    schedule();
+    return () => {
+      if (timer) clearTimeout(timer);
+      if (offTimer) clearTimeout(offTimer);
+    };
+  }, [settings.flicker]);
 
   useEffect(() => {
     if (!isFirstVisit) return;
@@ -88,6 +125,8 @@ function CrtOverlay() {
     </button>
   );
 
+  const booting = bootStage !== "done";
+
   const effectsActive = settings.scanlines || settings.glow || settings.powerOn;
 
   if (!effectsActive) {
@@ -104,17 +143,28 @@ function CrtOverlay() {
     styles.crtOverlay,
     settings.scanlines && scanlinesClass,
     settings.glow && glowClass,
-    settings.flicker && styles.flicker,
+    flickerPulse && styles.flickerPulse,
   ]
     .filter(Boolean)
     .join(" ");
 
   return (
     <div className={classNames} data-testid="crt-overlay">
-      {!booted && (
-        <div className={styles.powerOnLayer} data-testid="crt-poweron" />
+      {booting && (
+        <div className={styles.bootLayer} data-testid="crt-poweron">
+          {bootStage === "flash" && <div className={styles.bootFlash} />}
+          <div className={styles.bootContent}>
+            {bootStage === "cursor" && <div className={styles.bootCursor} />}
+            {bootStage === "banner" && (
+              <div className={styles.bootBanner}>
+                <span className={styles.bootBannerInverse}>VT220 OK</span>
+                <div>Terminal Quiz</div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
-      {statusBar}
+      {booting ? null : statusBar}
     </div>
   );
 }
