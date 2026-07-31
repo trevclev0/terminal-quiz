@@ -1,16 +1,11 @@
+import type { SubmitEvent } from "react";
 import styles from "./AddGateForm.module.css";
-
-export type NewGateForm = {
-  label: string;
-  question: string;
-  correctAnswer: string;
-  successMessage: string;
-};
+import type { NewGateForm } from "./manageEditorTypes";
 
 type AddGateFormProps = {
   newGate: NewGateForm;
   onNewGateChange: (patch: Partial<NewGateForm>) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (e: SubmitEvent) => void;
   isPending: boolean;
   createError?: string | null;
 };
@@ -78,7 +73,13 @@ export default function AddGateForm({
       </label>
       <button
         type="submit"
-        disabled={isPending || !newGate.label.trim()}
+        disabled={
+          isPending ||
+          !newGate.label.trim() ||
+          !newGate.question.trim() ||
+          !newGate.correctAnswer.trim() ||
+          !newGate.successMessage.trim()
+        }
         className={styles.button}
       >
         {isPending ? "Adding..." : "Add Gate"}

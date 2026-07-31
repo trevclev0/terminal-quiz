@@ -1,14 +1,5 @@
 import styles from "./GateEditorCard.module.css";
-
-export type GateForm = {
-  label: string;
-  question: string;
-  correctAnswer: string;
-  successMessage: string;
-  acceptanceThreshold: number;
-  guidanceEnabled: boolean;
-  guidanceThreshold: number;
-};
+import type { GateForm } from "./manageEditorTypes";
 
 type GateEditorCardProps = {
   gate: { id: string };

@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import AddGateForm, { type NewGateForm } from "./AddGateForm";
+import AddGateForm from "./AddGateForm";
+import type { NewGateForm } from "./manageEditorTypes";
 
 const emptyNewGate: NewGateForm = {
   label: "",

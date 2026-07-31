@@ -107,6 +107,25 @@ describe("ProgramSettingsForm", () => {
     expect(screen.getByRole("button", { name: "Failed" })).toBeInTheDocument();
   });
 
+  it("recovers to Copied feedback when a retry succeeds", async () => {
+    stubClipboard(vi.fn().mockRejectedValue(new Error("denied")));
+    setup({ isUnlisted: true });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Copy Link" }));
+    });
+
+    expect(screen.getByRole("button", { name: "Failed" })).toBeInTheDocument();
+
+    stubClipboard(vi.fn().mockResolvedValue(undefined));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Failed" }));
+    });
+
+    expect(screen.getByRole("button", { name: "Copied!" })).toBeInTheDocument();
+  });
+
   it("shows the update error", () => {
     setup({ updateError: "Save failed" });
 
