@@ -1,0 +1,50 @@
+.addGateForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 1px dashed var(--faded-green);
+  padding: 1rem;
+}
+
+.addGateTitle {
+  margin: 0 0 0.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: var(--light-grey);
+  font-size: 0.85em;
+}
+
+.input {
+  border: 1px solid var(--green);
+  background-color: inherit;
+  color: var(--green);
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0.375rem 0.5rem;
+  min-width: 180px;
+}
+
+.textarea {
+  border: 1px solid var(--green);
+  background-color: inherit;
+  color: var(--green);
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0.375rem 0.5rem;
+  resize: vertical;
+  min-width: 180px;
+}
+
+.button {
+  padding: 0.375rem 1rem;
+}
+
+.errorText {
+  color: var(--red);
+  font-size: 0.85em;
+  margin-top: 0.5rem;
+}
