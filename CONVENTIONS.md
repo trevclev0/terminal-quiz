@@ -22,6 +22,7 @@
 - React functional components only. No class components.
 - TanStack Router for all routing. Use `createFileRoute`; do not use manual route objects.
 - Named exports preferred. Default exports only where TanStack Router file-based routing requires.
+- All styling must use CSS Modules (`ComponentName.module.css`). No inline `style={}` props or CSS-in-JS libraries. Every component gets its own `.module.css` file co-located in the same directory.
 - Do not use `useEffect` for data fetching — use TanStack Query (`useQuery`, `useMutation`).
 - Adjust `staleTime` intentionally per query based on how fresh that data needs to be (e.g. long `staleTime` for rarely-changing program lists, `staleTime: 0` where session state must always be current); do not leave it at the default if it causes unnecessary refetches in tests or stale reads in the UI.
 

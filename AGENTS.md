@@ -304,3 +304,4 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - Do not weaken `authorizeProgramMutation()` — every management mutation must re-verify `authorId` server-side, never trust client-supplied program/gate IDs without ownership check
 - Do not introduce REST endpoints for authoring — management mutations are GraphQL only, same as gameplay
 - Do not allow open redirects in `/login` — `validateReturnTo()` must reject cross-origin, protocol-relative, and backslash-based return_to values
+- Do not use inline `style={}` props on React elements — all styling must go in a co-located `ComponentName.module.css` file with CSS Module class names. Applies to all new components and any changes to existing component markup.
