@@ -7,6 +7,10 @@ Split on single responsibility, not mechanically. Declarative data files
 (`schema.ts`, `gqlQueries.ts`, `types.ts`) and test files are exempt from the
 target — long is normal for those.
 
+**Status:** Phase 2 complete (management mutations — this branch). Phase 1
+(frontend editor) is in flight on `refactor/manage-program-editor`, whose doc
+version carries the Phase 1 result sections. Phases 3-4 pending.
+
 ## Current state (audited Jul 2026)
 
 | File | Lines | Type | Verdict |
@@ -24,11 +28,13 @@ Test files (887, 717, 589, 484, 453, ...) are intentionally long — leave alone
 
 - `src/worker/routes/graphql.ts` imports named resolver exports from all three
   backend files:
-  - `managementMutations` → `createGate, createProgram, deleteGate, deleteProgram, reorderGates, updateGate, updateProgram`
+  - `programMutations` → `createProgram, updateProgram, deleteProgram`
+  - `gateMutations` → `createGate, updateGate, deleteGate`
+  - `reorderGatesMutation` → `reorderGates`
   - `mutations` → `requestClue, resetSession, submitGuess`
   - `queries` → `getInProgressProgram, getProgramProgression, getPrograms, me, myPrograms, program, programGates`
 - Specs import directly from source files (update these too):
-  - `managementMutations.spec.ts` → `./managementMutations`
+  - `managementMutations.spec.ts` → `./programMutations`, `./gateMutations`, `./reorderGatesMutation`
   - `mutations.spec.ts` → `./mutations`
   - `queries.spec.ts` → `./queries`
 - No barrel files (`index.ts` re-exports) per CONVENTIONS.md — update the
@@ -150,7 +156,7 @@ Verification: `check:code`, `build`, `test --run` (467 pass), `test:integration`
 
 ---
 
-## Phase 2 — Backend: split `managementMutations.ts` (368)
+## Phase 2 — Backend: split `managementMutations.ts` (368) — ✅ DONE (Jul 2026)
 
 Domain split: program CRUD vs gate CRUD, plus shared validation helpers.
 
@@ -160,14 +166,41 @@ Domain split: program CRUD vs gate CRUD, plus shared validation helpers.
 |---|---|---|
 | `managementHelpers.ts` | `requireUser`, `assertVisibility`, `VALID_VISIBILITY` (current L18-33) | ~25 |
 | `programMutations.ts` | `createProgram`, `updateProgram`, `deleteProgram` (current L35-118) | ~170 |
-| `gateMutations.ts` | `createGate`, `updateGate`, `deleteGate`, `reorderGates` (current L119-368) | ~190 |
+| `gateMutations.ts` | `createGate`, `updateGate`, `deleteGate` (current L119-297) | ~185 |
+| `reorderGatesMutation.ts` | `reorderGates` (current L299-368) | ~90 |
 
 ### Import updates
 
 - `graphql.ts`: split the `managementMutations` import into
-  `programMutations` and `gateMutations`.
+  `programMutations`, `gateMutations`, and `reorderGatesMutation`.
 - `managementMutations.spec.ts`: split its import to match.
 - `authorizeProgram.ts` is already separate — unchanged.
+
+### Phase 2 result (Jul 2026)
+
+| File | Lines |
+|---|---|
+| `managementHelpers.ts` | 20 |
+| `programMutations.ts` | 90 |
+| `gateMutations.ts` | 192 |
+| `reorderGatesMutation.ts` | 82 |
+
+Deviations from the sketch above:
+
+- **`reorderGates` split into its own file** (`reorderGatesMutation.ts`) — the
+  plan estimated `gateMutations.ts` (incl. reorder) at ~190, but the real slice
+  was ~250 + imports ≈ 275. Splitting is justified on shape, not just size:
+  `reorderGates` is bulk/collection logic (permutation validation + two-pass
+  atomic `db.batch()`), algorithmically distinct from single-entity gate CRUD,
+  and matches Phase 3's one-mutation-per-file granularity. Keeps every logic
+  file under ~200.
+- **`managementMutations.ts` deleted** — replaced by the 4 files above; both
+  importers (`graphql.ts`, `managementMutations.spec.ts`) updated. Spec file
+  name kept (it covers all management mutations collectively).
+- `managementHelpers.ts` came in at 18 lines (estimate ~25) — `VALID_VISIBILITY`
+  stays module-private, only `requireUser`/`assertVisibility` exported.
+
+Verification: `check:code`, `build`, `test --run`, `test:integration` all pass.
 
 ---
 
