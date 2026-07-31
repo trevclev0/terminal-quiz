@@ -312,14 +312,27 @@ duplicated (3 lines each).
 - **Session lookup NOT extracted** — per the Phase 4 note, confirmed during
   execution: predicates differ (`sessionId + programId` vs
   `sessionId + status`), and `getProgramProgression` is lenient/seeding vs
-  `loadActiveSession`'s strict/throw. Only shared line is the 1-line sessionId
-  guard; left duplicated.
-- **Known gap (deferred)**: the `program` resolver has no unit test
-  (`queries.spec.ts` imports 6 of 7 resolvers, `program` absent) and no
-  explicit integration test. Integration specs cover `getPrograms`,
-  `getProgramProgression`, `getInProgressProgram` via the real worker. Defer
-  `program` coverage to the planned final cleanup feature branch/PR
-  (post-Phase-4) that will address leftover gaps + deferred items.
+  `loadActiveSession`'s strict/throw. The only shared code is the one-line
+  sessionId guard, which remains duplicated across the session queries and
+  `loadActiveSession`; no extraction warranted.
+- **Known gaps (deferred to the final cleanup branch/PR)**:
+  - The `program` resolver has no unit test (`queries.spec.ts` imports 6 of 7
+    resolvers, `program` absent) and no explicit integration test. Integration
+    specs cover `getPrograms`, `getProgramProgression`, `getInProgressProgram`
+    via the real worker. Planned coverage: ID lookup, null-on-missing, and
+    anonymous-unlisted-read (asserting current behavior). Fixture note: `program`
+    resolves via `db.select().from().where().limit(1)` — `createMockDb`'s
+    `mockWhere` currently returns only `{ orderBy }`, so tests need additive
+    `limit` support.
+  - **Rejected PR-review proposal**: restrict `program(id)` to public-or-owner
+    visibility (matching `getPrograms`). Rejected — contradicts the documented
+    unlisted-direct-link design (`AGENTS.md`: `program(id)` returns by ID
+    without auth check; unlisted is playable by direct link, security-through-
+    obscurity). There is no `private` visibility enum (`public`/`unlisted` only);
+    `program` exposes only `id/name/visibility/authorId` (no gate content);
+    `getPrograms` filters listings while `program(id)` is the deliberate
+    direct-link exception. Real access-control concern stays deferred with the
+    existing AGENTS.md ACL note (backlogged join table).
 
 Verification: `check:code`, `build`, `test --run` (470 pass), `test:integration`
 (27 pass) all green.

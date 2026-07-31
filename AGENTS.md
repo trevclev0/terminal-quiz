@@ -138,9 +138,13 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 │       ├── middleware/             # db (Drizzle setup), logger, session (reads x-session-id),
 │       │                          # auth (Better Auth session resolution)
 │       ├── routes/                 # graphql.ts — builds and serves the GraphQL schema
-│       ├── graphql/gameplay/       # queries.ts, mutations.ts, clueEligibility.ts, types.ts,
-│       │                          # authorizeProgram.ts, programMutations.ts, gateMutations.ts,
-│       │                          # reorderGatesMutation.ts, managementHelpers.ts,
+│       ├── graphql/gameplay/       # query resolvers (authQueries.ts, programQueries.ts,
+│       │                          #   sessionQueries.ts), mutations (submitGuessMutation.ts,
+│       │                          #   requestClueMutation.ts, resetSessionMutation.ts,
+│       │                          #   programMutations.ts, gateMutations.ts,
+│       │                          #   reorderGatesMutation.ts), shared (types.ts,
+│       │                          #   authorizeProgram.ts, managementHelpers.ts,
+│       │                          #   activeSession.ts, clueEligibility.ts, guessValidation.ts),
 │       │                          # plus *.integration.spec.ts files (real D1 via cloudflare:test)
 │       ├── services/                # aiService.ts — Workers AI clue generation,
 │       │                           # auth.ts — Better Auth lifecycle (create, get, clear, validate)
