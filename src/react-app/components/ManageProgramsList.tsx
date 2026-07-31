@@ -2,7 +2,7 @@ import { useCreateProgramMutation } from "@api/mutations/useCreateProgramMutatio
 import { useDeleteProgramMutation } from "@api/mutations/useDeleteProgramMutation";
 import { useMyProgramsQuery } from "@api/queries/useMyProgramsQuery";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./ManageProgramsList.module.css";
 
 export default function ManageProgramsList() {
@@ -14,6 +14,8 @@ export default function ManageProgramsList() {
   const [newName, setNewName] = useState("");
   const [newVisibility, setNewVisibility] = useState("public");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copyFailedId, setCopyFailedId] = useState<string | null>(null);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,11 +41,40 @@ export default function ManageProgramsList() {
         `${window.location.origin}/programs/${id}`,
       );
       setCopiedId(id);
-      setTimeout(() => setCopiedId(null), 2000);
     } catch {
-      // Clipboard unavailable in non-secure context
+      setCopyFailedId(id);
     }
   };
+
+  useEffect(() => {
+    if (copiedId) {
+      copyTimerRef.current = setTimeout(() => setCopiedId(null), 2000);
+    }
+    return () => {
+      if (copyTimerRef.current !== null) {
+        clearTimeout(copyTimerRef.current);
+      }
+    };
+  }, [copiedId]);
+
+  useEffect(() => {
+    if (copyFailedId) {
+      copyTimerRef.current = setTimeout(() => setCopyFailedId(null), 2000);
+    }
+    return () => {
+      if (copyTimerRef.current !== null) {
+        clearTimeout(copyTimerRef.current);
+      }
+    };
+  }, [copyFailedId]);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current !== null) {
+        clearTimeout(copyTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleDelete = (id: string) => {
     if (
@@ -134,7 +165,11 @@ export default function ManageProgramsList() {
                   onClick={() => handleCopyLink(program.id)}
                   className={styles.copyLinkButton}
                 >
-                  {copiedId === program.id ? "Copied!" : "Copy Link"}
+                  {copyFailedId === program.id
+                    ? "Failed"
+                    : copiedId === program.id
+                      ? "Copied!"
+                      : "Copy Link"}
                 </button>
               )}
               <Link

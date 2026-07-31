@@ -316,7 +316,9 @@ describe("ManageProgramEditor", () => {
     });
 
     render(<ManageProgramEditor programId={PROGRAM_ID} />);
-    expect(screen.getAllByText(/Failed to save/).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("Failed to save: Update failed").length,
+    ).toBeGreaterThan(0);
   });
 
   it("shows error when gate delete fails", () => {
@@ -325,7 +327,9 @@ describe("ManageProgramEditor", () => {
     });
 
     render(<ManageProgramEditor programId={PROGRAM_ID} />);
-    expect(screen.getAllByText(/Failed to delete/).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("Failed to delete: Delete failed").length,
+    ).toBeGreaterThan(0);
   });
 
   it("shows error when gate creation fails", () => {
