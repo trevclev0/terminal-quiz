@@ -3,6 +3,9 @@ import { exports } from "cloudflare:workers";
 export interface GqlRequestOptions {
   sessionId?: string;
   variables?: Record<string, unknown>;
+  /** Test auth bypass headers — set `testUserId` + `testSecret` to authenticate. */
+  testUserId?: string;
+  testSecret?: string;
 }
 
 export interface GqlResponse {
@@ -32,6 +35,10 @@ export async function gqlRequest(
   };
   if (opts.sessionId) {
     headers["x-session-id"] = opts.sessionId;
+  }
+  if (opts.testUserId && opts.testSecret) {
+    headers["x-auth-test-user-id"] = opts.testUserId;
+    headers["x-auth-test-user-secret"] = opts.testSecret;
   }
 
   const response = await exports.default.fetch(
