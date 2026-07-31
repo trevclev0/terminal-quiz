@@ -25,7 +25,9 @@ export function isAllowedPath(path: string): boolean {
   const cleanPath = path.split("?")[0];
   if (ALLOWED_REDIRECT_PATHS.includes(cleanPath)) return true;
   for (const prefix of ALLOWED_REDIRECT_PREFIXES) {
-    if (cleanPath.startsWith(prefix)) return true;
+    if (cleanPath === prefix || cleanPath.startsWith(`${prefix}/`)) {
+      return true;
+    }
   }
   return false;
 }
