@@ -47,13 +47,12 @@ export const updateProgram = {
 
     await authorizeProgramMutation(db, args.id, userId);
 
+    const updateData: Partial<typeof programs.$inferInsert> = {};
+    if (args.name !== undefined) updateData.name = args.name;
     if (args.visibility !== undefined) {
       assertVisibility(args.visibility);
+      updateData.visibility = args.visibility;
     }
-
-    const updateData: Record<string, string> = {};
-    if (args.name !== undefined) updateData.name = args.name;
-    if (args.visibility !== undefined) updateData.visibility = args.visibility;
 
     if (Object.keys(updateData).length === 0) {
       throw new Error("No fields to update.");
