@@ -16,6 +16,10 @@ import {
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
+import {
+  INTEGRATION_TEST_SECRET,
+  TEST_USER_ID,
+} from "@worker-test-utils/testConstants";
 import { drizzle } from "drizzle-orm/d1";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 
@@ -25,8 +29,6 @@ const E2E_PROGRAM_ID = "e2e00000-0000-0000-0000-000000000001";
 const E2E_GATE_1_ID = "e2e00001-0000-0000-0000-000000000001";
 const E2E_GATE_2_ID = "e2e00002-0000-0000-0000-000000000002";
 const E2E_GATE_3_ID = "e2e00003-0000-0000-0000-000000000003";
-const TEST_USER_ID = "e2e-test-user";
-const TEST_USER_SECRET = "integration-test-secret";
 
 function makeSessionId(label: string): string {
   return `programs-${label}-${crypto.randomUUID()}`;
@@ -157,7 +159,7 @@ describe("program queries", () => {
 
     const response: GqlResponse = await gqlRequest(MY_PROGRAMS_QUERY, {
       testUserId: TEST_USER_ID,
-      testSecret: TEST_USER_SECRET,
+      testSecret: INTEGRATION_TEST_SECRET,
     });
 
     expect(response.status).toBe(200);
@@ -201,7 +203,7 @@ describe("program queries", () => {
     const response: GqlResponse = await gqlRequest(PROGRAM_GATES_QUERY, {
       variables: { programId: owned.id },
       testUserId: TEST_USER_ID,
-      testSecret: TEST_USER_SECRET,
+      testSecret: INTEGRATION_TEST_SECRET,
     });
 
     expect(response.status).toBe(200);
