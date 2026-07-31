@@ -1,14 +1,12 @@
 import { createMockGraphQLContext } from "@worker-test-utils/mockEnv";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createGate, deleteGate, updateGate } from "./gateMutations";
 import {
-  createGate,
   createProgram,
-  deleteGate,
   deleteProgram,
-  reorderGates,
-  updateGate,
   updateProgram,
-} from "./managementMutations";
+} from "./programMutations";
+import { reorderGates } from "./reorderGatesMutation";
 import type { AppGraphQLContext } from "./types";
 
 type MockDb = {
