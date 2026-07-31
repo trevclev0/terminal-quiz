@@ -1,18 +1,19 @@
 import { graphqlServer } from "@hono/graphql-server";
 import {
   createGate,
-  createProgram,
   deleteGate,
-  deleteProgram,
-  reorderGates,
   updateGate,
-  updateProgram,
-} from "@worker-graphql/gameplay/managementMutations";
+} from "@worker-graphql/gameplay/gateMutations";
 import {
   requestClue,
   resetSession,
   submitGuess,
 } from "@worker-graphql/gameplay/mutations";
+import {
+  createProgram,
+  deleteProgram,
+  updateProgram,
+} from "@worker-graphql/gameplay/programMutations";
 import {
   getInProgressProgram,
   getProgramProgression,
@@ -22,6 +23,7 @@ import {
   program,
   programGates,
 } from "@worker-graphql/gameplay/queries";
+import { reorderGates } from "@worker-graphql/gameplay/reorderGatesMutation";
 import type { AppVariables } from "@worker-middleware/db";
 import { buildSchema } from "drizzle-graphql";
 import {
