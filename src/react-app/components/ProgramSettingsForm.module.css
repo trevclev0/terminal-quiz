@@ -1,0 +1,50 @@
+.metaRow {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: var(--light-grey);
+  font-size: 0.85em;
+}
+
+.input {
+  border: 1px solid var(--green);
+  background-color: inherit;
+  color: var(--green);
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0.375rem 0.5rem;
+  min-width: 180px;
+}
+
+.select {
+  border: 1px solid var(--green);
+  background-color: inherit;
+  color: var(--green);
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0.375rem 0.5rem;
+  cursor: pointer;
+}
+
+.button {
+  padding: 0.375rem 1rem;
+}
+
+.copyLinkButton {
+  padding: 0.375rem 1rem;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.errorText {
+  color: var(--red);
+  font-size: 0.85em;
+  margin-top: 0.5rem;
+}
