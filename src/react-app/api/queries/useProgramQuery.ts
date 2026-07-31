@@ -3,6 +3,7 @@ import { queryOptions, useQuery } from "@tanstack/react-query";
 import { graphqlFetch } from "../graphQlClient";
 import { PROGRAM_KEYS } from "../queryKeys";
 
+// Keep in sync with shared/gqlQueries.ts PROGRAM_QUERY
 const PROGRAM_QUERY = `
   query Program($id: String!) {
     program(id: $id) {
