@@ -108,6 +108,17 @@ export const MY_PROGRAMS_QUERY = `
   }
 `;
 
+export const ME_QUERY = `
+  query Me {
+    me {
+      id
+      email
+      name
+      image
+    }
+  }
+`;
+
 export const CREATE_PROGRAM_MUTATION = `
   mutation CreateProgram($name: String!, $visibility: String) {
     createProgram(name: $name, visibility: $visibility) {
@@ -207,16 +218,5 @@ export const DELETE_GATE_MUTATION = `
 export const REORDER_GATES_MUTATION = `
   mutation ReorderGates($programId: String!, $orderedGateIds: [String!]!) {
     reorderGates(programId: $programId, orderedGateIds: $orderedGateIds)
-  }
-`;
-
-export const ME_QUERY = `
-  query Me {
-    me {
-      id
-      email
-      name
-      image
-    }
   }
 `;
