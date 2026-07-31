@@ -3,6 +3,7 @@
 -- gates: ON CONFLICT DO UPDATE so seed changes apply without FK cascade
 
 -- Test user for auth bypass (x-auth-test-user-id=e2e-test-user)
+-- ID must match TEST_USER_ID in src/worker/test-utils/testConstants.ts
 INSERT OR IGNORE INTO user (id, name, email, email_verified, created_at, updated_at)
 VALUES (
   'e2e-test-user',
