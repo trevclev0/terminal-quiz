@@ -224,7 +224,8 @@ No structural change — `programs` query already filters correctly server-side 
 - [x] Test stderr noise elimination: added missing MSW `Program` query handler to `ProgramPlay.integration.spec.tsx`; silenced expected `console.warn`/`console.error` in manage route tests (root cause: `restoreMocks: true` in vitest config wiped `beforeAll` spies after test 1).
 
 #### Test coverage debt (identified in Phase 3c coverage evaluation) — all resolved
-- [x] **Worker auth lifecycle** — `worker/services/auth-lifecycle.spec.ts` with 7 tests covering missing binding, short secret, singleton cache, `clearAuthInstance`, and restore behavior (mocked `better-auth` + `drizzle-orm/d1`).
+
+- [x] **Worker auth lifecycle** — `worker/services/auth-lifecycle.spec.ts` with 8 tests covering missing binding, short secret, singleton cache, `clearAuthInstance`, and restore behavior (mocked `better-auth` + `drizzle-orm/d1`).
 - [x] **Login route URL validation** — `routes/-login.spec.tsx` with 18 tests covering all `validateReturnTo`, `isAllowedPath`, `validateLoginSearch` edge cases (cross-origin, protocol-relative, backslash, query string preservation, allowlist, prefix matching).
 - [x] **Auth guard redirect path** — `routes/programs/-manage.spec.tsx` with 2 redirect tests asserting `return_to` search params for both `/programs/manage` and `/programs/manage/$programId`.
 - [x] **Management route states** — `routes/programs/-manage.spec.tsx` testing error state rendering ("Failed to load programs.") via MSW 500 response.
