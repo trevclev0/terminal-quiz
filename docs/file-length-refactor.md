@@ -1,6 +1,8 @@
 # File-Length Refactor Plan
 
 Refactor the oversized source files to keep every logic file under ~200 lines.
+
+**Status:** Phase 1 (frontend) complete. Phases 2-4 (backend) pending.
 Split on single responsibility, not mechanically. Declarative data files
 (`schema.ts`, `gqlQueries.ts`, `types.ts`) and test files are exempt from the
 target — long is normal for those.
@@ -9,7 +11,7 @@ target — long is normal for those.
 
 | File | Lines | Type | Verdict |
 |---|---|---|---|
-| `src/react-app/components/ManageProgramEditor.tsx` | 560 | Logic (stateful component) | 🔴 Split into 4 |
+| `src/react-app/components/ManageProgramEditor.tsx` | 560 → 204 | Logic (container) | ✅ Split (Phase 1, Jul 2026) |
 | `src/worker/graphql/gameplay/managementMutations.ts` | 368 | Logic (7 GraphQL resolvers) | 🟠 Split into 2 + helpers |
 | `src/worker/graphql/gameplay/mutations.ts` | 366 | Logic (3 resolvers, complex) | 🟠 Split into 3 + helper move |
 | `src/worker/graphql/gameplay/queries.ts` | 230 | Logic (7 resolvers, small) | 🟡 Split into 3 |
@@ -95,6 +97,38 @@ convention). Move the relevant classes out of `ManageProgramEditor.module.css`:
   copy-link-scoped so `ProgramSettingsForm` is the better home).
 - `ManageProgramEditor.spec.tsx` (345 lines) mocks the api hooks, so it should
   pass unchanged — verify after the split.
+
+### Phase 1 result (Jul 2026)
+
+| File | Lines | Notes |
+|---|---|---|
+| `ManageProgramEditor.tsx` | 204 | container: draft state, effects, mutation wiring |
+| `GateEditorCard.tsx` | 182 | owns `GateForm` type |
+| `ProgramSettingsForm.tsx` | 116 | owns `copied`/`copyFailed` timers + clipboard write |
+| `AddGateForm.tsx` | 88 | owns `NewGateForm` type |
+| `useGateDrafts.ts` (new hook) | 39 | gates→draft sync effect, extracted to keep container <200 |
+
+Deviations from the sketch above (documented decisions):
+
+- **`useGateDrafts` hook added** (5th file) — without it the container was 230
+  lines. Lives in `src/react-app/hooks/` per project convention.
+- **Card gets an `index` prop** — needed for `#N` heading and `onReorder(index,
+  ...)` calls (not in original props sketch).
+- **`isDeletePending` prop added** — preserves original
+  `disabled={deleteGate.isPending}` on the delete button.
+- **Copy link moved into `ProgramSettingsForm`** — container passes `copyUrl`;
+  the child does `navigator.clipboard.writeText` and owns the feedback state.
+  `onCopyLink` prop replaced.
+- **`if (!draft) return null` guard stays in the container** — `gateDrafts[gate.id]`
+  is undefined on the first post-load render (sync effect runs after render);
+  dropping it needs an undefined-typed draft prop or a derived-state refactor.
+- **Container `.module.css` keeps `.errorText`** — used by "Program not found"
+  and the reorder error; plan's CSS split omitted it.
+- Container at 204 lines — just over the 200 target. Accepted; further trimming
+  would need more extraction (see deferred items).
+
+Verification: `check:code`, `build`, `test --run` (429 pass), `test:integration`
+(27 pass). Spec passed unchanged.
 
 ---
 
