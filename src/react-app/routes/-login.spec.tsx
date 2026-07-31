@@ -53,6 +53,10 @@ describe("isAllowedPath", () => {
   it("rejects non-allowed path", () => {
     expect(isAllowedPath("/secret")).toBe(false);
   });
+
+  it("rejects path that only shares a prefix segment", () => {
+    expect(isAllowedPath("/programs/manage-evil")).toBe(false);
+  });
 });
 
 describe("validateLoginSearch", () => {
