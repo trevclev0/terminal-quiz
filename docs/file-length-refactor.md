@@ -16,14 +16,22 @@ section's known-gap note and the Cleanup section below.
 | File | Lines | Type | Verdict |
 |---|---|---|---|
 | `src/react-app/components/ManageProgramEditor.tsx` | 560 → 198 | Logic (container) | ✅ Split (Phase 1) + re-trimmed (cleanup, Jul 2026) |
-| `src/worker/graphql/gameplay/managementMutations.ts` | 368 | Logic (7 GraphQL resolvers) | ✅ Split (Phase 2, Jul 2026) |
-| `src/worker/graphql/gameplay/mutations.ts` | 366 | Logic (3 resolvers, complex) | ✅ Split (Phase 3, Jul 2026) |
-| `src/worker/graphql/gameplay/queries.ts` | 230 | Logic (7 resolvers, small) | ✅ Split (Phase 4, Jul 2026) |
+| `src/worker/graphql/gameplay/programMutations.ts` | 89 | Logic (3 resolvers) | ✅ Split from `managementMutations.ts` (Phase 2, Jul 2026) |
+| `src/worker/graphql/gameplay/gateMutations.ts` | 192 | Logic (3 resolvers) | ✅ Split from `managementMutations.ts` (Phase 2, Jul 2026) |
+| `src/worker/graphql/gameplay/reorderGatesMutation.ts` | 80 | Logic (1 resolver) | ✅ Split from `managementMutations.ts` (Phase 2, Jul 2026) |
+| `src/worker/graphql/gameplay/requestClueMutation.ts` | 116 | Logic (1 resolver) | ✅ Split from `mutations.ts` (Phase 3, Jul 2026) |
+| `src/worker/graphql/gameplay/resetSessionMutation.ts` | 72 | Logic (1 resolver) | ✅ Split from `mutations.ts` (Phase 3, Jul 2026) |
+| `src/worker/graphql/gameplay/submitGuessMutation.ts` | 140 | Logic (1 resolver) | ✅ Split from `mutations.ts` (Phase 3, Jul 2026) |
+| `src/worker/graphql/gameplay/authQueries.ts` | 10 | Logic (1 resolver) | ✅ Split from `queries.ts` (Phase 4, Jul 2026) |
+| `src/worker/graphql/gameplay/sessionQueries.ts` | 121 | Logic (2 resolvers) | ✅ Split from `queries.ts` (Phase 4, Jul 2026) |
+| `src/worker/graphql/gameplay/programQueries.ts` | 97 | Logic (4 resolvers) | ✅ Split from `queries.ts` (Phase 4, Jul 2026) |
 | `src/shared/gqlQueries.ts` | 222 | Data (17 query strings) | 🟢 Keep |
 | `src/shared/schema.ts` | 202 | Data (5 table definitions) | 🟢 Keep |
 
-All remaining logic files sit at or under 198 lines. Test files (889, 715, 584,
-484, 453, ...) are intentionally long — leave alone.
+The original oversized files (`managementMutations.ts` 368, `mutations.ts` 366,
+`queries.ts` 230) were deleted — each row above marks its replacement and
+origin. All remaining logic files sit at or under 198 lines. Test files (889,
+715, 584, 484, 453, ...) are intentionally long — leave alone.
 
 ## Import graph (current — updated after cleanup)
 
