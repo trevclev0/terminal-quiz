@@ -10,7 +10,7 @@ export function useGateErrorState(saveError?: string, deleteError?: string) {
   const beginSave = (gateId: string) => setSavingGateId(gateId);
 
   const recordSaveResult = (gateId: string, success: boolean) => {
-    setSavingGateId(null);
+    setSavingGateId((current) => (current === gateId ? null : current));
     setSaveFailedGateId(success ? null : gateId);
   };
 
