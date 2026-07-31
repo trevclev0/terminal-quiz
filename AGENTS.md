@@ -132,7 +132,7 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 │   │   ├── schema.ts          # Drizzle schema — single source of truth for DB + types
 │   │   ├── authSchema.ts      # Better Auth tables (user, account, session, verification)
 │   │   ├── types.ts           # Program, Gate, and related types (inferred from schema)
-│   │   └── gqlQueries.ts      # Canonical GraphQL query/mutation strings, shared with integration tests
+│   │   └── gqlQueries.ts      # Single source of truth for all GraphQL query/mutation strings
 │   └── worker/
 │       ├── index.ts                # Hono entry, mounts /api/auth/* + /api/graphql
 │       ├── middleware/             # db (Drizzle setup), logger, session (reads x-session-id),
@@ -216,7 +216,7 @@ bun run test:ui           # browser-based Vitest UI
 - Use `createTestRouter` / `renderWithRouter` (`test-utils/reactRouterUtils.tsx`) for route-level integration tests
 - Mocks restore automatically (`clearMocks: true`, `restoreMocks: true` in `vite.config.ts` and `vitest.config.integration.ts`)
 - Suppress expected `console.error` from React error boundaries with `vi.spyOn(console, "error").mockImplementation(() => {})` in `beforeEach`
-- Integration specs share canonical query/mutation strings from `src/shared/gqlQueries.ts` (kept in sync with the frontend's own copies)
+- Integration specs share canonical query/mutation strings from `src/shared/gqlQueries.ts`
 
 Route files prefixed with `-` (e.g. `-root.spec.tsx`, `-select.spec.tsx`, `-$programId.spec.tsx`) are test files, not real routes — TanStack Router's file-based routing ignores the `-` prefix.
 
@@ -304,4 +304,5 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - Do not weaken `authorizeProgramMutation()` — every management mutation must re-verify `authorId` server-side, never trust client-supplied program/gate IDs without ownership check
 - Do not introduce REST endpoints for authoring — management mutations are GraphQL only, same as gameplay
 - Do not allow open redirects in `/login` — `validateReturnTo()` must reject cross-origin, protocol-relative, and backslash-based return_to values
+- Do not define GraphQL query/mutation strings inline in frontend files — they belong in `src/shared/gqlQueries.ts` and are imported by hooks/api files and integration tests.
 - Do not use inline `style={}` props on React elements — all styling must go in a co-located `ComponentName.module.css` file with CSS Module class names. Applies to all new components and any changes to existing component markup.
