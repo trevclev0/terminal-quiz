@@ -13,6 +13,7 @@
 - Database: Cloudflare D1 via Drizzle ORM. All schema changes go through Drizzle migrations.
 - Session state tracked in `session_progress` table — do not use KV for session data.
 - API surface is GraphQL only (`drizzle-graphql` auto-schema + custom gameplay resolvers in `src/worker/graphql/gameplay/`). There is no REST gameplay API — do not add one.
+- GraphQL query/mutation strings live only in `src/shared/gqlQueries.ts`. Frontend hooks/api files and integration tests import from there; never define query strings inline in consumer files.
 - Every gameplay session is identified by an `x-session-id` header, validated server-side against `session_progress`. Never trust a client-supplied `gateId`/`programId` without checking it against that session's row.
 - Routing is client-side (via TanStack Router). Route structure: `/`, `/programs/select`, `/programs/$programId`.
 - Do not introduce gate-level URLs or client-side route guards that duplicate server logic.
