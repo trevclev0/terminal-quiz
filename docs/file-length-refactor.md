@@ -2,23 +2,19 @@
 
 Refactor the oversized source files to keep every logic file under ~200 lines.
 
-**Status:** Phase 1 (frontend) complete. Phases 2-4 (backend) pending.
+**Status:** Phases 1-3 complete. Phase 4 (queries) pending.
 Split on single responsibility, not mechanically. Declarative data files
 (`schema.ts`, `gqlQueries.ts`, `types.ts`) and test files are exempt from the
 target — long is normal for those.
-
-**Status:** Phase 2 complete (management mutations — this branch). Phase 1
-(frontend editor) is in flight on `refactor/manage-program-editor`, whose doc
-version carries the Phase 1 result sections. Phases 3-4 pending.
 
 ## Current state (audited Jul 2026)
 
 | File | Lines | Type | Verdict |
 |---|---|---|---|
 | `src/react-app/components/ManageProgramEditor.tsx` | 560 → 204 | Logic (container) | ✅ Split (Phase 1, Jul 2026) |
-| `src/worker/graphql/gameplay/managementMutations.ts` | 368 | Logic (7 GraphQL resolvers) | 🟠 Split into 2 + helpers |
-| `src/worker/graphql/gameplay/mutations.ts` | 366 | Logic (3 resolvers, complex) | 🟠 Split into 3 + helper move |
-| `src/worker/graphql/gameplay/queries.ts` | 230 | Logic (7 resolvers, small) | 🟡 Split into 3 |
+| `src/worker/graphql/gameplay/managementMutations.ts` | 368 | Logic (7 GraphQL resolvers) | ✅ Split (Phase 2, Jul 2026) |
+| `src/worker/graphql/gameplay/mutations.ts` | 366 | Logic (3 resolvers, complex) | ✅ Split (Phase 3, Jul 2026) |
+| `src/worker/graphql/gameplay/queries.ts` | 230 | Logic (7 resolvers, small) | 🟠 Pending (Phase 4) |
 | `src/shared/gqlQueries.ts` | 222 | Data (17 query strings) | 🟢 Keep |
 | `src/shared/schema.ts` | 202 | Data (5 table definitions) | 🟢 Keep |
 
@@ -26,16 +22,18 @@ Test files (887, 717, 589, 484, 453, ...) are intentionally long — leave alone
 
 ## Import graph (must update when splitting)
 
-- `src/worker/routes/graphql.ts` imports named resolver exports from all three
+- `src/worker/routes/graphql.ts` imports named resolver exports from the
   backend files:
   - `programMutations` → `createProgram, updateProgram, deleteProgram`
   - `gateMutations` → `createGate, updateGate, deleteGate`
   - `reorderGatesMutation` → `reorderGates`
-  - `mutations` → `requestClue, resetSession, submitGuess`
+  - `requestClueMutation` → `requestClue`
+  - `resetSessionMutation` → `resetSession`
+  - `submitGuessMutation` → `submitGuess`
   - `queries` → `getInProgressProgram, getProgramProgression, getPrograms, me, myPrograms, program, programGates`
 - Specs import directly from source files (update these too):
   - `managementMutations.spec.ts` → `./programMutations`, `./gateMutations`, `./reorderGatesMutation`
-  - `mutations.spec.ts` → `./mutations`
+  - `mutations.spec.ts` → `./requestClueMutation`, `./resetSessionMutation`, `./submitGuessMutation`
   - `queries.spec.ts` → `./queries`
 - No barrel files (`index.ts` re-exports) per CONVENTIONS.md — update the
   importing files directly after each split.
@@ -204,7 +202,7 @@ Verification: `check:code`, `build`, `test --run`, `test:integration` all pass.
 
 ---
 
-## Phase 3 — Backend: split `mutations.ts` (366)
+## Phase 3 — Backend: split `mutations.ts` (366) — ✅ DONE (Jul 2026)
 
 One file per gameplay mutation.
 
@@ -227,6 +225,37 @@ imports in the two new mutation files.
 
 - `graphql.ts`: split the `mutations` import into the three new files.
 - `mutations.spec.ts` (887 lines): split its import to match.
+
+### Phase 3 result (Jul 2026)
+
+| File | Lines |
+|---|---|
+| `submitGuessMutation.ts` | 156 |
+| `requestClueMutation.ts` | 133 |
+| `resetSessionMutation.ts` | 72 |
+| `clueEligibility.ts` | 53 |
+| `guessValidation.ts` | 1 |
+
+Deviations from the sketch above (documented decisions):
+
+- **`guessValidation.ts` added** (3rd helper file) — the plan moved
+  `MAX_GUESS_LENGTH` into `clueEligibility.ts`, but it's a guess-validation
+  const, not clue logic. Splitting the shared constants by concern keeps
+  `clueEligibility.ts` clue-only (`MAX_CLUES_PER_GATE`, `computeCluesRemaining`,
+  `computeCanRequestClue`, `getExistingCluesForGate`). Both mutations import
+  `MAX_GUESS_LENGTH` from the new file.
+- **`getExistingCluesForGate` moved to `clueEligibility.ts`** as planned and is
+  now exported (was module-private). Clue-related, so it stays out of
+  `guessValidation.ts`.
+- **`mutations.ts` deleted** — replaced by the 3 mutation files above; both
+  importers (`graphql.ts`, `mutations.spec.ts`) updated. Spec file name kept (it
+  covers all gameplay mutations collectively).
+- Import pruning per file: `submitGuess` drops `desc` + `gateClues` (only used
+  by the moved helper); `requestClue` keeps `gateClues` (own `db.insert`);
+  `resetSession` takes only what it uses. Biome enforces.
+
+Verification: `check:code`, `build`, `test --run` (470 pass), `test:integration`
+(27 pass) all green.
 
 ---
 
