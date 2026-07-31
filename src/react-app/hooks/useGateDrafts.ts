@@ -1,5 +1,5 @@
 import type { GateManagement } from "@api/queries/useProgramGatesQuery";
-import type { GateForm } from "@components/GateEditorCard";
+import type { GateForm } from "@components/manageEditorTypes";
 import { useEffect, useState } from "react";
 
 function gateToForm(gate: GateManagement): GateForm {

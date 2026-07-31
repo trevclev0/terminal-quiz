@@ -1,4 +1,4 @@
-import type { NewGateForm } from "@components/AddGateForm";
+import type { NewGateForm } from "@components/manageEditorTypes";
 import { useState } from "react";
 
 const EMPTY_NEW_GATE: NewGateForm = {
