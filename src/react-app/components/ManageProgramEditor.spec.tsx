@@ -169,7 +169,10 @@ describe("ManageProgramEditor", () => {
         guidanceEnabled: false,
         guidanceThreshold: 3,
       },
-      expect.objectContaining({ onSettled: expect.any(Function) }),
+      expect.objectContaining({
+        onSuccess: expect.any(Function),
+        onError: expect.any(Function),
+      }),
     );
   });
 

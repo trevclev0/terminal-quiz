@@ -6,9 +6,10 @@ import { useUpdateProgramMutation } from "@api/mutations/useUpdateProgramMutatio
 import { useMyProgramsQuery } from "@api/queries/useMyProgramsQuery";
 import { useProgramGatesQuery } from "@api/queries/useProgramGatesQuery";
 import { useGateDrafts } from "@hooks/useGateDrafts";
+import { useGateErrorState } from "@hooks/useGateErrorState";
 import { useNewGateForm } from "@hooks/useNewGateForm";
 import { useProgramSettings } from "@hooks/useProgramSettings";
-import { type SubmitEvent, useState } from "react";
+import type { SubmitEvent } from "react";
 import AddGateForm from "./AddGateForm";
 import GateEditorCard from "./GateEditorCard";
 import styles from "./ManageProgramEditor.module.css";
@@ -27,7 +28,6 @@ export default function ManageProgramEditor({
   const updateGate = useUpdateGateMutation(programId);
   const deleteGate = useDeleteGateMutation(programId);
   const reorderGates = useReorderGatesMutation(programId);
-  const isReorderPending = reorderGates.isPending;
 
   const program = programs?.find((p) => p.id === programId);
 
@@ -39,13 +39,14 @@ export default function ManageProgramEditor({
   } = useProgramSettings(program);
 
   const [gateDrafts, setGateDrafts] = useGateDrafts(gates);
-  const [savingGateId, setSavingGateId] = useState<string | null>(null);
-  const [lastSaveFailedGateId, setLastSaveFailedGateId] = useState<
-    string | null
-  >(null);
-  const [lastDeleteFailedGateId, setLastDeleteFailedGateId] = useState<
-    string | null
-  >(null);
+  const {
+    savingGateId,
+    beginSave,
+    recordSaveResult,
+    recordDeleteResult,
+    gateSaveError,
+    gateDeleteError,
+  } = useGateErrorState(updateGate.error?.message, deleteGate.error?.message);
   const { newGate, onNewGateChange, resetNewGate } = useNewGateForm();
 
   const handleSaveProgram = () => {
@@ -59,13 +60,12 @@ export default function ManageProgramEditor({
   const handleSaveGate = (gateId: string) => {
     const draft = gateDrafts[gateId];
     if (!draft) return;
-    setSavingGateId(gateId);
+    beginSave(gateId);
     updateGate.mutate(
       { id: gateId, ...draft },
       {
-        onSuccess: () => setLastSaveFailedGateId(null),
-        onError: () => setLastSaveFailedGateId(gateId),
-        onSettled: () => setSavingGateId(null),
+        onSuccess: () => recordSaveResult(gateId, true),
+        onError: () => recordSaveResult(gateId, false),
       },
     );
   };
@@ -75,8 +75,8 @@ export default function ManageProgramEditor({
       deleteGate.mutate(
         { id: gateId },
         {
-          onSuccess: () => setLastDeleteFailedGateId(null),
-          onError: () => setLastDeleteFailedGateId(gateId),
+          onSuccess: () => recordDeleteResult(gateId, true),
+          onError: () => recordDeleteResult(gateId, false),
         },
       );
     }
@@ -97,10 +97,7 @@ export default function ManageProgramEditor({
   const handleAddGate = (e: SubmitEvent) => {
     e.preventDefault();
     if (!newGate.label.trim()) return;
-    const maxOrder =
-      gates && gates.length > 0
-        ? Math.max(...gates.map((g) => g.sequenceOrder))
-        : 0;
+    const maxOrder = Math.max(0, ...(gates?.map((g) => g.sequenceOrder) ?? []));
     createGate.mutate(
       {
         programId,
@@ -169,7 +166,7 @@ export default function ManageProgramEditor({
                 index={idx}
                 isFirst={idx === 0}
                 isLast={idx === gates.length - 1}
-                isReorderPending={isReorderPending}
+                isReorderPending={reorderGates.isPending}
                 isDeletePending={deleteGate.isPending}
                 savingGateId={savingGateId}
                 onReorder={handleReorder}
@@ -181,16 +178,8 @@ export default function ManageProgramEditor({
                     [gate.id]: { ...prev[gate.id], ...patch },
                   }))
                 }
-                updateError={
-                  updateGate.isError && lastSaveFailedGateId === gate.id
-                    ? updateGate.error?.message
-                    : undefined
-                }
-                deleteError={
-                  deleteGate.isError && lastDeleteFailedGateId === gate.id
-                    ? deleteGate.error?.message
-                    : undefined
-                }
+                updateError={gateSaveError(gate.id)}
+                deleteError={gateDeleteError(gate.id)}
               />
             );
           })}
