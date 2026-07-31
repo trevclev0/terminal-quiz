@@ -235,6 +235,7 @@ imports in the two new mutation files.
 | `resetSessionMutation.ts` | 72 |
 | `clueEligibility.ts` | 53 |
 | `guessValidation.ts` | 1 |
+| `activeSession.ts` | 41 |
 
 Deviations from the sketch above (documented decisions):
 
@@ -250,6 +251,13 @@ Deviations from the sketch above (documented decisions):
 - **`mutations.ts` deleted** — replaced by the 3 mutation files above; both
   importers (`graphql.ts`, `mutations.spec.ts`) updated. Spec file name kept (it
   covers all gameplay mutations collectively).
+- **`activeSession.ts` added in the post-Phase-3 review round** — extracts the
+  duplicated progress/completed-state/currentGateId/gate-loading validation
+  shared by `submitGuess` and `requestClue` into `loadActiveSession()` (takes a
+  `desyncMessage` param, since the two mutations use different wording).
+  `resetSession` is deliberately excluded — its lookup is
+  `columns: { id: true }`, no-ops on a missing session, and does no
+  currentGateId/gate validation.
 - Import pruning per file: `submitGuess` drops `desc` + `gateClues` (only used
   by the moved helper); `requestClue` keeps `gateClues` (own `db.insert`);
   `resetSession` takes only what it uses. Biome enforces.
@@ -275,6 +283,17 @@ Domain split: auth, programs, session.
 
 - `graphql.ts`: split the `queries` import into the three new files.
 - `queries.spec.ts` (589 lines): split its import to match.
+
+### Phase 4 note (post-Phase-3 review)
+
+`activeSession.ts`'s `loadActiveSession` is mutation-scoped — strict validation
+(completed-state + currentGateId throws). Phase 4's session queries are
+read-side and lenient (`getProgramProgression` insert-seeds a missing session;
+`getInProgressProgram` filters `status = "in_progress"` + `orderBy updatedAt`).
+Do NOT route them through `loadActiveSession`. Only the trivial 3-line
+`findFirst({ where: sessionId + programId })` lookup + "Missing Session ID"
+guard overlap; decide then whether to extract that lookup or leave it
+duplicated (3 lines each).
 
 ---
 
