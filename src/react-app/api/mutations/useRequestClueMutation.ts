@@ -1,15 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
+import { REQUEST_CLUE_MUTATION } from "../../../shared/gqlQueries";
 import { graphqlFetch } from "../graphQlClient";
-
-const REQUEST_CLUE_MUTATION = `
-  mutation RequestClue($programId: String!, $gateId: String!, $currentGuess: String!) {
-    requestClue(programId: $programId, gateId: $gateId, currentGuess: $currentGuess) {
-      clueText
-      isClueLimitReached
-      cluesRemaining
-    }
-  }
-`;
 
 export type RequestClueResponse = {
   clueText: string | null;

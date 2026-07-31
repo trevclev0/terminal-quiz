@@ -1,17 +1,7 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import { MY_PROGRAMS_QUERY } from "../../../shared/gqlQueries";
 import { graphqlFetch } from "../graphQlClient";
 import { MANAGEMENT_KEYS } from "../queryKeys";
-
-const MY_PROGRAMS_QUERY = `
-  query MyPrograms {
-    myPrograms {
-      id
-      name
-      visibility
-      authorId
-    }
-  }
-`;
 
 export type MyProgram = {
   id: string;

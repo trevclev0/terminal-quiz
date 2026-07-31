@@ -1,12 +1,8 @@
 /**
- * Canonical GraphQL query/mutation strings for integration tests.
+ * Single source of truth for all GraphQL query/mutation strings.
  *
- * These duplicate frontend strings in `src/react-app/api/queries/*.ts`
- * and `src/react-app/api/mutations/*.ts` intentionally.
- * Integration tests use direct HTTP — no client import needed.
- * Keep both in sync when schema changes.
- *
- * `resetSession` has no frontend file — this is the canonical source.
+ * Frontend hooks/api files and backend integration tests both import
+ * from here. Never define query strings inline in consumer files.
  */
 
 export const SUBMIT_GUESS_MUTATION = `
@@ -211,5 +207,16 @@ export const DELETE_GATE_MUTATION = `
 export const REORDER_GATES_MUTATION = `
   mutation ReorderGates($programId: String!, $orderedGateIds: [String!]!) {
     reorderGates(programId: $programId, orderedGateIds: $orderedGateIds)
+  }
+`;
+
+export const ME_QUERY = `
+  query Me {
+    me {
+      id
+      email
+      name
+      image
+    }
   }
 `;
