@@ -3,8 +3,16 @@ import {
   GET_IN_PROGRESS_PROGRAM_QUERY,
   GET_PROGRAM_PROGRESSION_QUERY,
   GET_PROGRAMS_QUERY,
+  MY_PROGRAMS_QUERY,
+  PROGRAM_GATES_QUERY,
+  PROGRAM_QUERY,
 } from "@shared/gqlQueries";
-import { sessionCompletedGates, sessionProgress } from "@shared/schema";
+import {
+  gates,
+  programs,
+  sessionCompletedGates,
+  sessionProgress,
+} from "@shared/schema";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
@@ -17,6 +25,8 @@ const E2E_PROGRAM_ID = "e2e00000-0000-0000-0000-000000000001";
 const E2E_GATE_1_ID = "e2e00001-0000-0000-0000-000000000001";
 const E2E_GATE_2_ID = "e2e00002-0000-0000-0000-000000000002";
 const E2E_GATE_3_ID = "e2e00003-0000-0000-0000-000000000003";
+const TEST_USER_ID = "e2e-test-user";
+const TEST_USER_SECRET = "integration-test-secret";
 
 function makeSessionId(label: string): string {
   return `programs-${label}-${crypto.randomUUID()}`;
@@ -71,6 +81,137 @@ describe("program queries", () => {
     const e2eProgram = data.programs.find((p) => p.name === "E2E Test Program");
     expect(e2eProgram).toBeDefined();
     expect(e2eProgram?.id).toBe(E2E_PROGRAM_ID);
+  });
+
+  it("program returns a program by ID for anonymous callers", async () => {
+    const response: GqlResponse = await gqlRequest(PROGRAM_QUERY, {
+      variables: { id: E2E_PROGRAM_ID },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.errors).toBeUndefined();
+
+    const data = response.body.data as {
+      program: { id: string; name: string };
+    };
+    expect(data.program.id).toBe(E2E_PROGRAM_ID);
+    expect(data.program.name).toBe("E2E Test Program");
+  });
+
+  it("program returns null for a missing ID", async () => {
+    const response: GqlResponse = await gqlRequest(PROGRAM_QUERY, {
+      variables: { id: "missing-program" },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.errors).toBeUndefined();
+
+    const data = response.body.data as { program: unknown };
+    expect(data.program).toBeNull();
+  });
+
+  it("program returns an unlisted program to an anonymous caller", async () => {
+    const [unlisted] = await db
+      .insert(programs)
+      .values({
+        id: "e2eunlisted-0000-0000-0000-000000000000",
+        name: "E2E Unlisted Program",
+        visibility: "unlisted",
+        authorId: TEST_USER_ID,
+      })
+      .returning();
+
+    const response: GqlResponse = await gqlRequest(PROGRAM_QUERY, {
+      variables: { id: unlisted.id },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.errors).toBeUndefined();
+
+    const data = response.body.data as {
+      program: { id: string; name: string };
+    };
+    expect(data.program.id).toBe(unlisted.id);
+  });
+
+  it("myPrograms returns null when unauthenticated", async () => {
+    const response: GqlResponse = await gqlRequest(MY_PROGRAMS_QUERY);
+
+    expect(response.status).toBe(200);
+    expect(response.body.errors).toBeUndefined();
+
+    const data = response.body.data as { myPrograms: unknown };
+    expect(data.myPrograms).toBeNull();
+  });
+
+  it("myPrograms returns owned programs when authenticated", async () => {
+    const [owned] = await db
+      .insert(programs)
+      .values({
+        id: "e2eowned-0000-0000-0000-000000000000",
+        name: "E2E Owned Program",
+        visibility: "unlisted",
+        authorId: TEST_USER_ID,
+      })
+      .returning();
+
+    const response: GqlResponse = await gqlRequest(MY_PROGRAMS_QUERY, {
+      testUserId: TEST_USER_ID,
+      testSecret: TEST_USER_SECRET,
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.errors).toBeUndefined();
+
+    const data = response.body.data as { myPrograms: { id: string }[] };
+    expect(data.myPrograms.map((p) => p.id)).toContain(owned.id);
+  });
+
+  it("programGates rejects unauthenticated callers", async () => {
+    const response: GqlResponse = await gqlRequest(PROGRAM_GATES_QUERY, {
+      variables: { programId: E2E_PROGRAM_ID },
+    });
+
+    expect(response.status).toBe(500);
+    const errors = response.body.errors;
+    expect(errors).toBeDefined();
+    expect(errors?.[0]?.message).toContain("Unauthorized");
+  });
+
+  it("programGates returns gates for an owned program", async () => {
+    const [owned] = await db
+      .insert(programs)
+      .values({
+        id: "e2egates-0000-0000-0000-000000000000",
+        name: "E2E Gates Program",
+        visibility: "public",
+        authorId: TEST_USER_ID,
+      })
+      .returning();
+    await db.insert(gates).values({
+      id: "e2egates-0000-0000-0000-000000000001",
+      programId: owned.id,
+      sequenceOrder: 1,
+      label: "Owned Gate",
+      question: "Question?",
+      correctAnswer: "answer",
+      successMessage: "OK",
+    });
+
+    const response: GqlResponse = await gqlRequest(PROGRAM_GATES_QUERY, {
+      variables: { programId: owned.id },
+      testUserId: TEST_USER_ID,
+      testSecret: TEST_USER_SECRET,
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.errors).toBeUndefined();
+
+    const data = response.body.data as {
+      programGates: { id: string; label: string }[];
+    };
+    expect(data.programGates).toHaveLength(1);
+    expect(data.programGates[0].label).toBe("Owned Gate");
   });
 
   it("getProgramProgression auto-creates session at gate 1", async () => {

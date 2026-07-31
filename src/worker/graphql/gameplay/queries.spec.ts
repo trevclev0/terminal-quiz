@@ -2,13 +2,22 @@ import type { Program } from "@shared/types";
 import type { AuthUser } from "@worker-middleware/db";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { me } from "./authQueries";
-import { getPrograms, myPrograms, programGates } from "./programQueries";
+import {
+  getPrograms,
+  myPrograms,
+  program,
+  programGates,
+} from "./programQueries";
 import { getInProgressProgram, getProgramProgression } from "./sessionQueries";
 import type { AppGraphQLContext } from "./types";
 
 function createMockDb() {
   const mockOrderBy = vi.fn();
-  const mockWhere = vi.fn().mockReturnValue({ orderBy: mockOrderBy });
+  const mockLimit = vi.fn();
+  const mockWhere = vi.fn().mockReturnValue({
+    orderBy: mockOrderBy,
+    limit: mockLimit,
+  });
   const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
   return {
     query: {
@@ -21,6 +30,7 @@ function createMockDb() {
     mockOrderBy,
     mockWhere,
     mockFrom,
+    mockLimit,
     insert: vi.fn().mockReturnValue({
       values: vi.fn().mockReturnValue({
         returning: vi.fn(),
@@ -450,6 +460,68 @@ describe("myPrograms", () => {
       {},
       contextWith(mockDb, undefined, user),
     );
+
+    expect(mockDb.mockWhere).toHaveBeenCalledOnce();
+  });
+});
+
+describe("program", () => {
+  let mockDb: MockDb;
+
+  beforeEach(() => {
+    mockDb = createMockDb();
+  });
+
+  const unlistedProgram = {
+    id: "prog-1",
+    name: "Unlisted Program",
+    visibility: "unlisted",
+    authorId: null,
+  };
+
+  it("returns a program by ID", async () => {
+    mockDb.mockLimit.mockResolvedValue([unlistedProgram]);
+
+    const result = await resolveField(
+      program,
+      null,
+      { id: "prog-1" },
+      contextWith(mockDb),
+    );
+
+    expect(result).toEqual(unlistedProgram);
+  });
+
+  it("returns null when no program matches", async () => {
+    mockDb.mockLimit.mockResolvedValue([]);
+
+    const result = await resolveField(
+      program,
+      null,
+      { id: "missing" },
+      contextWith(mockDb),
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it("returns an unlisted program to an anonymous caller", async () => {
+    mockDb.mockLimit.mockResolvedValue([unlistedProgram]);
+
+    const result = await resolveField(
+      program,
+      null,
+      { id: "prog-1" },
+      contextWith(mockDb),
+    );
+
+    expect(result).toEqual(unlistedProgram);
+  });
+
+  it("filters by the requested ID", async () => {
+    mockDb.mockLimit.mockResolvedValue([]);
+
+    await resolveField(program, null, { id: "prog-42" }, contextWith(mockDb));
 
     expect(mockDb.mockWhere).toHaveBeenCalledOnce();
   });
