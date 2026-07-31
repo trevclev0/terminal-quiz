@@ -1,9 +1,18 @@
 import { expect, test } from "@playwright/test";
-import { setupAuthBypass } from "./helpers";
+import { deleteProgramViaApi, setupAuthBypass } from "./helpers";
 import { GamePage } from "./pages/gamePage";
 import { ManageProgramsPage } from "./pages/manageProgramsPage";
 
 test.describe("@full", () => {
+  let createdProgramId: string | null = null;
+
+  test.afterEach(async ({ page }) => {
+    if (createdProgramId) {
+      await deleteProgramViaApi(page, createdProgramId);
+      createdProgramId = null;
+    }
+  });
+
   test("create program → add gates → play through", async ({ page }) => {
     await setupAuthBypass(page);
 
@@ -14,6 +23,7 @@ test.describe("@full", () => {
 
     // Step 2: Create a new program
     const editorPage = await managePage.createProgram("E2E Authored Program");
+    createdProgramId = editorPage.programId;
 
     // Step 3: Add gates
     await editorPage.waitForLoad();
