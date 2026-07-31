@@ -2,6 +2,7 @@ import { gates, sessionCompletedGates, sessionProgress } from "@shared/schema";
 import isGuessCloseEnough from "@worker-utils/isGuessCloseEnough";
 import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { GraphQLNonNull, GraphQLString } from "graphql";
+import { loadActiveSession } from "./activeSession";
 import {
   computeCanRequestClue,
   getExistingCluesForGate,
@@ -36,30 +37,13 @@ export const submitGuess = {
     // NOTE: D1 does not support SQL BEGIN/SAVEPOINT, so db.transaction()
     // always fails here. Reads run directly on `db`; writes that must
     // land together are grouped with db.batch() instead.
-    const progress = await db.query.sessionProgress.findFirst({
-      where: and(
-        eq(sessionProgress.sessionId, sessionId),
-        eq(sessionProgress.programId, args.programId),
-      ),
-    });
-
-    if (!progress || progress.status === "completed") {
-      throw new Error(
-        "Invalid state: Program already completed or not started.",
-      );
-    }
-
-    if (progress.currentGateId !== args.gateId) {
-      throw new Error("Desync: Guess submitted for the wrong active gate.");
-    }
-
-    const activeGate = await db.query.gates.findFirst({
-      where: eq(gates.id, args.gateId),
-    });
-
-    if (!activeGate) {
-      throw new Error(`Gate with ID ${args.gateId} not found.`);
-    }
+    const { progress, activeGate } = await loadActiveSession(
+      db,
+      sessionId,
+      args.programId,
+      args.gateId,
+      "Desync: Guess submitted for the wrong active gate.",
+    );
 
     if (
       !isGuessCloseEnough(

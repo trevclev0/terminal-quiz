@@ -1,7 +1,7 @@
-import { gateClues, gates, sessionProgress } from "@shared/schema";
+import { gateClues } from "@shared/schema";
 import { generateClue } from "@worker-services/aiService";
-import { and, eq } from "drizzle-orm";
 import { GraphQLNonNull, GraphQLString } from "graphql";
+import { loadActiveSession } from "./activeSession";
 import {
   computeCanRequestClue,
   computeCluesRemaining,
@@ -33,30 +33,13 @@ export const requestClue = {
 
     if (!sessionId) throw new Error("Unauthorized: Missing Session ID");
 
-    const progress = await db.query.sessionProgress.findFirst({
-      where: and(
-        eq(sessionProgress.sessionId, sessionId),
-        eq(sessionProgress.programId, args.programId),
-      ),
-    });
-
-    if (!progress || progress.status === "completed") {
-      throw new Error(
-        "Invalid state: Program already completed or not started.",
-      );
-    }
-
-    if (progress.currentGateId !== args.gateId) {
-      throw new Error("Desync: Clue requested for the wrong active gate.");
-    }
-
-    const activeGate = await db.query.gates.findFirst({
-      where: eq(gates.id, args.gateId),
-    });
-
-    if (!activeGate) {
-      throw new Error(`Gate with ID ${args.gateId} not found.`);
-    }
+    const { progress, activeGate } = await loadActiveSession(
+      db,
+      sessionId,
+      args.programId,
+      args.gateId,
+      "Desync: Clue requested for the wrong active gate.",
+    );
 
     const existingClues = await getExistingCluesForGate(
       db,
