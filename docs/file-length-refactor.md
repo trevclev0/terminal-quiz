@@ -102,11 +102,19 @@ convention). Move the relevant classes out of `ManageProgramEditor.module.css`:
 
 | File | Lines | Notes |
 |---|---|---|
-| `ManageProgramEditor.tsx` | 204 | container: draft state, effects, mutation wiring |
+| `ManageProgramEditor.tsx` | 183 | container: draft state, effects, mutation wiring |
 | `GateEditorCard.tsx` | 182 | owns `GateForm` type |
 | `ProgramSettingsForm.tsx` | 116 | owns `copied`/`copyFailed` timers + clipboard write |
 | `AddGateForm.tsx` | 88 | owns `NewGateForm` type |
 | `useGateDrafts.ts` (new hook) | 39 | gates→draft sync effect, extracted to keep container <200 |
+| `useProgramSettings.ts` (new hook) | 26 | program name/visibility state + sync effect |
+| `useNewGateForm.ts` (new hook) | 20 | add-gate form state + change/reset |
+
+Follow-up (post-split tightening): container brought from 204 → 183 by
+extracting `useProgramSettings` + `useNewGateForm`. Added per-component specs
+(`GateEditorCard.spec.tsx`, `ProgramSettingsForm.spec.tsx`,
+`AddGateForm.spec.tsx`) and hook specs (`useGateDrafts`, `useProgramSettings`,
+`useNewGateForm`).
 
 Deviations from the sketch above (documented decisions):
 
@@ -124,11 +132,21 @@ Deviations from the sketch above (documented decisions):
   dropping it needs an undefined-typed draft prop or a derived-state refactor.
 - **Container `.module.css` keeps `.errorText`** — used by "Program not found"
   and the reorder error; plan's CSS split omitted it.
-- Container at 204 lines — just over the 200 target. Accepted; further trimming
-  would need more extraction (see deferred items).
 
-Verification: `check:code`, `build`, `test --run` (429 pass), `test:integration`
-(27 pass). Spec passed unchanged.
+Testing notes (spec authoring gotchas):
+
+- Controlled inputs don't propagate edits back in isolated component tests —
+  use `fireEvent.change`, not `userEvent.type` (per-keystroke resets to the
+  prop value).
+- `userEvent.setup()` (v14) intercepts `navigator.clipboard` — use
+  `fireEvent.click` + `act` for copy-link tests so the real stub is exercised.
+- `getByDisplayValue("public")` does not match a `<select>` with `value`
+  attribute — use `getByLabelText(...)` + `toHaveValue()`.
+- HTML5 `required` validation blocks form submit when other required fields
+  are empty — fill all fields in submit tests.
+
+Verification: `check:code`, `build`, `test --run` (467 pass), `test:integration`
+(27 pass). Original container spec passed unchanged.
 
 ---
 
