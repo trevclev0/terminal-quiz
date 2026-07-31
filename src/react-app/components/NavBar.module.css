@@ -16,7 +16,6 @@
 .homeLink {
   color: var(--green);
   text-decoration: none;
-  text-underline-offset: 4px;
 }
 
 .nav {

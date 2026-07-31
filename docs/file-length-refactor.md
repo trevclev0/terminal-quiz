@@ -69,18 +69,27 @@ convention). Move the relevant classes out of `ManageProgramEditor.module.css`:
 - `ProgramSettingsForm`: `programName`, `programVisibility`,
   `onProgramNameChange`, `onProgramVisibilityChange`, `onSave`, `isSaving`,
   `isUnlisted`, `onCopyLink`, `copied`, `copyFailed`, `updateError`
-- `GateEditorCard`: `gate`, `draft`, `isFirst`, `isLast`, `isReorderPending`,
-  `isSaving`, `onReorder(idx, direction)`, `onSave`, `onDelete`,
-  `onDraftChange(patch)`, `updateError`, `deleteError`
+- `GateEditorCard`: `gate`, `draft` (the per-gate `GateForm` from
+  `gateDrafts[gate.id]`, not the full `Record`), `isFirst`, `isLast`,
+  `isReorderPending`, `isSaving`, `onReorder(idx, direction)`, `onSave`,
+  `onDelete`, `onDraftChange(patch)`, `updateError`, `deleteError`
 - `AddGateForm`: `newGate`, `onNewGateChange(patch)`, `onSubmit`, `isPending`,
   `createError`
 
 ### Behavioral notes
 
 - The `if (!draft) return null` dance inside the gate `.map()` disappears — the
-  container maps gates to `<GateEditorCard draft={draft} />`.
-- Keep the draft-state `Record<string, GateForm>` in the container; the card
-  calls `onDraftChange` with a partial patch.
+  container maps gates to
+  `<GateEditorCard draft={gateDrafts[gate.id]} ... />`.
+- Keep the draft-state `Record<string, GateForm>` in the container. The card
+  receives the per-gate form (`gateDrafts[gate.id]`) and calls `onDraftChange`
+  with a partial patch; the container binds it to that gate's id:
+  `onDraftChange={(patch) =>
+    setGateDrafts((prev) => ({
+      ...prev,
+      [gate.id]: { ...prev[gate.id], ...patch },
+    }))
+  }`.
 - Keep copy-timer `useEffect`s (`copied`, `copyFailed`) in the container or move
   them into `ProgramSettingsForm` (whichever reads cleaner; timers are
   copy-link-scoped so `ProgramSettingsForm` is the better home).
