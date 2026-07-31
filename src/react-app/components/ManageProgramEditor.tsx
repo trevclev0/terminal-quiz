@@ -5,7 +5,7 @@ import { useUpdateGateMutation } from "@api/mutations/useUpdateGateMutation";
 import { useUpdateProgramMutation } from "@api/mutations/useUpdateProgramMutation";
 import { useMyProgramsQuery } from "@api/queries/useMyProgramsQuery";
 import { useProgramGatesQuery } from "@api/queries/useProgramGatesQuery";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./ManageProgramEditor.module.css";
 
 type GateForm = {
@@ -47,6 +47,8 @@ export default function ManageProgramEditor({
 
   const [gateDrafts, setGateDrafts] = useState<Record<string, GateForm>>({});
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [newGate, setNewGate] = useState<NewGateForm>({
     label: "",
     question: "",
@@ -133,11 +135,40 @@ export default function ManageProgramEditor({
         `${window.location.origin}/programs/${programId}`,
       );
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard unavailable in non-secure context
+      setCopyFailed(true);
     }
   };
+
+  useEffect(() => {
+    if (copied) {
+      copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
+    }
+    return () => {
+      if (copyTimerRef.current !== null) {
+        clearTimeout(copyTimerRef.current);
+      }
+    };
+  }, [copied]);
+
+  useEffect(() => {
+    if (copyFailed) {
+      copyTimerRef.current = setTimeout(() => setCopyFailed(false), 2000);
+    }
+    return () => {
+      if (copyTimerRef.current !== null) {
+        clearTimeout(copyTimerRef.current);
+      }
+    };
+  }, [copyFailed]);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current !== null) {
+        clearTimeout(copyTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleAddGate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,7 +253,7 @@ export default function ManageProgramEditor({
               onClick={handleCopyLink}
               className={styles.copyLinkButton}
             >
-              {copied ? "Copied!" : "Copy Link"}
+              {copyFailed ? "Failed" : copied ? "Copied!" : "Copy Link"}
             </button>
           )}
         </div>
