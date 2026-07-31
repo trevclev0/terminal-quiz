@@ -104,14 +104,13 @@ export default function GateEditorCard({
               min="0"
               max="1"
               value={draft.acceptanceThreshold}
-              onChange={(e) =>
+              onChange={(e) => {
+                const value = e.target.valueAsNumber;
+                if (Number.isNaN(value)) return;
                 onDraftChange({
-                  acceptanceThreshold: Math.min(
-                    1,
-                    Math.max(0, Number(e.target.value)),
-                  ),
-                })
-              }
+                  acceptanceThreshold: Math.min(1, Math.max(0, value)),
+                });
+              }}
               className={styles.inputSmall}
             />
           </label>
@@ -133,11 +132,11 @@ export default function GateEditorCard({
               min="0"
               step="1"
               value={draft.guidanceThreshold}
-              onChange={(e) =>
-                onDraftChange({
-                  guidanceThreshold: Math.max(0, Number(e.target.value)),
-                })
-              }
+              onChange={(e) => {
+                const value = e.target.valueAsNumber;
+                if (Number.isNaN(value)) return;
+                onDraftChange({ guidanceThreshold: Math.max(0, value) });
+              }}
               className={styles.inputSmall}
             />
           </label>

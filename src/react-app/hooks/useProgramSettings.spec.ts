@@ -39,4 +39,20 @@ describe("useProgramSettings", () => {
     expect(result.current.programName).toBe("B");
     expect(result.current.programVisibility).toBe("unlisted");
   });
+
+  it("preserves unsaved edits when a refetch returns equivalent values", () => {
+    const { result, rerender } = renderHook<
+      ReturnType<typeof useProgramSettings>,
+      { program: ProgramMeta | undefined }
+    >(({ program }) => useProgramSettings(program), {
+      initialProps: { program: { name: "A", visibility: "public" } },
+    });
+
+    result.current.setProgramName("Edited");
+    result.current.setProgramVisibility("unlisted");
+    rerender({ program: { name: "A", visibility: "public" } });
+
+    expect(result.current.programName).toBe("Edited");
+    expect(result.current.programVisibility).toBe("unlisted");
+  });
 });

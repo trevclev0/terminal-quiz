@@ -372,4 +372,41 @@ describe("ManageProgramEditor", () => {
       screen.getByText("Failed to add: Create failed"),
     ).toBeInTheDocument();
   });
+
+  it("keeps save and delete errors visible independently", async () => {
+    setupMocks({
+      updateGate: {
+        isError: true,
+        error: new Error("Update failed"),
+        mutate: vi.fn((_payload: unknown, options?: { onError?: () => void }) =>
+          options?.onError?.(),
+        ),
+      },
+      deleteGate: {
+        isError: true,
+        error: new Error("Delete failed"),
+        mutate: vi.fn((_payload: unknown, options?: { onError?: () => void }) =>
+          options?.onError?.(),
+        ),
+      },
+    });
+    vi.stubGlobal(
+      "confirm",
+      vi.fn(() => true),
+    );
+
+    render(<ManageProgramEditor programId={PROGRAM_ID} />);
+
+    const saveGateButtons = screen.getAllByText("Save Gate");
+    await userEvent.click(saveGateButtons[0]);
+    const deleteButtons = screen.getAllByText("Delete Gate");
+    await userEvent.click(deleteButtons[1]);
+
+    expect(
+      screen.getByText("Failed to save: Update failed"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Failed to delete: Delete failed"),
+    ).toBeInTheDocument();
+  });
 });
