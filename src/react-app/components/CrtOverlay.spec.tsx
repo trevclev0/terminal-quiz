@@ -45,19 +45,22 @@ const FULL_SETTINGS = {
 describe("CrtOverlay", () => {
   it("renders status bar showing default preset (full)", () => {
     render(<CrtOverlay />);
+    act(() => vi.advanceTimersByTime(1750));
     expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: full");
   });
 
   it("shows hotkey hint on first visit", () => {
     render(<CrtOverlay />);
+    act(() => vi.advanceTimersByTime(1750));
     expect(screen.getByTestId("crt-status")).toHaveTextContent("Ctrl+Shift+,");
   });
 
   it("hides hint and shows only preset after timeout", () => {
     render(<CrtOverlay />);
+    act(() => vi.advanceTimersByTime(1750));
     expect(screen.getByTestId("crt-status")).toHaveTextContent("Ctrl+Shift+,");
 
-    act(() => vi.advanceTimersByTime(5000));
+    act(() => vi.advanceTimersByTime(3600));
 
     expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: full");
     expect(screen.getByTestId("crt-status")).not.toHaveTextContent(
@@ -71,6 +74,7 @@ describe("CrtOverlay", () => {
       JSON.stringify(FULL_SETTINGS),
     );
     render(<CrtOverlay />);
+    act(() => vi.advanceTimersByTime(1750));
     expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: full");
     expect(screen.getByTestId("crt-status")).not.toHaveTextContent(
       "Ctrl+Shift+,",
@@ -79,6 +83,7 @@ describe("CrtOverlay", () => {
 
   it("cycles preset on status bar click (descending)", () => {
     render(<CrtOverlay />);
+    act(() => vi.advanceTimersByTime(1750));
     expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: full");
 
     fireEvent.click(screen.getByTestId("crt-status"));
@@ -95,7 +100,7 @@ describe("CrtOverlay", () => {
     expect(screen.getByTestId("crt-poweron")).toBeInTheDocument();
   });
 
-  it("removes power-on layer after 1 second", () => {
+  it("removes power-on layer after 1.75 seconds", () => {
     localStorage.setItem(
       "terminal_quiz_crt_settings",
       JSON.stringify(FULL_SETTINGS),
@@ -103,7 +108,25 @@ describe("CrtOverlay", () => {
     render(<CrtOverlay />);
     expect(screen.getByTestId("crt-poweron")).toBeInTheDocument();
 
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => vi.advanceTimersByTime(1750));
+
+    expect(screen.queryByTestId("crt-poweron")).not.toBeInTheDocument();
+  });
+
+  it("shows banner then removes boot layer", () => {
+    localStorage.setItem(
+      "terminal_quiz_crt_settings",
+      JSON.stringify(FULL_SETTINGS),
+    );
+    render(<CrtOverlay />);
+    expect(screen.getByTestId("crt-poweron")).toBeInTheDocument();
+
+    act(() => vi.advanceTimersByTime(1100));
+
+    expect(screen.getByText("VT220 OK")).toBeInTheDocument();
+    expect(screen.getByText("Terminal Quiz")).toBeInTheDocument();
+
+    act(() => vi.advanceTimersByTime(650));
 
     expect(screen.queryByTestId("crt-poweron")).not.toBeInTheDocument();
   });
@@ -212,11 +235,13 @@ describe("CrtOverlay", () => {
       JSON.stringify(FULL_SETTINGS),
     );
     render(<CrtOverlay />);
+    act(() => vi.advanceTimersByTime(1750));
     expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: full");
   });
 
   it("status bar has title tooltip with hotkey hint", () => {
     render(<CrtOverlay />);
+    act(() => vi.advanceTimersByTime(1750));
     expect(screen.getByTestId("crt-status")).toHaveAttribute(
       "title",
       "Toggle CRT effect (Ctrl+Shift+,)",
