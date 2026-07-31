@@ -42,6 +42,15 @@ describe("useGateErrorState", () => {
     expect(result.current.gateSaveError("g2")).toBeUndefined();
   });
 
+  it("preserves another gate's saving state on an unrelated save result", () => {
+    const { result } = renderHook(() => useGateErrorState());
+
+    act(() => result.current.beginSave("g1"));
+    act(() => result.current.recordSaveResult("g2", true));
+
+    expect(result.current.savingGateId).toBe("g1");
+  });
+
   it("reports the failed gate for a failed delete", () => {
     const { result } = renderHook(() =>
       useGateErrorState("update failed", "delete failed"),
