@@ -2,28 +2,30 @@
 
 Refactor the oversized source files to keep every logic file under ~200 lines.
 
-**Status:** Phases 1-4 complete. All oversized logic files split.
+**Status:** Phases 1-4 complete + cleanup branch. All oversized logic files
+split; deferred items resolved on the cleanup branch.
 Split on single responsibility, not mechanically. Declarative data files
 (`schema.ts`, `gqlQueries.ts`, `types.ts`) and test files are exempt from the
 target — long is normal for those.
 
-A final cleanup feature branch/PR is planned (post-Phase-4) to address leftover
-gaps + deferred items — see the Phase 4 result section's known-gap note.
+Cleanup branch (Jul 2026) closed the deferred gaps — see the Phase 4 result
+section's known-gap note and the Cleanup section below.
 
 ## Current state (audited Jul 2026)
 
 | File | Lines | Type | Verdict |
 |---|---|---|---|
-| `src/react-app/components/ManageProgramEditor.tsx` | 560 → 204 | Logic (container) | ✅ Split (Phase 1, Jul 2026) |
+| `src/react-app/components/ManageProgramEditor.tsx` | 560 → 198 | Logic (container) | ✅ Split (Phase 1) + re-trimmed (cleanup, Jul 2026) |
 | `src/worker/graphql/gameplay/managementMutations.ts` | 368 | Logic (7 GraphQL resolvers) | ✅ Split (Phase 2, Jul 2026) |
 | `src/worker/graphql/gameplay/mutations.ts` | 366 | Logic (3 resolvers, complex) | ✅ Split (Phase 3, Jul 2026) |
 | `src/worker/graphql/gameplay/queries.ts` | 230 | Logic (7 resolvers, small) | ✅ Split (Phase 4, Jul 2026) |
 | `src/shared/gqlQueries.ts` | 222 | Data (17 query strings) | 🟢 Keep |
 | `src/shared/schema.ts` | 202 | Data (5 table definitions) | 🟢 Keep |
 
-Test files (887, 717, 589, 484, 453, ...) are intentionally long — leave alone.
+All remaining logic files sit at or under 198 lines. Test files (889, 715, 584,
+484, 453, ...) are intentionally long — leave alone.
 
-## Import graph (must update when splitting)
+## Import graph (current — updated after cleanup)
 
 - `src/worker/routes/graphql.ts` imports named resolver exports from the
   backend files:
@@ -33,13 +35,14 @@ Test files (887, 717, 589, 484, 453, ...) are intentionally long — leave alone
   - `requestClueMutation` → `requestClue`
   - `resetSessionMutation` → `resetSession`
   - `submitGuessMutation` → `submitGuess`
-  - `queries` → `getInProgressProgram, getProgramProgression, getPrograms, me, myPrograms, program, programGates`
-- Specs import directly from source files (update these too):
+  - `authQueries` → `me`
+  - `sessionQueries` → `getInProgressProgram, getProgramProgression`
+  - `programQueries` → `getPrograms, myPrograms, program, programGates`
+- Specs import directly from source files:
   - `managementMutations.spec.ts` → `./programMutations`, `./gateMutations`, `./reorderGatesMutation`
   - `mutations.spec.ts` → `./requestClueMutation`, `./resetSessionMutation`, `./submitGuessMutation`
-  - `queries.spec.ts` → `./queries`
-- No barrel files (`index.ts` re-exports) per CONVENTIONS.md — update the
-  importing files directly after each split.
+  - `queries.spec.ts` → `./authQueries`, `./sessionQueries`, `./programQueries`
+- No barrel files (`index.ts` re-exports) per CONVENTIONS.md.
 
 ---
 
@@ -315,15 +318,13 @@ duplicated (3 lines each).
   `loadActiveSession`'s strict/throw. The only shared code is the one-line
   sessionId guard, which remains duplicated across the session queries and
   `loadActiveSession`; no extraction warranted.
-- **Known gaps (deferred to the final cleanup branch/PR)**:
-  - The `program` resolver has no unit test (`queries.spec.ts` imports 6 of 7
-    resolvers, `program` absent) and no explicit integration test. Integration
-    specs cover `getPrograms`, `getProgramProgression`, `getInProgressProgram`
-    via the real worker. Planned coverage: ID lookup, null-on-missing, and
-    anonymous-unlisted-read (asserting current behavior). Fixture note: `program`
-    resolves via `db.select().from().where().limit(1)` — `createMockDb`'s
-    `mockWhere` currently returns only `{ orderBy }`, so tests need additive
-    `limit` support.
+- **Known gaps — closed on the cleanup branch (Jul 2026)**:
+  - The `program` resolver now has unit tests in `queries.spec.ts` (returns by
+    ID, null-on-missing, anonymous-unlisted-read, filters by ID) and
+    integration tests in `programs.integration.spec.ts` (by-ID, null-on-missing,
+    anonymous unlisted read, plus `myPrograms` and `programGates` auth
+    coverage). `createMockDb` gained `mockLimit` support for the resolver's
+    `db.select().from().where().limit(1)` chain.
   - **Rejected PR-review proposal**: restrict `program(id)` to public-or-owner
     visibility (matching `getPrograms`). Rejected — contradicts the documented
     unlisted-direct-link design (`AGENTS.md`: `program(id)` returns by ID
@@ -336,6 +337,41 @@ duplicated (3 lines each).
 
 Verification: `check:code`, `build`, `test --run` (470 pass), `test:integration`
 (27 pass) all green.
+
+---
+
+## Cleanup branch (Jul 2026) — deferred items + coverage gaps
+
+Post-Phase-4 branch (`refactor/189-cleanup`) closing leftover gaps:
+
+- **`ManageProgramEditor.tsx` re-trimmed 209 → 198** — the gate-edit
+  error-handling commit (`8a26cb1`) had pushed the container back over 200
+  (error-state props for per-gate save/delete failures). Extracted
+  `useGateErrorState` hook (`src/react-app/hooks/useGateErrorState.ts`,
+  ~40 lines) owning `savingGateId` + per-gate save/delete failure tracking
+  (`gateSaveError`/`gateDeleteError` derivation). Also inlined the single-use
+  `maxOrder` computation. New `useGateErrorState.spec.ts`; the container spec
+  was updated where it asserted the removed `onSettled` option.
+- **`useProgramQuery.spec.ts` added** — was the only query hook without a spec
+  (all other query/mutation hooks covered). Follows the
+  `useProgramGatesQuery.spec.ts` fetch-spy pattern.
+- **`program` resolver coverage added** (see Phase 4 known-gaps note).
+- **Integration auth plumbing** — `gqlRequest.ts` now forwards optional
+  `x-auth-test-user-id`/`x-auth-test-user-secret` headers; the integration
+  config sets `AUTH_TEST_BYPASS_ENABLED`/`AUTH_TEST_BYPASS_SECRET` bindings.
+  This enables authenticated resolver integration tests (`myPrograms`,
+  `programGates`). `programGates` unauthenticated rejection surfaces as HTTP
+  500 because its return type is `GraphQLNonNull` — a thrown field error
+  bubbles to a null root and `@hono/graphql-server` 500s when `!result.data`.
+- **Docs refreshed** — AGENTS.md + README e2e lists include `authoring`;
+  this doc's import graph + audit table reflect post-Phase-4 reality.
+
+`noExcessiveLinesPerFile` (Biome) remains off indefinitely — the rule lives in
+the nursery group and the plan's manual guard in AGENTS.md/CONVENTIONS.md is
+sufficient for now. Revisit if Biome stabilizes the rule.
+
+Verification: `check:code`, `build`, `test --run` (482 pass), `test:integration`
+(34 pass) all green.
 
 ---
 
@@ -355,10 +391,12 @@ Run at minimum after the backend phases (2, 3, 4) and after Phase 1.
 ## Notes / deferred
 
 - **Biome enforcement**: `noExcessiveLinesPerFile` exists (nursery group,
-  since v2.3.12, `maxLines` default 300, supports `skipBlankLines`) but was
-  deliberately **not** enabled. If enabling later, set `maxLines: 300` (must
-  clear `gqlQueries.ts` at 222 and `schema.ts` at 202) and add an `overrides`
-  block exempting `**/*.spec.ts`, `**/*.spec.tsx`,
+  since v2.3.12, `maxLines` default 300, supports `skipBlankLines`) but is
+  deliberately **not** enabled — deferred indefinitely (decided on the cleanup
+  branch, Jul 2026); the rule is still nursery-level and the manual guard in
+  AGENTS.md/CONVENTIONS.md suffices. If enabling later, set `maxLines: 300`
+  (must clear `gqlQueries.ts` at 222 and `schema.ts` at 202) and add an
+  `overrides` block exempting `**/*.spec.ts`, `**/*.spec.tsx`,
   `**/*.integration.spec.ts`.
 - **`noExcessiveLinesPerFunction`** (stable, complexity group, default 50): do
   not enable without a deeper resolver-internal refactor — `submitGuess`'s

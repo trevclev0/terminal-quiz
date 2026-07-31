@@ -102,7 +102,7 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 
 ```sh
 .
-├── e2e/                          # Playwright E2E specs + page objects (gameplay, clue, reset-flow, wrong-answer, smoke)
+├── e2e/                          # Playwright E2E specs + page objects (gameplay, clue, reset-flow, wrong-answer, smoke, authoring)
 ├── migrations/                  # Drizzle SQL migrations + meta/ snapshots
 ├── public/                      # Static assets
 ├── scripts/                     # seed.sql (git-ignored, generate locally) and seed-e2e.sql (checked in)
@@ -203,7 +203,7 @@ There are **three** tiers of tests:
 
 1. **Unit / component tests** — co-located as `*.spec.ts` / `*.spec.tsx`, run by Vitest (`vite.config.ts`) with `happy-dom`. Shared helpers live in `src/react-app/test-utils/`; worker-side unit tests use plain Vitest with hand-built mock DB/Hono context objects (no real D1) via `src/worker/test-utils/mockEnv.ts` (`createMockEnv()`, `createMockHonoContext()`, `createMockGraphQLContext()`).
 2. **Backend integration tests** — co-located as `*.integration.spec.ts` under `src/worker/graphql/gameplay/`, run via a separate config (`vitest.config.integration.ts`) using `@cloudflare/vitest-pool-workers`. These exercise the real Hono stack and a real (in-memory) D1 instance, applying actual migrations + `scripts/seed-e2e.sql` per test file (`src/worker/test-utils/setupDb.ts`). Requests go through `src/worker/test-utils/gqlRequest.ts`, which calls the real worker `fetch()` entry point.
-3. **E2E tests** — Playwright specs in `e2e/` (`smoke`, `gameplay`, `wrong-answer`, `clue`, `reset-flow`), driven by page objects in `e2e/pages/`. Locally these seed the dev D1 with `scripts/seed-e2e.sql` and run against `mise dev`; in CI they run against the live preview deployment URL for a PR (see Environments & Deployment below).
+3. **E2E tests** — Playwright specs in `e2e/` (`smoke`, `gameplay`, `wrong-answer`, `clue`, `reset-flow`, `authoring`), driven by page objects in `e2e/pages/`. Locally these seed the dev D1 with `scripts/seed-e2e.sql` and run against `mise dev`; in CI they run against the live preview deployment URL for a PR (see Environments & Deployment below).
 
 ```bash
 bun run test --run        # unit/component tests, single run

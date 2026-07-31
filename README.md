@@ -208,7 +208,7 @@ bun run test:e2e          # Playwright E2E suite (against local dev server)
 - **Component tests** using React Testing Library, with module-level `vi.mock` calls to isolate dependencies
 - **Worker/GraphQL resolver unit tests** using plain Vitest with manually constructed mock DB/Hono context objects
 - **Backend integration tests** (`src/worker/graphql/gameplay/*.integration.spec.ts`) run via a dedicated config (`vitest.config.integration.ts`) using `@cloudflare/vitest-pool-workers`. These exercise the real Hono middleware stack and GraphQL schema against a real in-memory D1 database, with migrations and `scripts/seed-e2e.sql` applied per test file
-- **End-to-end tests** (`e2e/*.spec.ts`) using Playwright, driven through page objects in `e2e/pages/`, covering the full gameplay loop, wrong-answer handling, clue requests, and the reset/replay flow
+- **End-to-end tests** (`e2e/*.spec.ts`) using Playwright, driven through page objects in `e2e/pages/`, covering the full gameplay loop, wrong-answer handling, clue requests, the reset/replay flow, and the program-authoring flow
 
 Test utilities live in `src/react-app/test-utils/`:
 
@@ -323,7 +323,7 @@ bun run deploy:preview   # Build with CLOUDFLARE_ENV=preview and deploy to previ
 │       ├── deploy.yml           # Build, deploy to Cloudflare, then run Playwright E2E against the deployment
 │       ├── preview-cleanup.yml  # Deletes the preview Worker when a PR closes
 │       └── release.yml          # semantic-release on push to main
-├── e2e/                          # Playwright specs (smoke, gameplay, wrong-answer, clue, reset-flow) + page objects
+├── e2e/                          # Playwright specs (smoke, gameplay, wrong-answer, clue, reset-flow, authoring) + page objects
 ├── migrations/                  # Drizzle-generated SQL migration files
 ├── scripts/                     # seed.sql (git-ignored) and seed-e2e.sql (checked in, used by Playwright + CI)
 ├── src/
