@@ -64,23 +64,32 @@ description = "Run E2E against BASE_URL (browsers installed separately in CI)"
 run = "bun run cf-typegen"
 description = "Generate Cloudflare types"
 
+[tasks."seed:generate"]
+run = "bun run seed:generate"
+description = "Compile scripts/seed.ts + seed-e2e.ts into scripts/generated/*.sql"
+
 [tasks."seed:local"]
+depends = ["seed:generate"]
 run = "bun run seed:local"
 description = "Seed local database"
 
 [tasks."seed:preview"]
+depends = ["seed:generate"]
 run = "bun run seed:preview"
 description = "Seed preview database"
 
 [tasks."seed:prod"]
+depends = ["seed:generate"]
 run = "bun run seed:prod"
 description = "Seed production database"
 
 [tasks."seed:e2e:local"]
+depends = ["seed:generate"]
 run = "bun run seed:e2e:local"
 description = "Seed E2E test data in local D1"
 
 [tasks."seed:e2e:preview"]
+depends = ["seed:generate"]
 run = "bun run seed:e2e:preview"
 description = "Seed E2E test data in preview D1"
 
