@@ -84,11 +84,12 @@ bun run migrate:local      # apply migrations to local D1 file
 bun run migrate:preview    # apply to preview D1
 bun run migrate:prod       # apply to production D1
 
-bun run seed:local       # wrangler d1 execute --file=scripts/seed.sql (local D1)
-bun run seed:preview     # wrangler d1 execute --file=scripts/seed.sql (preview D1)
-bun run seed:prod        # wrangler d1 execute --file=scripts/seed.sql (production D1)
-bun run seed:e2e:local   # wrangler d1 execute --file=scripts/seed-e2e.sql (local D1)
-bun run seed:e2e:preview # wrangler d1 execute --file=scripts/seed-e2e.sql (preview D1)
+bun run seed:generate    # compile scripts/seed.ts + seed-e2e.ts -> scripts/generated/*.sql
+bun run seed:local       # seed:generate, then wrangler d1 execute --file=scripts/generated/seed.sql (local D1)
+bun run seed:preview     # seed:generate, then wrangler d1 execute --file=scripts/generated/seed.sql (preview D1)
+bun run seed:prod        # seed:generate, then wrangler d1 execute --file=scripts/generated/seed.sql (production D1)
+bun run seed:e2e:local   # seed:generate, then wrangler d1 execute --file=scripts/generated/seed-e2e.sql (local D1)
+bun run seed:e2e:preview # seed:generate, then wrangler d1 execute --file=scripts/generated/seed-e2e.sql (preview D1)
 
 bun run commit           # git-cz, interactive commit prompt (preferred over `git commit`)
 bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
@@ -105,7 +106,8 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 ├── e2e/                          # Playwright E2E specs + page objects (gameplay, clue, reset-flow, wrong-answer, smoke, authoring)
 ├── migrations/                  # Drizzle SQL migrations + meta/ snapshots
 ├── public/                      # Static assets
-├── scripts/                     # seed.sql (git-ignored, generate locally) and seed-e2e.sql (checked in)
+├── scripts/                     # seedGenerator.ts + typed seedData.ts/seedE2eData.ts (checked in,
+│                                #   compiled by seed.ts/seed-e2e.ts into git-ignored generated/*.sql)
 ├── src/
 │   ├── react-app/
 │   │   ├── api/
@@ -202,8 +204,8 @@ Do **not** bypass hooks with `--no-verify` unless documented.
 There are **three** tiers of tests:
 
 1. **Unit / component tests** — co-located as `*.spec.ts` / `*.spec.tsx`, run by Vitest (`vite.config.ts`) with `happy-dom`. Shared helpers live in `src/react-app/test-utils/`; worker-side unit tests use plain Vitest with hand-built mock DB/Hono context objects (no real D1) via `src/worker/test-utils/mockEnv.ts` (`createMockEnv()`, `createMockHonoContext()`, `createMockGraphQLContext()`).
-2. **Backend integration tests** — co-located as `*.integration.spec.ts` under `src/worker/graphql/gameplay/`, run via a separate config (`vitest.config.integration.ts`) using `@cloudflare/vitest-pool-workers`. These exercise the real Hono stack and a real (in-memory) D1 instance, applying actual migrations + `scripts/seed-e2e.sql` per test file (`src/worker/test-utils/setupDb.ts`). Requests go through `src/worker/test-utils/gqlRequest.ts`, which calls the real worker `fetch()` entry point.
-3. **E2E tests** — Playwright specs in `e2e/` (`smoke`, `gameplay`, `wrong-answer`, `clue`, `reset-flow`, `authoring`), driven by page objects in `e2e/pages/`. Locally these seed the dev D1 with `scripts/seed-e2e.sql` and run against `mise dev`; in CI they run against the live preview deployment URL for a PR (see Environments & Deployment below).
+2. **Backend integration tests** — co-located as `*.integration.spec.ts` under `src/worker/graphql/gameplay/`, run via a separate config (`vitest.config.integration.ts`) using `@cloudflare/vitest-pool-workers`. These exercise the real Hono stack and a real (in-memory) D1 instance, applying actual migrations + seed SQL compiled directly from `scripts/seedE2eData.ts` (imported into the Node-side config, no file round-trip) per test file (`src/worker/test-utils/setupDb.ts`). Requests go through `src/worker/test-utils/gqlRequest.ts`, which calls the real worker `fetch()` entry point.
+3. **E2E tests** — Playwright specs in `e2e/` (`smoke`, `gameplay`, `wrong-answer`, `clue`, `reset-flow`, `authoring`), driven by page objects in `e2e/pages/`. Locally these seed the dev D1 with `scripts/generated/seed-e2e.sql` (compiled from `scripts/seedE2eData.ts` via `bun run seed:e2e:local`) and run against `mise dev`; in CI they run against the live preview deployment URL for a PR (see Environments & Deployment below).
 
 ```bash
 bun run test --run        # unit/component tests, single run
@@ -259,7 +261,7 @@ Local development (`mise dev`, `migrate:local`, `seed:local`) runs against a loc
 | Production | Push to `main` | _(default)_ | `terminal-quest` |
 | Preview | Pull request | `preview` | `terminal-quest-preview` |
 
-Fully automated via `.github/workflows/deploy.yml`; preview builds run with `CLOUDFLARE_ENV=preview` so the Vite plugin flattens the `env.preview` section into the built `dist/quiz_app/wrangler.json`, then `wrangler deploy --env preview` deploys it. For non-fork PRs, once the preview deploy succeeds, the workflow seeds the preview D1 with `scripts/seed-e2e.sql` and runs the Playwright E2E suite (`mise run test:e2e:ci`) against the live preview URL before marking the deployment successful; a failing E2E run marks the GitHub Deployment as failed. `.github/workflows/preview-cleanup.yml` deletes the preview Worker on PR close.
+Fully automated via `.github/workflows/deploy.yml`; preview builds run with `CLOUDFLARE_ENV=preview` so the Vite plugin flattens the `env.preview` section into the built `dist/quiz_app/wrangler.json`, then `wrangler deploy --env preview` deploys it. For non-fork PRs, once the preview deploy succeeds, the workflow seeds the preview D1 with `scripts/generated/seed-e2e.sql` (compiled via `seed:e2e:preview`) and runs the Playwright E2E suite (`mise run test:e2e:ci`) against the live preview URL before marking the deployment successful; a failing E2E run marks the GitHub Deployment as failed. `.github/workflows/preview-cleanup.yml` deletes the preview Worker on PR close.
 
 Secrets required in GitHub Actions: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `ADMIN_PAT`, `CODECOV_TOKEN`.
 
