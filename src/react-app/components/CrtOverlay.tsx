@@ -39,10 +39,20 @@ function CrtOverlay() {
 
   useEffect(() => {
     if (!settings.flicker) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let timer: ReturnType<typeof setTimeout> | undefined;
     let offTimer: ReturnType<typeof setTimeout> | undefined;
+    const clearTimers = () => {
+      if (timer) clearTimeout(timer);
+      if (offTimer) clearTimeout(offTimer);
+    };
+    const stopPulse = () => {
+      clearTimers();
+      setFlickerPulse(false);
+    };
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (mql.matches) return;
+
     const schedule = () => {
       const delay = 4000 + Math.random() * 5000;
       timer = setTimeout(() => {
@@ -52,9 +62,13 @@ function CrtOverlay() {
       }, delay);
     };
     schedule();
+    const onMotionChange = (e: MediaQueryListEvent) => {
+      if (e.matches) stopPulse();
+    };
+    mql.addEventListener("change", onMotionChange);
     return () => {
-      if (timer) clearTimeout(timer);
-      if (offTimer) clearTimeout(offTimer);
+      mql.removeEventListener("change", onMotionChange);
+      stopPulse();
     };
   }, [settings.flicker]);
 
@@ -70,22 +84,12 @@ function CrtOverlay() {
     const parts: string[] = [];
 
     if (settings.textGlow) {
-      // parts.push("0 0 2px rgba(0,255,0,0.4)", "0 0 8px rgba(0,255,0,0.2)");
-      // parts.push(
-      //   "0 0 1px rgba(76,175,80,0.55)",
-      //   "0 0 3px rgba(76,175,80,0.18)",
-      // );
       parts.push(
         "0 0 2px rgba(76,175,80,0.55)",
         "0 0 8px rgba(76,175,80,0.18)",
       );
     }
     if (settings.chromaticAberration) {
-      // parts.push("1px 0 0 rgba(255,0,0,0.35)", "-1px 0 0 rgba(0,0,255,0.35)");
-      // parts.push(
-      //   "0.5px 0 0 rgba(255,60,60,0.18)",
-      //   "-0.5px 0 0 rgba(60,60,255,0.18)",
-      // );
       parts.push(
         "1px 0 0 rgba(255,60,60,0.18)",
         "-1px 0 0 rgba(60,60,255,0.18)",

@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import CrtOverlay from "./CrtOverlay";
+import styles from "./CrtOverlay.module.css";
 
 function createFakeStorage() {
   const store: Record<string, string> = {};
@@ -179,7 +180,7 @@ describe("CrtOverlay", () => {
     expect(screen.getByTestId("crt-overlay")).toBeInTheDocument();
   });
 
-  it.skip("applies text glow to document root when textGlow is on", () => {
+  it("applies text glow to document root when textGlow is on", () => {
     localStorage.setItem(
       "terminal_quiz_crt_settings",
       JSON.stringify({
@@ -193,40 +194,42 @@ describe("CrtOverlay", () => {
     );
     render(<CrtOverlay />);
     expect(document.documentElement.style.textShadow).toContain(
-      "rgba(0,255,0,0.4)",
+      "rgba(76,175,80,0.55)",
     );
   });
 
-  it.skip("applies chromatic aberration to document root when chromAb is on", () => {
+  it("applies chromatic aberration to document root when chromAb is on", () => {
     localStorage.setItem(
       "terminal_quiz_crt_settings",
       JSON.stringify(FULL_SETTINGS),
     );
     render(<CrtOverlay />);
     expect(document.documentElement.style.textShadow).toContain(
-      "rgba(255,0,0,0.35)",
+      "rgba(255,60,60,0.18)",
     );
     expect(document.documentElement.style.textShadow).toContain(
-      "rgba(0,0,255,0.35)",
+      "rgba(60,60,255,0.18)",
     );
   });
 
   it("clears text shadow from document root on unmount", () => {
-    // off preset — no text effects, starts empty
     localStorage.setItem(
       "terminal_quiz_crt_settings",
       JSON.stringify({
-        scanlines: false,
-        glow: false,
-        textGlow: false,
+        scanlines: true,
+        glow: true,
+        textGlow: true,
         chromaticAberration: false,
         flicker: false,
         powerOn: false,
       }),
     );
     const { unmount } = render(<CrtOverlay />);
-    expect(document.documentElement.style.textShadow).toBe("");
+    expect(document.documentElement.style.textShadow).toContain(
+      "rgba(76,175,80,0.55)",
+    );
     unmount();
+    expect(document.documentElement.style.textShadow).toBe("");
   });
 
   it("applies heavy scanlines class for full preset", () => {
@@ -236,6 +239,9 @@ describe("CrtOverlay", () => {
     );
     render(<CrtOverlay />);
     act(() => vi.advanceTimersByTime(1750));
+    expect(screen.getByTestId("crt-overlay")).toHaveClass(
+      styles.scanlinesHeavy,
+    );
     expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: full");
   });
 
