@@ -7,11 +7,19 @@ import { SQLiteSyncDialect, type SQLiteTable } from "drizzle-orm/sqlite-core";
 // against src/shared/schema.ts / src/shared/authSchema.ts) into inlined
 // SQL text that `wrangler d1 execute --file=` can run directly.
 //
-// Uses `getTableColumns()` (a public, documented Drizzle export) rather
-// than reaching into internal symbols — stable across drizzle-orm minor
-// bumps. Value encoding (booleans -> 0/1, Date -> epoch ms, string
-// escaping) is handled by Drizzle's own column encoders + inline-param
-// renderer (`SQL#toQuery({ inlineParams: true })`), not hand-rolled here.
+// Value encoding (booleans -> 0/1, Date -> epoch ms, string escaping) is
+// handled by Drizzle's own column encoders + inline-param renderer
+// (`SQL#toQuery({ inlineParams: true })`), not hand-rolled here.
+//
+// STABILITY CAVEAT: this relies on a few Drizzle APIs outside its public
+// stability contract — `SQLiteSyncDialect` (buildInsertQuery,
+// escapeName/escapeString/escapeParam), `CasingCache` (drizzle-orm/casing),
+// and `SQL#toQuery`. `getTableColumns()` IS a public export. Risk is
+// bounded: this is build-time-only code, so a Drizzle major bump that
+// breaks these fails immediately at generation time (caught by
+// seedGenerator.spec.ts + the integration suite), never as a silent
+// runtime bug. After upgrading drizzle-orm, re-verify the generated SQL
+// in scripts/generated/*.sql.
 
 const dialect = new SQLiteSyncDialect();
 // `casing` isn't part of SQLiteSyncDialect's public type surface (only
@@ -77,4 +85,48 @@ export function insertSql<T extends SQLiteTable>(
  */
 export function deleteWhereSql(table: SQLiteTable, where: SQL): string {
   return `${toInlineSql(sql`delete from ${table} where ${where}`)};`;
+}
+
+/**
+ * Builds an idempotent `ON CONFLICT(id) DO UPDATE SET ...` fragment for an
+ * upsert. The update set is derived from the union of columns actually
+ * populated across the given rows (in first-occurrence order — deterministic
+ * for fixed seed arrays), so reseeding only manages values the seed supplies
+ * and never overwrites externally managed columns. Columns a row omits fall
+ * back to the table's DEFAULT on insert and are left untouched on conflict.
+ *
+ * @returns a `SQL` fragment safe to pass as `insertSql`'s `onConflict`.
+ *   If no row populates a non-id column, falls back to `DO NOTHING`.
+ */
+export function upsertConflict<T extends SQLiteTable>(
+  table: T,
+  rows: T["$inferInsert"][],
+): SQL {
+  const columns = getTableColumns(table);
+  const idColumn = columns.id;
+  if (!idColumn) {
+    throw new Error("upsertConflict requires a table with an `id` column");
+  }
+
+  const updateFields: string[] = [];
+  const seen = new Set<string>();
+  for (const row of rows) {
+    for (const [field, column] of Object.entries(columns)) {
+      if (field === "id" || seen.has(field)) {
+        continue;
+      }
+      if ((row as Record<string, unknown>)[field] === undefined) {
+        continue;
+      }
+      seen.add(field);
+      updateFields.push(`${column.name} = excluded.${column.name}`);
+    }
+  }
+
+  if (updateFields.length === 0) {
+    return sql.raw(`ON CONFLICT(${idColumn.name}) DO NOTHING`);
+  }
+  return sql.raw(
+    `ON CONFLICT(${idColumn.name}) DO UPDATE SET ${updateFields.join(", ")}`,
+  );
 }

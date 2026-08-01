@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { gates, programs } from "../src/shared/schema";
-import { deleteWhereSql, insertSql } from "./seedGenerator";
+import { deleteWhereSql, insertSql, upsertConflict } from "./seedGenerator";
 
 // Real seed data — checked into git, typed against src/shared/schema.ts.
 // 10 programs total. Idempotent (ON CONFLICT DO UPDATE), scoped to
@@ -477,21 +477,6 @@ const gateRows: (typeof gates.$inferInsert)[] = [
   },
 ];
 
-const PROGRAM_UPDATE_SET =
-  "name = excluded.name, author_id = excluded.author_id, " +
-  "visibility = excluded.visibility";
-
-const GATE_UPDATE_SET =
-  "program_id = excluded.program_id, " +
-  "sequence_order = excluded.sequence_order, " +
-  "label = excluded.label, " +
-  "question = excluded.question, " +
-  "correct_answer = excluded.correct_answer, " +
-  "success_message = excluded.success_message, " +
-  "acceptance_threshold = excluded.acceptance_threshold, " +
-  "guidance_enabled = excluded.guidance_enabled, " +
-  "guidance_threshold = excluded.guidance_threshold";
-
 /** Compiles the full real seed as one SQL script (statements joined by `\n`). */
 export function generateSeedSql(): string {
   const seedProgramIds = Object.values(PROGRAM_IDS);
@@ -518,16 +503,8 @@ export function generateSeedSql(): string {
 
   const statements = [
     cleanup,
-    insertSql(
-      programs,
-      programRows,
-      sql.raw(`ON CONFLICT(id) DO UPDATE SET ${PROGRAM_UPDATE_SET}`),
-    ),
-    insertSql(
-      gates,
-      gateRows,
-      sql.raw(`ON CONFLICT(id) DO UPDATE SET ${GATE_UPDATE_SET}`),
-    ),
+    insertSql(programs, programRows, upsertConflict(programs, programRows)),
+    insertSql(gates, gateRows, upsertConflict(gates, gateRows)),
   ];
 
   return statements.join("\n");

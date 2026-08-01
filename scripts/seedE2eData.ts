@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import { user } from "../src/shared/authSchema";
 import { gates, programs } from "../src/shared/schema";
 import { TEST_USER_ID } from "../src/worker/test-utils/testConstants";
-import { insertSql } from "./seedGenerator";
+import { insertSql, upsertConflict } from "./seedGenerator";
 
 // E2E fixture data — safe for concurrent runs (upserts, no destructive
 // deletes). Consumed by:
@@ -19,6 +19,46 @@ const E2E_GATE_IDS = [
   "e2e00002-0000-0000-0000-000000000002",
   "e2e00003-0000-0000-0000-000000000003",
 ] as const;
+
+// ON CONFLICT DO UPDATE (not DO NOTHING) so seed changes apply without an
+// FK cascade wiping session progress on re-run. Update set is derived from
+// the populated columns via upsertConflict, so edits here (including
+// guidance config) propagate on reseed.
+const e2eGateRows: (typeof gates)["$inferInsert"][] = [
+  {
+    id: E2E_GATE_IDS[0],
+    programId: E2E_PROGRAM_ID,
+    sequenceOrder: 1,
+    label: "Gate 1",
+    question: "What color is the sky?",
+    correctAnswer: "blue",
+    successMessage: "Correct! The sky is blue during a clear day.",
+    guidanceEnabled: true,
+    guidanceThreshold: 2,
+  },
+  {
+    id: E2E_GATE_IDS[1],
+    programId: E2E_PROGRAM_ID,
+    sequenceOrder: 2,
+    label: "Gate 2",
+    question: "What is 2 + 2?",
+    correctAnswer: "4",
+    successMessage: "Correct! Basic arithmetic still holds.",
+    guidanceEnabled: false,
+    guidanceThreshold: 3,
+  },
+  {
+    id: E2E_GATE_IDS[2],
+    programId: E2E_PROGRAM_ID,
+    sequenceOrder: 3,
+    label: "Gate 3",
+    question: "What is the opposite of hot?",
+    correctAnswer: "cold",
+    successMessage: "Correct! Hot and cold are thermal opposites.",
+    guidanceEnabled: false,
+    guidanceThreshold: 3,
+  },
+];
 
 /** Compiles the full E2E seed as one SQL script (statements joined by `\n`). */
 export function generateE2eSeedSql(): string {
@@ -43,58 +83,7 @@ export function generateE2eSeedSql(): string {
       sql.raw("ON CONFLICT DO NOTHING"),
     ),
 
-    // ON CONFLICT DO UPDATE (not id/created_at) so seed changes apply
-    // without an FK cascade wiping session progress on re-run.
-    insertSql(
-      gates,
-      [
-        {
-          id: E2E_GATE_IDS[0],
-          programId: E2E_PROGRAM_ID,
-          sequenceOrder: 1,
-          label: "Gate 1",
-          question: "What color is the sky?",
-          correctAnswer: "blue",
-          successMessage: "Correct! The sky is blue during a clear day.",
-          guidanceEnabled: true,
-          guidanceThreshold: 2,
-        },
-        {
-          id: E2E_GATE_IDS[1],
-          programId: E2E_PROGRAM_ID,
-          sequenceOrder: 2,
-          label: "Gate 2",
-          question: "What is 2 + 2?",
-          correctAnswer: "4",
-          successMessage: "Correct! Basic arithmetic still holds.",
-          guidanceEnabled: false,
-          guidanceThreshold: 3,
-        },
-        {
-          id: E2E_GATE_IDS[2],
-          programId: E2E_PROGRAM_ID,
-          sequenceOrder: 3,
-          label: "Gate 3",
-          question: "What is the opposite of hot?",
-          correctAnswer: "cold",
-          successMessage: "Correct! Hot and cold are thermal opposites.",
-          guidanceEnabled: false,
-          guidanceThreshold: 3,
-        },
-      ],
-      sql.raw(
-        "ON CONFLICT(id) DO UPDATE SET " +
-          "program_id = excluded.program_id, " +
-          "sequence_order = excluded.sequence_order, " +
-          "label = excluded.label, " +
-          "question = excluded.question, " +
-          "correct_answer = excluded.correct_answer, " +
-          "success_message = excluded.success_message, " +
-          "acceptance_threshold = excluded.acceptance_threshold, " +
-          "guidance_enabled = excluded.guidance_enabled, " +
-          "guidance_threshold = excluded.guidance_threshold",
-      ),
-    ),
+    insertSql(gates, e2eGateRows, upsertConflict(gates, e2eGateRows)),
   ];
 
   return statements.join("\n");
