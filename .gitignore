@@ -26,8 +26,8 @@ coverage/
 *.db-shm
 *.db-wal
 
-# Ignore generated SQL seed file
-seed.sql
+# Ignore generated SQL seed files (compiled from scripts/seed*.ts)
+scripts/generated/
 
 # TanStack Router temporary files
 .tanstack/
