@@ -63,15 +63,21 @@ export default defineConfig({
         new URL("./src/react-app/test-utils", import.meta.url),
       ),
     },
-    include: ["src/**/*.spec.{ts,tsx}"],
+    include: ["src/**/*.spec.{ts,tsx}", "scripts/**/*.spec.ts"],
     // Frontend integration specs (*.integration.spec.tsx) run here (happy-dom).
     // Backend integration specs (*.integration.spec.ts) excluded; run via test:integration.
     exclude: [...configDefaults.exclude, "src/**/*.integration.spec.ts"],
     clearMocks: true,
     restoreMocks: true,
     coverage: {
-      include: ["src/**/*.{ts,tsx}"],
+      include: ["src/**/*.{ts,tsx}", "scripts/**/*.ts"],
       exclude: [
+        // Seed CLI entrypoints/data are build-time tooling, not app
+        // runtime code; seedGenerator.ts itself is covered by its spec.
+        "scripts/seed.ts",
+        "scripts/seed-e2e.ts",
+        "scripts/seedData.ts",
+        "scripts/seedE2eData.ts",
         "src/react-app/App.tsx",
         "src/react-app/main.tsx",
         "src/react-app/vite-env.d.ts",
