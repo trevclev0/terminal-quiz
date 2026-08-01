@@ -31,8 +31,6 @@ declare module "@tanstack/react-router" {
   }
 }
 
-window.__TERMINAL_QUIZ_MOUNTED__ = true;
-
 const rootElement = document.getElementById("app-root") as HTMLElement;
 
 const root = createRoot(rootElement);

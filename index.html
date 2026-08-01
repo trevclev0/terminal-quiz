@@ -6,44 +6,43 @@
     <link rel="icon" type="image/svg+xml" href="/terminal-quiz.svg" sizes="any" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script type="module" src="/src/react-app/main.tsx"></script>
-  </head>
-
-  <style>
-    @keyframes terminal-quiz-boot-blink {
-      0%,
-      100% {
-        opacity: 1;
+    <style>
+      @keyframes terminal-quiz-boot-blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
       }
-      50% {
-        opacity: 0;
-      }
-    }
-    #boot-fallback .cursor {
-      display: inline-block;
-      width: 0.6em;
-      height: 1em;
-      background: #4caf50;
-      animation: terminal-quiz-boot-blink 1s step-start infinite;
-    }
-    #boot-fallback {
-      font-family: "Glass TTY VT220", "Courier New", Courier, monospace;
-      color: #4caf50;
-      font-size: 20pt;
-    }
-    #boot-fallback .inverse {
-      background: #4caf50;
-      color: #0a0f0a;
-      padding: 0 4px;
-    }
-    #boot-fallback .reload {
-      color: #4caf50;
-    }
-    @media (prefers-reduced-motion: reduce) {
       #boot-fallback .cursor {
-        animation: none;
+        display: inline-block;
+        width: 0.6em;
+        height: 1em;
+        background: #4caf50;
+        animation: terminal-quiz-boot-blink 1s step-start infinite;
       }
-    }
-  </style>
+      #boot-fallback {
+        font-family: "Glass TTY VT220", "Courier New", Courier, monospace;
+        color: #4caf50;
+        font-size: 20pt;
+      }
+      #boot-fallback .inverse {
+        background: #4caf50;
+        color: #0a0f0a;
+        padding: 0 4px;
+      }
+      #boot-fallback .reload {
+        color: #4caf50;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot-fallback .cursor {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
 
   <body style="background-color: #0a0f0a;">
     <div id="app-root">
@@ -53,14 +52,18 @@
       </div>
     </div>
     <script>
-      window.addEventListener("error", () => {
-        if (window.__TERMINAL_QUIZ_MOUNTED__) return;
-        const root = document.getElementById("app-root");
-        if (root) {
-          root.innerHTML =
-            '<div id="boot-fallback"><div><span class="inverse">LOAD FAILURE</span></div><div>Failed to initialize terminal. Check connection.</div><div><a class="reload" href="/">[ RELOAD ]</a></div></div>';
-        }
-      });
+      window.addEventListener(
+        "error",
+        () => {
+          if (!document.getElementById("boot-fallback")) return;
+          const root = document.getElementById("app-root");
+          if (root) {
+            root.innerHTML =
+              '<div id="boot-fallback"><div><span class="inverse">LOAD FAILURE</span></div><div>Failed to initialize terminal. Check connection.</div><div><a class="reload" href="/">[ RELOAD ]</a></div></div>';
+          }
+        },
+        true,
+      );
     </script>
   </body>
 </html>
