@@ -141,6 +141,10 @@ describe("useCrtPreferences", () => {
       });
     });
     expect(result.current.presetLabel).toBe("custom");
+
+    act(() => result.current.cyclePreset());
+
+    expect(result.current.presetLabel).toBe("full");
   });
 
   it("responds to Ctrl+Shift+, hotkey", () => {
