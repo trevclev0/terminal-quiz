@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -6,21 +5,17 @@ import {
   readD1Migrations,
 } from "@cloudflare/vitest-pool-workers";
 import { defineConfig } from "vitest/config";
+import { generateE2eSeedSql } from "./scripts/seedE2eData";
 import { INTEGRATION_TEST_SECRET } from "./src/worker/test-utils/testConstants";
 
 // ESM-compatible __dirname — derived from import.meta.url since
 // __dirname is not a global in ESM modules.
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Read seed SQL in Node.js context (config runs in Node, not workerd).
-// Strip comment lines — D1's exec() rejects lines that contain no SQL statement.
-const seedSQL = readFileSync(
-  path.join(__dirname, "scripts/seed-e2e.sql"),
-  "utf-8",
-)
-  .split("\n")
-  .filter((line) => !line.trim().startsWith("--"))
-  .join("\n");
+// Compile seed SQL directly from the typed generator (config runs in
+// Node, not workerd) — no file round-trip, no risk of running stale
+// SQL if scripts/seed-e2e.ts wasn't regenerated first.
+const seedSQL = generateE2eSeedSql();
 
 export default defineConfig({
   plugins: [
