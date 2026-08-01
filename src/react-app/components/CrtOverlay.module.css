@@ -216,7 +216,8 @@
     opacity: 0;
   }
 
-  .scanlines.flickerPulse::after {
+  .scanlines.flickerPulse::after,
+  .scanlinesHeavy.flickerPulse::after {
     animation: none;
   }
 
