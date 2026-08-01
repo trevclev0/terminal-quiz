@@ -103,7 +103,7 @@ export default function useCrtPreferences() {
   const cyclePreset = useCallback(() => {
     setSettingsState((prev) => {
       const idx = PRESETS.findIndex((p) => settingsMatch(p, prev));
-      const next = idx === 0 ? PRESETS.length - 1 : idx - 1;
+      const next = idx <= 0 ? PRESETS.length - 1 : idx - 1;
       return PRESETS[next];
     });
   }, []);
