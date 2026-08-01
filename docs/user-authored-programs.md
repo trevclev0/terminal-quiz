@@ -86,7 +86,7 @@ check("program_visibility_check", sql`${t.visibility} IN ('public', 'unlisted')`
 - `authorId` is **nullable** — existing/seeded Programs (including the E2E seed program) become "unowned" (system content), still fully playable, just not editable by anyone until reassigned.
 - `onDelete: "set null"` — if a user account is ever deleted, their Programs survive as unowned rather than cascading into other players' `session_progress`/`session_completed_gates` rows.
 
-`scripts/seed.sql` / `scripts/seed-e2e.sql` need no changes — `author_id` defaults to `NULL`, `visibility` defaults to `'public'`.
+`scripts/seedData.ts` / `scripts/seedE2eData.ts` (formerly `scripts/seed.sql` / `scripts/seed-e2e.sql`) need no changes — `author_id` defaults to `NULL`, `visibility` defaults to `'public'`.
 
 ---
 

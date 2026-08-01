@@ -171,7 +171,8 @@ bun run seed:e2e:local
 | `bun run test:ui` | Run the Vitest UI |
 | `bun run test:e2e` | Seed local D1 with E2E fixtures, then run the Playwright suite against `http://localhost:5173` |
 | `bun run coverage` | Run the unit test suite and generate a V8 coverage report |
-| `bun run seed:e2e:local` / `bun run seed:e2e:preview` | Seed the E2E fixture program (`scripts/seed-e2e.sql`) into local/preview D1 |
+| `bun run seed:generate` | Compile `scripts/seed.ts` + `seed-e2e.ts` into `scripts/generated/*.sql` |
+| `bun run seed:e2e:local` / `bun run seed:e2e:preview` | Seed the E2E fixture program (`scripts/generated/seed-e2e.sql`, compiled from `scripts/seedE2eData.ts`) into local/preview D1 |
 | `bun run commit` | Launch the interactive Commitizen prompt (preferred over `git commit`) |
 | `bun run cf-typegen` | Regenerate Wrangler/Workers type bindings |
 
@@ -207,7 +208,7 @@ bun run test:e2e          # Playwright E2E suite (against local dev server)
 - **Hook tests** using `renderHook` from React Testing Library, with TanStack Query wrappers and MSW for GraphQL mocking where needed
 - **Component tests** using React Testing Library, with module-level `vi.mock` calls to isolate dependencies
 - **Worker/GraphQL resolver unit tests** using plain Vitest with manually constructed mock DB/Hono context objects
-- **Backend integration tests** (`src/worker/graphql/gameplay/*.integration.spec.ts`) run via a dedicated config (`vitest.config.integration.ts`) using `@cloudflare/vitest-pool-workers`. These exercise the real Hono middleware stack and GraphQL schema against a real in-memory D1 database, with migrations and `scripts/seed-e2e.sql` applied per test file
+- **Backend integration tests** (`src/worker/graphql/gameplay/*.integration.spec.ts`) run via a dedicated config (`vitest.config.integration.ts`) using `@cloudflare/vitest-pool-workers`. These exercise the real Hono middleware stack and GraphQL schema against a real in-memory D1 database, with migrations applied and seed SQL compiled directly from `scripts/seedE2eData.ts` (imported into the config, no file round-trip) per test file
 - **End-to-end tests** (`e2e/*.spec.ts`) using Playwright, driven through page objects in `e2e/pages/`, covering the full gameplay loop, wrong-answer handling, clue requests, the reset/replay flow, and the program-authoring flow
 
 Test utilities live in `src/react-app/test-utils/`:
@@ -225,7 +226,7 @@ Backend test utilities live in `src/worker/test-utils/`:
 | File | Purpose |
 |---|---|
 | `mockEnv.ts` | Mock D1/Hono/GraphQL contexts for unit tests |
-| `setupDb.ts` | Applies migrations + `scripts/seed-e2e.sql` to a real D1 instance for integration tests |
+| `setupDb.ts` | Applies migrations + seed SQL (compiled from `scripts/seedE2eData.ts`) to a real D1 instance for integration tests |
 | `gqlRequest.ts` | Sends a request through the real worker `fetch()` handler for integration tests |
 
 Coverage (unit tests only — the Workers pool used for integration tests doesn't support V8 coverage) excludes `main.tsx`, `vite-env.d.ts`, `shared/schema.ts`, `shared/types.ts`, `shared/gqlQueries.ts`, `routeTree.gen.ts`, `worker/index.ts`, `worker/middleware/**`, `worker/routes/graphql.ts`, `react-app/routes/__root.tsx`, `react-app/api/queryClient.ts`, and `**/test-utils/**` (see `vite.config.ts` for the authoritative list).
@@ -264,14 +265,23 @@ bun run migrate:prod     # Remote production D1 database
 ### Seeding
 
 ```bash
-bun run seed:local              # Seed local dev database with real program/gate data
-bun run seed:preview            # Seed remote preview database
-bun run seed:prod               # Seed remote production database
-bun run seed:e2e:local          # Seed the local database with the fixed "E2E Test Program" used by Playwright
-bun run seed:e2e:preview        # Seed the preview database with the same fixtures (used by CI E2E runs)
+bun run seed:generate      # Compile scripts/seed.ts + seed-e2e.ts -> scripts/generated/*.sql
+bun run seed:local         # Seed local dev database with real program/gate data
+bun run seed:preview       # Seed remote preview database
+bun run seed:prod          # Seed remote production database
+bun run seed:e2e:local     # Seed the local database with the fixed "E2E Test Program" used by Playwright
+bun run seed:e2e:preview   # Seed the preview database with the same fixtures (used by CI E2E runs)
 ```
 
-Seed data for normal use is read from `scripts/seed.sql` (git-ignored; generate it from your own data source). E2E fixture data comes from `scripts/seed-e2e.sql`, which **is** checked into the repo and safe to run repeatedly (upserts, no destructive drops).
+Seed data is TypeScript, checked into git and typed against `src/shared/schema.ts`/`authSchema.ts`:
+`scripts/seedData.ts` (10 real programs) and `scripts/seedE2eData.ts` (the E2E fixture program) are compiled by
+`scripts/seed.ts` / `scripts/seed-e2e.ts` into `scripts/generated/*.sql` (git-ignored build output), which
+`wrangler d1 execute --file=` then runs. `seed:local`/`seed:preview`/`seed:prod`/`seed:e2e:*` all run
+`seed:generate` first, so the compiled SQL is never stale.
+
+Both seed scripts are idempotent (`ON CONFLICT DO UPDATE`/`DO NOTHING`), never destructive:
+`seed.ts` scopes its one cleanup delete to system-seeded programs (`author_id IS NULL`) that have since been
+retired from the seed set — it never touches user-authored programs or players' session progress.
 
 ---
 
@@ -289,7 +299,7 @@ The workflow:
 2. Patches the generated `wrangler.jsonc` for preview deployments (different D1 database, `workers_dev: true`).
 3. Applies any pending D1 migrations to the appropriate database.
 4. Deploys via `cloudflare/wrangler-action`.
-5. For non-fork pull requests, seeds the preview D1 with `scripts/seed-e2e.sql` and runs the full Playwright E2E suite against the deployed preview URL.
+5. For non-fork pull requests, seeds the preview D1 with `scripts/generated/seed-e2e.sql` (compiled via `seed:e2e:preview`) and runs the full Playwright E2E suite against the deployed preview URL.
 6. Updates the GitHub Deployment status with the live URL — a failing E2E run marks the deployment as failed.
 
 Preview Workers are torn down automatically on PR close via `.github/workflows/preview-cleanup.yml`.
@@ -325,7 +335,8 @@ bun run deploy:preview   # Build with CLOUDFLARE_ENV=preview and deploy to previ
 │       └── release.yml          # semantic-release on push to main
 ├── e2e/                          # Playwright specs (smoke, gameplay, wrong-answer, clue, reset-flow, authoring) + page objects
 ├── migrations/                  # Drizzle-generated SQL migration files
-├── scripts/                     # seed.sql (git-ignored) and seed-e2e.sql (checked in, used by Playwright + CI)
+├── scripts/                     # seedGenerator.ts + typed seedData.ts/seedE2eData.ts (checked in),
+│                                #   compiled into git-ignored generated/*.sql for wrangler d1 execute
 ├── src/
 │   ├── react-app/               # React SPA (routes now include login, programs/manage, programs/manage/$programId)
 │   ├── shared/                  # Schema (schema.ts + authSchema.ts for Better Auth), types, and canonical GraphQL strings
