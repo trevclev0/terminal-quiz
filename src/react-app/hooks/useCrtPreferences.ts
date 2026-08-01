@@ -123,7 +123,7 @@ export default function useCrtPreferences() {
     return () => window.removeEventListener("keydown", handler);
   }, [cyclePreset]);
 
-  const isFirstVisit = useMemo(() => readSettings() === null, []);
+  const [isFirstVisit] = useState(() => readSettings() === null);
 
   return {
     settings,

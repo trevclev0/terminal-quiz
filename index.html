@@ -8,7 +8,59 @@
     <script type="module" src="/src/react-app/main.tsx"></script>
   </head>
 
+  <style>
+    @keyframes terminal-quiz-boot-blink {
+      0%,
+      100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0;
+      }
+    }
+    #boot-fallback .cursor {
+      display: inline-block;
+      width: 0.6em;
+      height: 1em;
+      background: #4caf50;
+      animation: terminal-quiz-boot-blink 1s step-start infinite;
+    }
+    #boot-fallback {
+      font-family: "Glass TTY VT220", "Courier New", Courier, monospace;
+      color: #4caf50;
+      font-size: 20pt;
+    }
+    #boot-fallback .inverse {
+      background: #4caf50;
+      color: #0a0f0a;
+      padding: 0 4px;
+    }
+    #boot-fallback .reload {
+      color: #4caf50;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #boot-fallback .cursor {
+        animation: none;
+      }
+    }
+  </style>
+
   <body style="background-color: #0a0f0a;">
-    <div id="app-root"></div>
+    <div id="app-root">
+      <div id="boot-fallback">
+        <div><span class="inverse">Terminal Quiz</span><span class="cursor"></span></div>
+        <div>LOADING…</div>
+      </div>
+    </div>
+    <script>
+      window.addEventListener("error", () => {
+        if (window.__TERMINAL_QUIZ_MOUNTED__) return;
+        const root = document.getElementById("app-root");
+        if (root) {
+          root.innerHTML =
+            '<div id="boot-fallback"><div><span class="inverse">LOAD FAILURE</span></div><div>Failed to initialize terminal. Check connection.</div><div><a class="reload" href="/">[ RELOAD ]</a></div></div>';
+        }
+      });
+    </script>
   </body>
 </html>
