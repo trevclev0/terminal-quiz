@@ -43,6 +43,25 @@ describe("typing progression", () => {
     expect(result.current.displayedText).toBe("abc");
     expect(result.current.isComplete).toBe(true);
   });
+
+  it("renders a surrogate pair as a single typing unit", () => {
+    const { result } = renderHook(() => useTypewriter("💡", { speed: 30 }));
+    expect(result.current.displayedText).toBe("");
+    act(() => vi.advanceTimersByTime(30));
+    expect(result.current.displayedText).toBe("💡");
+    expect(result.current.isComplete).toBe(true);
+  });
+
+  it("treats non-BMP characters as one unit in mixed text", () => {
+    const { result } = renderHook(() => useTypewriter("a💡b", { speed: 30 }));
+    act(() => vi.advanceTimersByTime(30));
+    expect(result.current.displayedText).toBe("a");
+    act(() => vi.advanceTimersByTime(30));
+    expect(result.current.displayedText).toBe("a💡");
+    act(() => vi.advanceTimersByTime(30));
+    expect(result.current.displayedText).toBe("a💡b");
+    expect(result.current.isComplete).toBe(true);
+  });
 });
 
 describe("onComplete", () => {
@@ -103,6 +122,23 @@ describe("text changes", () => {
     act(() => vi.advanceTimersByTime(150));
     expect(result.current.displayedText).toBe("world");
     expect(result.current.isComplete).toBe(true);
+  });
+
+  it("fires onComplete again for the new text value", () => {
+    const onComplete = vi.fn();
+    const { result, rerender } = renderHook(
+      (props: { text: string }) =>
+        useTypewriter(props.text, { speed: 30, onComplete }),
+      { initialProps: { text: "hello" } },
+    );
+    act(() => vi.advanceTimersByTime(150));
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    rerender({ text: "world" });
+    act(() => vi.advanceTimersByTime(150));
+    expect(onComplete).toHaveBeenCalledTimes(2);
+    act(() => vi.advanceTimersByTime(1000));
+    act(() => result.current.skip());
+    expect(onComplete).toHaveBeenCalledTimes(2);
   });
 });
 
