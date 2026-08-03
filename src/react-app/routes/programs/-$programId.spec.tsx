@@ -43,7 +43,9 @@ describe("Program Play Route Integration", () => {
     });
 
     expect(screen.getByText("Gate 1")).toBeInTheDocument();
-    expect(screen.getByText("What is 2+2?")).toBeInTheDocument();
+    expect(screen.getByTestId("gate-question")).toHaveTextContent(
+      "What is 2+2?",
+    );
   });
 
   it("renders the end state when program is completed", async () => {
