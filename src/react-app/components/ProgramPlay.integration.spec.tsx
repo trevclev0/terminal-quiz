@@ -121,7 +121,8 @@ describe("ProgramPlay Integration", () => {
 
     render(<ProgramPlay />, { wrapper });
 
-    await screen.findByText("What is 2+2?");
+    const gateQuestion = await screen.findByTestId("gate-question");
+    expect(gateQuestion).toHaveTextContent("What is 2+2?");
 
     const input = screen.getByLabelText("Gate 1 password input");
     await user.type(input, "4");
@@ -136,7 +137,9 @@ describe("ProgramPlay Integration", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText("What is 3+3?")).toBeInTheDocument();
+      expect(screen.getByTestId("gate-question")).toHaveTextContent(
+        "What is 3+3?",
+      );
     });
   });
 
@@ -146,7 +149,8 @@ describe("ProgramPlay Integration", () => {
 
     render(<ProgramPlay />, { wrapper });
 
-    await screen.findByText("What is 2+2?");
+    const gateQuestion = await screen.findByTestId("gate-question");
+    expect(gateQuestion).toHaveTextContent("What is 2+2?");
 
     const input = screen.getByLabelText("Gate 1 password input");
     await user.type(input, "wrong");
@@ -167,7 +171,8 @@ describe("ProgramPlay Integration", () => {
 
     render(<ProgramPlay />, { wrapper });
 
-    await screen.findByText("What is 2+2?");
+    const gateQuestion = await screen.findByTestId("gate-question");
+    expect(gateQuestion).toHaveTextContent("What is 2+2?");
 
     const input = screen.getByLabelText("Gate 1 password input");
     await user.type(input, "wrong");
@@ -209,7 +214,9 @@ describe("ProgramPlay Integration", () => {
     await user.click(screen.getByText("Play program again"));
 
     await waitFor(() => {
-      expect(screen.getByText("What is 2+2?")).toBeInTheDocument();
+      expect(screen.getByTestId("gate-question")).toHaveTextContent(
+        "What is 2+2?",
+      );
     });
   });
 });
