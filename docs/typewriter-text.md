@@ -253,7 +253,7 @@ phase — it touches existing, timer-driven, tested code.
 
 Current stages in `CrtOverlay.tsx` (driven by `bootStage` state):
 
-```
+```text
 flash (0ms) → blackout (150ms) → cursor (500ms) → banner (1100ms) → done (1750ms)
 ```
 

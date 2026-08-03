@@ -80,11 +80,12 @@ function useTypewriter(
     setDisplayedText("");
     setIsComplete(false);
 
+    const chars = Array.from(text);
     let index = 0;
     const tick = () => {
       index += 1;
-      setDisplayedText(text.slice(0, index));
-      if (index >= text.length) {
+      setDisplayedText(chars.slice(0, index).join(""));
+      if (index >= chars.length) {
         clearTypingTimers();
         finish();
       }
