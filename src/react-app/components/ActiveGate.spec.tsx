@@ -9,6 +9,13 @@ import ActiveGate from "./ActiveGate";
 
 vi.mock("./ActiveGate.module.css", () => ({ default: mockCssModuleProxy() }));
 vi.mock("./Gate.module.css", () => ({ default: mockCssModuleProxy() }));
+vi.mock("@hooks/useTypewriter", () => ({
+  default: (text: string) => ({
+    displayedText: text,
+    isComplete: true,
+    skip: () => {},
+  }),
+}));
 
 const mockActiveGate: ActiveGateType = {
   id: "gate-1",
@@ -63,9 +70,19 @@ describe("ActiveGate", () => {
     expect(screen.getByText("Gate 1")).toBeInTheDocument();
   });
 
-  it("renders question", () => {
+  it("renders question in the screen-reader-visible span", () => {
     renderActiveGate();
-    expect(screen.getByText("What is 2+2?")).toBeInTheDocument();
+    expect(screen.getByTestId("gate-question")).toHaveTextContent(
+      "What is 2+2?",
+    );
+  });
+
+  it("renders the animated question text with aria-hidden", () => {
+    renderActiveGate();
+    const animated = screen.getByText("What is 2+2?", {
+      selector: ".description",
+    });
+    expect(animated).toHaveAttribute("aria-hidden", "true");
   });
 
   it("input is enabled by default", () => {

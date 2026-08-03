@@ -1,4 +1,5 @@
 import type { ActiveGate as ActiveGateType } from "@api/queries/useProgramProgressionQuery";
+import useTypewriter from "@hooks/useTypewriter";
 import { MAX_CLUES_PER_GATE } from "@shared/types";
 import type { ChangeEvent, RefObject, SubmitEvent } from "react";
 import styles from "./ActiveGate.module.css";
@@ -41,6 +42,7 @@ export default function ActiveGate({
   handleRequestClue,
   clues = [],
 }: ActiveGateProps) {
+  const { displayedText } = useTypewriter(gate.question);
   const formAriaLabel = `${gate.label} - enter password and press Enter to submit`;
   const isMutationPending = requestClueMutation?.isPending ?? false;
   const clueNumber = clues.length + 1;
@@ -67,7 +69,12 @@ export default function ActiveGate({
       <details open>
         <summary className={gateStyles.gateSummary}>{gate.label}</summary>
         <form onSubmit={handleSubmit} aria-label={formAriaLabel}>
-          <p className="description">{gate.question}</p>
+          <span className="sr-only" data-testid="gate-question">
+            {gate.question}
+          </span>
+          <p className="description" aria-hidden="true">
+            {displayedText}
+          </p>
           <div className={gateStyles.promptLine}>
             <span className={styles.promptCaret} aria-hidden="true">
               &gt;
