@@ -54,6 +54,8 @@
 - Double quotes for JS/TS strings
 - 2-space indentation, LF line endings, UTF-8, final newline (`.editorconfig`)
 - Max line length: 80 characters
+- Markdown fenced code blocks must declare a language (e.g. `` ```text ``,
+  `` ```bash ``, `` ```tsx ``). No bare `` ``` `` fences.
 - TypeScript strict mode plus `noUnusedLocals`, `noUnusedParameters`, etc. — do not disable these
 
 ## Testing
