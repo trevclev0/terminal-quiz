@@ -1,8 +1,15 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import CrtOverlay from "./CrtOverlay";
+import CrtOverlay, {
+  BANNER_PAUSE_MS,
+  BANNER_TYPE_SPEED,
+  BOOT_BANNER_MS,
+} from "./CrtOverlay";
 import styles from "./CrtOverlay.module.css";
+
+const BANNER_TEXT = "VT220 OK";
+const BANNER_TYPING_MS = BANNER_TEXT.length * BANNER_TYPE_SPEED;
 
 function createFakeStorage() {
   const store: Record<string, string> = {};
@@ -43,22 +50,35 @@ const FULL_SETTINGS = {
   powerOn: true,
 };
 
+// Boot is now typing-driven: `done` depends on React committing the
+// `banner` stage (mounting BootBanner and scheduling the typing interval),
+// then committing `bannerDone` (scheduling the pause timer). A single
+// `advanceTimersByTime` call commits once at the end, so the sequence must
+// be advanced in steps that each end on a commit boundary. Durations are
+// derived from the component's exported timing constants so retuning the
+// boot feel doesn't silently desync this helper.
+function advancePastBoot() {
+  act(() => vi.advanceTimersByTime(BOOT_BANNER_MS)); // banner stage commits, interval scheduled
+  act(() => vi.advanceTimersByTime(BANNER_TYPING_MS)); // typing done + onComplete, pause timer scheduled
+  act(() => vi.advanceTimersByTime(BANNER_PAUSE_MS)); // pause elapses, `done` commits
+}
+
 describe("CrtOverlay", () => {
   it("renders status bar showing default preset (full)", () => {
     render(<CrtOverlay />);
-    act(() => vi.advanceTimersByTime(1750));
+    advancePastBoot();
     expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: full");
   });
 
   it("shows hotkey hint on first visit", () => {
     render(<CrtOverlay />);
-    act(() => vi.advanceTimersByTime(1750));
+    advancePastBoot();
     expect(screen.getByTestId("crt-status")).toHaveTextContent("Ctrl+Shift+,");
   });
 
   it("hides hint and shows only preset after timeout", () => {
     render(<CrtOverlay />);
-    act(() => vi.advanceTimersByTime(1750));
+    advancePastBoot();
     expect(screen.getByTestId("crt-status")).toHaveTextContent("Ctrl+Shift+,");
 
     act(() => vi.advanceTimersByTime(3600));
@@ -75,7 +95,7 @@ describe("CrtOverlay", () => {
       JSON.stringify(FULL_SETTINGS),
     );
     render(<CrtOverlay />);
-    act(() => vi.advanceTimersByTime(1750));
+    advancePastBoot();
     expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: full");
     expect(screen.getByTestId("crt-status")).not.toHaveTextContent(
       "Ctrl+Shift+,",
@@ -84,7 +104,7 @@ describe("CrtOverlay", () => {
 
   it("cycles preset on status bar click (descending)", () => {
     render(<CrtOverlay />);
-    act(() => vi.advanceTimersByTime(1750));
+    advancePastBoot();
     expect(screen.getByTestId("crt-status")).toHaveTextContent("CRT: full");
 
     fireEvent.click(screen.getByTestId("crt-status"));
@@ -101,7 +121,7 @@ describe("CrtOverlay", () => {
     expect(screen.getByTestId("crt-poweron")).toBeInTheDocument();
   });
 
-  it("removes power-on layer after 1.75 seconds", () => {
+  it("removes power-on layer after banner typing and pause complete", () => {
     localStorage.setItem(
       "terminal_quiz_crt_settings",
       JSON.stringify(FULL_SETTINGS),
@@ -109,12 +129,18 @@ describe("CrtOverlay", () => {
     render(<CrtOverlay />);
     expect(screen.getByTestId("crt-poweron")).toBeInTheDocument();
 
-    act(() => vi.advanceTimersByTime(1750));
+    act(() => vi.advanceTimersByTime(BOOT_BANNER_MS));
+    expect(screen.getByTestId("crt-poweron")).toBeInTheDocument();
+
+    act(() => vi.advanceTimersByTime(BANNER_TYPING_MS));
+    expect(screen.getByTestId("crt-poweron")).toBeInTheDocument();
+
+    act(() => vi.advanceTimersByTime(BANNER_PAUSE_MS));
 
     expect(screen.queryByTestId("crt-poweron")).not.toBeInTheDocument();
   });
 
-  it("shows banner then removes boot layer", () => {
+  it("types banner text character-by-character then removes boot layer", () => {
     localStorage.setItem(
       "terminal_quiz_crt_settings",
       JSON.stringify(FULL_SETTINGS),
@@ -122,12 +148,23 @@ describe("CrtOverlay", () => {
     render(<CrtOverlay />);
     expect(screen.getByTestId("crt-poweron")).toBeInTheDocument();
 
-    act(() => vi.advanceTimersByTime(1100));
+    act(() => vi.advanceTimersByTime(BOOT_BANNER_MS));
 
-    expect(screen.getByText("VT220 OK")).toBeInTheDocument();
+    expect(screen.getByTestId("boot-banner-line1")).toHaveTextContent("");
+
+    act(() => vi.advanceTimersByTime(BANNER_TYPE_SPEED));
+
+    expect(screen.getByTestId("boot-banner-line1")).toHaveTextContent("V");
+    expect(screen.queryByText("Terminal Quiz")).not.toBeInTheDocument();
+
+    act(() => vi.advanceTimersByTime(BANNER_TYPING_MS - BANNER_TYPE_SPEED));
+
+    expect(screen.getByTestId("boot-banner-line1")).toHaveTextContent(
+      "VT220 OK",
+    );
     expect(screen.getByText("Terminal Quiz")).toBeInTheDocument();
 
-    act(() => vi.advanceTimersByTime(650));
+    act(() => vi.advanceTimersByTime(BANNER_PAUSE_MS));
 
     expect(screen.queryByTestId("crt-poweron")).not.toBeInTheDocument();
   });
@@ -238,7 +275,7 @@ describe("CrtOverlay", () => {
       JSON.stringify(FULL_SETTINGS),
     );
     render(<CrtOverlay />);
-    act(() => vi.advanceTimersByTime(1750));
+    advancePastBoot();
     expect(screen.getByTestId("crt-overlay")).toHaveClass(
       styles.scanlinesHeavy,
     );
@@ -247,7 +284,7 @@ describe("CrtOverlay", () => {
 
   it("status bar has title tooltip with hotkey hint", () => {
     render(<CrtOverlay />);
-    act(() => vi.advanceTimersByTime(1750));
+    advancePastBoot();
     expect(screen.getByTestId("crt-status")).toHaveAttribute(
       "title",
       "Toggle CRT effect (Ctrl+Shift+,)",
