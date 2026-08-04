@@ -1,9 +1,18 @@
 # Typewriter Text Effect — Implementation Plan
 
-**Status:** Proposed (merged from two independently drafted plans — see
-"Provenance" below)
+**Status:** In progress — Phase 0 shipped, Phases 1 and 2 implemented
+(plan updated based on team findings during coding)
 **Origin:** `docs/feature-ideas.md` §2.5 ("Typewriter Text Effect")
 **Owner:** TBD
+
+**Recent updates:** Phase 0 shipped successfully. During Phase 1 implementation,
+the team discovered that a dual-node sr-only pattern is more robust than the
+original single-node `aria-label` approach, and that this pattern creates an
+RTL text-duplication issue requiring selector-scoped assertions. §1c and §1d
+(and PR table) have been updated to reflect the actual implementation. Phase 2
+decisions (BootBanner subcomponent, single-line typing, exact-timer test
+strategy) were resolved during planning and are folded into §2b/§2d. See
+"Latest findings" below.
 
 ## Goal
 
@@ -51,6 +60,72 @@ The merge keeps this plan's phase structure and PR-splitting approach (Phase
 accessibility, safety-cap, and test-resilience detail. The companion plan's
 Phase 2–4 scope (response text, narrative text, settings/hotkey layer) is
 captured in "Deferred scope" below for future reference, not built now.
+
+---
+
+## Latest findings (Phase 1 implementation)
+
+During Phase 1 development, the team discovered several issues not caught in
+planning:
+
+1. **Dual-node sr-only pattern is more robust than single-node `aria-label`:**
+   the original plan's `aria-label` approach is simpler but less reliable for
+   AT announcing full text while a single node updates. The implemented
+   approach uses two nodes: an `aria-hidden` node carrying `displayedText`
+   (the animation), and a visually-hidden sr-only node carrying the full
+   `gate.question` at all times. This decouples the typing reveal from
+   accessibility announcements. §1c reflects this change.
+
+2. **Dual-node creates RTL text-duplication ("multiple elements found"):** once
+   typing completes, both nodes hold the full question text, and RTL's
+   `getByText`/`findByText` throw when querying by exact text match. Fix:
+   scope all question assertions to the sr-only span via `data-testid`
+   (consistent with existing `data-testid="clue-text"` pattern elsewhere in
+   `ActiveGate.tsx`). This selector-scoping also eliminates timing sensitivity
+   — the sr-only node always holds the full text regardless of animation
+   state. §1d and the PR table reflect this fix.
+
+3. **Route spec was missed:** `routes/programs/-$programId.spec.tsx:46`
+   renders the real component chain and needs the same selector-scoping fix.
+   Added to Phase 1 files.
+
+4. **No timeout bumps needed:** the original plan proposed bumping RTL timeout
+   on `findByText` queries to wait for typing to complete. This is unnecessary
+   with selector-scoped queries, which are immediate. Removed from §1e.
+
+5. **Mock export shape matters:** `useTypewriter` is a **default export**.
+   The `vi.mock` factory must key the mock as `default:` — a named-export key
+   does not intercept the default import and the real (timer-driven) hook runs,
+   reintroducing the fake-timer breakage. See §1d.
+
+All other findings (`.description` CSS rule, sr-only span placement, mock
+`skip()` simplification, E2E timing impact) are minor and do not require plan
+updates beyond clarification.
+
+## Latest findings (Phase 2 implementation)
+
+Resolved during Phase 2 planning (decisions below are now folded into the
+phase sections):
+
+1. **BootBanner subcomponent, not parent-level `enabled` flag:** mounting the
+   hook inside a `BootBanner` that appears only when `bootStage === "banner"`
+   types from empty on mount. A parent-level `enabled: bootStage === "banner"`
+   toggle would paint the full banner text for one frame before the effect
+   resets and starts typing (visible flash). See §2b.
+2. **Typing-driven `done` breaks single-`advanceTimersByTime` tests:** the
+   boot → done chain now depends on React committing `banner` (mounting
+   `BootBanner` and scheduling the typing interval), then committing
+   `bannerDone` (scheduling the pause timer). A single
+   `advanceTimersByTime(1750)` commits once at the end, so `bootStage`
+   never commits as `banner` mid-advance, the interval is never scheduled,
+   and `done` never fires. All nine tests that cross the boot boundary —
+   not just the two banner-timing ones — must advance in steps that end on
+   commit boundaries (a shared `advancePastBoot()` helper). See §2d.
+3. **Do not use `vi.runAllTimers()` in the spec rewrite:** it also fires the
+   5000ms first-visit timer and breaks `shows hotkey hint on first visit`,
+   and it hits the same single-commit boundary problem as a single
+   `advanceTimersByTime`. Drive exact durations in stepped `act` calls
+   instead. See §2d.
 
 ---
 
@@ -135,9 +210,8 @@ distracting, not delightful.
 
 - Import `useTypewriter` in `src/react-app/components/ActiveGate.tsx`.
 - Replace the static `<p className="description">{gate.question}</p>` with
-  an `aria-hidden` `<p className="description">{displayedText}</p>` plus a
-  visually-hidden full-text span (see 1c), where `displayedText` comes from
-  `useTypewriter(gate.question)`.
+  `<p className="description">{displayedText}</p>` where
+  `displayedText` comes from `useTypewriter(gate.question)`.
 - **Interactivity is never gated on typing completion.** The password
   input, submit, and clue button all remain immediately usable regardless
   of `isComplete`. This preserves existing E2E timing
@@ -157,23 +231,34 @@ on gate transitions.
 
 ### 1c. Accessibility
 
-The animated `<p>` should be hidden from assistive tech, and the complete
-question delivered once via a visually-hidden sibling — **not** `aria-label`
-on the `<p>`. `aria-label` on a plain paragraph is unreliably exposed as an
-accessible name across screen readers, and it would not mask the
-character-by-character content from a virtual cursor anyway. Pattern:
+**Pattern (supersedes earlier `aria-label`-only draft):** two nodes instead
+of one — an `aria-hidden` node carrying the animated `displayedText`, plus
+a visually-hidden ("sr-only") node carrying the full `gate.question` at all
+times. This is more robust than overriding `aria-label` on a single node
+(avoids relying on AT/browser support for live `aria-label` updates) and
+matches how `ActiveGate.tsx` already disambiguates repeated text elsewhere
+(see test-targeting note below).
 
-- Render the animated output in
-  `<p className="description" aria-hidden="true">{displayedText}</p>` so
-  assistive tech never reads it filling in char-by-char.
-- Immediately after it, render a visually-hidden sibling:
-  `<span className="sr-only">{gate.question}</span>`, always holding the
-  full string (not swapped in on completion), so the complete question is
-  announced once, up front.
+- Add a visually-hidden `<span>{gate.question}</span>` **before** the
+  animated `<p>` in DOM order, so a screen reader announces the full
+  question first, then encounters the (aria-hidden, ignored) typing node.
+- Mark the animated `<p aria-hidden="true">{displayedText}</p>` hidden from
+  assistive tech — it's decorative-in-progress, the sr-only span is the
+  real content.
+- Tag the sr-only span with `data-testid="gate-question"` for test
+  targeting (see 1d) — consistent with the existing `data-testid="clue-text"`
+  pattern already used in `ActiveGate.tsx`'s clue list for the same kind of
+  duplicate/ambiguous-text-node problem. Prefer this over a `.sr-only`
+  class selector: a CSS class is a styling implementation detail, and using
+  it as a test hook means a future visually-hidden-technique refactor can
+  break tests for reasons unrelated to logic. `data-testid` decouples that.
 - `.sr-only` does not exist in the codebase yet (verified 2026-08-03) —
   add the standard utility class to `src/react-app/index.css` (global
   stylesheet): visually clipped, 1px, `clip-path`, `white-space: nowrap`,
   `position: absolute`. Standard SR-only recipe, no third-party dependency.
+- The sr-only span always holds the full question text, independent of
+  typing state — this is what makes it safe to assert against without any
+  timing dependency (see 1d/1e).
 - The existing `role="status"` / `aria-live="polite"` response-message node
   in `ActiveGate` is untouched by this phase (response text isn't
   typewritten yet — see "Deferred scope"), but confirm no incidental
@@ -182,53 +267,92 @@ character-by-character content from a virtual cursor anyway. Pattern:
 
 ### 1d. Component test updates
 
-**File:** `src/react-app/components/ActiveGate.spec.tsx`
+**Files affected:**
+- `src/react-app/components/ActiveGate.spec.tsx`
+- `src/react-app/routes/programs/-$programId.spec.tsx` (missed in original plan)
+- `src/react-app/components/ProgramPlay.integration.spec.tsx`
 
-- Existing tests query for `screen.getByText("What is 2+2?")` — these will
-  break unless the hook's `speed` default is fast enough to have completed
-  by the time RTL's default `render()` synchronously returns, which it will
-  not (fake timers not advanced yet).
-- Fix: either (a) wrap the test file's setup with
-  `vi.useFakeTimers()` + `vi.runAllTimers()` after each render before
-  assertions that check question text, or (b) mock `useTypewriter` at the
-  top of `ActiveGate.spec.tsx` — **recommended**, since `ActiveGate.spec.tsx`
-  is a unit test for `ActiveGate`'s own rendering logic, not for the
-  typewriter effect (which has its own spec). Follow the existing mocking
-  pattern used for `useShake` in `useProgramPlay.spec.ts`. Mock shape:
-  `vi.mock("@hooks/useTypewriter", ...)` where the factory forwards the
-  hook's `text` argument and returns a completed state:
-  `(text: string) => ({ displayedText: text, isComplete: true, skip: vi.fn() })`.
-  (`vi.mock` factory hoists to module top — use `vi.hoisted` if the `vi.fn`
-  needs to be referenced in assertions.)
-- New tests:
-  - the animated question `<p>` has `aria-hidden="true"`;
-  - a `sr-only` sibling exists whose text always equals the full
-    `gate.question`, independent of `displayedText` state.
+**Duplication problem:** once typing completes, both the animated `<p>` and
+the sr-only `<span>` contain the full question. RTL `getByText`/`findByText`
+with an exact match now throw "Found multiple elements" — a false breakage.
 
-### 1e. E2E and integration test impact
+**Fix:** scope all question-text assertions to the sr-only span via
+`data-testid`. This also eliminates the timing-sensitivity problem entirely
+since the sr-only span always holds the full text regardless of `displayedText`
+state — no timers need to be advanced.
+
+```ts
+// Before (breaks with the new dual-node setup):
+screen.getByText("What is 2+2?")
+
+// After (scoped to sr-only node, timing-independent):
+screen.getByText("What is 2+2?", { selector: "[data-testid='gate-question']" })
+
+// Or using data-testid directly (preferred):
+screen.getByTestId("gate-question")
+```
+
+Affected assertions in detail:
+
+1. `ActiveGate.spec.tsx` — `getByText("What is 2+2?")` → use
+   `getByTestId("gate-question")` + verify content.
+2. `routes/programs/-$programId.spec.tsx` — synchronous `getByText` after
+   title appears. Route spec renders the real component chain (router →
+   ProgramPlay → ActiveGate), so it needs the same selector-scoping fix.
+   No timeout bump needed; scoped query is immediate.
+3. `ProgramPlay.integration.spec.tsx` — `findByText`/`getByText` for
+   question assertions (all five occurrences: initial gate, gate transition,
+   reset). Use `getByTestId("gate-question")` + content assertion — immediate,
+   no timeout-bump needed. Note this spec renders the **real** hook (not
+   mocked), so once typing completes both nodes hold full text and the
+   duplicate failure is real here too.
+
+**Mock `useTypewriter`:** in `ActiveGate.spec.tsx` (a unit test of
+`ActiveGate`'s own rendering, not of the effect), mock the hook at the top
+of the file. `useTypewriter` is a **default export**, so the factory must key
+the mock as `default:`:
+
+```ts
+vi.mock("@hooks/useTypewriter", () => ({
+  default: (text: string) => ({
+    displayedText: text,
+    isComplete: true,
+    skip: () => {},
+  }),
+}));
+```
+
+The `skip: () => {}` is a no-op since `ActiveGate` never calls it. A named
+`useTypewriter:` key does **not** intercept the default import — the real
+timer-driven hook would run and the fake-timer breakage returns.
+
+**New test in `ActiveGate.spec.tsx`:** add a test that the animated
+question `<p>` carries `aria-hidden="true"`, and that the sr-only span
+(`getByTestId("gate-question")`) always holds the full `gate.question`,
+independent of `displayedText` state. This documents the contract and guards
+against accidental `aria-hidden` placement on the wrong node in future
+refactors.
+
+### 1e. E2E impact
 
 - `e2e/pages/gamePage.ts` locates the question via role/label selectors on
   the form and input, not the `<p className="description">` text itself —
   no changes expected. Confirm during implementation that no E2E assertion
-  does a literal text match against the question paragraph mid-type.
+  does a literal text match against the question paragraph. (Verified: E2E
+  has no question-text assertions; `authoring.spec.ts` only fills the
+  authoring form.)
 - If `prefers-reduced-motion` is not set in the Playwright browser context
   by default (Chromium/Firefox default to `no-preference`), the typewriter
   will animate during E2E runs. Given `speed` defaults to ~30ms/char and
   E2E questions are short (`"What color is the sky?"` etc.), this adds at
-  most ~1s per gate — acceptable, but confirm total E2E suite runtime
-  doesn't regress meaningfully. If it does, consider forcing
-  `prefers-reduced-motion: reduce` in `playwright.config.ts`'s `use` block
-  for CI runs only.
-- `src/react-app/components/ProgramPlay.integration.spec.tsx` asserts
-  question text directly (`findByText("What is 2+2?")`,
-  `findByText("What is 3+3?")`). These use `findBy*`, which already polls,
-  but bump the explicit timeout (e.g. `{ timeout: 3000 }`) so a full
-  typewriter pass reliably completes within the wait window rather than
-  relying on the default RTL timeout by coincidence.
+  most ~1s per gate — acceptable. Typing never gates interaction, so no E2E
+  flow waits on it. If total E2E suite runtime regresses meaningfully,
+  consider forcing `prefers-reduced-motion: reduce` in
+  `playwright.config.ts`'s `use` block for CI runs only.
 
 **Deliverable for a standalone PR:** 1a + 1b + 1c + 1d + 1e. This PR depends
-only on the `useTypewriter` hook PR (below) and touches no other
-components.
+only on the `useTypewriter` hook PR (Phase 0) and touches no other components
+outside those listed in 1d.
 
 ---
 
@@ -257,8 +381,8 @@ Current stages in `CrtOverlay.tsx` (driven by `bootStage` state):
 flash (0ms) → blackout (150ms) → cursor (500ms) → banner (1100ms) → done (1750ms)
 ```
 
-Each transition is a hardcoded `setTimeout`. The `banner` stage currently
-renders static text instantly:
+Each transition is a hardcoded `setTimeout`. The `banner` stage renders
+static text instantly:
 
 ```tsx
 {bootStage === "banner" && (
@@ -276,29 +400,37 @@ absolute, i.e. 650ms after entering `banner` at 1100ms) with:
 
 - Enter `banner` stage at 1100ms (unchanged — flash/blackout/cursor timing
   stays fixed, only the banner→done transition changes).
-- Type `"VT220 OK"` via `useTypewriter` with a fast `speed` (e.g. 15–20ms/
-  char — boot text should feel snappy, not laborious; 8 characters at 20ms
-  = 160ms, well within the original 650ms window).
-- On `onComplete`, optionally type `"Terminal Quiz"` next (sequential, not
-  simultaneous — matches how a real terminal boot banner would print line
-  by line), or keep `"Terminal Quiz"` appearing instantly once `"VT220 OK"`
-  finishes (simpler, still reads as intentional). **Decision needed during
-  implementation** — recommend starting with the simpler "second line
-  appears instantly" version and only sequencing both lines if it looks
-  wrong in practice.
-- After the last line's `onComplete` (plus a small fixed pause, e.g.
-  150-300ms, so the "OK" banner doesn't vanish the instant it finishes
-  typing), transition to `done`.
+- **Extract a `BootBanner` subcomponent** (same file) that calls
+  `useTypewriter("VT220 OK", { speed: 20, onComplete })` on mount. Because
+  the subcomponent only mounts when `bootStage === "banner"`, typing starts
+  from empty exactly when the banner appears. Do **not** mount the hook at
+  the `CrtOverlay` level gated by `enabled: bootStage === "banner"`: with
+  `enabled: false` the hook resolves to the full text immediately, so the
+  first `banner` render paints the complete banner for one frame before the
+  effect resets and starts typing — a visible flash.
+- **Type only `"VT220 OK"`** (8 chars at 20ms/char = 160ms); `"Terminal Quiz"`
+  appears instantly when the first line's `isComplete` is `true`. This is the
+  "simpler first" variant — real line-by-line typing of both lines (22 chars)
+  would consume ~640ms of the 650ms banner window and land ~1740ms. Revisit
+  full sequencing only if the simple version looks wrong in practice; it is
+  an isolated change inside `BootBanner`.
+- **Budget constraint:** typing (160ms) + fixed pause (200ms) = 360ms of the
+  original 650ms banner window → boot ends ~1460ms, comfortably under the
+  former 1750ms. (Test stability does not actually depend on this — see 2d —
+  but it keeps boot from feeling longer than before.)
+- **Transition to `done`:** parent state `bannerDone` is set by
+  `BootBanner`'s `onComplete`. A `CrtOverlay` effect watching
+  `bootStage === "banner" && bannerDone` schedules `setBootStage("done")`
+  after the fixed 200ms pause (so the banner doesn't vanish the instant it
+  finishes typing). `bannerDone` resets to `false` when a boot restarts
+  (powerOn re-toggle) so re-boots re-type.
+- **Safety cap:** an effect on `bootStage === "banner"` schedules a hard
+  fallback `setBootStage("done")` at 4000ms, cleared on cleanup. Guards
+  against the boot screen hanging indefinitely if `onComplete` never fires.
+  Far beyond the ~360ms normal path, so it only fires on a sequencing bug.
 - Net effect: total boot duration becomes typing-speed-dependent instead of
-  a magic `1750`. Under reduced-motion, `useTypewriter` resolves instantly,
-  so the pause-before-`done` becomes the only remaining delay — keep it
-  short (verify it doesn't feel like a hang).
-- **Safety cap:** add a hard fallback timer (e.g. ~4s from entering the
-  `banner` stage) that forces `bootStage` to `"done"` regardless of typing
-  state. This guards against the boot screen hanging indefinitely if
-  `onComplete` somehow never fires (e.g. a future bug in sequencing two
-  chained `useTypewriter` calls). Clear this fallback timer normally when
-  the typing-driven transition fires first.
+  a magic `1750`. Under reduced-motion, the top-level skip (see 2c) already
+  short-circuits before `banner` is reached.
 
 ### 2c. Reduced-motion interaction with existing boot skip
 
@@ -318,18 +450,46 @@ These existing tests assert against fixed timings and **will break**:
 
 - `"removes power-on layer after 1.75 seconds"` — `vi.advanceTimersByTime(1750)`
 - `"shows banner then removes boot layer"` — `vi.advanceTimersByTime(1100)` then `650`
-- Any other test asserting `crt-poweron` disappears at a specific fixed ms
 
-Rewrite approach: replace fixed-ms assertions with `vi.runAllTimers()` (or
-`vi.advanceTimersByTime()` past the *known-fixed* stages, then explicitly
-drive the typewriter completion via fake-timer advancement matching the new
-`speed` value) before asserting `crt-poweron` is gone. Add new
-banner-specific tests:
+**Rewrite approach — stepped exact-duration advancement, not `vi.runAllTimers()`:**
+`vi.runAllTimers()` would also fire the 5000ms first-visit timer, flipping
+`firstVisitDone` and breaking `shows hotkey hint on first visit` (which
+asserts the hint after boot). It also hits the same single-commit boundary
+problem as a single `advanceTimersByTime` (see "Latest findings"). Drive the
+fake timers in steps that each end on a commit boundary, via a shared helper:
 
-- banner text appears character-by-character (advance timers partially,
-  assert `displayedText` is a substring/prefix)
-- full banner text visible after typing completes
-- boot layer removed only after banner typing + pause complete, not before
+```ts
+// Boot is typing-driven: `done` needs banner to commit (mounts BootBanner,
+// scheduling the typing interval), then bannerDone to commit (scheduling
+// the pause timer). Each step ends on a commit boundary.
+function advancePastBoot() {
+  act(() => vi.advanceTimersByTime(1100)); // banner stage commits, interval scheduled
+  act(() => vi.advanceTimersByTime(360));  // typing done + onComplete, pause timer scheduled
+  act(() => vi.advanceTimersByTime(200));  // pause elapses, `done` commits
+}
+```
+
+- **All nine tests that cross the boot boundary use `advancePastBoot()`** —
+  the seven status-bar tests (formerly a single `advanceTimersByTime(1750)`)
+  and the two rewritten banner-timing tests. The status-bar tests are *not*
+  left untouched; the typing-driven chain requires commit-stepped
+  advancement regardless of total duration.
+- `"removes power-on layer after banner typing and pause complete"`: advance
+  `1100` (banner shown, power-on layer present) → `160` (typing of
+  `"VT220 OK"` at 20ms/char complete, but pause not elapsed — layer still
+  present) → `200` (pause elapsed — layer gone). The intermediate assertion
+  covers the plan's "not removed before typing + pause complete" contract.
+- `"types banner text character-by-character then removes boot layer"`:
+  at `1100` assert `boot-banner-line1` is empty; `+40` assert `"VT"` and
+  that `Terminal Quiz` is absent; `+120` assert `"VT220 OK"` and
+  `Terminal Quiz` present; `+200` assert the power-on layer is gone.
+
+**Test targeting:** the typed line carries `data-testid="boot-banner-line1"`
+for partial-typing assertions (same `data-testid` convention as Phase 1's
+`gate-question` / existing `clue-text`). Partial text is asserted via
+`toHaveTextContent`, which is timing-correct under fake-timer advancement.
+The banner is purely decorative overlay — no sr-only sibling needed, no
+`aria-hidden` change.
 
 **Deliverable for a standalone PR:** 2a–2d, scoped to `CrtOverlay.tsx` +
 its spec only. Depends on Phase 0 (hook). Independent of Phase 1 — can land
@@ -421,7 +581,7 @@ scope is Phase 1/2 only):
 | PR | Phase | Depends on | Files touched |
 |---|---|---|---|
 | 1 | 0 | — | `useTypewriter.ts`, `useTypewriter.spec.ts` |
-| 2 | 1 | PR 1 | `ActiveGate.tsx`, `ActiveGate.spec.tsx`, `ProgramPlay.integration.spec.tsx`, `index.css` (sr-only utility), possibly `playwright.config.ts` |
+| 2 | 1 | PR 1 | `ActiveGate.tsx`, `ActiveGate.spec.tsx`, `routes/programs/-$programId.spec.tsx`, `ProgramPlay.integration.spec.tsx`, `index.css` (sr-only utility), possibly `playwright.config.ts` |
 | 3 | 2 | PR 1 | `CrtOverlay.tsx`, `CrtOverlay.spec.tsx` |
 
 PRs 2 and 3 can be developed in parallel once PR 1 merges; they don't touch
@@ -442,13 +602,21 @@ are the only safety net, so be thorough in 2d.
 
 ## Open questions to resolve during implementation
 
-1. Should `"Terminal Quiz"` type out sequentially after `"VT220 OK"`, or
-   appear instantly once the first line completes? (§2b)
-2. Does the default `speed` (~30ms/char) meaningfully slow down the E2E
-   suite given gameplay questions are typed on every gate transition? (§1d)
-3. Exact pause duration between banner typing completion and `done`
-   transition (§2b) — needs a quick visual check, not just a number picked
-   in the abstract.
+1. ~~Should `"Terminal Quiz"` type out sequentially after `"VT220 OK"`, or
+   appear instantly once the first line completes?~~ **Resolved:** type
+   `"VT220 OK"` only; `"Terminal Quiz"` appears instantly on completion
+   (§2b). Full two-line sequencing may be revisited if it looks wrong in
+   practice — isolated change inside `BootBanner`.
+2. ~~Does the default `speed` (~30ms/char) meaningfully slow down the E2E
+   suite given gameplay questions are typed on every gate transition?~~
+   **Resolved:** typing never gates interaction, so no E2E flow waits on it;
+   E2E has no question-text assertions. If total suite runtime regresses
+   meaningfully, force `prefers-reduced-motion: reduce` in
+   `playwright.config.ts` for CI.
+3. ~~Exact pause duration between banner typing completion and `done`
+   transition~~ **Resolved to 200ms**, flagged as visually tunable after a
+   real look; the constant is a single module-level value in
+   `CrtOverlay.tsx`.
 4. After Phase 1/2 ship: does per-component typewriter (question types
    independently of boot banner, of future response text, etc.) feel
    coherent, or does it read as inconsistent against a retro-terminal
