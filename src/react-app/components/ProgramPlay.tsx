@@ -122,6 +122,7 @@ function ProgramPlay() {
       ))}
       {currentGate && (
         <ActiveGate
+          key={currentGate.id}
           id={`gate-${completedGates.length}`}
           gate={currentGate}
           guess={guess}
