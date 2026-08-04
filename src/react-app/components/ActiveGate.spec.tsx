@@ -85,6 +85,13 @@ describe("ActiveGate", () => {
     expect(animated).toHaveAttribute("aria-hidden", "true");
   });
 
+  it("associates the question with the input via aria-describedby", () => {
+    renderActiveGate();
+    expect(screen.getByRole("textbox")).toHaveAccessibleDescription(
+      "What is 2+2?",
+    );
+  });
+
   it("input is enabled by default", () => {
     renderActiveGate();
     expect(screen.getByRole("textbox")).not.toBeDisabled();
