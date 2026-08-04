@@ -1,9 +1,35 @@
 import useCrtPreferences from "@hooks/useCrtPreferences";
+import useTypewriter from "@hooks/useTypewriter";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./CrtOverlay.module.css";
 
 const BOOT_STAGES = ["flash", "blackout", "cursor", "banner", "done"] as const;
 type BootStage = (typeof BOOT_STAGES)[number];
+
+export const BANNER_TYPE_SPEED = 40;
+export const BANNER_PAUSE_MS = 500;
+const BANNER_FALLBACK_MS = 4000;
+const BOOT_CURSOR_MS = 800;
+export const BOOT_BANNER_MS = 1850;
+
+function BootBanner({ onComplete }: { onComplete: () => void }) {
+  const { displayedText, isComplete } = useTypewriter("VT220 OK", {
+    speed: BANNER_TYPE_SPEED,
+    onComplete,
+  });
+
+  return (
+    <div className={styles.bootBanner}>
+      <span
+        className={styles.bootBannerInverse}
+        data-testid="boot-banner-line1"
+      >
+        {displayedText}
+      </span>
+      {isComplete && <div>Terminal Quiz</div>}
+    </div>
+  );
+}
 
 function CrtOverlay() {
   const { settings, presetLabel, cyclePreset, isFirstVisit } =
@@ -17,6 +43,7 @@ function CrtOverlay() {
   const [flickerPulse, setFlickerPulse] = useState(false);
   const [firstVisitDone, setFirstVisitDone] = useState(false);
   const [flashing, setFlashing] = useState(false);
+  const [bannerDone, setBannerDone] = useState(false);
 
   useEffect(() => {
     if (!settings.powerOn) {
@@ -27,15 +54,27 @@ function CrtOverlay() {
       setBootStage("done");
       return;
     }
+    setBannerDone(false);
     setBootStage("flash");
     const timers = [
       setTimeout(() => setBootStage("blackout"), 150),
-      setTimeout(() => setBootStage("cursor"), 500),
-      setTimeout(() => setBootStage("banner"), 1100),
-      setTimeout(() => setBootStage("done"), 1750),
+      setTimeout(() => setBootStage("cursor"), BOOT_CURSOR_MS),
+      setTimeout(() => setBootStage("banner"), BOOT_BANNER_MS),
     ];
     return () => timers.forEach(clearTimeout);
   }, [settings.powerOn]);
+
+  useEffect(() => {
+    if (bootStage !== "banner") return;
+    const timer = setTimeout(() => setBootStage("done"), BANNER_FALLBACK_MS);
+    return () => clearTimeout(timer);
+  }, [bootStage]);
+
+  useEffect(() => {
+    if (bootStage !== "banner" || !bannerDone) return;
+    const timer = setTimeout(() => setBootStage("done"), BANNER_PAUSE_MS);
+    return () => clearTimeout(timer);
+  }, [bootStage, bannerDone]);
 
   useEffect(() => {
     if (!settings.flicker) return;
@@ -160,10 +199,7 @@ function CrtOverlay() {
           <div className={styles.bootContent}>
             {bootStage === "cursor" && <div className={styles.bootCursor} />}
             {bootStage === "banner" && (
-              <div className={styles.bootBanner}>
-                <span className={styles.bootBannerInverse}>VT220 OK</span>
-                <div>Terminal Quiz</div>
-              </div>
+              <BootBanner onComplete={() => setBannerDone(true)} />
             )}
           </div>
         </div>
