@@ -22,6 +22,8 @@
         height: 1em;
         background: #4caf50;
         animation: terminal-quiz-boot-blink 1s step-start infinite;
+        position: relative;
+        top: .3rem;
       }
       #boot-fallback {
         font-family: "Glass TTY VT220", "Courier New", Courier, monospace;
@@ -41,17 +43,20 @@
           animation: none;
         }
       }
+      .dn {
+        display: none;
+      }
     </style>
-  </head>
-
-  <body style="background-color: #0a0f0a;">
-    <div id="app-root">
-      <div id="boot-fallback">
-        <div><span class="inverse">Terminal Quiz</span><span class="cursor"></span></div>
-        <div>LOADING…</div>
-      </div>
-    </div>
     <script>
+      window.addEventListener(
+        'DOMContentLoaded',
+        () => {
+          const bootFallback = document.getElementById("boot-fallback");
+          if (bootFallback) {
+            window.setTimeout(() => bootFallback.style.removeProperty("display"), 0);
+          }
+        }
+      )
       window.addEventListener(
         "error",
         () => {
@@ -65,5 +70,15 @@
         true,
       );
     </script>
+
+  </head>
+
+  <body style="background-color: #0a0f0a;">
+    <div id="app-root">
+      <div id="boot-fallback" style="display: none;">
+        <div><span class="inverse">TERMINAL QUIZ</span><span class="cursor"></span></div>
+        <div>LOADING…</div>
+      </div>
+    </div>
   </body>
 </html>
