@@ -69,11 +69,7 @@ export default function ActiveGate({
       <details open>
         <summary className={gateStyles.gateSummary}>{gate.label}</summary>
         <form onSubmit={handleSubmit} aria-label={formAriaLabel}>
-          <span
-            className="sr-only"
-            id="gate-question-description"
-            data-testid="gate-question"
-          >
+          <span className="sr-only" data-testid="gate-question">
             {gate.question}
           </span>
           <p className="description" aria-hidden="true">

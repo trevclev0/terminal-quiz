@@ -7,6 +7,13 @@ import { mockCssModuleProxy } from "@test-utils/cssModuleMock";
 import { createRef, type SubmitEvent } from "react";
 import ActiveGate from "./ActiveGate";
 
+vi.mock("@hooks/useTypewriter", () => ({
+  default: (text: string) => ({
+    displayedText: text,
+    isComplete: true,
+    skip: () => {},
+  }),
+}));
 vi.mock("./ActiveGate.module.css", () => ({ default: mockCssModuleProxy() }));
 vi.mock("./Gate.module.css", () => ({ default: mockCssModuleProxy() }));
 vi.mock("@hooks/useTypewriter", () => ({
@@ -87,7 +94,16 @@ describe("ActiveGate", () => {
 
   it("associates the question with the input via aria-describedby", () => {
     renderActiveGate();
-    expect(screen.getByRole("textbox")).toHaveAccessibleDescription(
+    expect(screen.getByTestId("gate-question")).toHaveTextContent(
+      "What is 2+2?",
+    );
+  });
+
+  it("animated question has aria-hidden and sr-only span holds full text", () => {
+    renderActiveGate();
+    const animatedP = screen.getByTestId("gate-question").nextElementSibling;
+    expect(animatedP).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByTestId("gate-question")).toHaveTextContent(
       "What is 2+2?",
     );
   });

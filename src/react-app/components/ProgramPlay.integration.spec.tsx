@@ -121,8 +121,13 @@ describe("ProgramPlay Integration", () => {
 
     render(<ProgramPlay />, { wrapper });
 
-    const gateQuestion = await screen.findByTestId("gate-question");
-    expect(gateQuestion).toHaveTextContent("What is 2+2?");
+    await screen.findByTestId("gate-question", { exact: false });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("gate-question")).toHaveTextContent(
+        "What is 2+2?",
+      );
+    });
 
     const input = screen.getByLabelText("Gate 1 password input");
     await user.type(input, "4");
@@ -149,8 +154,13 @@ describe("ProgramPlay Integration", () => {
 
     render(<ProgramPlay />, { wrapper });
 
-    const gateQuestion = await screen.findByTestId("gate-question");
-    expect(gateQuestion).toHaveTextContent("What is 2+2?");
+    await screen.findByTestId("gate-question", { exact: false });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("gate-question")).toHaveTextContent(
+        "What is 2+2?",
+      );
+    });
 
     const input = screen.getByLabelText("Gate 1 password input");
     await user.type(input, "wrong");
@@ -171,8 +181,13 @@ describe("ProgramPlay Integration", () => {
 
     render(<ProgramPlay />, { wrapper });
 
-    const gateQuestion = await screen.findByTestId("gate-question");
-    expect(gateQuestion).toHaveTextContent("What is 2+2?");
+    await screen.findByTestId("gate-question", { exact: false });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("gate-question")).toHaveTextContent(
+        "What is 2+2?",
+      );
+    });
 
     const input = screen.getByLabelText("Gate 1 password input");
     await user.type(input, "wrong");
