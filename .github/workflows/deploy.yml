@@ -85,6 +85,11 @@ jobs:
       image: mcr.microsoft.com/playwright:v${{ needs.deploy.outputs.playwright-version }}-noble
     permissions:
       contents: read
+    # Playwright container jobs run as root, but GitHub sets HOME=/github/home (owned by
+    # pwuser). Firefox refuses to launch as root when $HOME isn't root-owned.
+    # See: playwright.dev "Set the HOME=/root environment variable in your GitHub Actions workflow".
+    env:
+      HOME: /root
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
