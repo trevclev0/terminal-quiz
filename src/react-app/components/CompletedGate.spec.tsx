@@ -1,8 +1,16 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import type { CompletedGate as CompletedGateType } from "@api/queries/useProgramProgressionQuery";
 import CompletedGate from "./CompletedGate";
+
+vi.mock("@hooks/useTypewriter", () => ({
+  default: (text: string) => ({
+    displayedText: text,
+    isComplete: true,
+    skip: () => {},
+  }),
+}));
 
 const mockCompletedGate: CompletedGateType = {
   id: "gate-1",
@@ -32,8 +40,10 @@ describe("CompletedGate", () => {
 
   it("success message rendered with .clue class", () => {
     render(<CompletedGate id="gate-0" gate={mockCompletedGate} />);
-    const clue = screen.getByText("Correct!");
+    const clue = screen.getByTestId("success-message");
     expect(clue).toHaveClass("clue");
+    expect(clue).toHaveAttribute("aria-hidden", "true");
+    expect(clue).toHaveTextContent("Correct!");
   });
 
   it("details element has open attribute", () => {

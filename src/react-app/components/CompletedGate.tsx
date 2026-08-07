@@ -1,12 +1,25 @@
 import type { CompletedGate as CompletedGateType } from "@api/queries/useProgramProgressionQuery";
+import useTypewriter from "@hooks/useTypewriter";
 import styles from "./Gate.module.css";
 
 type CompletedGateProps = {
   id: string;
   gate: CompletedGateType;
+  isLast?: boolean;
+  onComplete?: () => void;
 };
 
-export default function CompletedGate({ id, gate }: CompletedGateProps) {
+export default function CompletedGate({
+  id,
+  gate,
+  isLast = false,
+  onComplete,
+}: CompletedGateProps) {
+  const { displayedText } = useTypewriter(gate.successMessage, {
+    enabled: isLast,
+    onComplete,
+  });
+
   return (
     <div id={id} className={styles.gate}>
       <details open>
@@ -27,7 +40,10 @@ export default function CompletedGate({ id, gate }: CompletedGateProps) {
               readOnly
             />
           </div>
-          <p className="clue">{gate.successMessage}</p>
+          <p className="clue" aria-hidden="true" data-testid="success-message">
+            {displayedText}
+          </p>
+          <span className="sr-only">{gate.successMessage}</span>
         </form>
       </details>
     </div>
