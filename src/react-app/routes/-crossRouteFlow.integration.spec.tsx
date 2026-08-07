@@ -106,7 +106,7 @@ describe("Cross-Route Flow", () => {
     await user.selectOptions(screen.getByRole("combobox"), "1");
     await user.click(screen.getByText("Start Program"));
 
-    await screen.findByText("What is 2+2?");
+    await screen.findByTestId("gate-question", { exact: false });
 
     const input = screen.getByLabelText("Gate 1 password input");
     await user.type(input, "4");
@@ -121,7 +121,9 @@ describe("Cross-Route Flow", () => {
     await user.click(screen.getByText("Play program again"));
 
     await waitFor(() => {
-      expect(screen.getByText("What is 2+2?")).toBeInTheDocument();
+      expect(screen.getByTestId("gate-question")).toHaveTextContent(
+        "What is 2+2?",
+      );
     });
   });
 });
