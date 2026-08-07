@@ -137,6 +137,7 @@ describe("ProgramPlay Integration", () => {
       expect(screen.getByText("Access Granted.")).toBeInTheDocument();
     });
 
+    // Wait for success message typing to complete, then next gate question to start
     await waitFor(() => {
       expect(screen.getByText("Gate 1")).toBeInTheDocument();
     });
