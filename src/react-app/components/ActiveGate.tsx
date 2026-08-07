@@ -23,7 +23,22 @@ type ActiveGateProps = {
   };
   handleRequestClue: () => void;
   clues?: string[];
+  enabled?: boolean;
 };
+
+// Mounted only when typing is allowed. The hook types from empty on mount;
+// gating with an `enabled` flag instead would paint the full text for a
+// frame while `enabled` is false (the hook resolves `enabled: false` to
+// instant full text), then wipe and retype once enabled — a visible flash.
+// See docs/typewriter-text.md §2b (same pattern as the boot banner).
+function TypedQuestion({ text }: { text: string }) {
+  const { displayedText } = useTypewriter(text);
+  return (
+    <p className="description" aria-hidden="true">
+      {displayedText}
+    </p>
+  );
+}
 
 export default function ActiveGate({
   id,
@@ -41,8 +56,8 @@ export default function ActiveGate({
   requestClueMutation,
   handleRequestClue,
   clues = [],
+  enabled = true,
 }: ActiveGateProps) {
-  const { displayedText } = useTypewriter(gate.question);
   const formAriaLabel = `${gate.label} - enter password and press Enter to submit`;
   const isMutationPending = requestClueMutation?.isPending ?? false;
   const clueNumber = clues.length + 1;
@@ -72,9 +87,11 @@ export default function ActiveGate({
           <span className="sr-only" data-testid="gate-question">
             {gate.question}
           </span>
-          <p className="description" aria-hidden="true">
-            {displayedText}
-          </p>
+          {enabled ? (
+            <TypedQuestion text={gate.question} />
+          ) : (
+            <p className="description" aria-hidden="true" />
+          )}
           <div className={gateStyles.promptLine}>
             <span className={styles.promptCaret} aria-hidden="true">
               &gt;

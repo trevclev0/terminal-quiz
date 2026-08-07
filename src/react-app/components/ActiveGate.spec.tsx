@@ -8,21 +8,14 @@ import { createRef, type SubmitEvent } from "react";
 import ActiveGate from "./ActiveGate";
 
 vi.mock("@hooks/useTypewriter", () => ({
-  default: (text: string) => ({
-    displayedText: text,
-    isComplete: true,
+  default: (text: string, options?: { enabled?: boolean }) => ({
+    displayedText: options?.enabled === false ? "" : text,
+    isComplete: options?.enabled !== false,
     skip: () => {},
   }),
 }));
 vi.mock("./ActiveGate.module.css", () => ({ default: mockCssModuleProxy() }));
 vi.mock("./Gate.module.css", () => ({ default: mockCssModuleProxy() }));
-vi.mock("@hooks/useTypewriter", () => ({
-  default: (text: string) => ({
-    displayedText: text,
-    isComplete: true,
-    skip: () => {},
-  }),
-}));
 
 const mockActiveGate: ActiveGateType = {
   id: "gate-1",
@@ -58,6 +51,7 @@ function renderActiveGate(
     requestClueMutation: mockRequestClueMutation,
     handleRequestClue: mockHandleRequestClue,
     clues: [],
+    enabled: true,
     ...props,
   };
   return render(<ActiveGate {...fullProps} />);
@@ -94,6 +88,17 @@ describe("ActiveGate", () => {
 
   it("associates the question with the input via aria-describedby", () => {
     renderActiveGate();
+    expect(screen.getByTestId("gate-question")).toHaveTextContent(
+      "What is 2+2?",
+    );
+  });
+
+  it("does not render animated question text when typing is disabled", () => {
+    renderActiveGate({ enabled: false });
+    // No visible animated paragraph — only the sr-only span holds the text.
+    expect(
+      screen.queryByText("What is 2+2?", { selector: ".description" }),
+    ).not.toBeInTheDocument();
     expect(screen.getByTestId("gate-question")).toHaveTextContent(
       "What is 2+2?",
     );
