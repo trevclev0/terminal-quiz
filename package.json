@@ -85,7 +85,7 @@
     "drizzle-graphql": "^0.8.5",
     "drizzle-orm": "^0.45.2",
     "graphql": "^17.0.2",
-    "hono": "4.12.28",
+    "hono": "4.12.34",
     "leven": "^4.1.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -93,6 +93,6 @@
   },
   "overrides": {
     "graphql": "^17.0.2",
-    "hono": "4.12.28"
+    "hono": "4.12.34"
   }
 }
