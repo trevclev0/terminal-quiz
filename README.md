@@ -294,13 +294,9 @@ Deployment is handled automatically by the `deploy.yml` GitHub Actions workflow.
 | Push to `main` | Production (`quiz.clevertrevor.dev`) |
 | Pull request | Preview deployment (Cloudflare Workers preview URL) |
 
-The workflow:
-1. Builds both the client and worker bundles.
-2. Patches the generated `wrangler.jsonc` for preview deployments (different D1 database, `workers_dev: true`).
-3. Applies any pending D1 migrations to the appropriate database.
-4. Deploys via `cloudflare/wrangler-action`.
-5. For non-fork pull requests, seeds the preview D1 with `scripts/generated/seed-e2e.sql` (compiled via `seed:e2e:preview`) and runs the full Playwright E2E suite against the deployed preview URL.
-6. Updates the GitHub Deployment status with the live URL — a failing E2E run marks the deployment as failed.
+The workflow runs two jobs:
+1. `deploy` builds both the client and worker bundles, patches the generated `wrangler.jsonc` for preview deployments (different D1 database, `workers_dev: true`), applies any pending D1 migrations, and deploys via `cloudflare/wrangler-action`. It then updates the GitHub Deployment status with the live URL — success/error by the deploy result alone.
+2. For non-fork pull requests, an `e2e` job runs after deploy in the `mcr.microsoft.com/playwright` container (image tag auto-synced to the installed Playwright version), seeds the preview D1 with `scripts/generated/seed-e2e.sql` (compiled via `seed:e2e:preview`), and runs the full Playwright E2E suite against the deployed preview URL. A failing E2E run fails the `e2e` check (blocking merge via branch protection) but does not mark the deployment as failed.
 
 Preview Workers are torn down automatically on PR close via `.github/workflows/preview-cleanup.yml`.
 
