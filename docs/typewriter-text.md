@@ -279,10 +279,9 @@ matches how `ActiveGate.tsx` already disambiguates repeated text elsewhere
   class selector: a CSS class is a styling implementation detail, and using
   it as a test hook means a future visually-hidden-technique refactor can
   break tests for reasons unrelated to logic. `data-testid` decouples that.
-- `.sr-only` does not exist in the codebase yet (verified 2026-08-03) —
-  add the standard utility class to `src/react-app/index.css` (global
-  stylesheet): visually clipped, 1px, `clip-path`, `white-space: nowrap`,
-  `position: absolute`. Standard SR-only recipe, no third-party dependency.
+- `.sr-only` already exists as a global utility in `src/react-app/index.css`
+  (added `c3cdbff`) — reuse it rather than adding another. Standard SR-only
+  recipe, no third-party dependency.
 - The sr-only span always holds the full question text, independent of
   typing state — this is what makes it safe to assert against without any
   timing dependency (see 1d/1e).
@@ -515,8 +514,10 @@ function advancePastBoot() {
 for partial-typing assertions (same `data-testid` convention as Phase 1's
 `gate-question` / existing `clue-text`). Partial text is asserted via
 `toHaveTextContent`, which is timing-correct under fake-timer advancement.
-The banner is purely decorative overlay — no sr-only sibling needed, no
-`aria-hidden` change.
+The animated banner content is wrapped in an `aria-hidden` container, with a
+sr-only sibling exposing the stable full text (`VT220 OK` / `Terminal Quiz`)
+— same dual-node pattern as Phase 1's `gate-question` (§1c). The conditional
+`Terminal Quiz` line carries `data-testid="boot-banner-line2"`.
 
 **Deliverable for a standalone PR:** 2a–2d, scoped to `CrtOverlay.tsx` +
 its spec only. Depends on Phase 0 (hook). Independent of Phase 1 — can land
