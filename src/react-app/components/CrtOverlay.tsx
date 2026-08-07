@@ -20,13 +20,16 @@ function BootBanner({ onComplete }: { onComplete: () => void }) {
 
   return (
     <div className={styles.bootBanner}>
-      <span
-        className={styles.bootBannerInverse}
-        data-testid="boot-banner-line1"
-      >
-        {displayedText}
-      </span>
-      {isComplete && <div>Terminal Quiz</div>}
+      <span className="sr-only">{"VT220 OK\nTerminal Quiz"}</span>
+      <div aria-hidden="true">
+        <span
+          className={styles.bootBannerInverse}
+          data-testid="boot-banner-line1"
+        >
+          {displayedText}
+        </span>
+        {isComplete && <div data-testid="boot-banner-line2">Terminal Quiz</div>}
+      </div>
     </div>
   );
 }

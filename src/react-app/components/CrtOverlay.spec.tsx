@@ -58,9 +58,12 @@ const FULL_SETTINGS = {
 // derived from the component's exported timing constants so retuning the
 // boot feel doesn't silently desync this helper.
 function advancePastBoot() {
-  act(() => vi.advanceTimersByTime(BOOT_BANNER_MS)); // banner stage commits, interval scheduled
-  act(() => vi.advanceTimersByTime(BANNER_TYPING_MS)); // typing done + onComplete, pause timer scheduled
-  act(() => vi.advanceTimersByTime(BANNER_PAUSE_MS)); // pause elapses, `done` commits
+  // Banner stage commits, typing interval scheduled.
+  act(() => vi.advanceTimersByTime(BOOT_BANNER_MS));
+  // Typing done + onComplete, pause timer scheduled.
+  act(() => vi.advanceTimersByTime(BANNER_TYPING_MS));
+  // Pause elapses, `done` commits.
+  act(() => vi.advanceTimersByTime(BANNER_PAUSE_MS));
 }
 
 describe("CrtOverlay", () => {
@@ -155,14 +158,16 @@ describe("CrtOverlay", () => {
     act(() => vi.advanceTimersByTime(BANNER_TYPE_SPEED));
 
     expect(screen.getByTestId("boot-banner-line1")).toHaveTextContent("V");
-    expect(screen.queryByText("Terminal Quiz")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("boot-banner-line2")).not.toBeInTheDocument();
 
     act(() => vi.advanceTimersByTime(BANNER_TYPING_MS - BANNER_TYPE_SPEED));
 
     expect(screen.getByTestId("boot-banner-line1")).toHaveTextContent(
       "VT220 OK",
     );
-    expect(screen.getByText("Terminal Quiz")).toBeInTheDocument();
+    expect(screen.getByTestId("boot-banner-line2")).toHaveTextContent(
+      "Terminal Quiz",
+    );
 
     act(() => vi.advanceTimersByTime(BANNER_PAUSE_MS));
 
