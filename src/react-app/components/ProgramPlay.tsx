@@ -8,7 +8,7 @@ import useProgressionScroll from "@hooks/useProgressionScroll";
 import { Route } from "@routes/programs/$programId";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./ProgramPlay.module.css";
 
 function ProgramPlay() {
@@ -41,6 +41,19 @@ function ProgramPlay() {
     requestClueMutation,
     resetSessionMutation,
   } = useProgramPlay({ programId, currentGateId: currentGate?.id });
+
+  // Tracks which gate's question has been "released" by its predecessor's
+  // successMessage finishing typing. Derived at render time (not reset via
+  // an effect) so a gate transition gates the new question immediately —
+  // an effect-based reset would lag one frame and flash the full text.
+  const [releasedGateId, setReleasedGateId] = useState<string | null>(null);
+
+  const handleSuccessMessageComplete = useCallback(() => {
+    setReleasedGateId(currentGate?.id ?? null);
+  }, [currentGate?.id]);
+
+  const canTypeQuestion =
+    completedGates.length === 0 || releasedGateId === currentGate?.id;
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
@@ -118,7 +131,17 @@ function ProgramPlay() {
     <>
       <h1 className={styles.title}>{programName}</h1>
       {completedGates.map((gate, index) => (
-        <CompletedGate key={gate.id} id={`gate-${index}`} gate={gate} />
+        <CompletedGate
+          key={gate.id}
+          id={`gate-${index}`}
+          gate={gate}
+          isLast={index === completedGates.length - 1 && !!currentGate}
+          onComplete={
+            index === completedGates.length - 1 && currentGate
+              ? handleSuccessMessageComplete
+              : undefined
+          }
+        />
       ))}
       {currentGate && (
         <ActiveGate
@@ -138,6 +161,7 @@ function ProgramPlay() {
           handleRequestClue={handleRequestClue}
           clues={clues}
           requestClueMutation={requestClueMutation}
+          enabled={canTypeQuestion}
         />
       )}
       {isTheEnd && (

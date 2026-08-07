@@ -1,7 +1,7 @@
 import type { UseMutationResult } from "@tanstack/react-query";
 import { handlers } from "@test-utils/msw/handlers";
 import { createQueryWrapper } from "@test-utils/queryTestUtils";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { graphql, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
@@ -218,6 +218,7 @@ describe("ProgramPlay Component", () => {
       message: null,
       isShaking: false,
       isPending: false,
+      enabled: true,
     });
   });
 
@@ -256,6 +257,52 @@ describe("ProgramPlay Component", () => {
     expect(completedGateCall[0]).toMatchObject({
       id: "gate-0",
       gate: progressionWithCompleted.completedGates[0],
+      isLast: true,
+    });
+  });
+
+  it("gates the next question until the last success message finishes typing", async () => {
+    const progressionWithCompleted = {
+      currentGate: {
+        id: "gate-2",
+        label: "Gate 2",
+        question: "What is 3+3?",
+      },
+      completedGates: [
+        {
+          id: "gate-1",
+          label: "Gate 1",
+          question: "What is 2+2?",
+          correctAnswer: "4",
+          successMessage: "Correct!",
+        },
+      ],
+      status: "in_progress",
+    };
+
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], mockPrograms);
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      progressionWithCompleted,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("Test Program");
+
+    // Next question gated (enabled=false) while the last successMessage types.
+    const activeGateCall = vi.mocked(ActiveGate).mock.calls[0];
+    expect(activeGateCall[0].enabled).toBe(false);
+
+    // Simulate the success message finishing typing.
+    const completedGateCall = vi.mocked(CompletedGate).mock.calls[0];
+    act(() => completedGateCall[0].onComplete?.());
+
+    await waitFor(() => {
+      const latestCall = vi.mocked(ActiveGate).mock.calls.at(-1);
+      expect(latestCall?.[0].enabled).toBe(true);
     });
   });
 
