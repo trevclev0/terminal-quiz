@@ -1,7 +1,10 @@
 # Typewriter Text Effect — Implementation Plan
 
-**Status:** In progress — Phase 0 shipped, Phases 1 and 2 implemented
-(plan updated based on team findings during coding)
+**Status:** Phases 0, 1, and 2 shipped and committed. Current working-tree
+work: `CompletedGate.successMessage` typing + sequential
+question/successMessage orchestration (pulled forward from Deferred scope,
+see "Latest findings (orchestration)" below) — code complete, uncommitted,
+pending review. Phase 3 not started.
 **Origin:** `docs/feature-ideas.md` §2.5 ("Typewriter Text Effect")
 **Owner:** TBD
 
@@ -126,6 +129,30 @@ phase sections):
    and it hits the same single-commit boundary problem as a single
    `advanceTimersByTime`. Drive exact durations in stepped `act` calls
    instead. See §2d.
+
+## Latest findings (CompletedGate.successMessage + orchestration)
+
+Pulled the deferred `CompletedGate.successMessage` typing forward (see
+"Deferred scope") and coordinated it with the next gate's question so the
+two never type in parallel:
+
+1. **Sequential orchestration via derived state:** `ProgramPlay.tsx` tracks
+   a `releasedGateId` set by the last `CompletedGate`'s `onComplete`, and a
+   derived `canTypeQuestion` gates the next `ActiveGate` (`enabled={canTypeQuestion}`).
+   Derived at render time, not reset in an effect, so a gate transition
+   gates the new question immediately — an effect-reset would lag one frame
+   and flash the full text.
+2. **Mount-when-enabled, not `enabled` flag (same pattern as §2b):** the
+   hook's `enabled: false` contract resolves to instant full text, so
+   gating by `enabled` would paint the full question for a frame, then wipe
+   and retype. `ActiveGate` now renders a `TypedQuestion` subcomponent that
+   mounts only when typing is allowed. This also fixed the page-refresh bug
+   where the last gate's question showed fully, then retyped after the
+   successMessage finished.
+3. **`CompletedGate` gains `isLast` + `onComplete` props:** typing of
+   `successMessage` is enabled only for the last completed gate; `onComplete`
+   fires the orchestration. Live solve sequence: successMessage types →
+   `onComplete` → next question types.
 
 ---
 
@@ -534,9 +561,6 @@ decision" above.
 - "Verifying..." pending state — candidate for a spinner instead of
   typewriter (mirrors `feature-ideas.md` §1.2)
 - Clue text lines, typed as each new clue arrives
-- `CompletedGate.successMessage` — typed once on gate completion (question
-  text itself would stay static per the existing decision not to retype
-  solved gates)
 - Clue button labels — explicitly *not* candidates; interactive control
   labels should stay instantly readable
 
@@ -567,7 +591,7 @@ scope is Phase 1/2 only):
 | Guess response message | `components/ActiveGate.tsx` | Deferred |
 | "Verifying..." pending | `components/ActiveGate.tsx` | Deferred |
 | Clue text lines | `components/ActiveGate.tsx` | Deferred |
-| `CompletedGate` successMessage | `components/CompletedGate.tsx` | Deferred |
+| `CompletedGate` successMessage | `components/CompletedGate.tsx` | Built — pull-forward (uncommitted) |
 | Program name title | `components/ProgramPlay.tsx` | Deferred |
 | "The End" + completion copy | `components/ProgramPlay.tsx` | Deferred |
 | `TerminalConfirmModal` message | `components/TerminalConfirmModal.tsx` | Deferred |
