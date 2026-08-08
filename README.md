@@ -296,7 +296,7 @@ Deployment is handled automatically by the `deploy.yml` GitHub Actions workflow.
 
 The workflow runs two jobs:
 1. `deploy` builds both the client and worker bundles, patches the generated `wrangler.jsonc` for preview deployments (different D1 database, `workers_dev: true`), applies any pending D1 migrations, and deploys via `cloudflare/wrangler-action`. It then updates the GitHub Deployment status with the live URL — success/error by the deploy result alone.
-2. For non-fork pull requests, an `e2e` job runs after deploy in the `mcr.microsoft.com/playwright` container (image tag auto-synced to the installed Playwright version), seeds the preview D1 with `scripts/generated/seed-e2e.sql` (compiled via `seed:e2e:preview`), and runs the full Playwright E2E suite against the deployed preview URL. A failing E2E run fails the `e2e` check (blocking merge via branch protection) but does not mark the deployment as failed.
+2. For non-fork pull requests, an `e2e` job runs after deploy in the `mcr.microsoft.com/playwright` container (image tag auto-synced to the installed Playwright version), seeds the preview D1 with `scripts/generated/seed-e2e.sql` (compiled via `seed:e2e:preview`), and runs the full Playwright E2E suite against the deployed preview URL. The `e2e` job is a branch-protection-required status check: a failing run blocks the merge, but does not mark the deployment as failed.
 
 Preview Workers are torn down automatically on PR close via `.github/workflows/preview-cleanup.yml`.
 
@@ -307,6 +307,7 @@ Preview Workers are torn down automatically on PR close via `.github/workflows/p
 | `CLOUDFLARE_API_TOKEN` | Cloudflare API token with Workers, D1, and Workers AI permissions |
 | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
 | `ADMIN_PAT` | GitHub Personal Access Token (used by the release workflow to push back to `main`) |
+| `AUTH_TEST_BYPASS_SECRET` | Shared secret for the E2E test auth bypass (also passed to preview deploys via `--var`) |
 | `CODECOV_TOKEN` | Codecov upload token for coverage reporting |
 
 ### Manual deployment
