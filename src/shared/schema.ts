@@ -148,6 +148,24 @@ export const gateClues = sqliteTable(
   ],
 );
 
+export const clueRateLimits = sqliteTable(
+  "clue_rate_limits",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    sessionProgressId: text("session_progress_id")
+      .notNull()
+      .references(() => sessionProgress.id, { onDelete: "cascade" }),
+    requestedAt: integer("requested_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (t) => [
+    index("clue_rate_limits_session_progress_id_idx").on(t.sessionProgressId),
+  ],
+);
+
 export const programsRelations = relations(programs, ({ many }) => ({
   gates: many(gates),
 }));
@@ -173,6 +191,7 @@ export const sessionProgressRelations = relations(
     }),
     gateClues: many(gateClues),
     completedGates: many(sessionCompletedGates),
+    rateLimits: many(clueRateLimits),
   }),
 );
 
@@ -198,5 +217,12 @@ export const gateCluesRelations = relations(gateClues, ({ one }) => ({
   gate: one(gates, {
     fields: [gateClues.gateId],
     references: [gates.id],
+  }),
+}));
+
+export const clueRateLimitsRelations = relations(clueRateLimits, ({ one }) => ({
+  sessionProgress: one(sessionProgress, {
+    fields: [clueRateLimits.sessionProgressId],
+    references: [sessionProgress.id],
   }),
 }));
