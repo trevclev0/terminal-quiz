@@ -157,12 +157,14 @@ export const clueRateLimits = sqliteTable(
     sessionProgressId: text("session_progress_id")
       .notNull()
       .references(() => sessionProgress.id, { onDelete: "cascade" }),
-    requestedAt: integer("requested_at", { mode: "timestamp" })
+    requestedAt: integer("requested_at", { mode: "timestamp_ms" })
       .notNull()
       .$defaultFn(() => new Date()),
   },
   (t) => [
     index("clue_rate_limits_session_progress_id_idx").on(t.sessionProgressId),
+    // Serves the global expiry prune (WHERE requested_at < cutoff)
+    index("clue_rate_limits_requested_at_idx").on(t.requestedAt),
   ],
 );
 

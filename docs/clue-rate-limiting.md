@@ -24,12 +24,17 @@ the AI call. A guard evaluated at insert time therefore runs **after** the
 quota has already been spent — it saves nothing.
 
 The rate limit must be claimed as a **separate, atomic step before
-`generateClue`**. This also closes a latent concurrency bug: today N
+`generateClue`**. The claim also bounds the existing concurrency race: today N
 concurrent `requestClue` calls at the same `attemptCount` all pass
 `computeCanRequestClue` (no row exists yet), all call `generateClue` (N AI
-calls), then all but one fail the `unique_clue_per_attempt` insert. The
-atomic claim serializes this — exactly one request wins each slot, the rest
-are rejected before any AI spend.
+calls), then all but one fail the `unique_clue_per_attempt` insert. The atomic
+claim caps that burst at `CLUE_RATE_LIMIT_MAX_REQUESTS` AI calls per window.
+
+Note the claim serializes **per window, not per attempt**: within one window,
+three concurrent requests at the same `attemptCount` each win a slot, each
+calls `generateClue`, and the `unique_clue_per_attempt` constraint still makes
+only one succeed. A per-attempt reservation would close that gap entirely and
+is tracked as a follow-up (#221).
 
 ## Rate decision
 
@@ -44,8 +49,9 @@ gate C clue — 3 AI calls in <10s. A session-wide rolling window caps the
 whole session at 3 AI calls/min regardless of gate rotation.
 
 Legit play is never touched: `guidanceThreshold` forces a minimum number of
-wrong guesses before the first clue, and each clue requires read → guess →
-submit → read response before the next — naturally far apart.
+wrong guesses before the first clue, and each clue requires the player to
+read the clue, submit a guess, and read the response before requesting the
+next — naturally far apart.
 
 ## Scope decision
 
@@ -73,7 +79,7 @@ Phase C.
 ### New table: `clue_rate_limits` (keyed by session, not gate)
 
 One row per **accepted AI claim** (history, not a single counter row),
-cascade-deleted with `session_progress`. Migration `0015_messy_mastermind.sql`.
+cascade-deleted with `session_progress`. Migration `0015_broken_supernaut.sql`.
 
 ```ts
 export const clueRateLimits = sqliteTable("clue_rate_limits", {
@@ -81,18 +87,22 @@ export const clueRateLimits = sqliteTable("clue_rate_limits", {
   sessionProgressId: text("session_progress_id")
     .notNull()
     .references(() => sessionProgress.id, { onDelete: "cascade" }),
-  requestedAt: integer("requested_at", { mode: "timestamp" })
+  requestedAt: integer("requested_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),
 }, (t) => [
   index("clue_rate_limits_session_progress_id_idx").on(t.sessionProgressId),
+  // Serves the global expiry prune (WHERE requested_at < cutoff)
+  index("clue_rate_limits_requested_at_idx").on(t.requestedAt),
 ]);
 ```
 
-The index serves both the count check and the expiry prune. Note
-`requested_at` is stored as unix **seconds** (drizzle sqlite
-`mode: "timestamp"` maps Date <-> seconds); the helper converts to seconds
-in its raw guard SQL.
+The `session_progress_id` index serves the count check and the per-session
+advisory read; the `requested_at` index serves the global expiry prune.
+`requested_at` stores **raw epoch milliseconds** (drizzle sqlite
+`mode: "timestamp_ms"`), so the rolling window is precise to the
+millisecond — no second-flooring drift that could expire claims up to 999ms
+early.
 
 ### Atomic claim (count-guarded conditional insert, before `generateClue`)
 
@@ -109,17 +119,17 @@ const [claimed] = await db.batch([
       .select({
         id: sql`${crypto.randomUUID()}`.as("id"),
         sessionProgressId: sql`${sessionProgressId}`.as("session_progress_id"),
-        requestedAt: sql`${nowSeconds}`.as("requested_at"),
+        requestedAt: sql`${nowMs}`.as("requested_at"),
       })
       .from(sql`(select 1)`)
       .where(sql`(
         SELECT COUNT(*) FROM clue_rate_limits
         WHERE session_progress_id = ${sessionProgressId}
-          AND requested_at > ${cutoffSeconds}
+          AND requested_at > ${cutoffMs}
       ) < ${CLUE_RATE_LIMIT_MAX_REQUESTS}`),
     )
     .returning({ id: clueRateLimits.id }),
-  db.delete(clueRateLimits).where(/* session's expired rows */),
+  db.delete(clueRateLimits).where(lt(clueRateLimits.requestedAt, cutoff)),
 ]);
 ```
 
@@ -140,8 +150,10 @@ Exactly one AI call per slot.
 SELECT read only on the rejection path (the happy path pays no extra query).
 The count-guarded insert stays the sole enforcement point.
 
-Expired rows (older than the cutoff) are pruned for the session in the same
-`db.batch`, so the table cannot grow unbounded.
+Expired rows (older than the cutoff) are pruned **globally across all
+sessions** in the same `db.batch` (served by the `requested_at` index), so
+abandoned sessions cannot leak rows forever and the table cannot grow
+unbounded.
 
 ### Window-consumption decision
 
@@ -213,7 +225,7 @@ account-wide cap/observability layer.
    — `clueRateLimit.integration.spec.ts` (under-cap claim, at-cap reject,
    expired rows ignored, `retryAfterMs` math, prune).
 2. **Schema:** `clue_rate_limits` added to `src/shared/schema.ts`;
-   migration `0015_messy_mastermind.sql` generated.
+   migration `0015_broken_supernaut.sql` generated.
 3. **Helper:** `src/worker/graphql/gameplay/clueRateLimit.ts` exporting
    `CLUE_RATE_LIMIT_WINDOW_MS`, `CLUE_RATE_LIMIT_MAX_REQUESTS`,
    `computeRetryAfterMs`, and `claimClueRateLimit(db, sessionProgressId)`
@@ -225,13 +237,15 @@ account-wide cap/observability layer.
 5. **Contract:** `RequestClueResultType` + `REQUEST_CLUE_MUTATION` extended.
 6. **Tests:**
    - `clueRateLimit.spec.ts` (unit): constants + `computeRetryAfterMs` math.
-   - `clueRateLimit.integration.spec.ts`: direct claim behavior on D1.
+   - `clueRateLimit.integration.spec.ts`: direct claim behavior on D1 —
+     under-cap claim, at-cap reject, expired rows ignored, exact
+     window-boundary release (ms precision), `retryAfterMs` math, prune.
    - `requestClue.integration.spec.ts` (extended): pre-seeded in-window cap →
      rejected with `isRateLimited: true` + correct `retryAfterMs`,
      `generateClue` **not** called; expired rows → allowed; per-gate clue cap
      distinct from rate limiting. Existing tests keep passing (additive).
 
-**Files changed:** `src/shared/schema.ts`, `migrations/0015_messy_mastermind.sql`,
+**Files changed:** `src/shared/schema.ts`, `migrations/0015_broken_supernaut.sql`,
 `src/worker/graphql/gameplay/clueRateLimit.ts`, `clueRateLimit.spec.ts`,
 `clueRateLimit.integration.spec.ts`, `requestClueMutation.ts`, `types.ts`,
 `src/shared/gqlQueries.ts`, `requestClue.integration.spec.ts`,

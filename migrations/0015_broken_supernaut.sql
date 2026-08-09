@@ -5,4 +5,5 @@ CREATE TABLE `clue_rate_limits` (
 	FOREIGN KEY (`session_progress_id`) REFERENCES `session_progress`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE INDEX `clue_rate_limits_session_progress_id_idx` ON `clue_rate_limits` (`session_progress_id`);
+CREATE INDEX `clue_rate_limits_session_progress_id_idx` ON `clue_rate_limits` (`session_progress_id`);--> statement-breakpoint
+CREATE INDEX `clue_rate_limits_requested_at_idx` ON `clue_rate_limits` (`requested_at`);
