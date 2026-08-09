@@ -396,6 +396,8 @@ describe("useProgramPlay", () => {
       options.onSuccess({
         clueText: "Here is a clue",
         isClueLimitReached: false,
+        isRateLimited: false,
+        retryAfterMs: null,
       });
     });
 
@@ -413,7 +415,12 @@ describe("useProgramPlay", () => {
     );
 
     mockMutate.mockImplementation((_variables, options) => {
-      options.onSuccess({ clueText: null, isClueLimitReached: false });
+      options.onSuccess({
+        clueText: null,
+        isClueLimitReached: false,
+        isRateLimited: false,
+        retryAfterMs: null,
+      });
     });
 
     act(() => {
@@ -467,6 +474,8 @@ describe("useProgramPlay", () => {
       options.onSuccess({
         clueText: "Here is a clue",
         isClueLimitReached: false,
+        isRateLimited: false,
+        retryAfterMs: null,
       });
     });
 
@@ -480,5 +489,118 @@ describe("useProgramPlay", () => {
 
     expect(result.current.clues).toEqual([]);
     expect(result.current.canRequestClue).toBe(false);
+  });
+
+  it("starts with no clue cooldown", () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+    expect(result.current.clueCooldownUntil).toBeNull();
+    expect(result.current.cooldownSeconds).toBe(0);
+  });
+
+  it("sets a clue cooldown when rate limited with retryAfterMs", () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+    mockMutate.mockImplementation((_variables, options) => {
+      options.onSuccess({
+        clueText: null,
+        isClueLimitReached: false,
+        isRateLimited: true,
+        retryAfterMs: 30000,
+      });
+    });
+
+    act(() => {
+      result.current.handleRequestClue();
+    });
+
+    expect(result.current.clueCooldownUntil).not.toBeNull();
+    expect(result.current.cooldownSeconds).toBeGreaterThan(0);
+  });
+
+  it("falls back to a message when rate limited without retryAfterMs", () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+    mockMutate.mockImplementation((_variables, options) => {
+      options.onSuccess({
+        clueText: null,
+        isClueLimitReached: false,
+        isRateLimited: true,
+        retryAfterMs: null,
+      });
+    });
+
+    act(() => {
+      result.current.handleRequestClue();
+    });
+
+    expect(result.current.clueCooldownUntil).toBeNull();
+    expect(result.current.cooldownSeconds).toBe(0);
+    expect(result.current.message).toBe(
+      "You've requested too many clues. Please try again later.",
+    );
+  });
+
+  it("clears the clue cooldown when currentGateId changes", () => {
+    const { result, rerender } = renderHook(
+      ({ currentGateId }) => useProgramPlay({ programId, currentGateId }),
+      { wrapper, initialProps: { currentGateId: "gate-1" } },
+    );
+    mockMutate.mockImplementation((_variables, options) => {
+      options.onSuccess({
+        clueText: null,
+        isClueLimitReached: false,
+        isRateLimited: true,
+        retryAfterMs: 30000,
+      });
+    });
+
+    act(() => {
+      result.current.handleRequestClue();
+    });
+    expect(result.current.clueCooldownUntil).not.toBeNull();
+
+    rerender({ currentGateId: "gate-2" });
+
+    expect(result.current.clueCooldownUntil).toBeNull();
+    expect(result.current.cooldownSeconds).toBe(0);
+  });
+
+  it("counts the cooldown down and clears it once expired", () => {
+    vi.useFakeTimers();
+    try {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      mockMutate.mockImplementation((_variables, options) => {
+        options.onSuccess({
+          clueText: null,
+          isClueLimitReached: false,
+          isRateLimited: true,
+          retryAfterMs: 1000,
+        });
+      });
+
+      act(() => {
+        result.current.handleRequestClue();
+      });
+      expect(result.current.cooldownSeconds).toBeGreaterThan(0);
+
+      act(() => {
+        vi.advanceTimersByTime(1500);
+      });
+
+      expect(result.current.cooldownSeconds).toBe(0);
+      expect(result.current.clueCooldownUntil).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

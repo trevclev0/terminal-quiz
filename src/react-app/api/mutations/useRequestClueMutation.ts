@@ -6,6 +6,8 @@ export type RequestClueResponse = {
   clueText: string | null;
   isClueLimitReached: boolean;
   cluesRemaining: number;
+  isRateLimited: boolean;
+  retryAfterMs: number | null;
 };
 
 const requestClue = async (

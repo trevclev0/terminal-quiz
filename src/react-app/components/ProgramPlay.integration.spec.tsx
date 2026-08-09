@@ -205,6 +205,51 @@ describe("ProgramPlay Integration", () => {
     });
   });
 
+  it("disables clue button with countdown when request is rate limited", async () => {
+    server.use(
+      graphql.mutation("RequestClue", () =>
+        HttpResponse.json({
+          data: {
+            requestClue: {
+              clueText: null,
+              isClueLimitReached: false,
+              cluesRemaining: 3,
+              isRateLimited: true,
+              retryAfterMs: 30000,
+            },
+          },
+        }),
+      ),
+    );
+
+    const { wrapper } = createQueryWrapper();
+    const user = userEvent.setup();
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByTestId("gate-question", { exact: false });
+    await waitFor(() => {
+      expect(screen.getByTestId("gate-question")).toHaveTextContent(
+        "What is 2+2?",
+      );
+    });
+
+    const input = screen.getByLabelText("Gate 1 password input");
+    await user.type(input, "wrong");
+    await user.keyboard("{Enter}");
+
+    await waitFor(() => {
+      expect(screen.getByText("Get 1st Clue")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("Get 1st Clue"));
+
+    const cooldownButton = await screen.findByRole("button", {
+      name: /clue cooldown.*try again in/i,
+    });
+    expect(cooldownButton).toBeDisabled();
+  });
+
   it("renders The End screen when program is completed and supports play again", async () => {
     progressionData = mockProgression({
       currentGate: null,

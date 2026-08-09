@@ -36,6 +36,7 @@ function ProgramPlay() {
     handleSubmit,
     canRequestClue,
     isClueLimitReached,
+    cooldownSeconds,
     handleRequestClue,
     clues,
     requestClueMutation,
@@ -158,6 +159,7 @@ function ProgramPlay() {
           handleSubmit={handleSubmit}
           canRequestClue={canRequestClue}
           isClueLimitReached={isClueLimitReached}
+          cooldownSeconds={cooldownSeconds}
           handleRequestClue={handleRequestClue}
           clues={clues}
           requestClueMutation={requestClueMutation}

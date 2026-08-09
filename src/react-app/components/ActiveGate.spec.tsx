@@ -299,4 +299,26 @@ describe("Clue Functionality", () => {
       screen.getByRole("button", { name: /get.*clue/i }),
     ).not.toBeDisabled();
   });
+
+  it("disables clue button and shows countdown when cooldown is active", () => {
+    renderActiveGate({
+      canRequestClue: true,
+      guess: "some guess",
+      cooldownSeconds: 12,
+    });
+    const button = screen.getByRole("button", {
+      name: /clue cooldown.*try again in 12s/i,
+    });
+    expect(button).toBeDisabled();
+  });
+
+  it("keeps clue button enabled when cooldown has expired", () => {
+    renderActiveGate({
+      canRequestClue: true,
+      guess: "some guess",
+      cooldownSeconds: 0,
+    });
+    const button = screen.getByRole("button", { name: /get.*clue/i });
+    expect(button).not.toBeDisabled();
+  });
 });

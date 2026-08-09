@@ -18,6 +18,7 @@ type ActiveGateProps = {
   handleSubmit: (e: SubmitEvent<HTMLFormElement>) => void | Promise<void>;
   canRequestClue: boolean;
   isClueLimitReached?: boolean;
+  cooldownSeconds?: number;
   requestClueMutation?: {
     isPending: boolean;
   };
@@ -53,6 +54,7 @@ export default function ActiveGate({
   handleSubmit,
   canRequestClue,
   isClueLimitReached = false,
+  cooldownSeconds = 0,
   requestClueMutation,
   handleRequestClue,
   clues = [],
@@ -60,6 +62,7 @@ export default function ActiveGate({
 }: ActiveGateProps) {
   const formAriaLabel = `${gate.label} - enter password and press Enter to submit`;
   const isMutationPending = requestClueMutation?.isPending ?? false;
+  const isClueCooldown = cooldownSeconds > 0;
   const clueNumber = clues.length + 1;
   const clueSuffix =
     clueNumber === 1
@@ -134,13 +137,20 @@ export default function ActiveGate({
                 type="button"
                 className={styles.clueLink}
                 onClick={handleRequestClue}
-                disabled={isMutationPending || isPending || guess.trim() === ""}
+                disabled={
+                  isMutationPending ||
+                  isPending ||
+                  guess.trim() === "" ||
+                  isClueCooldown
+                }
               >
                 {isMutationPending
                   ? "Fetching Clue..."
-                  : isFinalClue
-                    ? "Get Final Clue"
-                    : `Get ${clueNumber}${clueSuffix} Clue`}
+                  : isClueCooldown
+                    ? `Clue cooldown — try again in ${cooldownSeconds}s`
+                    : isFinalClue
+                      ? "Get Final Clue"
+                      : `Get ${clueNumber}${clueSuffix} Clue`}
               </button>
             </p>
           )}

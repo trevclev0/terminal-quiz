@@ -20,6 +20,10 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
   const [canRequestClue, setCanRequestClue] = useState(false);
   const [clues, setClues] = useState<string[]>([]);
   const [isClueLimitReached, setIsClueLimitReached] = useState(false);
+  const [clueCooldownUntil, setClueCooldownUntil] = useState<number | null>(
+    null,
+  );
+  const [now, setNow] = useState(() => Date.now());
   const { isShaking, shake, clearShake } = useShake();
 
   // Clear response message, shake, clues, and canRequestClue when currentGate.id changes
@@ -31,7 +35,31 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
     setClues([]);
     setCanRequestClue(false);
     setIsClueLimitReached(false);
+    setClueCooldownUntil(null);
   }, [currentGateId]);
+
+  // Re-tick `now` while a clue cooldown is active so cooldownSeconds counts
+  // down live. Tears the interval down (by clearing the cooldown) on expiry.
+  useEffect(() => {
+    if (clueCooldownUntil === null) {
+      return;
+    }
+    const tick = () => {
+      const nowMs = Date.now();
+      setNow(nowMs);
+      if (clueCooldownUntil <= nowMs) {
+        setClueCooldownUntil(null);
+      }
+    };
+    const id = setInterval(tick, 250);
+    return () => clearInterval(id);
+  }, [clueCooldownUntil]);
+
+  const cooldownSeconds =
+    clueCooldownUntil === null
+      ? 0
+      : Math.max(0, Math.ceil((clueCooldownUntil - now) / 1000));
+  const isClueCooldown = cooldownSeconds > 0;
 
   const changeHandler = (e: ChangeEvent<HTMLInputElement>) => {
     setGuess(e.target.value);
@@ -76,7 +104,7 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
   };
 
   const handleRequestClue = () => {
-    if (!currentGateId) return;
+    if (!currentGateId || isClueCooldown) return;
     requestClueMutation.mutate(
       { gateId: currentGateId, currentGuess: guess },
       {
@@ -84,6 +112,15 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
           if (data.clueText) {
             setClues((prev) => [...prev, data.clueText as string]);
             setCanRequestClue(false);
+          } else if (data.isRateLimited) {
+            const retryAfterMs = data.retryAfterMs;
+            if (retryAfterMs != null && retryAfterMs > 0) {
+              setClueCooldownUntil(Date.now() + retryAfterMs);
+            } else {
+              setMessage(
+                "You've requested too many clues. Please try again later.",
+              );
+            }
           } else {
             setMessage("Failed to generate a clue. Please try again.");
           }
@@ -108,6 +145,8 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
     isClueLimitReached,
     clues,
     handleRequestClue,
+    clueCooldownUntil,
+    cooldownSeconds,
     requestClueMutation,
     resetSessionMutation,
   };
