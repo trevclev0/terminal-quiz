@@ -71,6 +71,8 @@ const mockUseProgramPlay = {
   handleSubmit: vi.fn(),
   canRequestClue: false,
   isClueLimitReached: false,
+  cooldownSeconds: 0,
+  clueCooldownUntil: null,
   clues: [],
   handleRequestClue: vi.fn(),
   requestClueMutation: {
@@ -496,5 +498,27 @@ describe("ProgramPlay Component", () => {
     expect(
       screen.getByText("Failed to reset progress. Please try again."),
     ).toBeInTheDocument();
+  });
+
+  it("passes cooldownSeconds to ActiveGate", async () => {
+    vi.mocked(useProgramPlay).mockReturnValue({
+      ...mockUseProgramPlay,
+      cooldownSeconds: 12,
+    });
+
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], mockPrograms);
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      mockProgression,
+    );
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("Test Program");
+    const activeGateCall = vi.mocked(ActiveGate).mock.calls[0];
+    expect(activeGateCall).toBeDefined();
+    expect(activeGateCall[0]).toMatchObject({ cooldownSeconds: 12 });
   });
 });

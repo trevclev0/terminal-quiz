@@ -126,5 +126,7 @@ export const mockRequestClueResponse = (
   clueText: "Here is a clue",
   isClueLimitReached: false,
   cluesRemaining: 2,
+  isRateLimited: false,
+  retryAfterMs: null,
   ...overrides,
 });
