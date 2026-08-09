@@ -8,6 +8,7 @@ import {
   getExistingCluesForGate,
   MAX_CLUES_PER_GATE,
 } from "./clueEligibility";
+import { claimClueRateLimit } from "./clueRateLimit";
 import { MAX_GUESS_LENGTH } from "./guessValidation";
 import { type AppGraphQLContext, RequestClueResultType } from "./types";
 
@@ -65,6 +66,21 @@ export const requestClue = {
         clueText: null,
         isClueLimitReached: existingClues.length >= MAX_CLUES_PER_GATE,
         cluesRemaining,
+        isRateLimited: false,
+        retryAfterMs: null,
+      };
+    }
+
+    // Claim a rolling rate-limit slot BEFORE any AI spend. Rejected requests
+    // never reach generateClue; the window is consumed even if AI fails.
+    const rateLimit = await claimClueRateLimit(db, progress.id);
+    if (!rateLimit.claimed) {
+      return {
+        clueText: null,
+        isClueLimitReached: false,
+        cluesRemaining,
+        isRateLimited: true,
+        retryAfterMs: rateLimit.retryAfterMs,
       };
     }
 
@@ -84,6 +100,8 @@ export const requestClue = {
         clueText: null,
         isClueLimitReached: false,
         cluesRemaining,
+        isRateLimited: false,
+        retryAfterMs: null,
       };
     }
 
@@ -102,6 +120,8 @@ export const requestClue = {
         clueText: null,
         isClueLimitReached: false,
         cluesRemaining,
+        isRateLimited: false,
+        retryAfterMs: null,
       };
     }
 
@@ -111,6 +131,8 @@ export const requestClue = {
       clueText,
       isClueLimitReached: newCluesRemaining === 0,
       cluesRemaining: newCluesRemaining,
+      isRateLimited: false,
+      retryAfterMs: null,
     };
   },
 };
