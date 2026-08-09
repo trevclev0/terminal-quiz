@@ -10,13 +10,6 @@ export type ClueRateLimitClaim = {
   retryAfterMs: number | null;
 };
 
-// `clue_rate_limits.requested_at` is stored as unix seconds (drizzle sqlite
-// `mode: "timestamp"` maps Date <-> seconds), so every timestamp in the raw
-// SQL below is converted to seconds to keep comparisons in one unit.
-function toUnixSeconds(ms: number): number {
-  return Math.floor(ms / 1000);
-}
-
 export function computeRetryAfterMs(
   oldestRequestedAt: Date,
   nowMs: number,
@@ -30,10 +23,10 @@ export function computeRetryAfterMs(
  *
  * The claim is a count-guarded conditional insert:
  *   INSERT INTO clue_rate_limits (id, session_progress_id, requested_at)
- *   SELECT <uuid>, <sessionProgressId>, <nowSeconds>
+ *   SELECT <uuid>, <sessionProgressId>, <nowMs>
  *   WHERE (SELECT COUNT(*) FROM clue_rate_limits
  *          WHERE session_progress_id = <sessionProgressId>
- *            AND requested_at > <cutoffSeconds>) < CLUE_RATE_LIMIT_MAX_REQUESTS
+ *            AND requested_at > <cutoffMs>) < CLUE_RATE_LIMIT_MAX_REQUESTS
  *   RETURNING id
  *
  * Drizzle 0.45.2 has no standalone `.where()` on insert; the `.select()`
@@ -41,17 +34,21 @@ export function computeRetryAfterMs(
  * writes, and the D1 write path is serialized too, so two concurrent
  * requests cannot both win the last slot — exactly one AI call runs per slot.
  *
- * Expired rows are pruned for the session in the same `db.batch`, so the
- * table cannot grow unbounded. `retryAfterMs` is computed from the oldest
- * in-window row, read only on the rejection path.
+ * Timestamps are stored as raw milliseconds (`mode: "timestamp_ms"`), so the
+ * guard compares exact `Date.now()` values and the rolling window is precise
+ * to the millisecond (no second-flooring drift).
+ *
+ * Expired rows are pruned globally (all sessions) in the same `db.batch`,
+ * served by the `requested_at` index, so abandoned sessions cannot leak rows
+ * forever. `retryAfterMs` is computed from the oldest in-window row, read
+ * only on the rejection path.
  */
 export async function claimClueRateLimit(
   db: AppGraphQLContext["var"]["db"],
   sessionProgressId: string,
 ): Promise<ClueRateLimitClaim> {
   const nowMs = Date.now();
-  const cutoffSeconds = toUnixSeconds(nowMs - CLUE_RATE_LIMIT_WINDOW_MS);
-  const nowSeconds = toUnixSeconds(nowMs);
+  const cutoffMs = nowMs - CLUE_RATE_LIMIT_WINDOW_MS;
 
   const [claimed] = await db.batch([
     db
@@ -63,26 +60,21 @@ export async function claimClueRateLimit(
             sessionProgressId: sql`${sessionProgressId}`.as(
               "session_progress_id",
             ),
-            requestedAt: sql`${nowSeconds}`.as("requested_at"),
+            requestedAt: sql`${nowMs}`.as("requested_at"),
           })
           .from(sql`(select 1)`)
           .where(
             sql`(
               SELECT COUNT(*) FROM clue_rate_limits
               WHERE session_progress_id = ${sessionProgressId}
-                AND requested_at > ${cutoffSeconds}
+                AND requested_at > ${cutoffMs}
             ) < ${CLUE_RATE_LIMIT_MAX_REQUESTS}`,
           ),
       )
       .returning({ id: clueRateLimits.id }),
     db
       .delete(clueRateLimits)
-      .where(
-        and(
-          eq(clueRateLimits.sessionProgressId, sessionProgressId),
-          lt(clueRateLimits.requestedAt, new Date(cutoffSeconds * 1000)),
-        ),
-      ),
+      .where(lt(clueRateLimits.requestedAt, new Date(cutoffMs))),
   ]);
 
   if (claimed.length > 0) {
@@ -95,7 +87,7 @@ export async function claimClueRateLimit(
     .where(
       and(
         eq(clueRateLimits.sessionProgressId, sessionProgressId),
-        gte(clueRateLimits.requestedAt, new Date(cutoffSeconds * 1000)),
+        gte(clueRateLimits.requestedAt, new Date(cutoffMs)),
       ),
     )
     .orderBy(asc(clueRateLimits.requestedAt))

@@ -315,7 +315,7 @@ describe("requestClue mutation", () => {
     expect(clueCount?.cnt).toBe(0);
   });
 
-  it("rate limit: in-window cap reached rejects with retryAfterMs and no AI call", async () => {
+  it("rate limit: in-window cap rejects with retryAfterMs", async () => {
     const sessionId = makeSessionId("rate-limited");
     const progressId = await insertSession(sessionId, E2E_GATE_1_ID, {
       attemptCount: 2,

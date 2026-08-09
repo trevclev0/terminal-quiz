@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "2c7739f9-582c-46c6-a9af-a204ea9c3c10",
+  "id": "54bee5a0-45cc-4dac-85ca-7c41feaaf6a4",
   "prevId": "59dcf028-7b4c-4200-b152-eee81566df17",
   "tables": {
     "clue_rate_limits": {
@@ -33,6 +33,11 @@
         "clue_rate_limits_session_progress_id_idx": {
           "name": "clue_rate_limits_session_progress_id_idx",
           "columns": ["session_progress_id"],
+          "isUnique": false
+        },
+        "clue_rate_limits_requested_at_idx": {
+          "name": "clue_rate_limits_requested_at_idx",
+          "columns": ["requested_at"],
           "isUnique": false
         }
       },

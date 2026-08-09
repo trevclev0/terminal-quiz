@@ -88,7 +88,39 @@ describe("claimClueRateLimit", () => {
     expect(result.claimed).toBe(true);
   });
 
-  it("rejects when pre-seeded at cap and reports retryAfterMs from the oldest row", async () => {
+  it("releases the cap exactly when rows hit the window boundary", async () => {
+    const progressId = await insertProgress(makeSessionId("boundary-edge"));
+    const now = Date.now();
+    // requested_at exactly at cutoff: the strict `> cutoff` guard must
+    // exclude it. The timestamp_ms fix makes this boundary exact to the
+    // millisecond — under second-flooring the row could expire up to 999ms
+    // early.
+    const atBoundary = new Date(now - CLUE_RATE_LIMIT_WINDOW_MS);
+    for (let i = 0; i < CLUE_RATE_LIMIT_MAX_REQUESTS; i++) {
+      await insertRateRow(progressId, atBoundary);
+    }
+    const result = await claim(progressId);
+    expect(result.claimed).toBe(true);
+  });
+
+  it("blocks a claim just inside window (precise retryAfterMs)", async () => {
+    const progressId = await insertProgress(makeSessionId("boundary-inside"));
+    const now = Date.now();
+    // 1s inside the 60s window (59,000ms old). A razor-edge 59,999ms seed
+    // is untestable against a real clock — scheduling delay ages it out —
+    // so use a 1s margin and assert the ms precision via retryAfterMs.
+    const oneSecondInside = new Date(now - CLUE_RATE_LIMIT_WINDOW_MS + 1_000);
+    for (let i = 0; i < CLUE_RATE_LIMIT_MAX_REQUESTS; i++) {
+      await insertRateRow(progressId, oneSecondInside);
+    }
+    const rejected = await claim(progressId);
+    expect(rejected.claimed).toBe(false);
+    // oldest + window is ~1s out from now, precise to the millisecond
+    expect(rejected.retryAfterMs).toBeGreaterThan(0);
+    expect(rejected.retryAfterMs).toBeLessThanOrEqual(1_000);
+  });
+
+  it("rejects when pre-seeded at cap, retryAfterMs from oldest", async () => {
     const progressId = await insertProgress(makeSessionId("seeded-cap"));
     const now = Date.now();
     const oldest = new Date(now - 10_000); // 10s ago, expires in 50s
