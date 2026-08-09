@@ -1,3 +1,4 @@
+import { clueRateLimits, gateClues } from "@shared/schema";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { requestClue } from "./requestClueMutation";
 import { resetSession } from "./resetSessionMutation";
@@ -40,10 +41,21 @@ function createMockDb(): MockDb {
         where: vi.fn().mockResolvedValue(undefined),
       }),
     }),
-    insert: vi.fn().mockReturnValue({
-      values: vi.fn().mockReturnValue({
-        onConflictDoNothing: vi.fn().mockResolvedValue(undefined),
-      }),
+    insert: vi.fn().mockImplementation((table: unknown) => {
+      if (table === clueRateLimits) {
+        // Count-guarded conditional insert used by claimClueRateLimit.
+        // Defaults to winning the claim so requestClue proceeds to the AI.
+        return {
+          select: vi.fn().mockReturnValue({
+            returning: vi.fn().mockResolvedValue([{ id: "claimed-rate-slot" }]),
+          }),
+        };
+      }
+      return {
+        values: vi.fn().mockReturnValue({
+          onConflictDoNothing: vi.fn().mockResolvedValue(undefined),
+        }),
+      };
     }),
     delete: vi.fn().mockReturnValue({
       where: vi.fn().mockResolvedValue(undefined),
@@ -542,6 +554,8 @@ describe("Gameplay Mutations: requestClue", () => {
       clueText: null,
       isClueLimitReached: false,
       cluesRemaining: 3,
+      isRateLimited: false,
+      retryAfterMs: null,
     });
     expect(generateClue).not.toHaveBeenCalled();
   });
@@ -574,6 +588,8 @@ describe("Gameplay Mutations: requestClue", () => {
       clueText: null,
       isClueLimitReached: true,
       cluesRemaining: 0,
+      isRateLimited: false,
+      retryAfterMs: null,
     });
     expect(generateClue).not.toHaveBeenCalled();
   });
@@ -636,9 +652,11 @@ describe("Gameplay Mutations: requestClue", () => {
       "banana",
       ["Think about doctors.", "It grows on trees."],
     );
-    expect(mockDb.insert).toHaveBeenCalled();
-    const valuesCall = mockDb.insert.mock.results[0]?.value.values;
-    expect(valuesCall).toHaveBeenCalledWith({
+    expect(mockDb.insert).toHaveBeenCalledWith(gateClues);
+    const gateCluesCall = mockDb.insert.mock.results.find(
+      (result) => result.value.values,
+    );
+    expect(gateCluesCall?.value.values).toHaveBeenCalledWith({
       sessionProgressId: "progress-1",
       gateId: "gate-1",
       clueText: "It is often red or green.",
@@ -648,6 +666,8 @@ describe("Gameplay Mutations: requestClue", () => {
       clueText: "It is often red or green.",
       isClueLimitReached: true,
       cluesRemaining: 0,
+      isRateLimited: false,
+      retryAfterMs: null,
     });
   });
 
@@ -674,7 +694,8 @@ describe("Gameplay Mutations: requestClue", () => {
 
     expect(result.clueText).toBeNull();
     expect(result.isClueLimitReached).toBe(false);
-    expect(mockDb.insert).not.toHaveBeenCalled();
+    // The rate-limit claim inserts a row (window consumed), but no clue row
+    expect(mockDb.insert).not.toHaveBeenCalledWith(gateClues);
   });
 
   it("marks clue limit reached after the third clue is generated", async () => {
@@ -705,6 +726,8 @@ describe("Gameplay Mutations: requestClue", () => {
       clueText: "Final hint.",
       isClueLimitReached: true,
       cluesRemaining: 0,
+      isRateLimited: false,
+      retryAfterMs: null,
     });
   });
 
@@ -763,6 +786,10 @@ describe("Gameplay Mutations: requestClue", () => {
 
     mockDb.insert.mockReturnValue({
       values: vi.fn().mockRejectedValue(new Error("UNIQUE constraint")),
+      // Claim still succeeds so the resolver reaches the gate_clues insert
+      select: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: "claimed-rate-slot" }]),
+      }),
     });
 
     if (!requestClue.resolve) throw new Error("Resolver not defined");

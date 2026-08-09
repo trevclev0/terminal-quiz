@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers";
 import { REQUEST_CLUE_MUTATION } from "@shared/gqlQueries";
-import { gateClues, sessionProgress } from "@shared/schema";
+import { clueRateLimits, gateClues, sessionProgress } from "@shared/schema";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
@@ -61,7 +61,20 @@ interface RequestClueData {
     clueText: string | null;
     isClueLimitReached: boolean;
     cluesRemaining: number;
+    isRateLimited: boolean;
+    retryAfterMs: number | null;
   };
+}
+
+/** Insert a rate-limit history row at an absolute time (unix ms). */
+async function insertRateRow(
+  progressId: string,
+  requestedAtMs: number,
+): Promise<void> {
+  await db.insert(clueRateLimits).values({
+    sessionProgressId: progressId,
+    requestedAt: new Date(requestedAtMs),
+  });
 }
 
 describe("requestClue mutation", () => {
@@ -300,5 +313,111 @@ describe("requestClue mutation", () => {
       .bind(progressId)
       .first<{ cnt: number }>();
     expect(clueCount?.cnt).toBe(0);
+  });
+
+  it("rate limit: in-window cap reached rejects with retryAfterMs and no AI call", async () => {
+    const sessionId = makeSessionId("rate-limited");
+    const progressId = await insertSession(sessionId, E2E_GATE_1_ID, {
+      attemptCount: 2,
+    });
+
+    // Seed 3 in-window rate-limit rows → session at cap
+    const now = Date.now();
+    for (let i = 0; i < 3; i++) {
+      await insertRateRow(progressId, now - i * 1_000);
+    }
+
+    const response: GqlResponse = await gqlRequest(REQUEST_CLUE_MUTATION, {
+      sessionId,
+      variables: {
+        programId: E2E_PROGRAM_ID,
+        gateId: E2E_GATE_1_ID,
+        currentGuess: "red",
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.errors).toBeUndefined();
+
+    const data = response.body.data as RequestClueData;
+    expect(data.requestClue.clueText).toBeNull();
+    expect(data.requestClue.isClueLimitReached).toBe(false);
+    expect(data.requestClue.cluesRemaining).toBe(3);
+    expect(data.requestClue.isRateLimited).toBe(true);
+    // Oldest seeded row is ~3s ago → ~57s remain in the window
+    expect(data.requestClue.retryAfterMs).toBeGreaterThan(55_000);
+    expect(data.requestClue.retryAfterMs).toBeLessThanOrEqual(60_000);
+
+    // No AI call, no clue row
+    expect(vi.mocked(generateClue)).not.toHaveBeenCalled();
+    const clueCount = await env.DB.prepare(
+      `SELECT COUNT(*) as cnt FROM gate_clues WHERE session_progress_id = ?`,
+    )
+      .bind(progressId)
+      .first<{ cnt: number }>();
+    expect(clueCount?.cnt).toBe(0);
+  });
+
+  it("rate limit: expired rows do not count against the window", async () => {
+    const sessionId = makeSessionId("rate-expired");
+    const progressId = await insertSession(sessionId, E2E_GATE_1_ID, {
+      attemptCount: 2,
+    });
+
+    // Seed 3 rows all older than the 60s window
+    const old = Date.now() - 60_001;
+    for (let i = 0; i < 3; i++) {
+      await insertRateRow(progressId, old);
+    }
+
+    const response: GqlResponse = await gqlRequest(REQUEST_CLUE_MUTATION, {
+      sessionId,
+      variables: {
+        programId: E2E_PROGRAM_ID,
+        gateId: E2E_GATE_1_ID,
+        currentGuess: "red",
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.errors).toBeUndefined();
+
+    const data = response.body.data as RequestClueData;
+    expect(data.requestClue.clueText).toBe("mock clue from vi.mock");
+    expect(data.requestClue.isRateLimited).toBe(false);
+    expect(data.requestClue.retryAfterMs).toBeNull();
+    expect(vi.mocked(generateClue)).toHaveBeenCalledTimes(1);
+  });
+
+  it("rate limit: per-gate clue cap is distinct from rate limiting", async () => {
+    // MAX_CLUES_PER_GATE = 3 equals the rate cap, so the 4th request is
+    // stopped by computeCanRequestClue BEFORE the rate limiter runs.
+    const sessionId = makeSessionId("rate-clue-cap-distinct");
+    const progressId = await insertSession(sessionId, E2E_GATE_1_ID, {
+      attemptCount: 2,
+    });
+
+    // Seed MAX_CLUES_PER_GATE=3 clues (no rate-limit rows)
+    for (let i = 0; i < 3; i++) {
+      await insertClue(progressId, i + 1);
+    }
+
+    const response: GqlResponse = await gqlRequest(REQUEST_CLUE_MUTATION, {
+      sessionId,
+      variables: {
+        programId: E2E_PROGRAM_ID,
+        gateId: E2E_GATE_1_ID,
+        currentGuess: "red",
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.errors).toBeUndefined();
+
+    const data = response.body.data as RequestClueData;
+    expect(data.requestClue.isClueLimitReached).toBe(true);
+    expect(data.requestClue.isRateLimited).toBe(false);
+    expect(data.requestClue.retryAfterMs).toBeNull();
+    expect(vi.mocked(generateClue)).not.toHaveBeenCalled();
   });
 });

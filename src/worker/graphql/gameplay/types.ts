@@ -114,6 +114,8 @@ const RequestClueResultType = new GraphQLObjectType({
     clueText: { type: GraphQLString },
     isClueLimitReached: { type: new GraphQLNonNull(GraphQLBoolean) },
     cluesRemaining: { type: new GraphQLNonNull(GraphQLInt) },
+    isRateLimited: { type: new GraphQLNonNull(GraphQLBoolean) },
+    retryAfterMs: { type: GraphQLInt },
   },
 });
 

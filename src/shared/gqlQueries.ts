@@ -26,6 +26,8 @@ export const REQUEST_CLUE_MUTATION = `
       clueText
       isClueLimitReached
       cluesRemaining
+      isRateLimited
+      retryAfterMs
     }
   }
 `;
