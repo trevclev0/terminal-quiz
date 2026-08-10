@@ -547,7 +547,9 @@ describe("useProgramPlay", () => {
     );
   });
 
-  it("clears the clue cooldown when currentGateId changes", () => {
+  it("keeps the clue cooldown when currentGateId changes", () => {
+    // The backend rate limit is session-wide, so advancing gates must not
+    // re-enable a clue request the server would reject.
     const { result, rerender } = renderHook(
       ({ currentGateId }) => useProgramPlay({ programId, currentGateId }),
       { wrapper, initialProps: { currentGateId: "gate-1" } },
@@ -568,8 +570,67 @@ describe("useProgramPlay", () => {
 
     rerender({ currentGateId: "gate-2" });
 
-    expect(result.current.clueCooldownUntil).toBeNull();
-    expect(result.current.cooldownSeconds).toBe(0);
+    expect(result.current.clueCooldownUntil).not.toBeNull();
+    expect(result.current.cooldownSeconds).toBeGreaterThan(0);
+  });
+
+  it("computes cooldownSeconds from a fresh timestamp", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 0, 1, 12, 0, 0));
+    try {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      mockMutate.mockImplementation((_variables, options) => {
+        options.onSuccess({
+          clueText: null,
+          isClueLimitReached: false,
+          isRateLimited: true,
+          retryAfterMs: 30000,
+        });
+      });
+
+      act(() => {
+        result.current.handleRequestClue();
+      });
+
+      // Exact seconds immediately — not inflated by time elapsed before the
+      // cooldown started.
+      expect(result.current.cooldownSeconds).toBe(30);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("ignores a stale clue response when the gate changes mid-request", () => {
+    mockMutate.mockImplementation(() => {});
+
+    const { result, rerender } = renderHook(
+      ({ currentGateId }) => useProgramPlay({ programId, currentGateId }),
+      { wrapper, initialProps: { currentGateId: "gate-1" } },
+    );
+
+    act(() => {
+      result.current.handleRequestClue();
+    });
+
+    rerender({ currentGateId: "gate-2" });
+
+    const onSuccess = mockMutate.mock.calls[0][1].onSuccess;
+    act(() => {
+      onSuccess({
+        clueText: "stale clue",
+        isClueLimitReached: true,
+        cluesRemaining: 0,
+        isRateLimited: false,
+        retryAfterMs: null,
+      });
+    });
+
+    expect(result.current.clues).toEqual([]);
+    expect(result.current.isClueLimitReached).toBe(false);
+    expect(result.current.message).toBeNull();
   });
 
   it("counts the cooldown down and clears it once expired", () => {
