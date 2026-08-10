@@ -60,7 +60,8 @@ export default function ActiveGate({
   clues = [],
   enabled = true,
 }: ActiveGateProps) {
-  const formAriaLabel = `${gate.label} - enter password and press Enter to submit`;
+  const formAriaLabel = `${gate.label} - enter password and press Enter \
+to submit`;
   const isMutationPending = requestClueMutation?.isPending ?? false;
   const isClueCooldown = cooldownSeconds > 0;
   const clueNumber = clues.length + 1;

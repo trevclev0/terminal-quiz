@@ -2,7 +2,13 @@ import { useRequestClueMutation } from "@api/mutations/useRequestClueMutation";
 import { useSubmitGuessMutation } from "@api/mutations/useSubmitGuessMutation";
 import { useResetSession } from "@hooks/useResetSession";
 import useShake from "@hooks/useShake";
-import { type ChangeEvent, type SubmitEvent, useEffect, useState } from "react";
+import {
+  type ChangeEvent,
+  type SubmitEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 type UseProgramPlayProps = {
   programId: string;
@@ -24,18 +30,22 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
     null,
   );
   const [now, setNow] = useState(() => Date.now());
+  const currentGateIdRef = useRef(currentGateId);
   const { isShaking, shake, clearShake } = useShake();
 
   // Clear response message, shake, clues, and canRequestClue when currentGate.id changes
   // biome-ignore lint/correctness/useExhaustiveDependencies: clearShake is stable from useShake, only re-run when currentGateId changes
   useEffect(() => {
+    currentGateIdRef.current = currentGateId;
     setMessage(null);
     setGuessSucceeded(null);
     clearShake();
     setClues([]);
     setCanRequestClue(false);
     setIsClueLimitReached(false);
-    setClueCooldownUntil(null);
+    // NOTE: clueCooldownUntil intentionally persists across gates — the
+    // backend rate limit is session-wide, so moving gates must not re-enable
+    // a clue request the server would reject.
   }, [currentGateId]);
 
   // Re-tick `now` while a clue cooldown is active so cooldownSeconds counts
@@ -104,18 +114,25 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
   };
 
   const handleRequestClue = () => {
-    if (!currentGateId || isClueCooldown) return;
+    const requestGateId = currentGateId;
+    if (!requestGateId || isClueCooldown) return;
     requestClueMutation.mutate(
-      { gateId: currentGateId, currentGuess: guess },
+      { gateId: requestGateId, currentGuess: guess },
       {
         onSuccess: (data) => {
+          // Ignore responses from a request started on a now-inactive gate.
+          if (currentGateIdRef.current !== requestGateId) {
+            return;
+          }
           if (data.clueText) {
             setClues((prev) => [...prev, data.clueText as string]);
             setCanRequestClue(false);
           } else if (data.isRateLimited) {
             const retryAfterMs = data.retryAfterMs;
             if (retryAfterMs != null && retryAfterMs > 0) {
-              setClueCooldownUntil(Date.now() + retryAfterMs);
+              const nowMs = Date.now();
+              setNow(nowMs);
+              setClueCooldownUntil(nowMs + retryAfterMs);
             } else {
               setMessage(
                 "You've requested too many clues. Please try again later.",
@@ -127,6 +144,9 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
           setIsClueLimitReached(data.isClueLimitReached);
         },
         onError: () => {
+          if (currentGateIdRef.current !== requestGateId) {
+            return;
+          }
           setMessage("Error requesting clue. Please try again.");
         },
       },
