@@ -8,7 +8,11 @@ import {
   GraphQLString,
 } from "graphql";
 import { authorizeProgramMutation } from "./authorizeProgram";
-import { requireUser } from "./managementHelpers";
+import {
+  assertGuidanceThreshold,
+  assertRequiredText,
+  requireUser,
+} from "./managementHelpers";
 import { type AppGraphQLContext, GateManagementType } from "./types";
 
 export const createGate = {
@@ -43,6 +47,14 @@ export const createGate = {
     const db = context.get("db");
 
     await authorizeProgramMutation(db, args.programId, userId);
+
+    assertRequiredText(args.label, "label");
+    assertRequiredText(args.question, "question");
+    assertRequiredText(args.correctAnswer, "correctAnswer");
+    assertRequiredText(args.successMessage, "successMessage");
+    if (args.guidanceThreshold !== undefined) {
+      assertGuidanceThreshold(args.guidanceThreshold);
+    }
 
     if (args.sequenceOrder < 1) {
       throw new Error("sequenceOrder must be a positive integer.");
@@ -137,20 +149,30 @@ export const updateGate = {
     }
 
     const updateData: Record<string, unknown> = {};
-    if (args.label !== undefined) updateData.label = args.label;
-    if (args.question !== undefined) updateData.question = args.question;
+    if (args.label !== undefined)
+      updateData.label = assertRequiredText(args.label, "label");
+    if (args.question !== undefined)
+      updateData.question = assertRequiredText(args.question, "question");
     if (args.correctAnswer !== undefined)
-      updateData.correctAnswer = args.correctAnswer;
+      updateData.correctAnswer = assertRequiredText(
+        args.correctAnswer,
+        "correctAnswer",
+      );
     if (args.successMessage !== undefined)
-      updateData.successMessage = args.successMessage;
+      updateData.successMessage = assertRequiredText(
+        args.successMessage,
+        "successMessage",
+      );
     if (args.sequenceOrder !== undefined)
       updateData.sequenceOrder = args.sequenceOrder;
     if (args.acceptanceThreshold !== undefined)
       updateData.acceptanceThreshold = args.acceptanceThreshold;
     if (args.guidanceEnabled !== undefined)
       updateData.guidanceEnabled = args.guidanceEnabled;
-    if (args.guidanceThreshold !== undefined)
+    if (args.guidanceThreshold !== undefined) {
+      assertGuidanceThreshold(args.guidanceThreshold);
       updateData.guidanceThreshold = args.guidanceThreshold;
+    }
 
     if (Object.keys(updateData).length === 0) {
       throw new Error("No fields to update.");
