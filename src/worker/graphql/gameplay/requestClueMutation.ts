@@ -1,7 +1,14 @@
 import { gateClues } from "@shared/schema";
 import { generateClue } from "@worker-services/aiService";
 import { GraphQLNonNull, GraphQLString } from "graphql";
+import { env } from "hono/adapter";
 import { loadActiveSession } from "./activeSession";
+import {
+  getDailyAiBudget,
+  getUsageDateKey,
+  isAiBudgetExceeded,
+  recordAiUsage,
+} from "./aiBudget";
 import {
   computeCanRequestClue,
   computeCluesRemaining,
@@ -68,6 +75,28 @@ export const requestClue = {
         cluesRemaining,
         isRateLimited: false,
         retryAfterMs: null,
+        isAiBudgetExhausted: false,
+      };
+    }
+
+    // Global daily budget guard: check BEFORE the rate-limit claim so an
+    // exhausted budget never burns a per-attempt slot, inserts a clue row,
+    // or spends an AI call. The counter only increments on a *successful*
+    // generation (below), so AI failures and rejected requests don't consume
+    // budget.
+    const usageDateKey = getUsageDateKey();
+    const budget = getDailyAiBudget(
+      env<{ AI_DAILY_CLUE_BUDGET?: string }>(context).AI_DAILY_CLUE_BUDGET,
+    );
+    const aiBudgetExceeded = await isAiBudgetExceeded(db, usageDateKey, budget);
+    if (aiBudgetExceeded) {
+      return {
+        clueText: null,
+        isClueLimitReached: false,
+        cluesRemaining,
+        isRateLimited: false,
+        retryAfterMs: null,
+        isAiBudgetExhausted: true,
       };
     }
 
@@ -89,6 +118,7 @@ export const requestClue = {
         cluesRemaining,
         isRateLimited: true,
         retryAfterMs: rateLimit.retryAfterMs,
+        isAiBudgetExhausted: false,
       };
     }
 
@@ -110,6 +140,7 @@ export const requestClue = {
         cluesRemaining,
         isRateLimited: false,
         retryAfterMs: null,
+        isAiBudgetExhausted: false,
       };
     }
 
@@ -130,8 +161,12 @@ export const requestClue = {
         cluesRemaining,
         isRateLimited: false,
         retryAfterMs: null,
+        isAiBudgetExhausted: false,
       };
     }
+
+    // The clue was generated AND stored — count it against the daily budget.
+    await recordAiUsage(db, usageDateKey);
 
     const newCluesRemaining = computeCluesRemaining(existingClues.length + 1);
 
@@ -141,6 +176,7 @@ export const requestClue = {
       cluesRemaining: newCluesRemaining,
       isRateLimited: false,
       retryAfterMs: null,
+      isAiBudgetExhausted: false,
     };
   },
 };
