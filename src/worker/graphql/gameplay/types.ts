@@ -116,6 +116,7 @@ const RequestClueResultType = new GraphQLObjectType({
     cluesRemaining: { type: new GraphQLNonNull(GraphQLInt) },
     isRateLimited: { type: new GraphQLNonNull(GraphQLBoolean) },
     retryAfterMs: { type: GraphQLInt },
+    isAiBudgetExhausted: { type: new GraphQLNonNull(GraphQLBoolean) },
   },
 });
 
