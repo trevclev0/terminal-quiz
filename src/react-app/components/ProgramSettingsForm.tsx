@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./ProgramSettingsForm.module.css";
+import selectStyles from "./select.module.css";
 
 type ProgramSettingsFormProps = {
   programName: string;
@@ -65,30 +66,34 @@ export default function ProgramSettingsForm({
   return (
     <>
       <div className={styles.metaRow}>
-        <label className={styles.label}>
+        <label className={`${styles.label} ${styles.requiredField}`}>
           Name
           <input
             type="text"
             value={programName}
             onChange={(e) => onProgramNameChange(e.target.value)}
             className={styles.input}
+            required
+            aria-invalid={programName.trim() === ""}
           />
         </label>
         <label className={styles.label}>
           Visibility
-          <select
-            value={programVisibility}
-            onChange={(e) => onProgramVisibilityChange(e.target.value)}
-            className={styles.select}
-          >
-            <option value="public">Public</option>
-            <option value="unlisted">Unlisted</option>
-          </select>
+          <span className={selectStyles.selectContainer}>
+            <select
+              value={programVisibility}
+              onChange={(e) => onProgramVisibilityChange(e.target.value)}
+              className={`${selectStyles.select} ${selectStyles.compact}`}
+            >
+              <option value="public">Public</option>
+              <option value="unlisted">Unlisted</option>
+            </select>
+          </span>
         </label>
         <button
           type="button"
           onClick={onSave}
-          disabled={isSaving}
+          disabled={isSaving || programName.trim() === ""}
           className={styles.button}
         >
           {isSaving ? "Saving..." : "Save"}

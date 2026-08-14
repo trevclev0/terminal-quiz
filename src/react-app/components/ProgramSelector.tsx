@@ -3,6 +3,7 @@ import { Route } from "@routes/programs/select";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import styles from "./ProgramSelector.module.css";
+import selectStyles from "./select.module.css";
 
 function ProgramSelector() {
   const selectRef = useRef<HTMLSelectElement>(null);
@@ -52,10 +53,12 @@ function ProgramSelector() {
 
   return (
     <div className={styles.programSelector}>
-      <div className={styles.selectContainer}>
+      <div
+        className={`${selectStyles.selectContainer} ${selectStyles.containerLarge}`}
+      >
         <select
           aria-label="Select your program"
-          className={styles.select}
+          className={`${selectStyles.select} ${selectStyles.large}`}
           ref={selectRef}
           onChange={handleSelect}
           value={isValidSelection ? programId : ""}

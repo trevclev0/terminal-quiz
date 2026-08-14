@@ -21,16 +21,6 @@
   padding: 0.5rem;
 }
 
-.select {
-  border: 1px solid var(--green);
-  background-color: inherit;
-  color: var(--green);
-  font-family: inherit;
-  font-size: inherit;
-  padding: 0.5rem;
-  cursor: pointer;
-}
-
 .button {
   padding: 0.5rem 1rem;
 }
