@@ -72,8 +72,16 @@ export const requestClue = {
     }
 
     // Claim a rolling rate-limit slot BEFORE any AI spend. Rejected requests
-    // never reach generateClue; the window is consumed even if AI fails.
-    const rateLimit = await claimClueRateLimit(db, progress.id);
+    // never reach generateClue; the window is consumed even if AI fails. The
+    // claim is per-attempt, keyed (session, gate, attempt): within a window
+    // only one request per gate+attempt wins a slot, so concurrent
+    // same-attempt requests cannot all call AI.
+    const rateLimit = await claimClueRateLimit(
+      db,
+      progress.id,
+      args.gateId,
+      progress.attemptCount,
+    );
     if (!rateLimit.claimed) {
       return {
         clueText: null,
