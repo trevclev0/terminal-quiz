@@ -162,6 +162,26 @@ describe("claimClueRateLimit", () => {
     expect(rejected.retryAfterMs).toBeLessThanOrEqual(55_000);
   });
 
+  it("boundary row does not mask the in-window blocker for retryAfterMs", async () => {
+    // A row at exactly the cutoff survives the prune (`lt` prune, strict `>`
+    // guard) but is excluded from enforcement. With a `gte` rejection lookup
+    // it would be picked as "oldest" and yield retryAfterMs ~0 while a newer
+    // in-window row is the real blocker. The lookup must be strict too.
+    const progressId = await insertProgress(makeSessionId("boundary-mask"));
+    const now = Date.now();
+    const atCutoff = new Date(now - CLUE_RATE_LIMIT_WINDOW_MS);
+    await insertRateRow(progressId, atCutoff, E2E_GATE_1_ID, 2);
+    await insertRateRow(progressId, new Date(now - 5_000), E2E_GATE_1_ID, 2);
+    await insertRateRow(progressId, new Date(now - 10_000), E2E_GATE_1_ID, 1);
+    await insertRateRow(progressId, new Date(now - 15_000), E2E_GATE_1_ID, 3);
+    const rejected = await claim(progressId, E2E_GATE_1_ID, 2);
+    expect(rejected.claimed).toBe(false);
+    // The in-window reservation at ~5s is the blocker: its expiry (~55s) is
+    // the honest cooldown, not the boundary row's (~0s).
+    expect(rejected.retryAfterMs).toBeGreaterThan(54_000);
+    expect(rejected.retryAfterMs).toBeLessThanOrEqual(55_000);
+  });
+
   it("allows claims again once rows age out of the window", async () => {
     const progressId = await insertProgress(makeSessionId("expired"));
     // Rows older than the window — they should not count against the cap

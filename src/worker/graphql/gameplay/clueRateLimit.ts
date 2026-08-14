@@ -1,5 +1,5 @@
 import { clueRateLimits } from "@shared/schema";
-import { and, asc, eq, gte, lt, sql } from "drizzle-orm";
+import { and, asc, eq, gt, lt, sql } from "drizzle-orm";
 import type { AppGraphQLContext } from "./types";
 
 export const CLUE_RATE_LIMIT_WINDOW_MS = 60_000;
@@ -26,7 +26,8 @@ export function computeRetryAfterMs(
  * reservation:
  *   INSERT INTO clue_rate_limits (id, session_progress_id, gate_id,
  *                                 attempt_count_at_request, requested_at)
- *   SELECT <uuid>, <sessionProgressId>, <gateId>, <attemptCountAtRequest>, <nowMs>
+ *   SELECT <uuid>, <sessionProgressId>, <gateId>,
+ *          <attemptCountAtRequest>, <nowMs>
  *   WHERE (SELECT COUNT(*) FROM clue_rate_limits
  *          WHERE session_progress_id = <sessionProgressId>
  *            AND requested_at > <cutoffMs>) < CLUE_RATE_LIMIT_MAX_REQUESTS
@@ -125,7 +126,7 @@ export async function claimClueRateLimit(
         eq(clueRateLimits.sessionProgressId, sessionProgressId),
         eq(clueRateLimits.gateId, gateId),
         eq(clueRateLimits.attemptCountAtRequest, attemptCountAtRequest),
-        gte(clueRateLimits.requestedAt, new Date(cutoffMs)),
+        gt(clueRateLimits.requestedAt, new Date(cutoffMs)),
       ),
     )
     .orderBy(asc(clueRateLimits.requestedAt))
@@ -147,7 +148,7 @@ export async function claimClueRateLimit(
     .where(
       and(
         eq(clueRateLimits.sessionProgressId, sessionProgressId),
-        gte(clueRateLimits.requestedAt, new Date(cutoffMs)),
+        gt(clueRateLimits.requestedAt, new Date(cutoffMs)),
       ),
     )
     .orderBy(asc(clueRateLimits.requestedAt))
