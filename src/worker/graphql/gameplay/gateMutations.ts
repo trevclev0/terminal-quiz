@@ -48,10 +48,16 @@ export const createGate = {
 
     await authorizeProgramMutation(db, args.programId, userId);
 
-    assertRequiredText(args.label, "label");
-    assertRequiredText(args.question, "question");
-    assertRequiredText(args.correctAnswer, "correctAnswer");
-    assertRequiredText(args.successMessage, "successMessage");
+    const label = assertRequiredText(args.label, "label");
+    const question = assertRequiredText(args.question, "question");
+    const correctAnswer = assertRequiredText(
+      args.correctAnswer,
+      "correctAnswer",
+    );
+    const successMessage = assertRequiredText(
+      args.successMessage,
+      "successMessage",
+    );
     if (args.guidanceThreshold !== undefined) {
       assertGuidanceThreshold(args.guidanceThreshold);
     }
@@ -76,10 +82,10 @@ export const createGate = {
       .insert(gates)
       .values({
         programId: args.programId,
-        label: args.label,
-        question: args.question,
-        correctAnswer: args.correctAnswer,
-        successMessage: args.successMessage,
+        label,
+        question,
+        correctAnswer,
+        successMessage,
         sequenceOrder: args.sequenceOrder,
         acceptanceThreshold: args.acceptanceThreshold ?? undefined,
         guidanceEnabled: args.guidanceEnabled ?? undefined,
