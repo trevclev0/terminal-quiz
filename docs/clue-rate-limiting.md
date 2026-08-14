@@ -33,11 +33,11 @@ claim caps that burst at `CLUE_RATE_LIMIT_MAX_REQUESTS` AI calls per window.
 
 The claim serializes **per window AND per attempt** (#221, landed as a
 follow-up to Phase A): the guard's `NOT EXISTS` arm reserves a slot per
-(session, attemptCount), so within one window only one request at a given
-attempt wins a slot. Three concurrent requests at the same `attemptCount`
-therefore run `generateClue` at most once — the rest are rejected before any
-AI spend, instead of each calling `generateClue` and only one surviving the
-`unique_clue_per_attempt` insert.
+(session, gate, attempt), so within one window only one request at a given
+(gate, attempt) wins a slot. Three concurrent requests at the same
+`(gate, attemptCount)` therefore run `generateClue` at most once — the rest
+are rejected before any AI spend, instead of each calling `generateClue` and
+only one surviving the `unique_clue_per_attempt` insert.
 
 ## Rate decision
 
@@ -90,8 +90,10 @@ export const clueRateLimits = sqliteTable("clue_rate_limits", {
   sessionProgressId: text("session_progress_id")
     .notNull()
     .references(() => sessionProgress.id, { onDelete: "cascade" }),
-  // Per-attempt reservation (#221) — one slot per (session, attempt) in-window.
-  // Nullable: legacy rows predate the column and expire out of the window.
+  // Per-attempt reservation (#221) — one slot per (session, gate, attempt)
+  // in-window. Nullable: legacy rows predate the columns and expire out of
+  // the window.
+  gateId: text("gate_id"),
   attemptCountAtRequest: integer("attempt_count_at_request"),
   requestedAt: integer("requested_at", { mode: "timestamp_ms" })
     .notNull()
@@ -125,6 +127,7 @@ const [claimed] = await db.batch([
       .select({
         id: sql`${crypto.randomUUID()}`.as("id"),
         sessionProgressId: sql`${sessionProgressId}`.as("session_progress_id"),
+        gateId: sql`${gateId}`.as("gate_id"),
         attemptCountAtRequest: sql`${attemptCountAtRequest}`.as("attempt_count_at_request"),
         requestedAt: sql`${nowMs}`.as("requested_at"),
       })
@@ -137,6 +140,7 @@ const [claimed] = await db.batch([
       AND NOT EXISTS (
         SELECT 1 FROM clue_rate_limits
         WHERE session_progress_id = ${sessionProgressId}
+          AND gate_id = ${gateId}
           AND attempt_count_at_request = ${attemptCountAtRequest}
           AND requested_at > ${cutoffMs}
       )`),
@@ -155,10 +159,10 @@ positionally, including `id`** (drizzle builds the INSERT column list from
 every column in definition order and pushes the SELECT verbatim) — hence the
 explicit `id` with `crypto.randomUUID()`.
 
-Concurrency: two simultaneous requests at the same attempt serialize — the
-first inserts the reservation row, the second's `NOT EXISTS` arm sees it and
-returns 0 rows. Exactly one AI call per attempt per window; the count guard
-still caps distinct attempts at 3 per window session-wide.
+Concurrency: two simultaneous requests at the same (gate, attempt) serialize
+— the first inserts the reservation row, the second's `NOT EXISTS` arm sees
+it and returns 0 rows. Exactly one AI call per (gate, attempt) per window;
+the count guard still caps distinct attempts at 3 per window session-wide.
 
 `retryAfterMs` is advisory, read only on the rejection path (the happy path
 pays no extra query). When the per-attempt reservation is what blocked the
@@ -246,7 +250,8 @@ account-wide cap/observability layer.
    migration `0015_broken_supernaut.sql` generated.
 3. **Helper:** `src/worker/graphql/gameplay/clueRateLimit.ts` exporting
    `CLUE_RATE_LIMIT_WINDOW_MS`, `CLUE_RATE_LIMIT_MAX_REQUESTS`,
-   `computeRetryAfterMs`, and `claimClueRateLimit(db, sessionProgressId)`
+   `computeRetryAfterMs`, and
+   `claimClueRateLimit(db, sessionProgressId, gateId, attemptCountAtRequest)`
    returning `{ claimed: boolean; retryAfterMs: number | null }`. Handles the
    batch (claim + prune) and the rejection-path advisory read.
 4. **Resolver:** claim wired into `requestClueMutation.ts` between
