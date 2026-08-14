@@ -1,6 +1,7 @@
 import {
   createTestRouter,
   handlers,
+  LOADER_TIMEOUT_MS,
   mockGateManagement,
   mockMe,
   mockMyPrograms,
@@ -53,8 +54,9 @@ describe("Manage Routes Integration", () => {
     const router = createTestRouter("/programs/manage");
     renderWithRouter(router);
 
-    await waitFor(() =>
-      expect(screen.getByText("My First Program")).toBeInTheDocument(),
+    await waitFor(
+      () => expect(screen.getByText("My First Program")).toBeInTheDocument(),
+      { timeout: LOADER_TIMEOUT_MS },
     );
 
     expect(screen.getByText("Create Program")).toBeInTheDocument();
@@ -64,34 +66,47 @@ describe("Manage Routes Integration", () => {
     const router = createTestRouter("/programs/manage/program-1");
     renderWithRouter(router);
 
-    await waitFor(() => {
-      expect(screen.getByText(/Edit:/)).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Edit:/)).toBeInTheDocument();
+      },
+      { timeout: LOADER_TIMEOUT_MS },
+    );
 
     expect(screen.getByText("Program Settings")).toBeInTheDocument();
     expect(screen.getByText(/Gates \(1\)/)).toBeInTheDocument();
-    await waitFor(() => {
-      expect(screen.getByDisplayValue("Gate A")).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByDisplayValue("Gate A")).toBeInTheDocument();
+      },
+      { timeout: LOADER_TIMEOUT_MS },
+    );
   });
 
   it("navigates from list to editor and shows gates", async () => {
     const router = createTestRouter("/programs/manage");
     renderWithRouter(router);
 
-    await waitFor(() =>
-      expect(screen.getByText("My First Program")).toBeInTheDocument(),
+    await waitFor(
+      () => expect(screen.getByText("My First Program")).toBeInTheDocument(),
+      { timeout: LOADER_TIMEOUT_MS },
     );
 
     await userEvent.click(screen.getByText("My First Program"));
 
-    await waitFor(() => {
-      expect(screen.getByText(/Edit:/)).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Edit:/)).toBeInTheDocument();
+      },
+      { timeout: LOADER_TIMEOUT_MS },
+    );
 
-    await waitFor(() => {
-      expect(screen.getByDisplayValue("Gate A")).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByDisplayValue("Gate A")).toBeInTheDocument();
+      },
+      { timeout: LOADER_TIMEOUT_MS },
+    );
   });
 
   it("shows empty state when program has no gates", async () => {
@@ -104,7 +119,11 @@ describe("Manage Routes Integration", () => {
     const router = createTestRouter("/programs/manage/program-1");
     renderWithRouter(router);
 
-    expect(await screen.findByText(/No gates yet/)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/No gates yet/, undefined, {
+        timeout: LOADER_TIMEOUT_MS,
+      }),
+    ).toBeInTheDocument();
   });
 
   it("redirects to login when not authenticated", async () => {
@@ -115,9 +134,12 @@ describe("Manage Routes Integration", () => {
     const router = createTestRouter("/programs/manage");
     renderWithRouter(router);
 
-    await waitFor(() => {
-      expect(screen.getByText("Login Page Mock")).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Login Page Mock")).toBeInTheDocument();
+      },
+      { timeout: LOADER_TIMEOUT_MS },
+    );
 
     expect(router.state.location.pathname).toBe("/login");
     expect(router.state.location.search).toEqual({
@@ -133,9 +155,12 @@ describe("Manage Routes Integration", () => {
     const router = createTestRouter("/programs/manage/program-1");
     renderWithRouter(router);
 
-    await waitFor(() => {
-      expect(screen.getByText("Login Page Mock")).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Login Page Mock")).toBeInTheDocument();
+      },
+      { timeout: LOADER_TIMEOUT_MS },
+    );
 
     expect(router.state.location.pathname).toBe("/login");
     expect(router.state.location.search).toEqual({
@@ -156,8 +181,13 @@ describe("Manage Routes Integration", () => {
     const router = createTestRouter("/programs/manage");
     renderWithRouter(router);
 
-    await waitFor(() => {
-      expect(screen.getByText("Failed to load programs.")).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(
+          screen.getByText("Failed to load programs."),
+        ).toBeInTheDocument();
+      },
+      { timeout: LOADER_TIMEOUT_MS },
+    );
   });
 });

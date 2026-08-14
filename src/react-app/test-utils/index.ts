@@ -25,4 +25,8 @@ export {
   createQueryWrapper,
   createTestQueryClient,
 } from "./queryTestUtils";
-export { createTestRouter, renderWithRouter } from "./reactRouterUtils";
+export {
+  createTestRouter,
+  LOADER_TIMEOUT_MS,
+  renderWithRouter,
+} from "./reactRouterUtils";
