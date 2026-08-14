@@ -1,7 +1,8 @@
 # AI Clue Rate Limiting
 
-**Status:** Phase A (backend) **implemented** on `feat/219-rate-limit-clues`.
-Phase B (frontend cooldown UX) planned, not started. Phase C deferred.
+**Status:** Phase A (backend) and Phase B (frontend cooldown UX) **implemented
+and merged** to `main` (releases 2.75.0 / 2.76.0). Follow-up **#221
+(per-attempt reservation) landed** (migration 0016). Phase C deferred.
 **Origin:** `docs/feature-ideas.md` §3.1 ("Rate Limiting on `requestClue`")
 
 ## Goal
@@ -30,11 +31,13 @@ concurrent `requestClue` calls at the same `attemptCount` all pass
 calls), then all but one fail the `unique_clue_per_attempt` insert. The atomic
 claim caps that burst at `CLUE_RATE_LIMIT_MAX_REQUESTS` AI calls per window.
 
-Note the claim serializes **per window, not per attempt**: within one window,
-three concurrent requests at the same `attemptCount` each win a slot, each
-calls `generateClue`, and the `unique_clue_per_attempt` constraint still makes
-only one succeed. A per-attempt reservation would close that gap entirely and
-is tracked as a follow-up (#221).
+The claim serializes **per window AND per attempt** (#221, landed as a
+follow-up to Phase A): the guard's `NOT EXISTS` arm reserves a slot per
+(session, attemptCount), so within one window only one request at a given
+attempt wins a slot. Three concurrent requests at the same `attemptCount`
+therefore run `generateClue` at most once — the rest are rejected before any
+AI spend, instead of each calling `generateClue` and only one surviving the
+`unique_clue_per_attempt` insert.
 
 ## Rate decision
 
@@ -87,6 +90,9 @@ export const clueRateLimits = sqliteTable("clue_rate_limits", {
   sessionProgressId: text("session_progress_id")
     .notNull()
     .references(() => sessionProgress.id, { onDelete: "cascade" }),
+  // Per-attempt reservation (#221) — one slot per (session, attempt) in-window.
+  // Nullable: legacy rows predate the column and expire out of the window.
+  attemptCountAtRequest: integer("attempt_count_at_request"),
   requestedAt: integer("requested_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -119,6 +125,7 @@ const [claimed] = await db.batch([
       .select({
         id: sql`${crypto.randomUUID()}`.as("id"),
         sessionProgressId: sql`${sessionProgressId}`.as("session_progress_id"),
+        attemptCountAtRequest: sql`${attemptCountAtRequest}`.as("attempt_count_at_request"),
         requestedAt: sql`${nowMs}`.as("requested_at"),
       })
       .from(sql`(select 1)`)
@@ -126,7 +133,13 @@ const [claimed] = await db.batch([
         SELECT COUNT(*) FROM clue_rate_limits
         WHERE session_progress_id = ${sessionProgressId}
           AND requested_at > ${cutoffMs}
-      ) < ${CLUE_RATE_LIMIT_MAX_REQUESTS}`),
+      ) < ${CLUE_RATE_LIMIT_MAX_REQUESTS}
+      AND NOT EXISTS (
+        SELECT 1 FROM clue_rate_limits
+        WHERE session_progress_id = ${sessionProgressId}
+          AND attempt_count_at_request = ${attemptCountAtRequest}
+          AND requested_at > ${cutoffMs}
+      )`),
     )
     .returning({ id: clueRateLimits.id }),
   db.delete(clueRateLimits).where(lt(clueRateLimits.requestedAt, cutoff)),
@@ -134,21 +147,26 @@ const [claimed] = await db.batch([
 ```
 
 - Row returned → slot won, proceed to `generateClue`.
-- No row → session is at cap within the window → **rate limited**, reject
-  before any AI spend.
+- No row → either the session is at the window cap (3 in-window rows) or the
+  attempt is already reserved in-window → **rejected**, before any AI spend.
 
 The `.select()` builder requires the select to produce **all table columns
 positionally, including `id`** (drizzle builds the INSERT column list from
 every column in definition order and pushes the SELECT verbatim) — hence the
 explicit `id` with `crypto.randomUUID()`.
 
-Concurrency: two simultaneous requests serialize — the first increments the
-in-window count, the second's guard sees `3 < 3` false, returns 0 rows.
-Exactly one AI call per slot.
+Concurrency: two simultaneous requests at the same attempt serialize — the
+first inserts the reservation row, the second's `NOT EXISTS` arm sees it and
+returns 0 rows. Exactly one AI call per attempt per window; the count guard
+still caps distinct attempts at 3 per window session-wide.
 
-`retryAfterMs` is computed from the **oldest in-window row** — an advisory
-SELECT read only on the rejection path (the happy path pays no extra query).
-The count-guarded insert stays the sole enforcement point.
+`retryAfterMs` is advisory, read only on the rejection path (the happy path
+pays no extra query). When the per-attempt reservation is what blocked the
+claim it is computed from **that attempt's own row** (its expiry, not the
+oldest row's, is the honest cooldown for a retry at the same attempt);
+otherwise from the **oldest in-window row**; otherwise the full window (a
+prune raced the claim). The count-guarded insert stays the sole enforcement
+point.
 
 Expired rows (older than the cutoff) are pruned **globally across all
 sessions** in the same `db.batch` (served by the `requested_at` index), so
@@ -301,6 +319,11 @@ account-wide cap/observability layer.
 | 2 | B | PR 1 | Frontend: cooldown UX, contract consumption, tests |
 
 Phase C is explicitly deferred and not sequenced.
+
+Follow-up **#221** (per-attempt reservation, migration `0016_*.sql`) landed
+after Phase B as its own fix branch off `main`; it closes the concurrent
+same-attempt `generateClue` burst described in "Why the feature-ideas sketch
+needs correction". **#222** (ci:local flake) is unrelated infra hygiene.
 
 ## Verification checklist
 
