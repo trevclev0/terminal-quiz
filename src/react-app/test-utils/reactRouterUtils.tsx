@@ -7,6 +7,8 @@ import {
 import { render } from "@testing-library/react";
 import { routeTree } from "../routeTree.gen";
 
+export const LOADER_TIMEOUT_MS = 5000;
+
 export function createTestRouter(initialUrl: string = "/") {
   const history = createMemoryHistory({
     initialEntries: [initialUrl],

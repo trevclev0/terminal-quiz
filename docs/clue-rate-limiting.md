@@ -328,7 +328,9 @@ Phase C is explicitly deferred and not sequenced.
 Follow-up **#221** (per-attempt reservation, migration `0016_*.sql`) landed
 after Phase B as its own fix branch off `main`; it closes the concurrent
 same-attempt `generateClue` burst described in "Why the feature-ideas sketch
-needs correction". **#222** (ci:local flake) is unrelated infra hygiene.
+needs correction". **#222** (flaky router-loader unit tests under `mise
+ci:local`) is unrelated infra hygiene, since resolved as
+`fix/222-router-loader` (loader waits hardened with `LOADER_TIMEOUT_MS`).
 
 ## Verification checklist
 

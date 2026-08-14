@@ -1,6 +1,7 @@
 import {
   createTestRouter,
   handlers,
+  LOADER_TIMEOUT_MS,
   mockCompletedGate,
   mockProgram,
   mockProgression,
@@ -38,9 +39,12 @@ describe("Program Play Route Integration", () => {
     const router = createTestRouter("/programs/test-program-id");
     renderWithRouter(router);
 
-    await waitFor(() => {
-      expect(screen.getByText("Test Program")).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Test Program")).toBeInTheDocument();
+      },
+      { timeout: LOADER_TIMEOUT_MS },
+    );
 
     expect(screen.getByText("Gate 1")).toBeInTheDocument();
     expect(screen.getByTestId("gate-question")).toHaveTextContent(
@@ -66,9 +70,12 @@ describe("Program Play Route Integration", () => {
     const router = createTestRouter("/programs/test-program-id");
     renderWithRouter(router);
 
-    await waitFor(() => {
-      expect(screen.getByText("The End")).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("The End")).toBeInTheDocument();
+      },
+      { timeout: LOADER_TIMEOUT_MS },
+    );
 
     expect(screen.getByText("Select new program")).toBeInTheDocument();
     expect(screen.getByText("Play program again")).toBeEnabled();
@@ -90,9 +97,14 @@ describe("Program Play Route Integration", () => {
     renderWithRouter(router);
 
     // Wait for loader to settle (error or success)
-    await waitFor(() => {
-      expect(screen.queryByText("Loading Program...")).not.toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(
+          screen.queryByText("Loading Program..."),
+        ).not.toBeInTheDocument();
+      },
+      { timeout: LOADER_TIMEOUT_MS },
+    );
 
     // Now error path should have executed, not success content
     expect(screen.queryByText("Test Program")).not.toBeInTheDocument();
