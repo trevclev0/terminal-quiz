@@ -547,6 +547,34 @@ describe("useProgramPlay", () => {
     );
   });
 
+  it("shows budget message and does not start cooldown when AI budget exhausted", () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+    mockMutate.mockImplementation((_variables, options) => {
+      options.onSuccess({
+        clueText: null,
+        isClueLimitReached: false,
+        isRateLimited: false,
+        retryAfterMs: null,
+        isAiBudgetExhausted: true,
+      });
+    });
+
+    act(() => {
+      result.current.handleRequestClue();
+    });
+
+    expect(result.current.clues).toEqual([]);
+    expect(result.current.message).toBe(
+      "AI hint budget exhausted for today — try again tomorrow.",
+    );
+    // Budget exhaustion is a "try again tomorrow" failure — no retry cooldown
+    expect(result.current.clueCooldownUntil).toBeNull();
+    expect(result.current.cooldownSeconds).toBe(0);
+  });
+
   it("keeps the clue cooldown when currentGateId changes", () => {
     // The backend rate limit is session-wide, so advancing gates must not
     // re-enable a clue request the server would reject.

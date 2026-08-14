@@ -1,11 +1,18 @@
 import { env } from "cloudflare:workers";
 import { REQUEST_CLUE_MUTATION } from "@shared/gqlQueries";
-import { clueRateLimits, gateClues, sessionProgress } from "@shared/schema";
+import {
+  aiUsage,
+  clueRateLimits,
+  gateClues,
+  sessionProgress,
+} from "@shared/schema";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { getUsageDateKey } from "./aiBudget";
 
 // Module-level mock — replaces generateClue in the workerd import graph
 vi.mock("@worker-services/aiService", () => ({
@@ -63,7 +70,17 @@ interface RequestClueData {
     cluesRemaining: number;
     isRateLimited: boolean;
     retryAfterMs: number | null;
+    isAiBudgetExhausted: boolean;
   };
+}
+
+async function getUsageCount(): Promise<number> {
+  const row = await env.DB.prepare(
+    `SELECT request_count FROM ai_usage WHERE usage_date = ?`,
+  )
+    .bind(getUsageDateKey())
+    .first<{ request_count: number }>();
+  return row?.request_count ?? 0;
 }
 
 /** Insert a rate-limit history row at an absolute time (unix ms). */
@@ -112,9 +129,13 @@ describe("requestClue mutation", () => {
     expect(data.requestClue.clueText).toBe("mock clue from vi.mock");
     expect(data.requestClue.isClueLimitReached).toBe(false);
     expect(data.requestClue.cluesRemaining).toBe(2); // MAX=3, 1 used
+    expect(data.requestClue.isAiBudgetExhausted).toBe(false);
 
     // Verify generateClue was called with correct args
     expect(vi.mocked(generateClue)).toHaveBeenCalledTimes(1);
+
+    // Successful generation counts against the daily AI budget
+    expect(await getUsageCount()).toBe(1);
 
     // Verify a gate_clues row was inserted
     const clueRow = await env.DB.prepare(
@@ -303,6 +324,7 @@ describe("requestClue mutation", () => {
     expect(data.requestClue.clueText).toBeNull();
     expect(data.requestClue.isClueLimitReached).toBe(false);
     expect(data.requestClue.cluesRemaining).toBe(3);
+    expect(data.requestClue.isAiBudgetExhausted).toBe(false);
 
     expect(vi.mocked(generateClue)).toHaveBeenCalledTimes(1);
 
@@ -313,6 +335,18 @@ describe("requestClue mutation", () => {
       .bind(progressId)
       .first<{ cnt: number }>();
     expect(clueCount?.cnt).toBe(0);
+
+    // AI returned null — the budget counter must NOT increment
+    const before = await getUsageCount();
+    await gqlRequest(REQUEST_CLUE_MUTATION, {
+      sessionId,
+      variables: {
+        programId: E2E_PROGRAM_ID,
+        gateId: E2E_GATE_1_ID,
+        currentGuess: "red",
+      },
+    });
+    expect(await getUsageCount()).toBe(before);
   });
 
   it("rate limit: in-window cap rejects with retryAfterMs", async () => {
@@ -473,5 +507,69 @@ describe("requestClue mutation", () => {
     expect(data.requestClue.isRateLimited).toBe(false);
     expect(data.requestClue.retryAfterMs).toBeNull();
     expect(vi.mocked(generateClue)).not.toHaveBeenCalled();
+  });
+
+  it("ai budget exhausted: rejects before any AI call, slot, or increment", async () => {
+    // Runs LAST: seeds today's usage to exceed the (default) budget, which
+    // would exhaust all subsequent eligible requests in this file. Ensure
+    // this test stays at the end of the describe block, and clean up its
+    // seeded row so the file is re-runnable.
+    const sessionId = makeSessionId("budget-exhausted");
+    const progressId = await insertSession(sessionId, E2E_GATE_1_ID, {
+      attemptCount: 2,
+    });
+
+    const usageDateKey = getUsageDateKey();
+    await db
+      .insert(aiUsage)
+      .values({ usageDate: usageDateKey, requestCount: 999_999 })
+      .onConflictDoUpdate({
+        target: aiUsage.usageDate,
+        set: { requestCount: 999_999 },
+      });
+
+    try {
+      const response: GqlResponse = await gqlRequest(REQUEST_CLUE_MUTATION, {
+        sessionId,
+        variables: {
+          programId: E2E_PROGRAM_ID,
+          gateId: E2E_GATE_1_ID,
+          currentGuess: "red",
+        },
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.body.errors).toBeUndefined();
+
+      const data = response.body.data as RequestClueData;
+      expect(data.requestClue.clueText).toBeNull();
+      expect(data.requestClue.isClueLimitReached).toBe(false);
+      expect(data.requestClue.cluesRemaining).toBe(3);
+      expect(data.requestClue.isRateLimited).toBe(false);
+      expect(data.requestClue.retryAfterMs).toBeNull();
+      expect(data.requestClue.isAiBudgetExhausted).toBe(true);
+
+      // Budget guard short-circuits BEFORE the rate-limit claim: no AI call,
+      // no reservation slot, no clue row, no counter increment.
+      expect(vi.mocked(generateClue)).not.toHaveBeenCalled();
+
+      const rateRows = await env.DB.prepare(
+        `SELECT COUNT(*) as cnt FROM clue_rate_limits WHERE session_progress_id = ?`,
+      )
+        .bind(progressId)
+        .first<{ cnt: number }>();
+      expect(rateRows?.cnt).toBe(0);
+
+      const clueRows = await env.DB.prepare(
+        `SELECT COUNT(*) as cnt FROM gate_clues WHERE session_progress_id = ?`,
+      )
+        .bind(progressId)
+        .first<{ cnt: number }>();
+      expect(clueRows?.cnt).toBe(0);
+
+      expect(await getUsageCount()).toBe(999_999);
+    } finally {
+      await db.delete(aiUsage).where(eq(aiUsage.usageDate, usageDateKey));
+    }
   });
 });
