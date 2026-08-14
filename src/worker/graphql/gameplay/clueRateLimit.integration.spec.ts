@@ -15,6 +15,7 @@ const db = drizzle(env.DB);
 
 const E2E_PROGRAM_ID = "e2e00000-0000-0000-0000-000000000001";
 const E2E_GATE_1_ID = "e2e00001-0000-0000-0000-000000000001";
+const E2E_GATE_2_ID = "e2e00002-0000-0000-0000-000000000002";
 
 function makeSessionId(label: string): string {
   return `rate-limit-${label}-${crypto.randomUUID()}`;
@@ -36,15 +37,28 @@ async function insertProgress(sessionId: string): Promise<string> {
 async function insertRateRow(
   progressId: string,
   requestedAt: Date,
+  gateId = E2E_GATE_1_ID,
+  attemptCountAtRequest?: number,
 ): Promise<void> {
   await db.insert(clueRateLimits).values({
     sessionProgressId: progressId,
+    gateId,
+    attemptCountAtRequest: attemptCountAtRequest ?? null,
     requestedAt,
   });
 }
 
-function claim(progressId: string): Promise<ClueRateLimitClaim> {
-  return claimClueRateLimit(db as never, progressId);
+function claim(
+  progressId: string,
+  gateId = E2E_GATE_1_ID,
+  attemptCountAtRequest = 1,
+): Promise<ClueRateLimitClaim> {
+  return claimClueRateLimit(
+    db as never,
+    progressId,
+    gateId,
+    attemptCountAtRequest,
+  );
 }
 
 describe("claimClueRateLimit", () => {
@@ -63,18 +77,89 @@ describe("claimClueRateLimit", () => {
     expect(result.retryAfterMs).toBeNull();
   });
 
-  it("claims up to the cap within the window, then rejects", async () => {
+  it("claims up to the cap across distinct attempts within the window, then rejects", async () => {
     const progressId = await insertProgress(makeSessionId("at-cap"));
-    for (let i = 0; i < CLUE_RATE_LIMIT_MAX_REQUESTS; i++) {
-      const result = await claim(progressId);
+    for (let i = 1; i <= CLUE_RATE_LIMIT_MAX_REQUESTS; i++) {
+      const result = await claim(progressId, E2E_GATE_1_ID, i);
       expect(result.claimed).toBe(true);
     }
-    const rejected = await claim(progressId);
+    const rejected = await claim(
+      progressId,
+      E2E_GATE_1_ID,
+      CLUE_RATE_LIMIT_MAX_REQUESTS + 1,
+    );
     expect(rejected.claimed).toBe(false);
     expect(rejected.retryAfterMs).toBeGreaterThan(0);
     expect(rejected.retryAfterMs).toBeLessThanOrEqual(
       CLUE_RATE_LIMIT_WINDOW_MS,
     );
+  });
+
+  it("rejects a second claim for the same attempt within the window", async () => {
+    const progressId = await insertProgress(makeSessionId("same-attempt"));
+    const first = await claim(progressId, E2E_GATE_1_ID, 3);
+    expect(first.claimed).toBe(true);
+    const second = await claim(progressId, E2E_GATE_1_ID, 3);
+    expect(second.claimed).toBe(false);
+    expect(second.retryAfterMs).toBeGreaterThan(0);
+    expect(second.retryAfterMs).toBeLessThanOrEqual(CLUE_RATE_LIMIT_WINDOW_MS);
+  });
+
+  it("allows the same attempt on a different gate within the window", async () => {
+    // attemptCount resets on gate advance, so the reservation key must be
+    // (session, gate, attempt): a later gate at the same attempt number must
+    // not be blocked by an earlier gate's reservation.
+    const progressId = await insertProgress(makeSessionId("cross-gate"));
+    const first = await claim(progressId, E2E_GATE_1_ID, 2);
+    expect(first.claimed).toBe(true);
+    const second = await claim(progressId, E2E_GATE_2_ID, 2);
+    expect(second.claimed).toBe(true);
+  });
+
+  it("allows distinct attempts within the same window", async () => {
+    const progressId = await insertProgress(makeSessionId("distinct-attempts"));
+    for (const attempt of [1, 2, 3]) {
+      const result = await claim(progressId, E2E_GATE_1_ID, attempt);
+      expect(result.claimed).toBe(true);
+    }
+    // Cap reached: a 4th distinct attempt is rejected by the count guard,
+    // not the per-attempt reservation.
+    const rejected = await claim(progressId, E2E_GATE_1_ID, 4);
+    expect(rejected.claimed).toBe(false);
+  });
+
+  it("releases the per-attempt reservation once the attempt's row ages out", async () => {
+    const progressId = await insertProgress(
+      makeSessionId("reservation-expired"),
+    );
+    const expiredAt = new Date(Date.now() - CLUE_RATE_LIMIT_WINDOW_MS - 1_000);
+    await insertRateRow(progressId, expiredAt, E2E_GATE_1_ID, 3);
+    const result = await claim(progressId, E2E_GATE_1_ID, 3);
+    expect(result.claimed).toBe(true);
+  });
+
+  it("does not block a claim when the attempt's row is exactly at the boundary", async () => {
+    const progressId = await insertProgress(makeSessionId("attempt-boundary"));
+    const now = Date.now();
+    const atBoundary = new Date(now - CLUE_RATE_LIMIT_WINDOW_MS);
+    await insertRateRow(progressId, atBoundary, E2E_GATE_1_ID, 3);
+    const result = await claim(progressId, E2E_GATE_1_ID, 3);
+    expect(result.claimed).toBe(true);
+  });
+
+  it("retryAfterMs for a per-attempt rejection comes from the attempt's own row", async () => {
+    const progressId = await insertProgress(
+      makeSessionId("attempt-retryafter"),
+    );
+    const now = Date.now();
+    // Older attempt-1 row — from the oldest in-window row this would report
+    // ~10s. The blocking attempt-2 row's expiry (~55s) is the honest cooldown.
+    await insertRateRow(progressId, new Date(now - 50_000), E2E_GATE_1_ID, 1);
+    await insertRateRow(progressId, new Date(now - 5_000), E2E_GATE_1_ID, 2);
+    const rejected = await claim(progressId, E2E_GATE_1_ID, 2);
+    expect(rejected.claimed).toBe(false);
+    expect(rejected.retryAfterMs).toBeGreaterThan(54_000);
+    expect(rejected.retryAfterMs).toBeLessThanOrEqual(55_000);
   });
 
   it("allows claims again once rows age out of the window", async () => {
