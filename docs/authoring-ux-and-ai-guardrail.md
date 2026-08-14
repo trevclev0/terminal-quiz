@@ -56,7 +56,7 @@ Phase A has zero operational risk (no schema/behavior change to spend) and fixes
 - `GateEditorCard.tsx`: move `Acceptance`, `Guidance Enabled`, and `Guidance Threshold` out of the inline field row into a `<details>/<summary>` collapsible ("Advanced"), **default collapsed**. This reuses the codebase idiom already used for gates in `ActiveGate.tsx:88` and `CompletedGate.tsx:25`.
 - Summary line is **state-aware** so tuning stays discoverable while collapsed, e.g. `[+] Advanced — guidance off · acceptance 87.5%` (updates as fields change).
 - `guidanceThreshold` input: `min=1`, `max=MAX_CLUES_PER_GATE` (3), disabled while `guidanceEnabled` is unchecked. Label synced to the player UI wording ("Get 1st/2nd/3rd Clue", ActiveGate.tsx:67–76): *"First clue unlocks after N failed guesses"*.
-- `gateMutations.ts` (`createGate`, `updateGate`): server-side clamp — reject `guidanceThreshold < 1` or `> 3`.
+- `gateMutations.ts` (`createGate`, `updateGate`): server-side validation — reject `guidanceThreshold < 1` or `> 3` (and non-integer values). Client clamps defensively; the server rejects so no out-of-range value is ever persisted.
 - Styling in `GateEditorCard.module.css` (terminal caret/bracket marker on the summary).
 
 ### A4. Themed controls
@@ -116,7 +116,7 @@ Phase A has zero operational risk (no schema/behavior change to spend) and fixes
 
 | Question | Decision | Why |
 |---|---|---|
-| Keep author control over guidance fields? | Keep all three, but collapse into an Advanced section and clamp `guidanceThreshold` to `1..MAX_CLUES_PER_GATE` | Acceptance and guidance-enabled are genuinely useful authorial knobs. Threshold is retained for pacing control but constrained so its semantics stay coherent with the 3-clue system. If still confusing post-ship, scrapping it is a trivial follow-up (server default 2, drop field). |
+| Keep author control over guidance fields? | Keep all three, but collapse into an Advanced section and validate `guidanceThreshold` to reject anything outside `1..MAX_CLUES_PER_GATE` (client clamps; server rejects) | Acceptance and guidance-enabled are genuinely useful authorial knobs. Threshold is retained for pacing control but constrained so its semantics stay coherent with the 3-clue system. If still confusing post-ship, scrapping it is a trivial follow-up (server default 2, drop field). |
 | `guidanceThreshold` max | `3` (`MAX_CLUES_PER_GATE`) | First clue can only be unlocked by a failed guess; three clues per gate means thresholds beyond 3 feel like a wall and break the "1st/2nd/3rd Clue" mental model. |
 | Budget guardrail scope | Global daily counter (app-wide), not per-author | The failure mode is a shared daily pool; per-author accounting is more tables for marginal value at this scale. |
 | Guardrail behavior on exhaust | Graceful `null` clue + distinct client message | Avoids raw 429s reaching players and misdirection from the generic "try again" message. |
