@@ -233,13 +233,15 @@ V8 coverage (`vitest.config.ts`) is unit-test only, since `@cloudflare/vitest-po
 
 ## Database & Migrations
 
-Schema lives in `src/shared/schema.ts` (Drizzle + single source of truth for DB and TS types). Five tables:
+Schema lives in `src/shared/schema.ts` (Drizzle + single source of truth for DB and TS types). Seven tables:
 
 - `programs` — top-level quiz sets
 - `gates` — riddles within a program, ordered by `sequence_order` (unique per program)
 - `session_progress` — per-session progression (`current_gate_id`, `attempt_count`, `status`), unique on `(session_id, program_id)`
 - `session_completed_gates` — join table recording which gates a session has completed (`session_progress_id` + `gate_id`), unique on `(session_progress_id, gate_id)`. Replaced the earlier `completed_gate_ids` JSON column on `session_progress` (migration `0010_funny_santa_claus`)
 - `gate_clues` — AI-generated clues, scoped to a `session_progress_id` + `gate_id`, unique per `(session_progress_id, gate_id, attempt_count_at_request)`
+- `clue_rate_limits` — rolling per-session request window; one reservation row per (session, gate, attempt) so concurrent same-attempt requests cannot all reach AI
+- `ai_usage` — global daily AI spend counter, keyed by UTC day (`usage_date` TEXT PK, `request_count`); backs the `AI_DAILY_CLUE_BUDGET` guardrail
 
 There is **no** `game_state` table — it was dropped in migration `0009_whole_quasar` along with several now-unused columns on `gates`/`programs` (the game moved from a single shared "solved" state to fully session-scoped progression).
 
@@ -295,7 +297,7 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - **Guess acceptance** — Levenshtein similarity ≥ a per-gate `acceptanceThreshold` (default 0.875) via `leven`, checked server-side in `src/worker/utils/isGuessCloseEnough.ts`
 - **Session ID** — generated client-side in `utils/session.ts`, stored in `localStorage` under `terminal_quiz_session_id` (falls back to an in-memory UUID if storage is unavailable), sent as `x-session-id` on every GraphQL request
 - **`submitGuess`** — the authoritative gameplay mutation. It re-validates that the session's `session_progress.currentGateId` matches the submitted `gateId` before checking the guess, rejecting mismatches as a "desync" error. This is what prevents a session from submitting guesses for gates it hasn't reached (IDOR protection) — do not weaken this check
-- **Clue system** — `requestClue` generates an AI hint via Cloudflare Workers AI once `attemptCount` meets a gate's `guidanceThreshold`; eligibility rules (attempt threshold, per-gate cap of `MAX_CLUES_PER_GATE = 3`, no duplicate clue per attempt count) live in `src/worker/graphql/gameplay/clueEligibility.ts` and must stay in sync with any clue-flow changes
+- **Clue system** — `requestClue` generates an AI hint via Cloudflare Workers AI once `attemptCount` meets a gate's `guidanceThreshold`; eligibility rules (attempt threshold, per-gate cap of `MAX_CLUES_PER_GATE = 3`, no duplicate clue per attempt count) live in `src/worker/graphql/gameplay/clueEligibility.ts` and must stay in sync with any clue-flow changes. A global daily budget guardrail (`AI_DAILY_CLUE_BUDGET`, default 150, tracked in `ai_usage` via `src/worker/graphql/gameplay/aiBudget.ts`) rejects new generations with `isAiBudgetExhausted: true` once the UTC day's successful-generation count reaches the cap — checked before the rate-limit claim, incremented only after a clue is stored
 - **`resetSession`** — clears a session's progress (and its `session_completed_gates` / `gate_clues` rows) on a program, used by both "Play again" and "Select new program" (after a `TerminalConfirmModal` confirmation) at the end of a program
 
 ---
