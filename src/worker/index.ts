@@ -21,6 +21,10 @@ export type Env = {
     GITHUB_CLIENT_SECRET: string;
     AUTH_TEST_BYPASS_ENABLED?: string;
     AUTH_TEST_BYPASS_SECRET?: string;
+    // Optional cap on AI clue generations per UTC day (Workers AI free tier
+    // is 10,000 neurons/day, ~200 llama-class calls). Defaults in code when
+    // unset. Global across all programs/sessions.
+    AI_DAILY_CLUE_BUDGET?: string;
   };
 };
 
