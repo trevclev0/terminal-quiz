@@ -177,6 +177,15 @@ export const clueRateLimits = sqliteTable(
   ],
 );
 
+// Global AI usage counter, keyed by UTC day — bounds total daily clue spend
+// so one program/session cannot exhaust the account's Workers AI daily
+// budget. usage_date is the UTC day ("YYYY-MM-DD"); request_count is the
+// number of successful AI clue generations that day.
+export const aiUsage = sqliteTable("ai_usage", {
+  usageDate: text("usage_date").primaryKey(),
+  requestCount: integer("request_count").notNull().default(0),
+});
+
 export const programsRelations = relations(programs, ({ many }) => ({
   gates: many(gates),
 }));
