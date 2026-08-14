@@ -35,6 +35,22 @@ describe("AddGateForm", () => {
     expect(within(form).getByLabelText("Success Message")).toBeInTheDocument();
   });
 
+  it("marks all four required fields as required", () => {
+    setup({
+      newGate: {
+        label: "New Gate",
+        question: "Q?",
+        correctAnswer: "A",
+        successMessage: "OK",
+      },
+    });
+
+    expect(screen.getByLabelText("Label")).toBeRequired();
+    expect(screen.getByLabelText("Question")).toBeRequired();
+    expect(screen.getByLabelText("Correct Answer")).toBeRequired();
+    expect(screen.getByLabelText("Success Message")).toBeRequired();
+  });
+
   it("calls onNewGateChange with a patch on edit", () => {
     const { onNewGateChange } = setup();
 

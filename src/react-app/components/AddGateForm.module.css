@@ -18,6 +18,11 @@
   font-size: 0.85em;
 }
 
+.requiredField::after {
+  content: " *";
+  color: var(--accent);
+}
+
 .input {
   border: 1px solid var(--green);
   background-color: inherit;

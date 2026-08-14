@@ -51,6 +51,43 @@ describe("GateEditorCard", () => {
     expect(screen.getByDisplayValue("3")).toBeInTheDocument();
   });
 
+  it("marks required fields as required", () => {
+    setup();
+
+    expect(screen.getByDisplayValue("Gate One")).toBeRequired();
+    expect(screen.getByDisplayValue("First question?")).toBeRequired();
+    expect(screen.getByDisplayValue("answer-1")).toBeRequired();
+    expect(screen.getByDisplayValue("Correct!")).toBeRequired();
+  });
+
+  it("renders the advanced summary with guidance and acceptance state", () => {
+    setup();
+
+    expect(
+      screen.getByText("Advanced — guidance off · acceptance 87.5%"),
+    ).toBeInTheDocument();
+  });
+
+  it("disables save when a required field is blank", () => {
+    setup({
+      draft: { ...draft, label: "" },
+    });
+
+    expect(screen.getByRole("button", { name: "Save Gate" })).toBeDisabled();
+  });
+
+  it("disables guidance threshold while guidance is disabled", () => {
+    setup({ draft: { ...draft, guidanceEnabled: false } });
+
+    expect(screen.getByDisplayValue("3")).toBeDisabled();
+  });
+
+  it("enables guidance threshold when guidance is enabled", () => {
+    setup({ draft: { ...draft, guidanceEnabled: true } });
+
+    expect(screen.getByDisplayValue("3")).toBeEnabled();
+  });
+
   it("calls onDraftChange with a patch on edit", () => {
     const { onDraftChange } = setup();
 
