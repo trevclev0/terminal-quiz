@@ -389,6 +389,46 @@ describe("requestClue mutation", () => {
     expect(vi.mocked(generateClue)).toHaveBeenCalledTimes(1);
   });
 
+  it("per-attempt reservation: retry at the same attempt is rate limited, AI not re-called", async () => {
+    // The exact race #221 closes: a first request at attempt 2 claims the
+    // reservation but AI returns null (no gate_clues row), so a retry at
+    // the same attempt is still eligible. The reservation must reject it
+    // without a second generateClue call.
+    const sessionId = makeSessionId("per-attempt-reservation");
+    await insertSession(sessionId, E2E_GATE_1_ID, { attemptCount: 2 });
+    vi.mocked(generateClue).mockResolvedValueOnce(null);
+
+    const first: GqlResponse = await gqlRequest(REQUEST_CLUE_MUTATION, {
+      sessionId,
+      variables: {
+        programId: E2E_PROGRAM_ID,
+        gateId: E2E_GATE_1_ID,
+        currentGuess: "red",
+      },
+    });
+    expect(first.body.errors).toBeUndefined();
+    expect(
+      (first.body.data as RequestClueData).requestClue.clueText,
+    ).toBeNull();
+
+    const second: GqlResponse = await gqlRequest(REQUEST_CLUE_MUTATION, {
+      sessionId,
+      variables: {
+        programId: E2E_PROGRAM_ID,
+        gateId: E2E_GATE_1_ID,
+        currentGuess: "red",
+      },
+    });
+    expect(second.body.errors).toBeUndefined();
+    const data = second.body.data as RequestClueData;
+    expect(data.requestClue.clueText).toBeNull();
+    expect(data.requestClue.isRateLimited).toBe(true);
+    expect(data.requestClue.retryAfterMs).toBeGreaterThan(0);
+
+    // generateClue ran exactly once (first request only)
+    expect(vi.mocked(generateClue)).toHaveBeenCalledTimes(1);
+  });
+
   it("rate limit: per-gate clue cap is distinct from rate limiting", async () => {
     // MAX_CLUES_PER_GATE = 3 equals the rate cap, so the 4th request is
     // stopped by computeCanRequestClue BEFORE the rate limiter runs.
