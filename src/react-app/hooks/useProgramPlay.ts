@@ -127,6 +127,10 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
           if (data.clueText) {
             setClues((prev) => [...prev, data.clueText as string]);
             setCanRequestClue(false);
+          } else if (data.isAiBudgetExhausted) {
+            setMessage(
+              "AI hint budget exhausted for today — try again tomorrow.",
+            );
           } else if (data.isRateLimited) {
             const retryAfterMs = data.retryAfterMs;
             if (retryAfterMs != null && retryAfterMs > 0) {

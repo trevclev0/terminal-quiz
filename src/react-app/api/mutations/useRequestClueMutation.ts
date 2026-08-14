@@ -8,6 +8,7 @@ export type RequestClueResponse = {
   cluesRemaining: number;
   isRateLimited: boolean;
   retryAfterMs: number | null;
+  isAiBudgetExhausted: boolean;
 };
 
 const requestClue = async (

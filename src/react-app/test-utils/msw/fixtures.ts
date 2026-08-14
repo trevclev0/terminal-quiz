@@ -128,5 +128,6 @@ export const mockRequestClueResponse = (
   cluesRemaining: 2,
   isRateLimited: false,
   retryAfterMs: null,
+  isAiBudgetExhausted: false,
   ...overrides,
 });
