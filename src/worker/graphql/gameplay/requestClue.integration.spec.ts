@@ -409,25 +409,35 @@ describe("requestClue mutation", () => {
       currentGuess: "red",
     };
     const firstP = gqlRequest(REQUEST_CLUE_MUTATION, { sessionId, variables });
+    // Wait until the first request has entered generateClue — proof it won
+    // the reservation slot. Only then start the second request so it races a
+    // slot that is already held, deterministically making it the loser.
+    await vi.waitFor(() => {
+      expect(vi.mocked(generateClue)).toHaveBeenCalledTimes(1);
+    });
+
     const secondP = gqlRequest(REQUEST_CLUE_MUTATION, { sessionId, variables });
-    // Release the pending first generateClue — both requests are now in flight.
+    // The first generation is still blocked on the deferred, so the second
+    // request must be rate-limited before any AI spend — and before the
+    // winner resolves.
+    const second = await secondP;
+
+    expect(second.body.errors).toBeUndefined();
+    const secondResult = (second.body.data as RequestClueData).requestClue;
+    expect(secondResult.isRateLimited).toBe(true);
+    expect(secondResult.clueText).toBeNull();
+    expect(secondResult.retryAfterMs).toBeGreaterThan(0);
+
+    // Release the first generation now that the second is confirmed
+    // rate-limited while it was in flight.
     resolveFirst(null);
-    const [first, second]: GqlResponse[] = await Promise.all([firstP, secondP]);
+    const first = await firstP;
 
     expect(first.body.errors).toBeUndefined();
-    expect(second.body.errors).toBeUndefined();
-
-    const results = [first, second].map(
-      (r) => (r.body.data as RequestClueData).requestClue,
-    );
-    const rateLimited = results.filter((r) => r.isRateLimited);
-    const won = results.filter((r) => !r.isRateLimited);
-    expect(rateLimited).toHaveLength(1);
-    expect(rateLimited[0].clueText).toBeNull();
-    expect(rateLimited[0].retryAfterMs).toBeGreaterThan(0);
-    expect(won).toHaveLength(1);
-    expect(won[0].clueText).toBeNull(); // mock resolved null
-    expect(won[0].retryAfterMs).toBeNull();
+    const firstResult = (first.body.data as RequestClueData).requestClue;
+    expect(firstResult.isRateLimited).toBe(false);
+    expect(firstResult.clueText).toBeNull(); // mock resolved null
+    expect(firstResult.retryAfterMs).toBeNull();
 
     // generateClue ran exactly once — one reservation won the slot
     expect(vi.mocked(generateClue)).toHaveBeenCalledTimes(1);
