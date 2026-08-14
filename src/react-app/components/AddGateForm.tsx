@@ -27,8 +27,8 @@ export default function AddGateForm({
       {createError && (
         <p className={styles.errorText}>Failed to add: {createError}</p>
       )}
-      <label className={`${styles.field} ${styles.requiredField}`}>
-        Label
+      <label className={styles.field}>
+        <span className={styles.requiredField}>Label</span>
         <input
           type="text"
           value={newGate.label}
@@ -38,8 +38,8 @@ export default function AddGateForm({
           required
         />
       </label>
-      <label className={`${styles.field} ${styles.requiredField}`}>
-        Question
+      <label className={styles.field}>
+        <span className={styles.requiredField}>Question</span>
         <textarea
           value={newGate.question}
           onChange={(e) => onNewGateChange({ question: e.target.value })}
@@ -49,8 +49,8 @@ export default function AddGateForm({
           required
         />
       </label>
-      <label className={`${styles.field} ${styles.requiredField}`}>
-        Correct Answer
+      <label className={styles.field}>
+        <span className={styles.requiredField}>Correct Answer</span>
         <input
           type="text"
           value={newGate.correctAnswer}
@@ -60,8 +60,8 @@ export default function AddGateForm({
           required
         />
       </label>
-      <label className={`${styles.field} ${styles.requiredField}`}>
-        Success Message
+      <label className={styles.field}>
+        <span className={styles.requiredField}>Success Message</span>
         <textarea
           value={newGate.successMessage}
           onChange={(e) => onNewGateChange({ successMessage: e.target.value })}

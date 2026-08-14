@@ -75,8 +75,8 @@ export default function GateEditorCard({
       </div>
 
       <div className={styles.gateFields}>
-        <label className={`${styles.field} ${styles.requiredField}`}>
-          Label
+        <label className={styles.field}>
+          <span className={styles.requiredField}>Label</span>
           <input
             type="text"
             value={draft.label}
@@ -86,8 +86,8 @@ export default function GateEditorCard({
             aria-invalid={draft.label.trim() === ""}
           />
         </label>
-        <label className={`${styles.field} ${styles.requiredField}`}>
-          Question
+        <label className={styles.field}>
+          <span className={styles.requiredField}>Question</span>
           <textarea
             value={draft.question}
             onChange={(e) => onDraftChange({ question: e.target.value })}
@@ -97,8 +97,8 @@ export default function GateEditorCard({
             aria-invalid={draft.question.trim() === ""}
           />
         </label>
-        <label className={`${styles.field} ${styles.requiredField}`}>
-          Correct Answer
+        <label className={styles.field}>
+          <span className={styles.requiredField}>Correct Answer</span>
           <input
             type="text"
             value={draft.correctAnswer}
@@ -108,8 +108,8 @@ export default function GateEditorCard({
             aria-invalid={draft.correctAnswer.trim() === ""}
           />
         </label>
-        <label className={`${styles.field} ${styles.requiredField}`}>
-          Success Message
+        <label className={styles.field}>
+          <span className={styles.requiredField}>Success Message</span>
           <textarea
             value={draft.successMessage}
             onChange={(e) => onDraftChange({ successMessage: e.target.value })}
@@ -168,7 +168,9 @@ export default function GateEditorCard({
                 const value = e.target.valueAsNumber;
                 if (Number.isNaN(value)) return;
                 onDraftChange({
-                  guidanceThreshold: Math.min(3, Math.max(1, value)),
+                  guidanceThreshold: Math.round(
+                    Math.min(3, Math.max(1, value)),
+                  ),
                 });
               }}
               className={styles.inputSmall}

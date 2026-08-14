@@ -66,8 +66,8 @@ export default function ProgramSettingsForm({
   return (
     <>
       <div className={styles.metaRow}>
-        <label className={`${styles.label} ${styles.requiredField}`}>
-          Name
+        <label className={styles.label}>
+          <span className={styles.requiredField}>Name</span>
           <input
             type="text"
             value={programName}
