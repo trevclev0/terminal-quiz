@@ -176,6 +176,30 @@ describe("ManageProgramEditor", () => {
     );
   });
 
+  it("disables Save Gate while a required field is blank", async () => {
+    setupMocks();
+
+    render(<ManageProgramEditor programId={PROGRAM_ID} />);
+
+    const labelInput = screen.getByDisplayValue("Gate One");
+    await userEvent.clear(labelInput);
+
+    const saveGateButtons = screen.getAllByText("Save Gate");
+    expect(saveGateButtons[0]).toBeDisabled();
+  });
+
+  it("disables Save while the program name is blank", async () => {
+    setupMocks();
+
+    render(<ManageProgramEditor programId={PROGRAM_ID} />);
+
+    const nameInput = screen.getByDisplayValue("Test Program");
+    await userEvent.clear(nameInput);
+
+    const saveButtons = screen.getAllByText("Save");
+    expect(saveButtons[0]).toBeDisabled();
+  });
+
   it("deletes a gate after confirm", async () => {
     const { mockDeleteGate } = setupMocks();
     vi.stubGlobal(

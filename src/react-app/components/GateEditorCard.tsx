@@ -18,6 +18,13 @@ type GateEditorCardProps = {
   deleteError?: string | null;
 };
 
+const REQUIRED_FIELDS: Array<{ key: keyof GateForm; label: string }> = [
+  { key: "label", label: "Label" },
+  { key: "question", label: "Question" },
+  { key: "correctAnswer", label: "Correct Answer" },
+  { key: "successMessage", label: "Success Message" },
+];
+
 export default function GateEditorCard({
   gate,
   draft,
@@ -34,6 +41,15 @@ export default function GateEditorCard({
   updateError,
   deleteError,
 }: GateEditorCardProps) {
+  const isMissingRequired = REQUIRED_FIELDS.some(
+    (field) => String(draft[field.key]).trim() === "",
+  );
+
+  const acceptancePercent = `${(draft.acceptanceThreshold * 100)
+    .toFixed(1)
+    .replace(/\.0$/, "")}%`;
+  const guidanceState = draft.guidanceEnabled ? "on" : "off";
+
   return (
     <div className={styles.gateCard}>
       <div className={styles.gateHeader}>
@@ -59,42 +75,56 @@ export default function GateEditorCard({
       </div>
 
       <div className={styles.gateFields}>
-        <label className={styles.field}>
+        <label className={`${styles.field} ${styles.requiredField}`}>
           Label
           <input
             type="text"
             value={draft.label}
             onChange={(e) => onDraftChange({ label: e.target.value })}
             className={styles.input}
+            required
+            aria-invalid={draft.label.trim() === ""}
           />
         </label>
-        <label className={styles.field}>
+        <label className={`${styles.field} ${styles.requiredField}`}>
           Question
           <textarea
             value={draft.question}
             onChange={(e) => onDraftChange({ question: e.target.value })}
             className={styles.textarea}
             rows={3}
+            required
+            aria-invalid={draft.question.trim() === ""}
           />
         </label>
-        <label className={styles.field}>
+        <label className={`${styles.field} ${styles.requiredField}`}>
           Correct Answer
           <input
             type="text"
             value={draft.correctAnswer}
             onChange={(e) => onDraftChange({ correctAnswer: e.target.value })}
             className={styles.input}
+            required
+            aria-invalid={draft.correctAnswer.trim() === ""}
           />
         </label>
-        <label className={styles.field}>
+        <label className={`${styles.field} ${styles.requiredField}`}>
           Success Message
           <textarea
             value={draft.successMessage}
             onChange={(e) => onDraftChange({ successMessage: e.target.value })}
             className={styles.textarea}
             rows={2}
+            required
+            aria-invalid={draft.successMessage.trim() === ""}
           />
         </label>
+      </div>
+
+      <details className={styles.advancedDetails}>
+        <summary className={styles.advancedSummary}>
+          Advanced — guidance {guidanceState} · acceptance {acceptancePercent}
+        </summary>
         <div className={styles.inlineFields}>
           <label className={styles.field}>
             Acceptance
@@ -114,40 +144,48 @@ export default function GateEditorCard({
               className={styles.inputSmall}
             />
           </label>
-          <label className={styles.field}>
-            Guidance Enabled
+          <label className={styles.checkboxField}>
             <input
               type="checkbox"
               checked={draft.guidanceEnabled}
               onChange={(e) =>
                 onDraftChange({ guidanceEnabled: e.target.checked })
               }
-              className={styles.checkbox}
+              className={styles.checkboxInput}
             />
+            <span className={styles.checkboxBox} aria-hidden="true" />
+            Guidance Enabled
           </label>
           <label className={styles.field}>
             Guidance Threshold
             <input
               type="number"
-              min="0"
+              min="1"
+              max="3"
               step="1"
               value={draft.guidanceThreshold}
               onChange={(e) => {
                 const value = e.target.valueAsNumber;
                 if (Number.isNaN(value)) return;
-                onDraftChange({ guidanceThreshold: Math.max(0, value) });
+                onDraftChange({
+                  guidanceThreshold: Math.min(3, Math.max(1, value)),
+                });
               }}
               className={styles.inputSmall}
+              disabled={!draft.guidanceEnabled}
             />
+            <span className={styles.helperText}>
+              First clue unlocks after N failed guesses
+            </span>
           </label>
         </div>
-      </div>
+      </details>
 
       <div className={styles.gateActions}>
         <button
           type="button"
           onClick={() => onSave(gate.id)}
-          disabled={savingGateId !== null}
+          disabled={savingGateId !== null || isMissingRequired}
           className={styles.button}
         >
           {savingGateId === gate.id ? "Saving..." : "Save Gate"}

@@ -27,7 +27,7 @@ export default function AddGateForm({
       {createError && (
         <p className={styles.errorText}>Failed to add: {createError}</p>
       )}
-      <label className={styles.field}>
+      <label className={`${styles.field} ${styles.requiredField}`}>
         Label
         <input
           type="text"
@@ -38,7 +38,7 @@ export default function AddGateForm({
           required
         />
       </label>
-      <label className={styles.field}>
+      <label className={`${styles.field} ${styles.requiredField}`}>
         Question
         <textarea
           value={newGate.question}
@@ -49,7 +49,7 @@ export default function AddGateForm({
           required
         />
       </label>
-      <label className={styles.field}>
+      <label className={`${styles.field} ${styles.requiredField}`}>
         Correct Answer
         <input
           type="text"
@@ -60,7 +60,7 @@ export default function AddGateForm({
           required
         />
       </label>
-      <label className={styles.field}>
+      <label className={`${styles.field} ${styles.requiredField}`}>
         Success Message
         <textarea
           value={newGate.successMessage}
