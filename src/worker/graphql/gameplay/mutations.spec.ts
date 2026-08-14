@@ -23,6 +23,7 @@ type MockDb = {
     gates: { findFirst: ReturnType<typeof vi.fn> };
     gateClues: { findMany: ReturnType<typeof vi.fn> };
   };
+  select: ReturnType<typeof vi.fn>;
   update: ReturnType<typeof vi.fn>;
   insert: ReturnType<typeof vi.fn>;
   delete: ReturnType<typeof vi.fn>;
@@ -36,6 +37,13 @@ function createMockDb(): MockDb {
       gates: { findFirst: vi.fn() },
       gateClues: { findMany: vi.fn().mockResolvedValue([]) },
     },
+    // select().from().where() chain used by aiBudget.isAiBudgetExceeded —
+    // defaults to no matching rows so the budget is never exhausted.
+    select: vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([]),
+      }),
+    }),
     update: vi.fn().mockReturnValue({
       set: vi.fn().mockReturnValue({
         where: vi.fn().mockResolvedValue(undefined),
@@ -54,6 +62,7 @@ function createMockDb(): MockDb {
       return {
         values: vi.fn().mockReturnValue({
           onConflictDoNothing: vi.fn().mockResolvedValue(undefined),
+          onConflictDoUpdate: vi.fn().mockResolvedValue(undefined),
         }),
       };
     }),
@@ -556,6 +565,7 @@ describe("Gameplay Mutations: requestClue", () => {
       cluesRemaining: 3,
       isRateLimited: false,
       retryAfterMs: null,
+      isAiBudgetExhausted: false,
     });
     expect(generateClue).not.toHaveBeenCalled();
   });
@@ -590,6 +600,7 @@ describe("Gameplay Mutations: requestClue", () => {
       cluesRemaining: 0,
       isRateLimited: false,
       retryAfterMs: null,
+      isAiBudgetExhausted: false,
     });
     expect(generateClue).not.toHaveBeenCalled();
   });
@@ -668,6 +679,7 @@ describe("Gameplay Mutations: requestClue", () => {
       cluesRemaining: 0,
       isRateLimited: false,
       retryAfterMs: null,
+      isAiBudgetExhausted: false,
     });
   });
 
@@ -695,6 +707,45 @@ describe("Gameplay Mutations: requestClue", () => {
     expect(result.clueText).toBeNull();
     expect(result.isClueLimitReached).toBe(false);
     // The rate-limit claim inserts a row (window consumed), but no clue row
+    expect(mockDb.insert).not.toHaveBeenCalledWith(gateClues);
+  });
+
+  it("returns ai budget exhausted before any claim or AI call", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      ...defaultProgress,
+      attemptCount: 2,
+    });
+    mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
+    mockDb.query.gateClues.findMany.mockResolvedValue([]);
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{ requestCount: 999 }]),
+      }),
+    });
+
+    if (!requestClue.resolve) throw new Error("Resolver not defined");
+
+    const result = await requestClue.resolve(
+      null,
+      {
+        programId: "prog-1",
+        gateId: "gate-1",
+        currentGuess: "banana",
+      },
+      mockContext,
+    );
+
+    expect(result).toEqual({
+      clueText: null,
+      isClueLimitReached: false,
+      cluesRemaining: 3,
+      isRateLimited: false,
+      retryAfterMs: null,
+      isAiBudgetExhausted: true,
+    });
+    // Budget guard runs before the rate-limit claim and AI spend
+    expect(generateClue).not.toHaveBeenCalled();
+    expect(mockDb.insert).not.toHaveBeenCalledWith(clueRateLimits);
     expect(mockDb.insert).not.toHaveBeenCalledWith(gateClues);
   });
 
@@ -728,6 +779,7 @@ describe("Gameplay Mutations: requestClue", () => {
       cluesRemaining: 0,
       isRateLimited: false,
       retryAfterMs: null,
+      isAiBudgetExhausted: false,
     });
   });
 
