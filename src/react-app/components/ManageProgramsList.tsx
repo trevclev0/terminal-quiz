@@ -4,6 +4,7 @@ import { useMyProgramsQuery } from "@api/queries/useMyProgramsQuery";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { type SubmitEvent, useEffect, useRef, useState } from "react";
 import styles from "./ManageProgramsList.module.css";
+import selectStyles from "./select.module.css";
 
 export default function ManageProgramsList() {
   const { data: programs, isLoading, error } = useMyProgramsQuery();
@@ -107,15 +108,17 @@ export default function ManageProgramsList() {
           className={styles.input}
           required
         />
-        <select
-          aria-label="Visibility"
-          value={newVisibility}
-          onChange={(e) => setNewVisibility(e.target.value)}
-          className={styles.select}
-        >
-          <option value="public">Public</option>
-          <option value="unlisted">Unlisted</option>
-        </select>
+        <span className={selectStyles.selectContainer}>
+          <select
+            aria-label="Visibility"
+            value={newVisibility}
+            onChange={(e) => setNewVisibility(e.target.value)}
+            className={`${selectStyles.select} ${selectStyles.compact}`}
+          >
+            <option value="public">Public</option>
+            <option value="unlisted">Unlisted</option>
+          </select>
+        </span>
         <button
           type="submit"
           disabled={createMutation.isPending || !newName.trim()}
