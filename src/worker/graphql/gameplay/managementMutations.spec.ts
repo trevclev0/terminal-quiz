@@ -139,6 +139,12 @@ describe("createProgram", () => {
       ),
     ).rejects.toThrow('Invalid visibility "secret"');
   });
+
+  it("throws when name is blank", async () => {
+    await expect(
+      resolveField(createProgram, null, { name: "   " }, mockContext),
+    ).rejects.toThrow("name is required.");
+  });
 });
 
 describe("updateProgram", () => {
@@ -214,6 +220,19 @@ describe("updateProgram", () => {
     await expect(
       resolveField(updateProgram, null, { id: "prog-1" }, mockContext),
     ).rejects.toThrow("No fields to update.");
+  });
+
+  it("throws when name is blank", async () => {
+    mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
+
+    await expect(
+      resolveField(
+        updateProgram,
+        null,
+        { id: "prog-1", name: "   " },
+        mockContext,
+      ),
+    ).rejects.toThrow("name is required.");
   });
 });
 
@@ -392,6 +411,68 @@ describe("createGate", () => {
       ),
     ).rejects.toThrow("sequenceOrder must be a positive integer.");
   });
+
+  it("throws when label is blank", async () => {
+    mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
+
+    await expect(
+      resolveField(
+        createGate,
+        null,
+        {
+          programId: "prog-1",
+          label: "   ",
+          question: "Q?",
+          correctAnswer: "A",
+          successMessage: "OK",
+          sequenceOrder: 1,
+        },
+        mockContext,
+      ),
+    ).rejects.toThrow("label is required.");
+  });
+
+  it("throws when guidanceThreshold is below 1", async () => {
+    mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
+
+    await expect(
+      resolveField(
+        createGate,
+        null,
+        {
+          programId: "prog-1",
+          label: "Gate",
+          question: "Q?",
+          correctAnswer: "A",
+          successMessage: "OK",
+          sequenceOrder: 1,
+          guidanceThreshold: 0,
+        },
+        mockContext,
+      ),
+    ).rejects.toThrow("guidanceThreshold must be an integer between 1 and 3.");
+  });
+
+  it("throws when guidanceThreshold exceeds the max clues", async () => {
+    mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
+
+    await expect(
+      resolveField(
+        createGate,
+        null,
+        {
+          programId: "prog-1",
+          label: "Gate",
+          question: "Q?",
+          correctAnswer: "A",
+          successMessage: "OK",
+          sequenceOrder: 1,
+          guidanceThreshold: 4,
+        },
+        mockContext,
+      ),
+    ).rejects.toThrow("guidanceThreshold must be an integer between 1 and 3.");
+  });
 });
 
 describe("updateGate", () => {
@@ -509,6 +590,40 @@ describe("updateGate", () => {
         mockContext,
       ),
     ).rejects.toThrow("sequenceOrder must be a positive integer.");
+  });
+
+  it("throws when label is blank", async () => {
+    mockDb.query.gates.findFirst.mockResolvedValue({
+      id: "gate-1",
+      programId: "prog-1",
+    });
+    mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
+
+    await expect(
+      resolveField(
+        updateGate,
+        null,
+        { id: "gate-1", label: "   " },
+        mockContext,
+      ),
+    ).rejects.toThrow("label is required.");
+  });
+
+  it("throws when guidanceThreshold is out of range", async () => {
+    mockDb.query.gates.findFirst.mockResolvedValue({
+      id: "gate-1",
+      programId: "prog-1",
+    });
+    mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
+
+    await expect(
+      resolveField(
+        updateGate,
+        null,
+        { id: "gate-1", guidanceThreshold: 4 },
+        mockContext,
+      ),
+    ).rejects.toThrow("guidanceThreshold must be an integer between 1 and 3.");
   });
 });
 

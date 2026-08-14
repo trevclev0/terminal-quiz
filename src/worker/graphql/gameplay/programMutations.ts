@@ -2,7 +2,11 @@ import { programs } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { GraphQLBoolean, GraphQLNonNull, GraphQLString } from "graphql";
 import { authorizeProgramMutation } from "./authorizeProgram";
-import { assertVisibility, requireUser } from "./managementHelpers";
+import {
+  assertRequiredText,
+  assertVisibility,
+  requireUser,
+} from "./managementHelpers";
 import { type AppGraphQLContext, ProgramManagementType } from "./types";
 
 export const createProgram = {
@@ -19,11 +23,12 @@ export const createProgram = {
     const userId = requireUser(context.get("user"));
     const visibility = args.visibility ?? "public";
     assertVisibility(visibility);
+    const name = assertRequiredText(args.name, "name");
 
     const db = context.get("db");
     const [result] = await db
       .insert(programs)
-      .values({ name: args.name, visibility, authorId: userId })
+      .values({ name, visibility, authorId: userId })
       .returning();
 
     return result;
@@ -48,7 +53,9 @@ export const updateProgram = {
     await authorizeProgramMutation(db, args.id, userId);
 
     const updateData: Partial<typeof programs.$inferInsert> = {};
-    if (args.name !== undefined) updateData.name = args.name;
+    if (args.name !== undefined) {
+      updateData.name = assertRequiredText(args.name, "name");
+    }
     if (args.visibility !== undefined) {
       assertVisibility(args.visibility);
       updateData.visibility = args.visibility;
