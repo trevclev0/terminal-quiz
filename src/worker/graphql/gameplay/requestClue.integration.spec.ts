@@ -389,43 +389,47 @@ describe("requestClue mutation", () => {
     expect(vi.mocked(generateClue)).toHaveBeenCalledTimes(1);
   });
 
-  it("per-attempt reservation: retry at the same attempt is rate limited, AI not re-called", async () => {
-    // The exact race #221 closes: a first request at attempt 2 claims the
-    // reservation but AI returns null (no gate_clues row), so a retry at
-    // the same attempt is still eligible. The reservation must reject it
-    // without a second generateClue call.
+  it("per-attempt reservation: concurrent retries race, exactly one wins", async () => {
+    // The exact race #221 closes: two in-flight requests at the same attempt
+    // both pass eligibility and race the atomic claim. Exactly one wins the
+    // reservation slot and calls generateClue; the other is rate-limited
+    // before any AI spend.
     const sessionId = makeSessionId("per-attempt-reservation");
     await insertSession(sessionId, E2E_GATE_1_ID, { attemptCount: 2 });
-    vi.mocked(generateClue).mockResolvedValueOnce(null);
 
-    const first: GqlResponse = await gqlRequest(REQUEST_CLUE_MUTATION, {
-      sessionId,
-      variables: {
-        programId: E2E_PROGRAM_ID,
-        gateId: E2E_GATE_1_ID,
-        currentGuess: "red",
-      },
+    let resolveFirst!: (value: string | null) => void;
+    const deferred = new Promise<string | null>((resolve) => {
+      resolveFirst = resolve;
     });
+    vi.mocked(generateClue).mockImplementationOnce(() => deferred);
+
+    const variables = {
+      programId: E2E_PROGRAM_ID,
+      gateId: E2E_GATE_1_ID,
+      currentGuess: "red",
+    };
+    const firstP = gqlRequest(REQUEST_CLUE_MUTATION, { sessionId, variables });
+    const secondP = gqlRequest(REQUEST_CLUE_MUTATION, { sessionId, variables });
+    // Release the pending first generateClue — both requests are now in flight.
+    resolveFirst(null);
+    const [first, second]: GqlResponse[] = await Promise.all([firstP, secondP]);
+
     expect(first.body.errors).toBeUndefined();
-    expect(
-      (first.body.data as RequestClueData).requestClue.clueText,
-    ).toBeNull();
-
-    const second: GqlResponse = await gqlRequest(REQUEST_CLUE_MUTATION, {
-      sessionId,
-      variables: {
-        programId: E2E_PROGRAM_ID,
-        gateId: E2E_GATE_1_ID,
-        currentGuess: "red",
-      },
-    });
     expect(second.body.errors).toBeUndefined();
-    const data = second.body.data as RequestClueData;
-    expect(data.requestClue.clueText).toBeNull();
-    expect(data.requestClue.isRateLimited).toBe(true);
-    expect(data.requestClue.retryAfterMs).toBeGreaterThan(0);
 
-    // generateClue ran exactly once (first request only)
+    const results = [first, second].map(
+      (r) => (r.body.data as RequestClueData).requestClue,
+    );
+    const rateLimited = results.filter((r) => r.isRateLimited);
+    const won = results.filter((r) => !r.isRateLimited);
+    expect(rateLimited).toHaveLength(1);
+    expect(rateLimited[0].clueText).toBeNull();
+    expect(rateLimited[0].retryAfterMs).toBeGreaterThan(0);
+    expect(won).toHaveLength(1);
+    expect(won[0].clueText).toBeNull(); // mock resolved null
+    expect(won[0].retryAfterMs).toBeNull();
+
+    // generateClue ran exactly once — one reservation won the slot
     expect(vi.mocked(generateClue)).toHaveBeenCalledTimes(1);
   });
 
