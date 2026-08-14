@@ -28,6 +28,7 @@ export const REQUEST_CLUE_MUTATION = `
       cluesRemaining
       isRateLimited
       retryAfterMs
+      isAiBudgetExhausted
     }
   }
 `;
