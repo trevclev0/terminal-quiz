@@ -157,6 +157,15 @@ export const clueRateLimits = sqliteTable(
     sessionProgressId: text("session_progress_id")
       .notNull()
       .references(() => sessionProgress.id, { onDelete: "cascade" }),
+    // Per-attempt reservation (#221): one slot per (session, gate, attempt)
+    // in-window, mirroring unique_clue_per_attempt on gate_clues. attemptCount
+    // resets on gate advance, so the reservation must include gateId or a
+    // later gate at the same attempt number would be falsely blocked. No FK:
+    // rows are transient (≤ window) and a stale row for a deleted gate never
+    // matches a live request's gateId. Nullable — legacy rows predate the
+    // columns and expire out of the window anyway.
+    gateId: text("gate_id"),
+    attemptCountAtRequest: integer("attempt_count_at_request"),
     requestedAt: integer("requested_at", { mode: "timestamp_ms" })
       .notNull()
       .$defaultFn(() => new Date()),
