@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 import {
   GET_PROGRAM_PROGRESSION_QUERY,
+  REQUEST_CLUE_MUTATION,
   RESET_SESSION_MUTATION,
   SUBMIT_GUESS_MUTATION,
 } from "@shared/gqlQueries";
@@ -15,6 +16,16 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 // so integration specs assert the resolver emits the expected events.
 vi.mock("@worker-graphql/gameplay/analytics", () => ({
   trackEvent: vi.fn(),
+}));
+
+// The test pool has no AI binding — mock a successful generation so the
+// eligible clue path emits a "success" outcome.
+vi.mock("@worker-services/aiService", () => ({
+  generateClue: vi.fn().mockResolvedValue({
+    clueText: "mock clue",
+    reason: "success",
+    latencyMs: 0,
+  }),
 }));
 
 import { trackEvent } from "@worker-graphql/gameplay/analytics";
@@ -151,6 +162,32 @@ describe("analytics event emission", () => {
       programId: E2E_PROGRAM_ID,
       outcome: "complete",
     });
+  });
+
+  it("emits clue_requested with success outcome and latency", async () => {
+    const sessionId = makeSessionId("clue");
+    await insertSession(sessionId, E2E_GATE_1_ID, { attemptCount: 2 });
+
+    const response: GqlResponse = await gqlRequest(REQUEST_CLUE_MUTATION, {
+      sessionId,
+      variables: {
+        programId: E2E_PROGRAM_ID,
+        gateId: E2E_GATE_1_ID,
+        currentGuess: "red",
+      },
+    });
+
+    expect(response.body.errors).toBeUndefined();
+    const calls = emitted("clue_requested");
+    expect(calls).toHaveLength(1);
+    expect(calls[0][1]).toMatchObject({
+      name: "clue_requested",
+      programId: E2E_PROGRAM_ID,
+      gateId: E2E_GATE_1_ID,
+      outcome: "success",
+      attemptCount: 2,
+    });
+    expect(typeof calls[0][1].aiLatencyMs).toBe("number");
   });
 
   it("emits session_reset when a session row exists", async () => {
