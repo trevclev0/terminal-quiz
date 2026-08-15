@@ -31,6 +31,12 @@
   "ai": {
     "binding": "AI"
   },
+  "analytics_engine_datasets": [
+    {
+      "binding": "ANALYTICS",
+      "dataset": "program_events"
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",
@@ -50,6 +56,12 @@
     "preview": {
       "workers_dev": true,
       "routes": [],
+      "analytics_engine_datasets": [
+        {
+          "binding": "ANALYTICS",
+          "dataset": "program_events"
+        }
+      ],
       "d1_databases": [
         {
           "binding": "DB",
