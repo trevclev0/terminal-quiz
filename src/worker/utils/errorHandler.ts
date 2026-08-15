@@ -4,12 +4,24 @@ export interface D1Error {
   code?: string;
 }
 
-export const logError = (err: Error, method: string, path: string) => {
-  console.error(`[Error on ${method} ${path}]:`, err.message || err);
-  if (err.cause) {
-    const cause = err.cause as D1Error;
-    console.error("Underlying D1 Cause:", cause.message || cause);
-  }
+export const logError = (
+  err: Error,
+  method: string,
+  path: string,
+  requestId?: string,
+) => {
+  const cause = err.cause as D1Error | undefined;
+  console.error(
+    JSON.stringify({
+      ts: new Date().toISOString(),
+      level: "error",
+      method,
+      path,
+      requestId,
+      message: err.message || String(err),
+      cause: cause?.message || (cause ? String(cause) : undefined),
+    }),
+  );
 };
 
 export const formatErrorResponse = (err: Error, path: string) => {

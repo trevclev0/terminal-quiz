@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { type D1Error, formatErrorResponse, logError } from "./errorHandler";
+import { formatErrorResponse, logError } from "./errorHandler";
+
+const parseLog = (spy: ReturnType<typeof vi.spyOn>) =>
+  JSON.parse(String(spy.mock.calls[0][0]));
 
 describe("errorHandler", () => {
   describe("logError", () => {
@@ -14,54 +17,58 @@ describe("errorHandler", () => {
       consoleErrorSpy.mockRestore();
     });
 
-    it("logs the error message and request details", () => {
+    it("logs a structured JSON line with request details", () => {
       const error = new Error("Test error");
       logError(error, "GET", "/test-path");
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "[Error on GET /test-path]:",
-        "Test error",
-      );
+      const log = parseLog(consoleErrorSpy);
+      expect(log).toMatchObject({
+        level: "error",
+        method: "GET",
+        path: "/test-path",
+        message: "Test error",
+      });
+      expect(log.ts).toEqual(expect.any(String));
+      expect(log.requestId).toBeUndefined();
+    });
+
+    it("includes the requestId when provided", () => {
+      const error = new Error("Test error");
+      logError(error, "GET", "/test-path", "req-123");
+
+      const log = parseLog(consoleErrorSpy);
+      expect(log.requestId).toBe("req-123");
     });
 
     it("logs the underlying D1 cause if present", () => {
-      const cause = new Error("D1 connection failed") as Error & D1Error;
+      const cause = new Error("D1 connection failed");
       const error = new Error("Main error");
       error.cause = cause;
 
       logError(error, "POST", "/api/data");
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "[Error on POST /api/data]:",
-        "Main error",
-      );
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "Underlying D1 Cause:",
-        "D1 connection failed",
-      );
+      const log = parseLog(consoleErrorSpy);
+      expect(log.message).toBe("Main error");
+      expect(log.cause).toBe("D1 connection failed");
     });
 
-    it("logs the error object when error has no message", () => {
+    it("logs the error string when error has no message", () => {
       const error = new Error();
       logError(error, "GET", "/test");
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "[Error on GET /test]:",
-        error,
-      );
+      const log = parseLog(consoleErrorSpy);
+      expect(log.message).toBe(String(error));
     });
 
-    it("logs the cause object when cause has no message", () => {
+    it("logs the cause string when cause has no message", () => {
       const cause = new Error();
       const error = new Error("Main error");
       error.cause = cause;
 
       logError(error, "POST", "/api/data");
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "Underlying D1 Cause:",
-        cause,
-      );
+      const log = parseLog(consoleErrorSpy);
+      expect(log.cause).toBe(String(cause));
     });
   });
 
