@@ -1,3 +1,4 @@
+import { reportError } from "@utils/reportError";
 import { useEffect } from "react";
 import styles from "./RouteErrorFallback.module.css";
 
@@ -15,6 +16,7 @@ export default function RouteErrorFallback({
   useEffect(() => {
     if (error) {
       console.error("[RouteErrorFallback]", error);
+      reportError({ source: "route", error });
     }
   }, [error]);
 
