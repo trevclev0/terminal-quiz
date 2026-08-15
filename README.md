@@ -1,14 +1,43 @@
 # Terminal Quiz
 
-A terminal-aesthetic riddle and puzzle application built on Cloudflare's edge platform. Players select a "program" (a set of riddles) and work through sequential "gates" (individual riddles/puzzles), each requiring a correct passphrase to unlock the next.
+> A terminal-aesthetic riddle and puzzle game running on Cloudflare's edge
+> platform. Players select a **program** (a set of riddles) and work through
+> sequential **gates** (individual riddles/puzzles), each requiring a correct
+> passphrase to unlock the next.
 
-Live at **[quiz.clevertrevor.dev](https://quiz.clevertrevor.dev)**
+<p align="center">
+  <a href="https://quiz.clevertrevor.dev"><strong>▶ Try it live — quiz.clevertrevor.dev</strong></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/trevclev0/terminal-quiz/blob/main/LICENSE">
+    <img alt="MIT License" src="https://img.shields.io/github/license/trevclev0/terminal-quiz">
+  </a>
+  <a href="https://github.com/trevclev0/terminal-quiz/actions/workflows/ci.yml">
+    <img alt="CI" src="https://github.com/trevclev0/terminal-quiz/actions/workflows/ci.yml/badge.svg">
+  </a>
+  <a href="https://github.com/trevclev0/terminal-quiz">
+    <img alt="GitHub stars" src="https://img.shields.io/github/stars/trevclev0/terminal-quiz">
+  </a>
+  <a href="https://github.com/trevclev0/terminal-quiz">
+    <img alt="Top language" src="https://img.shields.io/github/languages/top/trevclev0/terminal-quiz">
+  </a>
+</p>
+
+```text
+══════════════════════════════════════════════════════════
+   TERMINAL QUIZ
+   ▸ a riddle game on Cloudflare Workers
+   ▸ crack the passphrase to unlock the next gate
+══════════════════════════════════════════════════════════
+```
 
 ---
 
 ## Table of Contents
 
 - [Features](#features)
+- [Screenshot](#screenshot)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [Getting Started](#getting-started)
@@ -30,6 +59,14 @@ Live at **[quiz.clevertrevor.dev](https://quiz.clevertrevor.dev)**
 - **User authentication** — OAuth-only (Google + GitHub) via Better Auth, self-hosted on the same Worker. Anonymous gameplay is unchanged and does not require login. Authentication is only needed for content authorship.
 - **User-authored programs** — authenticated users can create, edit, and manage their own programs and gates through a dedicated management UI at `/programs/manage`. Programs can be `public` (listed for everyone) or `unlisted` (accessible only by direct link, same model as unlisted YouTube videos).
 - **Copy-link sharing** — unlisted programs include a one-click "Copy Link" button in the management UI for easy sharing by direct URL
+
+---
+
+## Screenshot
+
+![Terminal Quiz gameplay](docs/screenshot.png)
+
+<!-- Drop a screenshot at docs/screenshot.png and it renders here. -->
 
 ---
 
@@ -351,4 +388,4 @@ bun run deploy:preview   # Build with CLOUDFLARE_ENV=preview and deploy to previ
 ---
 
 > [!NOTE]
-> This is a personal project. I'm not accepting contributions at this time.
+> Solo project — PRs welcome, though I may respond slowly.
