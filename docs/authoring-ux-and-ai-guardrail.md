@@ -89,8 +89,8 @@ Phase A has zero operational risk (no schema/behavior change to spend) and fixes
 
 ### B2. Server flow (`requestClueMutation.ts`)
 
-- Check budget **before** `claimClueRateLimit` (requestClueMutation.ts:79) — when exhausted, return immediately so no rate-limit slot is burned, no `gate_clues` row inserted, and no AI call is made.
-- Increment the counter after a **successful** `generateClue` (requestClueMutation.ts:98), not on failures.
+- Atomically **reserve** one budget unit before `claimClueRateLimit` — a single upsert + `RETURNING` (D1 is single-writer) returns the running count (completed + in-flight). When the returned count exceeds the budget, release the reservation and return immediately, so no rate-limit slot is burned, no `gate_clues` row inserted, and no AI call is made. This closes the check-then-act race: concurrent requests get strictly increasing counts, so they can never all slip past the cap.
+- Release the reservation only when we positively know the AI was never called (over-budget race loser, rate-limit rejection). A generation that returns null or fails to persist may still have billed, so its reservation is **kept** — the counter reflects launched (potentially billable) generations, not just stored clues.
 - Add `isAiBudgetExhausted: boolean` to `RequestClueResultType` (`src/worker/graphql/gameplay/types.ts`) and `src/shared/gqlQueries.ts`.
 
 ### B3. Client UX (`useProgramPlay.ts`, `ActiveGate.tsx`)
