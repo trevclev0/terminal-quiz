@@ -6,8 +6,8 @@ import { loadActiveSession } from "./activeSession";
 import {
   getDailyAiBudget,
   getUsageDateKey,
-  isAiBudgetExceeded,
-  recordAiUsage,
+  releaseAiUsage,
+  reserveAiUsage,
 } from "./aiBudget";
 import {
   computeCanRequestClue,
@@ -79,17 +79,24 @@ export const requestClue = {
       };
     }
 
-    // Global daily budget guard: check BEFORE the rate-limit claim so an
-    // exhausted budget never burns a per-attempt slot, inserts a clue row,
-    // or spends an AI call. The counter only increments on a *successful*
-    // generation (below), so AI failures and rejected requests don't consume
-    // budget.
+    // Global daily budget guard: atomically reserve one unit BEFORE the
+    // rate-limit claim so an exhausted budget never burns a per-attempt slot,
+    // inserts a clue row, or spends an AI call. The single upsert+return is
+    // race-free (D1 is single-writer): concurrent requests get strictly
+    // increasing counts, so once the cap is reached every subsequent request
+    // sees `count > budget` and releases back before touching anything else.
+    // Reservations are released only when we positively know the AI was never
+    // called (over-budget race loser, rate-limit rejection). A generation
+    // that returns null or fails to persist may still have billed, so its
+    // reservation is intentionally kept — the counter reflects launched
+    // (potentially billable) generations, not just stored clues.
     const usageDateKey = getUsageDateKey();
     const budget = getDailyAiBudget(
       env<{ AI_DAILY_CLUE_BUDGET?: string }>(context).AI_DAILY_CLUE_BUDGET,
     );
-    const aiBudgetExceeded = await isAiBudgetExceeded(db, usageDateKey, budget);
-    if (aiBudgetExceeded) {
+    const reservedCount = await reserveAiUsage(db, usageDateKey);
+    if (reservedCount > budget) {
+      await releaseAiUsage(db, usageDateKey);
       return {
         clueText: null,
         isClueLimitReached: false,
@@ -112,6 +119,7 @@ export const requestClue = {
       progress.attemptCount,
     );
     if (!rateLimit.claimed) {
+      await releaseAiUsage(db, usageDateKey);
       return {
         clueText: null,
         isClueLimitReached: false,
@@ -164,9 +172,6 @@ export const requestClue = {
         isAiBudgetExhausted: false,
       };
     }
-
-    // The clue was generated AND stored — count it against the daily budget.
-    await recordAiUsage(db, usageDateKey);
 
     const newCluesRemaining = computeCluesRemaining(existingClues.length + 1);
 
