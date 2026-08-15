@@ -28,13 +28,23 @@ You are a helpful hint-giver for a text-based riddle game.
 `.trim();
 
 /**
+ * Result of a clue generation attempt. Reasons are surfaced in the
+ * `clue_requested` analytics event (see docs/analytics.md).
+ */
+export type ClueResult = {
+  clueText: string | null;
+  reason: "success" | "no_binding" | "empty" | "answer_leak" | "error";
+  latencyMs: number;
+};
+
+/**
  * Generates a clue using Cloudflare Workers AI.
  * @param c Hono Context to access the AI binding.
  * @param gateQuestion The question of the gate.
  * @param correctAnswer The correct answer to the gate (for AI context, not for revelation).
  * @param currentGuess The player's current (incorrect) guess.
  * @param previousClues An array of clues previously given for this gate in the current session.
- * @returns A generated clue string or null if the AI service fails or no clue is generated.
+ * @returns A structured result with the generated clue (or null) plus reason and latency.
  */
 export async function generateClue(
   c: Context,
@@ -42,12 +52,13 @@ export async function generateClue(
   correctAnswer: string,
   currentGuess: string,
   previousClues: string[],
-): Promise<string | null> {
+): Promise<ClueResult> {
+  const start = performance.now();
   const { AI } = env<{ AI: Ai }>(c);
 
   if (!AI) {
     console.error("AI binding not available.");
-    return null;
+    return { clueText: null, reason: "no_binding", latencyMs: 0 };
   }
   const safeGuess = currentGuess.replace(/"/g, '\\"').replace(/\n/g, " ");
   let userPrompt = `Gate Question: "${gateQuestion}"
@@ -79,7 +90,11 @@ ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
 
     if (!clueText) {
       console.warn("AI returned an empty response for clue generation.");
-      return null;
+      return {
+        clueText: null,
+        reason: "empty",
+        latencyMs: performance.now() - start,
+      };
     }
 
     // Basic check to ensure the AI didn't directly reveal the answer.
@@ -93,13 +108,27 @@ ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
     );
     if (answerRegex.test(clueText)) {
       console.warn("AI generated a clue containing the answer. Filtering.");
-      return null;
+      return {
+        clueText: null,
+        reason: "answer_leak",
+        latencyMs: performance.now() - start,
+      };
     }
 
     // Trim to maximum length to prevent overly long clues.
-    return clueText.substring(0, MAX_CLUE_LENGTH);
+    return {
+      clueText: clueText.substring(0, MAX_CLUE_LENGTH),
+      reason: "success",
+      latencyMs: performance.now() - start,
+    };
   } catch (error) {
     console.error("Error generating clue with AI service:", error);
-    return null; // Return null on error to indicate failure to generate a clue.
+    // Return a structured failure — the AI call may still have billed, so the
+    // reservation in aiBudget is intentionally kept by the caller.
+    return {
+      clueText: null,
+      reason: "error",
+      latencyMs: performance.now() - start,
+    };
   }
 }

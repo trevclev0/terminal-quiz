@@ -19,7 +19,7 @@ describe("aiService", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
   });
 
-  it("returns null if AI binding is missing", async () => {
+  it("returns no_binding result if AI binding is missing", async () => {
     const { c } = createMockHonoContext({ AI: undefined });
     const result = await generateClue(
       c,
@@ -28,7 +28,8 @@ describe("aiService", () => {
       baseArgs.currentGuess,
       [],
     );
-    expect(result).toBeNull();
+    expect(result.clueText).toBeNull();
+    expect(result.reason).toBe("no_binding");
   });
 
   it("returns trimmed clue on happy path", async () => {
@@ -41,10 +42,11 @@ describe("aiService", () => {
       baseArgs.currentGuess,
       [],
     );
-    expect(result).toBe("some clue");
+    expect(result.clueText).toBe("some clue");
+    expect(result.reason).toBe("success");
   });
 
-  it("returns null if AI response is empty/whitespace", async () => {
+  it("returns empty reason if AI response is empty/whitespace", async () => {
     const { c, aiRunMock } = createMockHonoContext();
     aiRunMock.mockResolvedValue({ response: "   " });
     const result = await generateClue(
@@ -54,10 +56,11 @@ describe("aiService", () => {
       baseArgs.currentGuess,
       [],
     );
-    expect(result).toBeNull();
+    expect(result.clueText).toBeNull();
+    expect(result.reason).toBe("empty");
   });
 
-  it("returns null and filters if AI response contains correct answer", async () => {
+  it("returns answer_leak and filters if AI response contains correct answer", async () => {
     const { c, aiRunMock } = createMockHonoContext();
     aiRunMock.mockResolvedValue({ response: "The answer is four" });
     const result = await generateClue(
@@ -67,10 +70,11 @@ describe("aiService", () => {
       baseArgs.currentGuess,
       [],
     );
-    expect(result).toBeNull();
+    expect(result.clueText).toBeNull();
+    expect(result.reason).toBe("answer_leak");
   });
 
-  it("returns null if AI.run throws", async () => {
+  it("returns error reason if AI.run throws", async () => {
     const { c, aiRunMock } = createMockHonoContext();
     aiRunMock.mockRejectedValue(new Error("AI failed"));
     const result = await generateClue(
@@ -80,7 +84,8 @@ describe("aiService", () => {
       baseArgs.currentGuess,
       [],
     );
-    expect(result).toBeNull();
+    expect(result.clueText).toBeNull();
+    expect(result.reason).toBe("error");
   });
 
   it("truncates clue to MAX_CLUE_LENGTH (200)", async () => {
@@ -93,7 +98,7 @@ describe("aiService", () => {
       baseArgs.currentGuess,
       [],
     );
-    expect(result).toHaveLength(200);
+    expect(result.clueText).toHaveLength(200);
   });
 
   it("filters out AI response containing non-word-boundary answer", async () => {
@@ -108,7 +113,8 @@ describe("aiService", () => {
       "wrong guess",
       [],
     );
-    expect(result).toBeNull();
+    expect(result.clueText).toBeNull();
+    expect(result.reason).toBe("answer_leak");
   });
 
   it("passes through AI response not containing non-word-boundary answer", async () => {
@@ -121,7 +127,7 @@ describe("aiService", () => {
       "wrong guess",
       [],
     );
-    expect(result).toBe("some clue");
+    expect(result.clueText).toBe("some clue");
   });
 
   it("exercises prompt logic with and without previous clues", async () => {

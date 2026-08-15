@@ -645,7 +645,11 @@ describe("Gameplay Mutations: requestClue", () => {
       { clueText: "It grows on trees.", attemptCountAtRequest: 2 },
       { clueText: "Think about doctors.", attemptCountAtRequest: 1 },
     ]);
-    vi.mocked(generateClue).mockResolvedValue("It is often red or green.");
+    vi.mocked(generateClue).mockResolvedValue({
+      clueText: "It is often red or green.",
+      reason: "success",
+      latencyMs: 0,
+    });
 
     if (!requestClue.resolve) throw new Error("Resolver not defined");
 
@@ -696,7 +700,11 @@ describe("Gameplay Mutations: requestClue", () => {
     });
     mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
     mockDb.query.gateClues.findMany.mockResolvedValue([]);
-    vi.mocked(generateClue).mockResolvedValue(null);
+    vi.mocked(generateClue).mockResolvedValue({
+      clueText: null,
+      reason: "error",
+      latencyMs: 0,
+    });
 
     if (!requestClue.resolve) throw new Error("Resolver not defined");
 
@@ -786,7 +794,11 @@ describe("Gameplay Mutations: requestClue", () => {
       { clueText: "clue 1", attemptCountAtRequest: 2 },
       { clueText: "clue 2", attemptCountAtRequest: 5 },
     ]);
-    vi.mocked(generateClue).mockResolvedValue("Final hint.");
+    vi.mocked(generateClue).mockResolvedValue({
+      clueText: "Final hint.",
+      reason: "success",
+      latencyMs: 0,
+    });
 
     if (!requestClue.resolve) throw new Error("Resolver not defined");
 
@@ -861,7 +873,11 @@ describe("Gameplay Mutations: requestClue", () => {
     });
     mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
     mockDb.query.gateClues.findMany.mockResolvedValue([]);
-    vi.mocked(generateClue).mockResolvedValue("A juicy hint.");
+    vi.mocked(generateClue).mockResolvedValue({
+      clueText: "A juicy hint.",
+      reason: "success",
+      latencyMs: 0,
+    });
 
     mockDb.insert.mockImplementation((table: unknown) => {
       if (table === aiUsage) {

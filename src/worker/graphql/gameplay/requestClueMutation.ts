@@ -9,6 +9,7 @@ import {
   releaseAiUsage,
   reserveAiUsage,
 } from "./aiBudget";
+import { trackEvent } from "./analytics";
 import {
   computeCanRequestClue,
   computeCluesRemaining,
@@ -69,6 +70,13 @@ export const requestClue = {
     });
 
     if (!canRequestClue) {
+      trackEvent(context, {
+        name: "clue_requested",
+        programId: args.programId,
+        gateId: args.gateId,
+        outcome: "not_eligible",
+        attemptCount: progress.attemptCount,
+      });
       return {
         clueText: null,
         isClueLimitReached: existingClues.length >= MAX_CLUES_PER_GATE,
@@ -97,6 +105,13 @@ export const requestClue = {
     const reservedCount = await reserveAiUsage(db, usageDateKey);
     if (reservedCount > budget) {
       await releaseAiUsage(db, usageDateKey);
+      trackEvent(context, {
+        name: "clue_requested",
+        programId: args.programId,
+        gateId: args.gateId,
+        outcome: "budget_exhausted",
+        attemptCount: progress.attemptCount,
+      });
       return {
         clueText: null,
         isClueLimitReached: false,
@@ -120,6 +135,13 @@ export const requestClue = {
     );
     if (!rateLimit.claimed) {
       await releaseAiUsage(db, usageDateKey);
+      trackEvent(context, {
+        name: "clue_requested",
+        programId: args.programId,
+        gateId: args.gateId,
+        outcome: "rate_limited",
+        attemptCount: progress.attemptCount,
+      });
       return {
         clueText: null,
         isClueLimitReached: false,
@@ -133,7 +155,7 @@ export const requestClue = {
     const previousClueTexts = existingClues
       .toReversed()
       .map((clue) => clue.clueText);
-    const clueText = await generateClue(
+    const clueResult = await generateClue(
       context,
       activeGate.question,
       activeGate.correctAnswer,
@@ -141,7 +163,15 @@ export const requestClue = {
       previousClueTexts,
     );
 
-    if (!clueText) {
+    if (!clueResult.clueText) {
+      trackEvent(context, {
+        name: "clue_requested",
+        programId: args.programId,
+        gateId: args.gateId,
+        outcome: `ai_failed:${clueResult.reason}`,
+        attemptCount: progress.attemptCount,
+        aiLatencyMs: clueResult.latencyMs,
+      });
       return {
         clueText: null,
         isClueLimitReached: false,
@@ -156,13 +186,21 @@ export const requestClue = {
       await db.insert(gateClues).values({
         sessionProgressId: progress.id,
         gateId: args.gateId,
-        clueText,
+        clueText: clueResult.clueText,
         attemptCountAtRequest: progress.attemptCount,
       });
     } catch (error) {
       // Handle unique constraint violation - another request
       // may have already inserted a clue for this attempt
       console.warn("Failed to insert clue (likely duplicate):", error);
+      trackEvent(context, {
+        name: "clue_requested",
+        programId: args.programId,
+        gateId: args.gateId,
+        outcome: "duplicate",
+        attemptCount: progress.attemptCount,
+        aiLatencyMs: clueResult.latencyMs,
+      });
       return {
         clueText: null,
         isClueLimitReached: false,
@@ -175,8 +213,17 @@ export const requestClue = {
 
     const newCluesRemaining = computeCluesRemaining(existingClues.length + 1);
 
+    trackEvent(context, {
+      name: "clue_requested",
+      programId: args.programId,
+      gateId: args.gateId,
+      outcome: "success",
+      attemptCount: progress.attemptCount,
+      aiLatencyMs: clueResult.latencyMs,
+    });
+
     return {
-      clueText,
+      clueText: clueResult.clueText,
       isClueLimitReached: newCluesRemaining === 0,
       cluesRemaining: newCluesRemaining,
       isRateLimited: false,

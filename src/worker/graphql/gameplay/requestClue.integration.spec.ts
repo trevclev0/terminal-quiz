@@ -16,7 +16,11 @@ import { getUsageDateKey } from "./aiBudget";
 
 // Module-level mock — replaces generateClue in the workerd import graph
 vi.mock("@worker-services/aiService", () => ({
-  generateClue: vi.fn().mockResolvedValue("mock clue from vi.mock"),
+  generateClue: vi.fn().mockResolvedValue({
+    clueText: "mock clue from vi.mock",
+    reason: "success",
+    latencyMs: 0,
+  }),
 }));
 
 import { generateClue } from "@worker-services/aiService";
@@ -102,7 +106,11 @@ describe("requestClue mutation", () => {
   beforeEach(async () => {
     invalidateCachedSchema();
     vi.mocked(generateClue).mockReset();
-    vi.mocked(generateClue).mockResolvedValue("mock clue from vi.mock");
+    vi.mocked(generateClue).mockResolvedValue({
+      clueText: "mock clue from vi.mock",
+      reason: "success",
+      latencyMs: 0,
+    });
     // Fresh AI budget per test — the integration budget is tiny (3), so any
     // leak between tests would spuriously exhaust later eligible requests.
     await db.delete(aiUsage).where(eq(aiUsage.usageDate, getUsageDateKey()));
@@ -304,7 +312,11 @@ describe("requestClue mutation", () => {
   });
 
   it("AI returning null is handled gracefully", async () => {
-    vi.mocked(generateClue).mockResolvedValue(null);
+    vi.mocked(generateClue).mockResolvedValue({
+      clueText: null,
+      reason: "error",
+      latencyMs: 0,
+    });
 
     const sessionId = makeSessionId("ai-null");
     const progressId = await insertSession(sessionId, E2E_GATE_1_ID, {
@@ -427,8 +439,16 @@ describe("requestClue mutation", () => {
     const sessionId = makeSessionId("per-attempt-reservation");
     await insertSession(sessionId, E2E_GATE_1_ID, { attemptCount: 2 });
 
-    let resolveFirst!: (value: string | null) => void;
-    const deferred = new Promise<string | null>((resolve) => {
+    let resolveFirst!: (value: {
+      clueText: string | null;
+      reason: "success" | "no_binding" | "empty" | "answer_leak" | "error";
+      latencyMs: number;
+    }) => void;
+    const deferred = new Promise<{
+      clueText: string | null;
+      reason: "success" | "no_binding" | "empty" | "answer_leak" | "error";
+      latencyMs: number;
+    }>((resolve) => {
       resolveFirst = resolve;
     });
     vi.mocked(generateClue).mockImplementationOnce(() => deferred);
@@ -460,7 +480,7 @@ describe("requestClue mutation", () => {
 
     // Release the first generation now that the second is confirmed
     // rate-limited while it was in flight.
-    resolveFirst(null);
+    resolveFirst({ clueText: null, reason: "error", latencyMs: 0 });
     const first = await firstP;
 
     expect(first.body.errors).toBeUndefined();
