@@ -66,6 +66,19 @@
             root.innerHTML =
               '<div id="boot-fallback"><div><span class="inverse">LOAD FAILURE</span></div><div>Failed to initialize terminal. Check connection.</div><div><a class="reload" href="/">[ RELOAD ]</a></div></div>';
           }
+          try {
+            const sessionId =
+              localStorage.getItem("terminal_quiz_session_id") || "";
+            const payload = JSON.stringify({
+              sessionId,
+              source: "boot",
+              message: "bootstrap load failure",
+              path: window.location.pathname,
+            });
+            navigator.sendBeacon("/api/error", payload);
+          } catch {
+            // Telemetry must never break the boot failure UI.
+          }
         },
         true,
       );

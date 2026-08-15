@@ -6,6 +6,7 @@ import {
   requestIdMiddleware,
 } from "@worker-middleware/logger";
 import { sessionMiddleware } from "@worker-middleware/session";
+import { errorReportingRouter } from "@worker-routes/errorReporting";
 import graphQlRouter from "@worker-routes/graphql";
 import { getAuth } from "@worker-services/auth";
 import { formatErrorResponse, logError } from "@worker-utils/errorHandler";
@@ -50,7 +51,8 @@ const api = new Hono<AppVariables>()
     return auth.handler(c.req.raw);
   })
   .use("/graphql", authMiddleware)
-  .route("/graphql", graphQlRouter);
+  .route("/graphql", graphQlRouter)
+  .route("/error", errorReportingRouter);
 
 // Must use chaining in order for Hono RPC to work
 const routes = app.basePath("/api").route("/", api);

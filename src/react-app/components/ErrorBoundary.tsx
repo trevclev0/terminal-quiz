@@ -1,3 +1,4 @@
+import { reportError } from "@utils/reportError";
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import styles from "./ErrorBoundary.module.css";
 
@@ -27,6 +28,11 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   // Safe place for side effects like logging.
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[ErrorBoundary]", error, info.componentStack);
+    reportError({
+      source: "boundary",
+      error,
+      stack: info.componentStack ?? undefined,
+    });
   }
 
   reset = () => {
