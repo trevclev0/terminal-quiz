@@ -3,6 +3,7 @@ import isGuessCloseEnough from "@worker-utils/isGuessCloseEnough";
 import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { GraphQLNonNull, GraphQLString } from "graphql";
 import { loadActiveSession } from "./activeSession";
+import { trackEvent } from "./analytics";
 import {
   computeCanRequestClue,
   getExistingCluesForGate,
@@ -86,6 +87,14 @@ export const submitGuess = {
         mostRecentClueAttemptCount,
       });
 
+      trackEvent(context, {
+        name: "gate_attempt",
+        programId: args.programId,
+        gateId: args.gateId,
+        outcome: "incorrect",
+        attemptCount: updatedProgress.attemptCount,
+      });
+
       return {
         success: false,
         message: "ACCESS DENIED. INCORRECT SYNTAX OR VALUE.",
@@ -129,6 +138,23 @@ export const submitGuess = {
         })
         .where(eq(sessionProgress.id, progress.id)),
     ]);
+
+    trackEvent(context, {
+      name: "gate_completed",
+      programId: args.programId,
+      gateId: activeGate.id,
+      outcome: "correct",
+      attemptCount: progress.attemptCount,
+      isCorrect: true,
+    });
+
+    if (newStatus === "completed") {
+      trackEvent(context, {
+        name: "program_completed",
+        programId: args.programId,
+        outcome: "complete",
+      });
+    }
 
     return {
       success: true,
