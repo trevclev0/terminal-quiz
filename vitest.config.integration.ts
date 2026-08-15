@@ -41,6 +41,10 @@ export default defineConfig({
             // x-auth-test-user-id/x-auth-test-user-secret headers.
             AUTH_TEST_BYPASS_ENABLED: "true",
             AUTH_TEST_BYPASS_SECRET: INTEGRATION_TEST_SECRET,
+            // Low daily AI budget so budget-guardrail tests exercise the
+            // boundary without coupling to DEFAULT_AI_DAILY_CLUE_BUDGET.
+            // Each test file resets ai_usage in beforeEach.
+            AI_DAILY_CLUE_BUDGET: "3",
             // Pass migrations + seed SQL as bindings for runtime application
             TEST_MIGRATIONS: migrations,
             TEST_SEED_SQL: seedSQL,

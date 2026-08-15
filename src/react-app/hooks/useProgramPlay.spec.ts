@@ -547,11 +547,26 @@ describe("useProgramPlay", () => {
     );
   });
 
-  it("shows budget message and does not start cooldown when AI budget exhausted", () => {
+  it("keeps canRequestClue true and repeats the message when AI budget exhausted", async () => {
     const { result } = renderHook(
       () => useProgramPlay({ programId, currentGateId }),
       { wrapper },
     );
+
+    // Reach a clue-eligible state: a wrong guess that the server says may
+    // request a clue.
+    mockMutateAsync.mockResolvedValue({
+      success: false,
+      message: "Wrong!",
+      canRequestClue: true,
+    });
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
+    });
+    expect(result.current.canRequestClue).toBe(true);
+
     mockMutate.mockImplementation((_variables, options) => {
       options.onSuccess({
         clueText: null,
@@ -570,9 +585,22 @@ describe("useProgramPlay", () => {
     expect(result.current.message).toBe(
       "AI hint budget exhausted for today — try again tomorrow.",
     );
-    // Budget exhaustion is a "try again tomorrow" failure — no retry cooldown
+    // Budget exhaustion is a "try again tomorrow" failure — the clue button
+    // stays usable and no retry cooldown starts.
+    expect(result.current.canRequestClue).toBe(true);
     expect(result.current.clueCooldownUntil).toBeNull();
     expect(result.current.cooldownSeconds).toBe(0);
+
+    // A second attempt while still eligible re-shows the same message.
+    act(() => {
+      result.current.handleRequestClue();
+    });
+
+    expect(result.current.clues).toEqual([]);
+    expect(result.current.message).toBe(
+      "AI hint budget exhausted for today — try again tomorrow.",
+    );
+    expect(result.current.canRequestClue).toBe(true);
   });
 
   it("keeps the clue cooldown when currentGateId changes", () => {
