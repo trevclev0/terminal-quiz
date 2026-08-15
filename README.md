@@ -6,6 +6,10 @@
 > passphrase to unlock the next.
 
 <p align="center">
+  <img src="docs/screenshot.png" alt="Terminal Quiz gameplay" width="640">
+</p>
+
+<p align="center">
   <a href="https://quiz.clevertrevor.dev"><strong>▶ Try it live — quiz.clevertrevor.dev</strong></a>
 </p>
 
@@ -24,20 +28,11 @@
   </a>
 </p>
 
-```text
-══════════════════════════════════════════════════════════
-   TERMINAL QUIZ
-   ▸ a riddle game on Cloudflare Workers
-   ▸ crack the passphrase to unlock the next gate
-══════════════════════════════════════════════════════════
-```
-
 ---
 
 ## Table of Contents
 
 - [Features](#features)
-- [Screenshot](#screenshot)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [Getting Started](#getting-started)
@@ -59,12 +54,6 @@
 - **User authentication** — OAuth-only (Google + GitHub) via Better Auth, self-hosted on the same Worker. Anonymous gameplay is unchanged and does not require login. Authentication is only needed for content authorship.
 - **User-authored programs** — authenticated users can create, edit, and manage their own programs and gates through a dedicated management UI at `/programs/manage`. Programs can be `public` (listed for everyone) or `unlisted` (accessible only by direct link, same model as unlisted YouTube videos).
 - **Copy-link sharing** — unlisted programs include a one-click "Copy Link" button in the management UI for easy sharing by direct URL
-
----
-
-## Screenshot
-
-![Terminal Quiz gameplay](docs/screenshot.png)
 
 ---
 
