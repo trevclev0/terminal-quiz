@@ -20,7 +20,7 @@ jobs:
       deployment-url: ${{ steps.deploy.outputs.deployment-url }}
       playwright-version: ${{ steps.playwright-version.outputs.version }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Create GitHub Deployment
         uses: chrnorm/deployment-action@v2
@@ -47,7 +47,7 @@ jobs:
 
       - name: Apply D1 Migrations
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork)
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -60,7 +60,7 @@ jobs:
       - name: Deploy to Cloudflare
         id: deploy
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork)
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -93,7 +93,7 @@ jobs:
       contents: read
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Environment
         uses: ./.github/actions/setup-env
@@ -111,7 +111,7 @@ jobs:
           AUTH_TEST_BYPASS_SECRET: ${{ secrets.AUTH_TEST_BYPASS_SECRET }}
 
       - name: Upload Playwright Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: playwright-report-${{ github.event.number }}
