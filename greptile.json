@@ -1,6 +1,6 @@
 {
   "instructions": "Follow AGENTS.md and CONVENTIONS.md strictly. Bun only, Cloudflare Workers runtime, GraphQL-only gameplay, session-scoped progression, two decoupled identity systems (x-session-id gameplay, Better Auth cookie for authorship).",
-  "commentTypes": ["logic", "syntax", "style"],
+  "commentTypes": ["logic", "syntax"],
   "strictness": 1,
   "statusCheck": false,
   "triggerOnUpdates": false,
@@ -34,7 +34,10 @@
         "rule": "GraphQL query/mutation strings must be imported from src/shared/gqlQueries.ts. Never define them inline in consumer files."
       },
       {
-        "scope": ["src/worker/graphql/gameplay/*Mutation.ts"],
+        "scope": [
+          "src/worker/graphql/gameplay/*Mutation.ts",
+          "src/worker/graphql/gameplay/*Mutations.ts"
+        ],
         "rule": "Every mutation operating on an existing program/gate must call authorizeProgramMutation(db, programId, userId). Never weaken submitGuess's currentGateId desync check (IDOR protection)."
       },
       {
@@ -42,7 +45,7 @@
         "rule": "Cloudflare Workers runtime - no Node-only APIs (fs, path, process.env directly). No REST gameplay endpoints; GraphQL is the only gameplay API."
       },
       {
-        "scope": ["src/shared/authSchema.ts"],
+        "scope": ["src/shared/authSchema.ts", "src/worker/routes/graphql.ts"],
         "rule": "Must never be exposed via GraphQL buildSchema()."
       }
     ]
