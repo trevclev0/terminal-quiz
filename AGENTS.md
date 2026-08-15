@@ -199,6 +199,16 @@ Do **not** bypass hooks with `--no-verify` unless documented.
 
 ---
 
+## AI Review on PRs
+
+- **Greptile** — reviews each PR automatically, once (config: `greptile.json`).
+- **CodeRabbit** — the free tier only auto-reviews repos with 10+ stars. Until this repo
+  qualifies, trigger reviews manually after opening a PR with
+  `gh pr comment <n> "@coderabbitai full review"` (or click **Trigger review** in
+  CodeRabbit's summary comment). Config: `.coderabbit.yaml`.
+
+---
+
 ## Testing
 
 There are **three** tiers of tests:
