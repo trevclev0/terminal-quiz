@@ -99,10 +99,13 @@ describe("requestClue mutation", () => {
     await setupTestDb();
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     invalidateCachedSchema();
     vi.mocked(generateClue).mockReset();
     vi.mocked(generateClue).mockResolvedValue("mock clue from vi.mock");
+    // Fresh AI budget per test — the integration budget is tiny (3), so any
+    // leak between tests would spuriously exhaust later eligible requests.
+    await db.delete(aiUsage).where(eq(aiUsage.usageDate, getUsageDateKey()));
   });
 
   it("returns clue text when eligible", async () => {
@@ -336,17 +339,10 @@ describe("requestClue mutation", () => {
       .first<{ cnt: number }>();
     expect(clueCount?.cnt).toBe(0);
 
-    // AI returned null — the budget counter must NOT increment
-    const before = await getUsageCount();
-    await gqlRequest(REQUEST_CLUE_MUTATION, {
-      sessionId,
-      variables: {
-        programId: E2E_PROGRAM_ID,
-        gateId: E2E_GATE_1_ID,
-        currentGuess: "red",
-      },
-    });
-    expect(await getUsageCount()).toBe(before);
+    // The reservation is kept even though the clue was unusable: the AI ran
+    // and may have billed, so the generated-but-unusable request still counts
+    // against the daily budget.
+    expect(await getUsageCount()).toBe(1);
   });
 
   it("rate limit: in-window cap rejects with retryAfterMs", async () => {
@@ -510,10 +506,8 @@ describe("requestClue mutation", () => {
   });
 
   it("ai budget exhausted: rejects before any AI call, slot, or increment", async () => {
-    // Runs LAST: seeds today's usage to exceed the (default) budget, which
-    // would exhaust all subsequent eligible requests in this file. Ensure
-    // this test stays at the end of the describe block, and clean up its
-    // seeded row so the file is re-runnable.
+    // Seed the counter at the (tiny, env-configured) daily budget. Each test
+    // resets ai_usage in beforeEach, so order does not matter here.
     const sessionId = makeSessionId("budget-exhausted");
     const progressId = await insertSession(sessionId, E2E_GATE_1_ID, {
       attemptCount: 2,
@@ -522,10 +516,10 @@ describe("requestClue mutation", () => {
     const usageDateKey = getUsageDateKey();
     await db
       .insert(aiUsage)
-      .values({ usageDate: usageDateKey, requestCount: 999_999 })
+      .values({ usageDate: usageDateKey, requestCount: 3 })
       .onConflictDoUpdate({
         target: aiUsage.usageDate,
-        set: { requestCount: 999_999 },
+        set: { requestCount: 3 },
       });
 
     try {
@@ -550,7 +544,7 @@ describe("requestClue mutation", () => {
       expect(data.requestClue.isAiBudgetExhausted).toBe(true);
 
       // Budget guard short-circuits BEFORE the rate-limit claim: no AI call,
-      // no reservation slot, no clue row, no counter increment.
+      // no reservation slot, no clue row, counter unchanged (reserve → release).
       expect(vi.mocked(generateClue)).not.toHaveBeenCalled();
 
       const rateRows = await env.DB.prepare(
@@ -567,9 +561,64 @@ describe("requestClue mutation", () => {
         .first<{ cnt: number }>();
       expect(clueRows?.cnt).toBe(0);
 
-      expect(await getUsageCount()).toBe(999_999);
+      expect(await getUsageCount()).toBe(3);
     } finally {
       await db.delete(aiUsage).where(eq(aiUsage.usageDate, usageDateKey));
     }
+  });
+
+  it("concurrent requests never exceed the configured AI budget", async () => {
+    // Seed the counter just below the (tiny, env-configured) daily budget of
+    // 3, then fire 4 eligible requests from distinct sessions at once. The
+    // atomic reservation is single-writer, so exactly 2 reservations land
+    // at-or-below budget and 2 land above it — no request can slip past the
+    // cap between the check and the AI call.
+    await db.insert(aiUsage).values({
+      usageDate: getUsageDateKey(),
+      requestCount: 1,
+    });
+
+    const sessions = Array.from({ length: 4 }, (_, i) =>
+      makeSessionId(`concurrent-${i}`),
+    );
+    for (const sessionId of sessions) {
+      await insertSession(sessionId, E2E_GATE_1_ID, { attemptCount: 2 });
+    }
+
+    const variables = {
+      programId: E2E_PROGRAM_ID,
+      gateId: E2E_GATE_1_ID,
+      currentGuess: "red",
+    };
+    const responses = await Promise.all(
+      sessions.map((sessionId) =>
+        gqlRequest(REQUEST_CLUE_MUTATION, { sessionId, variables }),
+      ),
+    );
+
+    for (const response of responses) {
+      expect(response.status).toBe(200);
+      expect(response.body.errors).toBeUndefined();
+    }
+
+    const results = responses.map(
+      (r) => (r.body.data as RequestClueData).requestClue,
+    );
+    const winners = results.filter((r) => !r.isAiBudgetExhausted);
+    const exhausted = results.filter((r) => r.isAiBudgetExhausted);
+
+    expect(winners).toHaveLength(2);
+    expect(exhausted).toHaveLength(2);
+    for (const r of winners) {
+      expect(r.clueText).toBe("mock clue from vi.mock");
+      expect(r.isRateLimited).toBe(false);
+    }
+    for (const r of exhausted) {
+      expect(r.clueText).toBeNull();
+      expect(r.isRateLimited).toBe(false);
+    }
+
+    // AI was called exactly as many times as reservations won the budget
+    expect(vi.mocked(generateClue)).toHaveBeenCalledTimes(2);
   });
 });

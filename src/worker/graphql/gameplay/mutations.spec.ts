@@ -1,4 +1,4 @@
-import { clueRateLimits, gateClues } from "@shared/schema";
+import { aiUsage, clueRateLimits, gateClues } from "@shared/schema";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { requestClue } from "./requestClueMutation";
 import { resetSession } from "./resetSessionMutation";
@@ -23,7 +23,6 @@ type MockDb = {
     gates: { findFirst: ReturnType<typeof vi.fn> };
     gateClues: { findMany: ReturnType<typeof vi.fn> };
   };
-  select: ReturnType<typeof vi.fn>;
   update: ReturnType<typeof vi.fn>;
   insert: ReturnType<typeof vi.fn>;
   delete: ReturnType<typeof vi.fn>;
@@ -37,19 +36,23 @@ function createMockDb(): MockDb {
       gates: { findFirst: vi.fn() },
       gateClues: { findMany: vi.fn().mockResolvedValue([]) },
     },
-    // select().from().where() chain used by aiBudget.isAiBudgetExceeded —
-    // defaults to no matching rows so the budget is never exhausted.
-    select: vi.fn().mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue([]),
-      }),
-    }),
     update: vi.fn().mockReturnValue({
       set: vi.fn().mockReturnValue({
         where: vi.fn().mockResolvedValue(undefined),
       }),
     }),
     insert: vi.fn().mockImplementation((table: unknown) => {
+      if (table === aiUsage) {
+        // Atomic budget reservation used by reserveAiUsage. Defaults to a
+        // low count so the budget is never exhausted in unit tests.
+        return {
+          values: vi.fn().mockReturnValue({
+            onConflictDoUpdate: vi.fn().mockReturnValue({
+              returning: vi.fn().mockResolvedValue([{ requestCount: 1 }]),
+            }),
+          }),
+        };
+      }
       if (table === clueRateLimits) {
         // Count-guarded conditional insert used by claimClueRateLimit.
         // Defaults to winning the claim so requestClue proceeds to the AI.
@@ -664,10 +667,13 @@ describe("Gameplay Mutations: requestClue", () => {
       ["Think about doctors.", "It grows on trees."],
     );
     expect(mockDb.insert).toHaveBeenCalledWith(gateClues);
-    const gateCluesCall = mockDb.insert.mock.results.find(
-      (result) => result.value.values,
+    // Find the gate_clues insert specifically — reserveAiUsage also inserts
+    // (aiUsage) with a `.values` chain, so a blind `.find` would match that.
+    const gateCluesIndex = mockDb.insert.mock.calls.findIndex(
+      ([table]) => table === gateClues,
     );
-    expect(gateCluesCall?.value.values).toHaveBeenCalledWith({
+    const gateCluesCall = mockDb.insert.mock.results[gateCluesIndex];
+    expect(gateCluesCall.value.values).toHaveBeenCalledWith({
       sessionProgressId: "progress-1",
       gateId: "gate-1",
       clueText: "It is often red or green.",
@@ -717,10 +723,29 @@ describe("Gameplay Mutations: requestClue", () => {
     });
     mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
     mockDb.query.gateClues.findMany.mockResolvedValue([]);
-    mockDb.select.mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue([{ requestCount: 999 }]),
-      }),
+    // Force the atomic reservation to return an over-budget count.
+    mockDb.insert.mockImplementation((table: unknown) => {
+      if (table === aiUsage) {
+        return {
+          values: vi.fn().mockReturnValue({
+            onConflictDoUpdate: vi.fn().mockReturnValue({
+              returning: vi.fn().mockResolvedValue([{ requestCount: 999 }]),
+            }),
+          }),
+        };
+      }
+      if (table === clueRateLimits) {
+        return {
+          select: vi.fn().mockReturnValue({
+            returning: vi.fn().mockResolvedValue([{ id: "claimed-rate-slot" }]),
+          }),
+        };
+      }
+      return {
+        values: vi.fn().mockReturnValue({
+          onConflictDoNothing: vi.fn().mockResolvedValue(undefined),
+        }),
+      };
     });
 
     if (!requestClue.resolve) throw new Error("Resolver not defined");
@@ -747,6 +772,8 @@ describe("Gameplay Mutations: requestClue", () => {
     expect(generateClue).not.toHaveBeenCalled();
     expect(mockDb.insert).not.toHaveBeenCalledWith(clueRateLimits);
     expect(mockDb.insert).not.toHaveBeenCalledWith(gateClues);
+    // The over-budget reservation was released back
+    expect(mockDb.update).toHaveBeenCalledWith(aiUsage);
   });
 
   it("marks clue limit reached after the third clue is generated", async () => {
@@ -836,12 +863,28 @@ describe("Gameplay Mutations: requestClue", () => {
     mockDb.query.gateClues.findMany.mockResolvedValue([]);
     vi.mocked(generateClue).mockResolvedValue("A juicy hint.");
 
-    mockDb.insert.mockReturnValue({
-      values: vi.fn().mockRejectedValue(new Error("UNIQUE constraint")),
-      // Claim still succeeds so the resolver reaches the gate_clues insert
-      select: vi.fn().mockReturnValue({
-        returning: vi.fn().mockResolvedValue([{ id: "claimed-rate-slot" }]),
-      }),
+    mockDb.insert.mockImplementation((table: unknown) => {
+      if (table === aiUsage) {
+        // Budget reservation succeeds
+        return {
+          values: vi.fn().mockReturnValue({
+            onConflictDoUpdate: vi.fn().mockReturnValue({
+              returning: vi.fn().mockResolvedValue([{ requestCount: 1 }]),
+            }),
+          }),
+        };
+      }
+      if (table === clueRateLimits) {
+        // Claim still succeeds so the resolver reaches the gate_clues insert
+        return {
+          select: vi.fn().mockReturnValue({
+            returning: vi.fn().mockResolvedValue([{ id: "claimed-rate-slot" }]),
+          }),
+        };
+      }
+      return {
+        values: vi.fn().mockRejectedValue(new Error("UNIQUE constraint")),
+      };
     });
 
     if (!requestClue.resolve) throw new Error("Resolver not defined");
