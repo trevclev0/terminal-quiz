@@ -1,6 +1,7 @@
 import { gates, sessionCompletedGates, sessionProgress } from "@shared/schema";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { GraphQLNonNull, GraphQLString } from "graphql";
+import { trackEvent } from "./analytics";
 import { type AppGraphQLContext, ProgressionPayloadType } from "./types";
 
 export const getProgramProgression = {
@@ -25,7 +26,10 @@ export const getProgramProgression = {
       ),
     });
 
+    let isNewSession = false;
+
     if (!progress) {
+      isNewSession = true;
       const firstGate = await db.query.gates.findFirst({
         columns: {
           correctAnswer: false,
@@ -59,6 +63,15 @@ export const getProgramProgression = {
       if (!progress) {
         throw new Error("Failed to initialize session progression.");
       }
+    }
+
+    if (isNewSession) {
+      trackEvent(context, {
+        name: "program_started",
+        programId: args.programId,
+        gateId: progress.currentGateId,
+        outcome: "fresh",
+      });
     }
 
     // Security: only gates from sessionCompletedGates are fetched with correctAnswer.

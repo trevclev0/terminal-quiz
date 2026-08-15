@@ -6,6 +6,7 @@ import {
 } from "@shared/schema";
 import { and, asc, eq } from "drizzle-orm";
 import { GraphQLBoolean, GraphQLNonNull, GraphQLString } from "graphql";
+import { trackEvent } from "./analytics";
 import type { AppGraphQLContext } from "./types";
 
 export const resetSession = {
@@ -36,6 +37,12 @@ export const resetSession = {
         // No session to reset — no-op
         return true;
       }
+
+      trackEvent(context, {
+        name: "session_reset",
+        programId: args.programId,
+        outcome: "reset",
+      });
 
       // Find the first gate to set as current
       const firstGate = await db.query.gates.findFirst({
