@@ -1,0 +1,104 @@
+language: en-US
+reviews:
+  # Most aggressive review profile.
+  profile: assertive
+  # Advisory only — CI status checks are the merge gate (required approvals = 0).
+  # Do not post approvals, do not block merges.
+  request_changes_workflow: false
+  high_level_summary: true
+  # Summary as review comment (walkthrough), not PR-description edits.
+  high_level_summary_in_walkthrough: true
+  collapse_walkthrough: true
+  # Review each PR exactly once, no re-reviews on push (free-tier + credit-safe).
+  auto_review:
+    enabled: true
+    auto_incremental_review: false
+    drafts: false
+  # Generated / build-artifact paths never warrant AI review.
+  path_filters:
+    - "!migrations/**"
+    - "!scripts/generated/**"
+    - "!src/react-app/routeTree.gen.ts"
+    - "!worker-configuration.d.ts"
+    - "!public/**"
+    - "!**/test-results/**"
+    - "!**/playwright-report/**"
+  path_instructions:
+    - path: "src/worker/graphql/gameplay/*.ts"
+      instructions: |
+        Security invariants from CONVENTIONS.md / AGENTS.md:
+        - Every management mutation operating on an existing program or gate must call
+          authorizeProgramMutation(db, programId, userId) before mutating — all except
+          createProgram. Never trust client-supplied programId/gateId without ownership
+          verification.
+        - Never weaken submitGuess's currentGateId desync check. It is the only thing
+          preventing a session from submitting guesses for gates it has not reached
+          (IDOR protection).
+        - Any resolver mutating session-scoped state must re-verify that the request's
+          session owns the row it mutates.
+        - GraphQL is the only gameplay API. Do not add REST gameplay endpoints.
+        - Clue eligibility rules (attempt threshold, MAX_CLUES_PER_GATE = 3, no duplicate
+          clue per attempt count) live in clueEligibility.ts and must stay in sync with
+          any clue-flow changes.
+    - path: "src/worker/**"
+      instructions: |
+        Runtime is Cloudflare Workers, not Node.js. No Node-only APIs (fs, path,
+        process.env directly). No console.log. Validate all inputs at the
+        resolver/handler layer before touching D1.
+    - path: "src/shared/schema.ts"
+      instructions: |
+        Drizzle schema is the single source of truth for DB and TS types. Progression is
+        session-scoped only (session_progress, session_completed_gates). Do not reintroduce
+        shared/global game_state-style tables.
+    - path: "src/shared/authSchema.ts"
+      instructions: |
+        Better Auth tables (user, account, session, verification) live here on a separate
+        Drizzle instance. Never pass this instance to drizzle-graphql buildSchema() — it
+        must never be introspectable via GraphQL.
+    - path: "src/shared/gqlQueries.ts"
+      instructions: |
+        Single source of truth for all GraphQL query/mutation strings. Frontend hooks, api
+        files, and integration tests must import from here. Flag any query/mutation strings
+        defined inline in consumer files.
+    - path: "src/**/*.tsx"
+      instructions: |
+        - No inline style={} props. All styling via co-located CSS Modules
+          (ComponentName.module.css), no CSS-in-JS.
+        - No useEffect for data fetching. Use TanStack Query (useQuery/useMutation) with
+          intentional staleTime.
+        - TanStack Router only; use createFileRoute.
+    - path: "src/react-app/routes/login.tsx"
+      instructions: |
+        validateReturnTo() must reject cross-origin, protocol-relative (//evil.com), and
+        backslash-based return_to values. Only same-origin relative paths matching
+        ALLOWED_REDIRECT_PATHS / ALLOWED_REDIRECT_PREFIXES are accepted. No open redirects.
+    - path: "src/**/*.spec.ts*"
+      instructions: |
+        Tests co-located next to source (foo.spec.ts). Unit tests must mock at the
+        service/resolver boundary — no real D1/Workers bindings. All network requests fully
+        mocked (MSW). Vitest only, no Jest APIs.
+    - path: "e2e/**"
+      instructions: |
+        Playwright E2E specs. Page objects live in e2e/pages/. Local runs seed the D1 with
+        seed-e2e fixtures (scripts/generated/seed-e2e.sql) before the suite runs.
+    - path: "**/*.ts"
+      instructions: |
+        TypeScript strict mode — no `any`, use unknown and narrow explicitly. Prefer early
+        returns over nested conditionals. Bun is the only package manager (never npm, yarn,
+        or pnpm). No barrel files unless already established in that directory.
+  tools:
+    biome:
+      enabled: true
+    gitleaks:
+      enabled: true
+    markdownlint:
+      enabled: true
+    eslint:
+      enabled: false
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "**/AGENTS.md"
+      - "**/CONVENTIONS.md"
