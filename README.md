@@ -66,8 +66,6 @@
 
 ![Terminal Quiz gameplay](docs/screenshot.png)
 
-<!-- Drop a screenshot at docs/screenshot.png and it renders here. -->
-
 ---
 
 ## Tech Stack
