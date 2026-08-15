@@ -14,8 +14,8 @@ export default defineConfig({
       quoteStyle: "double",
     }),
     react(),
-    !process.env.VITEST && cloudflare(),
-  ].filter(Boolean),
+    ...(process.env.VITEST ? [] : [cloudflare()]),
+  ],
   resolve: {
     alias: {
       "@hooks": fileURLToPath(
