@@ -15,6 +15,7 @@ export type AppVariables = Env & {
     db: DrizzleD1Database<typeof schema>;
     sessionId?: string;
     user?: AuthUser;
+    requestId?: string;
   };
 };
 

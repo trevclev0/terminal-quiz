@@ -1,7 +1,10 @@
 import type { Ai, D1Database } from "@cloudflare/workers-types";
 import { authMiddleware } from "@worker-middleware/auth";
 import { type AppVariables, setupDb } from "@worker-middleware/db";
-import { conditionalLogger } from "@worker-middleware/logger";
+import {
+  conditionalLogger,
+  requestIdMiddleware,
+} from "@worker-middleware/logger";
 import { sessionMiddleware } from "@worker-middleware/session";
 import graphQlRouter from "@worker-routes/graphql";
 import { getAuth } from "@worker-services/auth";
@@ -29,12 +32,13 @@ export type Env = {
   };
 };
 
-const app = new Hono<Env>();
+const app = new Hono<AppVariables>();
 
+app.use(requestIdMiddleware);
 app.use(conditionalLogger);
 
 app.onError((err, c) => {
-  logError(err, c.req.method, c.req.path);
+  logError(err, c.req.method, c.req.path, c.get("requestId"));
   return c.json(formatErrorResponse(err, c.req.path), 500);
 });
 
