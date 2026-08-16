@@ -10,13 +10,6 @@ if (window.location.hostname === "quiz.clevertrevor.dev") {
   document.head.appendChild(beacon);
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  const bootFallback = document.getElementById("boot-fallback");
-  if (bootFallback) {
-    window.setTimeout(() => bootFallback.classList.remove("dn"), 0);
-  }
-});
-
 function makeSessionId() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID();

@@ -38,12 +38,20 @@ body {
   color: #4caf50;
 }
 
+#boot-fallback .reload-hint {
+  font-size: 11pt;
+  opacity: 0;
+  animation: terminal-quiz-reveal-hint 0s 6s forwards;
+}
+
+@keyframes terminal-quiz-reveal-hint {
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   #boot-fallback .cursor {
     animation: none;
   }
-}
-
-.dn {
-  display: none;
 }
