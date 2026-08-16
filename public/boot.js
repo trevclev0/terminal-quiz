@@ -1,3 +1,15 @@
+// Cloudflare Web Analytics — production hostname only, so preview and local
+// traffic don't contaminate the dedicated quiz dashboard.
+if (window.location.hostname === "quiz.clevertrevor.dev") {
+  const beacon = document.createElement("script");
+  beacon.defer = true;
+  beacon.src = "https://static.cloudflareinsights.com/beacon.min.js";
+  beacon.dataset.cfBeacon = JSON.stringify({
+    token: "7c7b1bf0bc1d454aa3a55a053b52618f",
+  });
+  document.head.appendChild(beacon);
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   const bootFallback = document.getElementById("boot-fallback");
   if (bootFallback) {
