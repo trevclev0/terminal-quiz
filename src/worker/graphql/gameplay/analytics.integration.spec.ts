@@ -1,4 +1,4 @@
-import { env } from "cloudflare:workers";
+import { env, exports } from "cloudflare:workers";
 import {
   GET_PROGRAM_PROGRESSION_QUERY,
   REQUEST_CLUE_MUTATION,
@@ -218,6 +218,58 @@ describe("analytics event emission", () => {
     });
 
     expect(response.body.errors).toBeUndefined();
+    expect(vi.mocked(trackEvent)).not.toHaveBeenCalled();
+  });
+});
+
+describe("POST /api/error telemetry", () => {
+  beforeEach(() => {
+    vi.mocked(trackEvent).mockClear();
+  });
+
+  function postError(body: string): Promise<Response> {
+    return exports.default.fetch(
+      new Request("http://localhost/api/error", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      }),
+    );
+  }
+
+  it("emits client_error with sanitized detail and body-supplied session id", async () => {
+    const sessionId = makeSessionId("beacon");
+    const response = await postError(
+      JSON.stringify({
+        sessionId,
+        source: "boundary",
+        message: "boom token=secret",
+        stack: "Error: boom\n  at fn (app.js:1:1)",
+        path: "/programs/p1",
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true });
+    const calls = emitted("client_error");
+    expect(calls).toHaveLength(1);
+    expect(calls[0][0].get("sessionId")).toBe(sessionId);
+    expect(calls[0][1]).toMatchObject({ outcome: "boundary" });
+    expect(calls[0][1].detail).toContain("token=[REDACTED]");
+    expect(calls[0][1].detail).not.toContain("secret");
+  });
+
+  it("rejects an oversized body", async () => {
+    const response = await postError(
+      JSON.stringify({ message: "x".repeat(4096) }),
+    );
+    expect(response.status).toBe(413);
+    expect(vi.mocked(trackEvent)).not.toHaveBeenCalled();
+  });
+
+  it("rejects malformed JSON", async () => {
+    const response = await postError("{not-json");
+    expect(response.status).toBe(400);
     expect(vi.mocked(trackEvent)).not.toHaveBeenCalled();
   });
 });
