@@ -55,6 +55,18 @@ describe("reportError", () => {
     expect(payload.path).toBe("/programs/x");
   });
 
+  it("sanitizes sensitive text before sending", async () => {
+    reportError({
+      source: "boundary",
+      message: "fetch failed: https://api.example.com?token=abc123",
+    });
+
+    const body = sendBeaconMock.mock.calls[0][1] as Blob;
+    const payload = JSON.parse(await body.text()) as Record<string, string>;
+    expect(payload.message).toContain("[REDACTED]");
+    expect(payload.message).not.toContain("abc123");
+  });
+
   it("throttles to one beacon per second", () => {
     reportError({ source: "boundary", message: "first" });
     reportError({ source: "boundary", message: "second" });

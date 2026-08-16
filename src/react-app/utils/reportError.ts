@@ -1,8 +1,10 @@
+import { sanitizeErrorText } from "@shared/sanitizeError";
 import { getSessionId } from "./session";
 
 const RATE_LIMIT_MS = 1000;
 const MAX_STACK_LENGTH = 1024;
 const MAX_USER_AGENT_LENGTH = 200;
+const MAX_FIELD_LENGTH = 200;
 
 type ReportErrorSource = "boundary" | "route" | "boot";
 
@@ -48,10 +50,13 @@ export function reportError({
   const payload = {
     sessionId,
     source,
-    message: error?.message ?? message ?? "Unknown error",
-    stack: (error?.stack ?? stack ?? "").slice(0, MAX_STACK_LENGTH),
-    path: path ?? window.location.pathname,
-    userAgent: navigator.userAgent.slice(0, MAX_USER_AGENT_LENGTH),
+    message: sanitizeErrorText(
+      error?.message ?? message ?? "Unknown error",
+      MAX_FIELD_LENGTH,
+    ),
+    stack: sanitizeErrorText(error?.stack ?? stack ?? "", MAX_STACK_LENGTH),
+    path: sanitizeErrorText(path ?? window.location.pathname, MAX_FIELD_LENGTH),
+    userAgent: sanitizeErrorText(navigator.userAgent, MAX_USER_AGENT_LENGTH),
   };
 
   try {
