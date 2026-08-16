@@ -2,6 +2,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const sendBeaconMock = vi.fn();
 
+// Object.defineProperty replacement is not restored by vi.restoreAllMocks(),
+// so capture the original descriptor and restore it explicitly.
+const originalSendBeaconDescriptor = Object.getOwnPropertyDescriptor(
+  navigator,
+  "sendBeacon",
+);
+
+function setSendBeacon(value: ReturnType<typeof vi.fn> | undefined) {
+  Object.defineProperty(navigator, "sendBeacon", {
+    configurable: true,
+    value,
+  });
+}
+
 type ReportErrorFn = typeof import("./reportError").reportError;
 let reportError: ReportErrorFn;
 
@@ -14,15 +28,21 @@ beforeEach(async () => {
   vi.stubEnv("DEV", false);
   sendBeaconMock.mockReset();
   localStorage.setItem("terminal_quiz_session_id", "session-uuid-123");
-  Object.defineProperty(navigator, "sendBeacon", {
-    configurable: true,
-    value: sendBeaconMock,
-  });
+  setSendBeacon(sendBeaconMock);
 });
 
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.restoreAllMocks();
+  if (originalSendBeaconDescriptor) {
+    Object.defineProperty(
+      navigator,
+      "sendBeacon",
+      originalSendBeaconDescriptor,
+    );
+  } else {
+    delete (navigator as Partial<Navigator>).sendBeacon;
+  }
 });
 
 describe("reportError", () => {
@@ -82,13 +102,25 @@ describe("reportError", () => {
   });
 
   it("no-ops when sendBeacon is unavailable", () => {
-    Object.defineProperty(navigator, "sendBeacon", {
-      configurable: true,
-      value: undefined,
-    });
+    setSendBeacon(undefined);
 
     expect(() =>
       reportError({ source: "boundary", message: "boom" }),
     ).not.toThrow();
+  });
+
+  it("combines error.stack with an explicitly passed stack", async () => {
+    const error = new Error("boom");
+    reportError({
+      source: "boundary",
+      error,
+      stack: "\n    in Child\n    in Parent",
+    });
+
+    const body = sendBeaconMock.mock.calls[0][1] as Blob;
+    const payload = JSON.parse(await body.text()) as Record<string, string>;
+    expect(payload.stack).toContain("boom");
+    expect(payload.stack).toContain("in Child");
+    expect(payload.stack).toContain("in Parent");
   });
 });

@@ -294,4 +294,20 @@ describe("POST /api/error telemetry", () => {
     expect(response.status).toBe(400);
     expect(vi.mocked(trackEvent)).not.toHaveBeenCalled();
   });
+
+  it("rejects null, array, and primitive bodies", async () => {
+    for (const body of ["null", "[]", "42", '"str"']) {
+      const response = await postError(body);
+      expect(response.status).toBe(400);
+    }
+    expect(vi.mocked(trackEvent)).not.toHaveBeenCalled();
+  });
+
+  it("rejects an unknown source instead of defaulting to boundary", async () => {
+    const response = await postError(
+      JSON.stringify({ source: "mystery", message: "boom" }),
+    );
+    expect(response.status).toBe(400);
+    expect(vi.mocked(trackEvent)).not.toHaveBeenCalled();
+  });
 });
