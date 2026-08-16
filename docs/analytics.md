@@ -7,6 +7,12 @@ first-party analytics. No third-party SDKs, no cookies, no fingerprinting.
 Pseudonymous by default — events are keyed on a client-generated `sessionId`,
 never the Better Auth user.
 
+> This document describes the target state of the analytics stack.
+> Implementation lands incrementally across the analytics change stack
+> (PRs #249–#253): the binding first, then gameplay events, AI observability,
+> structured logging, and the client error beacon. A section may describe
+> behavior that arrives in a later PR of the stack.
+
 ## Sink: Cloudflare Analytics Engine
 
 Chosen over a D1 events table: purpose-built for events, write-optimized,
@@ -140,7 +146,8 @@ SELECT blob2 AS program_id,
        sumIf(_sample_interval, blob1 = 'gate_attempt') AS attempts,
        sumIf(_sample_interval, blob1 = 'gate_completed') AS completions
 FROM program_events
-WHERE timestamp >= NOW() - INTERVAL '7' DAY
+WHERE blob5 = 'production'
+  AND timestamp >= NOW() - INTERVAL '7' DAY
 GROUP BY blob2;
 
 -- Average attempts-before-success per gate (weighted for sampling)
@@ -149,6 +156,7 @@ SELECT blob3 AS gate_id,
          AS avg_attempts_before_success
 FROM program_events
 WHERE blob1 = 'gate_completed'
+  AND blob5 = 'production'
   AND timestamp >= NOW() - INTERVAL '30' DAY
 GROUP BY blob3;
 
@@ -156,6 +164,7 @@ GROUP BY blob3;
 SELECT blob4 AS outcome, SUM(_sample_interval) AS n
 FROM program_events
 WHERE blob1 = 'clue_requested'
+  AND blob5 = 'production'
   AND timestamp >= NOW() - INTERVAL '7' DAY
 GROUP BY blob4;
 
@@ -164,12 +173,15 @@ GROUP BY blob4;
 SELECT quantileExactWeighted(0.95)(double3, _sample_interval) AS p95_ai_latency_ms
 FROM program_events
 WHERE blob1 = 'clue_requested'
+  AND blob5 = 'production'
   AND double3 > 0
   AND timestamp >= NOW() - INTERVAL '7' DAY;
 
 -- Per-session funnel for one visitor (weighted)
 SELECT blob1 AS event, SUM(_sample_interval) AS n
 FROM program_events
-WHERE index1 = 'SESSION_UUID' AND timestamp >= NOW() - INTERVAL '90' DAY
+WHERE index1 = 'SESSION_UUID'
+  AND blob5 = 'production'
+  AND timestamp >= NOW() - INTERVAL '90' DAY
 GROUP BY blob1;
 ```
