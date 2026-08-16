@@ -3,9 +3,9 @@
 ## Goal
 
 Instrument gameplay, client errors, and AI usage with privacy-respecting,
-first-party analytics. No third-party SDKs, no cookies, no consent banner.
-Anonymous by default — events are keyed on `sessionId`, never the Better Auth
-user.
+first-party analytics. No third-party SDKs, no cookies, no fingerprinting.
+Pseudonymous by default — events are keyed on a client-generated `sessionId`,
+never the Better Auth user.
 
 ## Sink: Cloudflare Analytics Engine
 
@@ -13,11 +13,14 @@ Chosen over a D1 events table: purpose-built for events, write-optimized,
 queryable via SQL API, and does not pay a write against the gameplay DB.
 Matches the all-in-on-Cloudflare stack.
 
-- Binding: `ANALYTICS`, dataset `program_events` — added in both the top-level
-  and `env.preview` sections of `wrangler.jsonc`.
+- Binding: `ANALYTICS`, dataset `program_events` — configured in both the
+  top-level and `env.preview` sections of `wrangler.jsonc` (wired by the ops
+  PR of this change stack).
 - The dataset is account-level; one dataset serves prod + preview,
   distinguished by the `env` blob.
-- Retention: 90 days. Volume is far below sampling thresholds.
+- Retention: 90 days.
+- Analytics Engine may sample at write or query time — the reference queries
+  below are sampling-aware (`_sample_interval`).
 - Write is fire-and-forget (`writeDataPoint`, no await). 250 data points max
   per Worker invocation — our resolvers emit ≤2 per request.
 
@@ -41,8 +44,9 @@ existing queries break silently.
 | double3  | ai_latency_ms | number | `0` when n/a                                  |
 
 `session_id` is the sole index: it is the highest-cardinality field and the
-join key for per-session funnels. Everything else is low-cardinality and is
-grouped via `GROUP BY` on blobs.
+join key for per-session funnels. Every other blob is low-cardinality and safe
+to group via `GROUP BY`. `detail` is the exception — free-form, potentially
+high-cardinality; use it as a drill-down field, not a grouping dimension.
 
 ## Events
 
@@ -69,24 +73,28 @@ Event invariants:
 Playback and authoring remain GraphQL-only. The single `POST /api/error`
 endpoint is telemetry, not a gameplay or authoring path — it exists because
 client error capture must work exactly when the GraphQL client is broken
-(pre-bootstrap chunk load, boundary failure). `navigator.sendBeacon` can only
-POST `text/plain` and cannot set headers, so a dedicated route is required and
-the `sessionId` travels in the request body (it cannot go in the
-`x-session-id` header).
+(pre-bootstrap chunk load, boundary failure). `navigator.sendBeacon` cannot
+set headers, so a dedicated route is required and the `sessionId` travels in
+the request body (it cannot go in the `x-session-id` header). The client sends
+a `Blob` typed `application/json`; the route parses it as JSON.
 
-The route writes a `client_error` data point via `trackEvent` and returns
-`{ ok: true }`. No queueing, no retries — the client throttles.
+The route validates the JSON body (size + schema), caps `sessionId` and field
+lengths server-side, and writes a `client_error` data point via `trackEvent`,
+returning `{ ok: true }`. Client-side throttling is not an abuse control — a
+direct caller is not throttled; there is no server-side volume limiter yet. No
+queueing, no retries.
 
 ## Client capture (`reportError` util)
 
 - `ErrorBoundary.componentDidCatch` → `client_error:boundary`
 - `RouteErrorFallback` → `client_error:route`
 - `index.html` boot error listener → `client_error:boot` (inline, pre-bundle)
-- Transport: `navigator.sendBeacon("/api/error", JSON.stringify({...}))`,
-  guarded for `navigator.sendBeacon` availability and skipped in dev
+- Transport: `navigator.sendBeacon("/api/error", blob)` where `blob` is a JSON
+  `Blob`; guarded for `navigator.sendBeacon` availability and skipped in dev
   (`import.meta.env.DEV`).
 - Throttled client-side to ~1/sec; stack truncated to 1KB; `console.error`
-  retained for local/dev.
+  retained for local/dev. Error text is sanitized (`sanitizeErrorText`) before
+  it leaves the client, and again server-side before it is stored.
 
 ## AI observability
 
@@ -106,47 +114,61 @@ daily budget guardrail — budget counts launched generations, while
 - `conditionalLogger` emits a single JSON line per request:
   `{ ts, level, method, path, status, durationMs, requestId, sessionId }`.
 - `logError` emits JSON: `{ ts, level, method, path, requestId, message,
-  cause }`.
+  cause }` — `message` and `cause` are sanitized (`sanitizeErrorText`) before
+  writing; the raw error object is never logged whole.
 
 Output stays on stdout → Workers Logs, but is now filterable/queryable.
+Retention there is plan-dependent (3 days Free / 7 days Paid), distinct from
+Analytics Engine's 90 days. Logs carry `sessionId`.
 
 ## Privacy posture
 
-- Anonymous: keyed on a client-generated random UUID (`sessionId`), never the
-  Better Auth user.
+- Pseudonymous: keyed on a client-generated random UUID (`sessionId`), never
+  the Better Auth user. A persistent pseudonymous identifier can still be
+  personal data (GDPR Art 4(5), CCPA "unique identifiers") — reusing
+  `sessionId` for leaderboards (see `docs/feature-ideas.md` §4.1) or exposing
+  these events externally requires a separate privacy review.
 - First-party: no third-party requests, no cookies, no fingerprinting.
-- Data stays inside the Cloudflare account; 90-day retention.
-- The `session_id` index is a random UUID — not PII, safe to reuse for
-  pseudonymous leaderboards later (see `docs/feature-ideas.md` §4.1).
+- Data stays inside the Cloudflare account. Retention: Analytics Engine 90
+  days; Workers Logs 3–7 days (plan-dependent).
 
 ## Reference queries
 
 ```sql
 -- Daily attempt + completion funnel per program (last 7 days)
 SELECT blob2 AS program_id,
-       COUNT(*) FILTER (WHERE blob1 = 'gate_attempt') AS attempts,
-       COUNT(*) FILTER (WHERE blob1 = 'gate_completed') AS completions
+       sumIf(_sample_interval, blob1 = 'gate_attempt') AS attempts,
+       sumIf(_sample_interval, blob1 = 'gate_completed') AS completions
 FROM program_events
 WHERE timestamp >= NOW() - INTERVAL '7' DAY
 GROUP BY blob2;
 
--- Average attempts-before-success per gate
-SELECT blob3 AS gate_id, AVG(double1) AS avg_attempts_before_success
+-- Average attempts-before-success per gate (weighted for sampling)
+SELECT blob3 AS gate_id,
+       SUM(_sample_interval * double1) / SUM(_sample_interval)
+         AS avg_attempts_before_success
 FROM program_events
 WHERE blob1 = 'gate_completed'
   AND timestamp >= NOW() - INTERVAL '30' DAY
 GROUP BY blob3;
 
--- Clue outcome mix + p95 AI latency
-SELECT blob4 AS outcome, COUNT(*) AS n,
-       quantile(0.95)(double3) AS p95_ai_latency_ms
+-- Clue outcome mix (last 7 days)
+SELECT blob4 AS outcome, SUM(_sample_interval) AS n
 FROM program_events
 WHERE blob1 = 'clue_requested'
   AND timestamp >= NOW() - INTERVAL '7' DAY
 GROUP BY blob4;
 
--- Per-session funnel for one visitor
-SELECT blob1 AS event, COUNT(*) AS n
+-- p95 AI latency for generated clues (double3 = 0 are gatekeeping outcomes,
+-- not generations, and would skew latency)
+SELECT quantileExactWeighted(0.95)(double3, _sample_interval) AS p95_ai_latency_ms
+FROM program_events
+WHERE blob1 = 'clue_requested'
+  AND double3 > 0
+  AND timestamp >= NOW() - INTERVAL '7' DAY;
+
+-- Per-session funnel for one visitor (weighted)
+SELECT blob1 AS event, SUM(_sample_interval) AS n
 FROM program_events
 WHERE index1 = 'SESSION_UUID' AND timestamp >= NOW() - INTERVAL '90' DAY
 GROUP BY blob1;
