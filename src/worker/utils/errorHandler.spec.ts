@@ -70,6 +70,30 @@ describe("errorHandler", () => {
       const log = parseLog(consoleErrorSpy);
       expect(log.cause).toBe(String(cause));
     });
+
+    it("redacts tokens and query strings from the message", () => {
+      const error = new Error(
+        "upstream failed: https://api.example.com?token=abc123",
+      );
+
+      logError(error, "GET", "/api/graphql");
+
+      const log = parseLog(consoleErrorSpy);
+      expect(log.message).toContain("[REDACTED]");
+      expect(log.message).not.toContain("abc123");
+    });
+
+    it("redacts secrets in nested causes", () => {
+      const cause = new Error("upstream authorization: Bearer secret-token");
+      const error = new Error("Main error");
+      error.cause = cause;
+
+      logError(error, "POST", "/api/data");
+
+      const log = parseLog(consoleErrorSpy);
+      expect(log.cause).toContain("[REDACTED]");
+      expect(log.cause).not.toContain("secret-token");
+    });
   });
 
   describe("formatErrorResponse", () => {
@@ -86,7 +110,7 @@ describe("errorHandler", () => {
       expect(response).toEqual({
         errors: [{ message: "Internal Server Error" }],
       });
-      expect(consoleErrorSpy).toHaveBeenCalledWith(error);
+      expect(consoleErrorSpy).toHaveBeenCalledWith("GraphQL went wrong");
     });
     it("provides a default message for GraphQL paths if error has no message", () => {
       const error = new Error();
