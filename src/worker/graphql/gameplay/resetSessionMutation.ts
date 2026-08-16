@@ -38,12 +38,6 @@ export const resetSession = {
         return true;
       }
 
-      trackEvent(context, {
-        name: "session_reset",
-        programId: args.programId,
-        outcome: "reset",
-      });
-
       // Find the first gate to set as current
       const firstGate = await db.query.gates.findFirst({
         where: eq(gates.programId, args.programId),
@@ -69,6 +63,12 @@ export const resetSession = {
           })
           .where(eq(sessionProgress.id, progress.id)),
       ]);
+
+      trackEvent(context, {
+        name: "session_reset",
+        programId: args.programId,
+        outcome: "reset",
+      });
 
       return true;
     } catch (error) {
