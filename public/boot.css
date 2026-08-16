@@ -1,0 +1,49 @@
+body {
+  background-color: #0a0f0a;
+}
+
+@keyframes terminal-quiz-boot-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+#boot-fallback .cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1em;
+  background: #4caf50;
+  animation: terminal-quiz-boot-blink 1s step-start infinite;
+  position: relative;
+  top: 0.3rem;
+}
+
+#boot-fallback {
+  font-family: "Glass TTY VT220", "Courier New", Courier, monospace;
+  color: #4caf50;
+  font-size: 20pt;
+}
+
+#boot-fallback .inverse {
+  background: #4caf50;
+  color: #0a0f0a;
+  padding: 0 4px;
+}
+
+#boot-fallback .reload {
+  color: #4caf50;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #boot-fallback .cursor {
+    animation: none;
+  }
+}
+
+.dn {
+  display: none;
+}
