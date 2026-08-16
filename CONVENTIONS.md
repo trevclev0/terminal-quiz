@@ -48,7 +48,12 @@
 ## Code style
 
 - Prefer early returns over nested conditionals.
-- No `console.log` in production code. Use structured logging if needed.
+- Logging on Workers: `console.log`/`console.error` to stdout **is** the
+  sanctioned transport — Workers Logs reads stdout and there is no other logger
+  in the stack. Emit structured JSON lines (see `src/worker/middleware/logger.ts`
+  and `src/worker/utils/errorHandler.ts`), gate noisy request logs by
+  environment, and do not leave stray ad-hoc `console.log` calls in committed
+  code.
 - Imports: Biome handles organization. Do not manually sort.
 - No barrel files (`index.ts` re-exports) unless already established in that directory.
 - Double quotes for JS/TS strings
