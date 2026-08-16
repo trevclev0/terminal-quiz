@@ -57,6 +57,18 @@
           }
         }
       )
+      function makeSessionId() {
+        if (typeof crypto !== "undefined" && crypto.randomUUID) {
+          return crypto.randomUUID();
+        }
+        // Crypto-free fallback for insecure contexts / legacy browsers — the
+        // beacon must never send an empty id (trackEvent drops it).
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (ch) => {
+          const r = (Math.random() * 16) | 0;
+          return (ch === "x" ? r : (r & 0x3) | 0x8).toString(16);
+        });
+      }
+
       window.addEventListener(
         "error",
         () => {
@@ -67,13 +79,26 @@
               '<div id="boot-fallback"><div><span class="inverse">LOAD FAILURE</span></div><div>Failed to initialize terminal. Check connection.</div><div><a class="reload" href="/">[ RELOAD ]</a></div></div>';
           }
           try {
-            let sessionId = localStorage.getItem("terminal_quiz_session_id");
-            if (!sessionId && crypto.randomUUID) {
-              sessionId = crypto.randomUUID();
-              localStorage.setItem("terminal_quiz_session_id", sessionId);
+            // Storage access is isolated from the beacon so a storage
+            // exception cannot swallow the telemetry that exists precisely
+            // because the app failed to boot.
+            let sessionId = "";
+            try {
+              sessionId =
+                localStorage.getItem("terminal_quiz_session_id") || "";
+            } catch {
+              // Storage unavailable — the generated id still identifies the event.
+            }
+            if (!sessionId) {
+              sessionId = makeSessionId();
+              try {
+                localStorage.setItem("terminal_quiz_session_id", sessionId);
+              } catch {
+                // Storage unavailable — in-memory id lives for this beacon only.
+              }
             }
             const payload = JSON.stringify({
-              sessionId: sessionId || "",
+              sessionId,
               source: "boot",
               message: "bootstrap load failure",
               path: window.location.pathname,
