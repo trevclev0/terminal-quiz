@@ -24,46 +24,62 @@ const MAX_FIELD_LENGTH = 200;
 export const errorReportingRouter = new Hono<AppVariables>().post(
   "/",
   async (c) => {
-    const raw = await c.req.text();
-    if (raw.length > MAX_BODY_BYTES) {
+    // Reject oversized bodies from Content-Length before buffering, then
+    // enforce a byte-counted cap on the actual body (raw.length counts UTF-16
+    // units, not encoded bytes).
+    const contentLength = Number(c.req.header("content-length") ?? "0");
+    if (contentLength > MAX_BODY_BYTES) {
       return c.json({ ok: false }, 413);
     }
 
-    let body: Record<string, unknown>;
+    const raw = await c.req.text();
+    if (new TextEncoder().encode(raw).length > MAX_BODY_BYTES) {
+      return c.json({ ok: false }, 413);
+    }
+
+    let body: unknown;
     try {
-      body = JSON.parse(raw) as Record<string, unknown>;
+      body = JSON.parse(raw);
     } catch {
       return c.json({ ok: false }, 400);
     }
 
-    if (typeof body.sessionId === "string") {
-      c.set("sessionId", body.sessionId.slice(0, MAX_SESSION_ID_LENGTH));
+    if (typeof body !== "object" || body === null || Array.isArray(body)) {
+      return c.json({ ok: false }, 400);
+    }
+    const fields = body as Record<string, unknown>;
+
+    if (typeof fields.sessionId === "string") {
+      c.set("sessionId", fields.sessionId.slice(0, MAX_SESSION_ID_LENGTH));
     }
 
-    const source = body.source;
-    const outcome =
-      source === "boot" ? "boot" : source === "route" ? "route" : "boundary";
+    const source = fields.source;
+    if (source !== "boot" && source !== "route" && source !== "boundary") {
+      return c.json({ ok: false }, 400);
+    }
 
     const detail = JSON.stringify({
       message:
-        typeof body.message === "string" ? sanitizeErrorText(body.message) : "",
+        typeof fields.message === "string"
+          ? sanitizeErrorText(fields.message)
+          : "",
       stack:
-        typeof body.stack === "string"
-          ? sanitizeErrorText(body.stack, MAX_STACK_LENGTH)
+        typeof fields.stack === "string"
+          ? sanitizeErrorText(fields.stack, MAX_STACK_LENGTH)
           : "",
       path:
-        typeof body.path === "string"
-          ? sanitizeErrorText(body.path, MAX_FIELD_LENGTH)
+        typeof fields.path === "string"
+          ? sanitizeErrorText(fields.path, MAX_FIELD_LENGTH)
           : "",
       userAgent:
-        typeof body.userAgent === "string"
-          ? sanitizeErrorText(body.userAgent, MAX_FIELD_LENGTH)
+        typeof fields.userAgent === "string"
+          ? sanitizeErrorText(fields.userAgent, MAX_FIELD_LENGTH)
           : "",
     });
 
     trackEvent(c, {
       name: "client_error",
-      outcome,
+      outcome: source,
       detail,
     });
 
