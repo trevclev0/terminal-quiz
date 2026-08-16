@@ -329,3 +329,4 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - Do not allow open redirects in `/login` — `validateReturnTo()` must reject cross-origin, protocol-relative, and backslash-based return_to values
 - Do not define GraphQL query/mutation strings inline in frontend files — they belong in `src/shared/gqlQueries.ts` and are imported by hooks/api files and integration tests.
 - Do not use inline `style={}` props on React elements — all styling must go in a co-located `ComponentName.module.css` file with CSS Module class names. Applies to all new components and any changes to existing component markup.
+- Do not reintroduce inline `<script>`/`<style>` blocks in `index.html` — a strict CSP is served from `public/_headers` (applied to all static assets), which blocks inline scripts/styles. The boot fallback script and CSS live in `public/boot.js` / `public/boot.css`; any new third-party script requires a deliberate CSP directive change.
