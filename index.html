@@ -67,10 +67,13 @@
               '<div id="boot-fallback"><div><span class="inverse">LOAD FAILURE</span></div><div>Failed to initialize terminal. Check connection.</div><div><a class="reload" href="/">[ RELOAD ]</a></div></div>';
           }
           try {
-            const sessionId =
-              localStorage.getItem("terminal_quiz_session_id") || "";
+            let sessionId = localStorage.getItem("terminal_quiz_session_id");
+            if (!sessionId && crypto.randomUUID) {
+              sessionId = crypto.randomUUID();
+              localStorage.setItem("terminal_quiz_session_id", sessionId);
+            }
             const payload = JSON.stringify({
-              sessionId,
+              sessionId: sessionId || "",
               source: "boot",
               message: "bootstrap load failure",
               path: window.location.pathname,
