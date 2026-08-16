@@ -123,4 +123,19 @@ describe("reportError", () => {
     expect(payload.stack).toContain("in Child");
     expect(payload.stack).toContain("in Parent");
   });
+
+  it("preserves the component stack when error.stack exceeds the budget", async () => {
+    const error = new Error("boom");
+    error.stack = `Error: boom\n${"    at frame\n".repeat(200)}`;
+    reportError({
+      source: "boundary",
+      error,
+      stack: "\n    in Child",
+    });
+
+    const body = sendBeaconMock.mock.calls[0][1] as Blob;
+    const payload = JSON.parse(await body.text()) as Record<string, string>;
+    expect(payload.stack).toContain("boom");
+    expect(payload.stack).toContain("in Child");
+  });
 });
