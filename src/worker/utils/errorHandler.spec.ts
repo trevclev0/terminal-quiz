@@ -110,7 +110,7 @@ describe("errorHandler", () => {
       expect(response).toEqual({
         errors: [{ message: "Internal Server Error" }],
       });
-      expect(consoleErrorSpy).toHaveBeenCalledWith("GraphQL went wrong");
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
     it("provides a default message for GraphQL paths if error has no message", () => {
       const error = new Error();

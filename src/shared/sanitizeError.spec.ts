@@ -18,6 +18,27 @@ describe("sanitizeErrorText", () => {
     );
   });
 
+  it("redacts quoted JSON secret values", () => {
+    const out = sanitizeErrorText('{"password":"hunter2","token":"abc123"}');
+    expect(out).not.toContain("hunter2");
+    expect(out).not.toContain("abc123");
+    expect(sanitizeErrorText('{"password":"hunter2"}')).toBe(
+      '{"password=[REDACTED]}',
+    );
+  });
+
+  it("redacts quoted authorization fields", () => {
+    const out = sanitizeErrorText('{"authorization":"Bearer hunter2"}');
+    expect(out).not.toContain("hunter2");
+    expect(out).toContain("[REDACTED]");
+  });
+
+  it("coerces non-string input without throwing", () => {
+    expect(sanitizeErrorText({ detail: "boom" })).toBe("[object Object]");
+    expect(sanitizeErrorText(null)).toBe("");
+    expect(sanitizeErrorText(undefined)).toBe("");
+  });
+
   it("redacts query-string values in URLs", () => {
     expect(
       sanitizeErrorText(

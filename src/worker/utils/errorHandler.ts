@@ -28,9 +28,8 @@ export const logError = (
   );
 };
 
-export const formatErrorResponse = (err: Error, path: string) => {
+export const formatErrorResponse = (_err: Error, path: string) => {
   if (path.startsWith("/api/graphql")) {
-    console.error(sanitizeErrorText(err.message || String(err)));
     return {
       errors: [{ message: "Internal Server Error" }],
     };
