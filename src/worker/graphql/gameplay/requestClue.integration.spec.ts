@@ -7,6 +7,7 @@ import {
   sessionProgress,
 } from "@shared/schema";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
+import type { ClueResult } from "@worker-services/aiService";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
 import { eq } from "drizzle-orm";
@@ -439,16 +440,8 @@ describe("requestClue mutation", () => {
     const sessionId = makeSessionId("per-attempt-reservation");
     await insertSession(sessionId, E2E_GATE_1_ID, { attemptCount: 2 });
 
-    let resolveFirst!: (value: {
-      clueText: string | null;
-      reason: "success" | "no_binding" | "empty" | "answer_leak" | "error";
-      latencyMs: number;
-    }) => void;
-    const deferred = new Promise<{
-      clueText: string | null;
-      reason: "success" | "no_binding" | "empty" | "answer_leak" | "error";
-      latencyMs: number;
-    }>((resolve) => {
+    let resolveFirst!: (value: ClueResult) => void;
+    const deferred = new Promise<ClueResult>((resolve) => {
       resolveFirst = resolve;
     });
     vi.mocked(generateClue).mockImplementationOnce(() => deferred);

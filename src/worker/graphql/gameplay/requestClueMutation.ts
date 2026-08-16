@@ -190,8 +190,12 @@ export const requestClue = {
         attemptCountAtRequest: progress.attemptCount,
       });
     } catch (error) {
-      // Handle unique constraint violation - another request
-      // may have already inserted a clue for this attempt
+      // Only a unique-constraint violation means another request already
+      // inserted a clue for this attempt. Anything else is a real
+      // persistence failure and must surface, not masquerade as a duplicate.
+      if (!isUniqueConstraintError(error)) {
+        throw error;
+      }
       console.warn("Failed to insert clue (likely duplicate):", error);
       trackEvent(context, {
         name: "clue_requested",
@@ -232,3 +236,12 @@ export const requestClue = {
     };
   },
 };
+
+function isUniqueConstraintError(error: unknown): boolean {
+  let current: unknown = error;
+  while (current instanceof Error) {
+    if (/UNIQUE constraint/i.test(current.message)) return true;
+    current = current.cause;
+  }
+  return false;
+}

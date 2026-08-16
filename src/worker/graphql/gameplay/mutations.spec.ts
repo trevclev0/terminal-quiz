@@ -899,7 +899,13 @@ describe("Gameplay Mutations: requestClue", () => {
         };
       }
       return {
-        values: vi.fn().mockRejectedValue(new Error("UNIQUE constraint")),
+        values: vi
+          .fn()
+          .mockRejectedValue(
+            new Error(
+              "UNIQUE constraint failed: gate_clues.unique_clue_per_attempt",
+            ),
+          ),
       };
     });
 
@@ -917,6 +923,57 @@ describe("Gameplay Mutations: requestClue", () => {
 
     expect(result.clueText).toBeNull();
     expect(result.isClueLimitReached).toBe(false);
+  });
+
+  it("re-throws non-constraint clue insert errors", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      ...defaultProgress,
+      attemptCount: 3,
+    });
+    mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
+    mockDb.query.gateClues.findMany.mockResolvedValue([]);
+    vi.mocked(generateClue).mockResolvedValue({
+      clueText: "A juicy hint.",
+      reason: "success",
+      latencyMs: 0,
+    });
+
+    mockDb.insert.mockImplementation((table: unknown) => {
+      if (table === aiUsage) {
+        return {
+          values: vi.fn().mockReturnValue({
+            onConflictDoUpdate: vi.fn().mockReturnValue({
+              returning: vi.fn().mockResolvedValue([{ requestCount: 1 }]),
+            }),
+          }),
+        };
+      }
+      if (table === clueRateLimits) {
+        return {
+          select: vi.fn().mockReturnValue({
+            returning: vi.fn().mockResolvedValue([{ id: "claimed-rate-slot" }]),
+          }),
+        };
+      }
+      return {
+        values: vi.fn().mockRejectedValue(new Error("database unavailable")),
+      };
+    });
+
+    if (!requestClue.resolve) throw new Error("Resolver not defined");
+
+    await expect(
+      requestClue.resolve(
+        null,
+        {
+          programId: "prog-1",
+          gateId: "gate-1",
+          currentGuess: "banana",
+        },
+        mockContext,
+      ),
+    ).rejects.toThrow("database unavailable");
   });
 });
 
