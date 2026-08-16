@@ -26,10 +26,9 @@ export const getProgramProgression = {
       ),
     });
 
-    let isNewSession = false;
+    let didCreateProgress = false;
 
     if (!progress) {
-      isNewSession = true;
       const firstGate = await db.query.gates.findFirst({
         columns: {
           correctAnswer: false,
@@ -52,6 +51,7 @@ export const getProgramProgression = {
           })
           .returning();
         progress = newProgress[0];
+        didCreateProgress = progress !== undefined;
       } catch {
         progress = await db.query.sessionProgress.findFirst({
           where: and(
@@ -65,7 +65,7 @@ export const getProgramProgression = {
       }
     }
 
-    if (isNewSession) {
+    if (didCreateProgress) {
       trackEvent(context, {
         name: "program_started",
         programId: args.programId,
