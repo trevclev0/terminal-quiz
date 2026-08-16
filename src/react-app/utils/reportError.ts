@@ -48,8 +48,17 @@ export function reportError({
   }
 
   // Combine so a boundary's info.componentStack (passed as `stack`) survives
-  // alongside error.stack instead of being shadowed by it.
-  const combinedStack = [error?.stack, stack].filter(Boolean).join("\n");
+  // alongside error.stack instead of being shadowed by it. Reserve budget for
+  // the component stack: a long error.stack must not truncate it away.
+  const errorStack = error?.stack ?? "";
+  const componentStack = stack ?? "";
+  const errorStackBudget =
+    componentStack.length > 0
+      ? Math.max(0, MAX_STACK_LENGTH - componentStack.length - 1)
+      : MAX_STACK_LENGTH;
+  const stackText = [errorStack.slice(0, errorStackBudget), componentStack]
+    .filter(Boolean)
+    .join("\n");
 
   const payload = {
     sessionId,
@@ -58,7 +67,7 @@ export function reportError({
       error?.message ?? message ?? "Unknown error",
       MAX_FIELD_LENGTH,
     ),
-    stack: sanitizeErrorText(combinedStack || "", MAX_STACK_LENGTH),
+    stack: sanitizeErrorText(stackText, MAX_STACK_LENGTH),
     path: sanitizeErrorText(path ?? window.location.pathname, MAX_FIELD_LENGTH),
     userAgent: sanitizeErrorText(navigator.userAgent, MAX_USER_AGENT_LENGTH),
   };
