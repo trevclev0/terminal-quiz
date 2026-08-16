@@ -5,7 +5,7 @@ import {
   RESET_SESSION_MUTATION,
   SUBMIT_GUESS_MUTATION,
 } from "@shared/gqlQueries";
-import { sessionProgress } from "@shared/schema";
+import { sessionCompletedGates, sessionProgress } from "@shared/schema";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
@@ -162,6 +162,28 @@ describe("analytics event emission", () => {
       programId: E2E_PROGRAM_ID,
       outcome: "complete",
     });
+  });
+
+  it("emits nothing when the completion was already persisted by a concurrent guess", async () => {
+    const sessionId = makeSessionId("dup-complete");
+    const progressId = await insertSession(sessionId, E2E_GATE_3_ID);
+    await db.insert(sessionCompletedGates).values({
+      sessionProgressId: progressId,
+      gateId: E2E_GATE_3_ID,
+    });
+
+    const response: GqlResponse = await gqlRequest(SUBMIT_GUESS_MUTATION, {
+      sessionId,
+      variables: {
+        programId: E2E_PROGRAM_ID,
+        gateId: E2E_GATE_3_ID,
+        guess: "cold",
+      },
+    });
+
+    expect(response.body.errors).toBeUndefined();
+    expect(emitted("gate_completed")).toHaveLength(0);
+    expect(emitted("program_completed")).toHaveLength(0);
   });
 
   it("emits clue_requested with success outcome and latency", async () => {

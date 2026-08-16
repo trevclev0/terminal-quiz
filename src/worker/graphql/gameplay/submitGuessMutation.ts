@@ -120,7 +120,7 @@ export const submitGuess = {
 
     // Both writes must land together — group via D1 batch (sequential,
     // all-or-nothing), since db.transaction() isn't supported.
-    await db.batch([
+    const [completionInsert] = await db.batch([
       db
         .insert(sessionCompletedGates)
         .values({
@@ -139,21 +139,28 @@ export const submitGuess = {
         .where(eq(sessionProgress.id, progress.id)),
     ]);
 
-    trackEvent(context, {
-      name: "gate_completed",
-      programId: args.programId,
-      gateId: activeGate.id,
-      outcome: "correct",
-      attemptCount: progress.attemptCount,
-      isCorrect: true,
-    });
+    // Only the request that actually persisted the completion row emits the
+    // events — the unique (sessionProgressId, gateId) constraint means a
+    // concurrent duplicate guess no-ops the insert and must not double-record.
+    const didPersistCompletion = (completionInsert?.meta?.changes ?? 0) > 0;
 
-    if (newStatus === "completed") {
+    if (didPersistCompletion) {
       trackEvent(context, {
-        name: "program_completed",
+        name: "gate_completed",
         programId: args.programId,
-        outcome: "complete",
+        gateId: activeGate.id,
+        outcome: "correct",
+        attemptCount: progress.attemptCount,
+        isCorrect: true,
       });
+
+      if (newStatus === "completed") {
+        trackEvent(context, {
+          name: "program_completed",
+          programId: args.programId,
+          outcome: "complete",
+        });
+      }
     }
 
     return {

@@ -64,7 +64,11 @@ function createMockDb(): MockDb {
       }
       return {
         values: vi.fn().mockReturnValue({
-          onConflictDoNothing: vi.fn().mockResolvedValue(undefined),
+          // Fresh writes succeed by default (changes: 1), so batch-returned
+          // results report the insert as persisted.
+          onConflictDoNothing: vi.fn().mockResolvedValue({
+            meta: { changes: 1 },
+          }),
           onConflictDoUpdate: vi.fn().mockResolvedValue(undefined),
         }),
       };
