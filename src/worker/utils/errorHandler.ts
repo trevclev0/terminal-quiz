@@ -1,3 +1,5 @@
+import { sanitizeErrorText } from "@shared/sanitizeError";
+
 export interface D1Error {
   message?: string;
   cause?: unknown;
@@ -18,15 +20,17 @@ export const logError = (
       method,
       path,
       requestId,
-      message: err.message || String(err),
-      cause: cause?.message || (cause ? String(cause) : undefined),
+      message: sanitizeErrorText(err.message || String(err)),
+      cause: cause
+        ? sanitizeErrorText(cause.message || String(cause))
+        : undefined,
     }),
   );
 };
 
 export const formatErrorResponse = (err: Error, path: string) => {
   if (path.startsWith("/api/graphql")) {
-    console.error(err);
+    console.error(sanitizeErrorText(err.message || String(err)));
     return {
       errors: [{ message: "Internal Server Error" }],
     };
