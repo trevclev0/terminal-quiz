@@ -28,6 +28,17 @@ body {
   font-size: 20pt;
 }
 
+#boot-fallback.boot-screen {
+  opacity: 0;
+  animation: terminal-quiz-reveal-boot 0s 1s forwards;
+}
+
+@keyframes terminal-quiz-reveal-boot {
+  to {
+    opacity: 1;
+  }
+}
+
 #boot-fallback .inverse {
   background: #4caf50;
   color: #0a0f0a;
