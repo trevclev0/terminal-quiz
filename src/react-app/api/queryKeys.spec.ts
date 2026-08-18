@@ -30,11 +30,14 @@ describe("PROGRAM_KEYS", () => {
     expect(PROGRAM_KEYS.single("inProgress")).not.toEqual(
       PROGRAM_KEYS.inProgress(),
     );
-    expect(PROGRAM_KEYS.single("progression")).not.toEqual([
-      "programs",
-      "progression",
-      "prog-1",
-    ]);
+    const progressionKey = PROGRAM_KEYS.progression("prog-1");
+    expect(PROGRAM_KEYS.single("progression")).not.toEqual(progressionKey);
+    // Prefix matching (used by query invalidation) must not conflate the
+    // shapes either — single("progression") would be a prefix of the
+    // progression key if the id segment shared its position.
+    expect(PROGRAM_KEYS.single("progression")).not.toEqual(
+      progressionKey.slice(0, -1),
+    );
   });
 
   it("different programIds produce different keys", () => {
