@@ -1,6 +1,11 @@
 import { gates, programs } from "@shared/schema";
 import { asc, eq, or } from "drizzle-orm";
-import { GraphQLList, GraphQLNonNull, GraphQLString } from "graphql";
+import {
+  GraphQLError,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLString,
+} from "graphql";
 import { authorizeProgramMutation } from "./authorizeProgram";
 import {
   type AppGraphQLContext,
@@ -83,7 +88,9 @@ export const programGates = {
     const user = context.get("user");
 
     if (!user?.id) {
-      throw new Error("Unauthorized: Authentication required.");
+      throw new GraphQLError("Unauthorized: Authentication required.", {
+        extensions: { code: "UNAUTHENTICATED" },
+      });
     }
 
     await authorizeProgramMutation(db, args.programId, user.id);

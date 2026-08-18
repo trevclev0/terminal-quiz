@@ -35,6 +35,12 @@ import { Hono } from "hono";
 
 let cachedSchema: GraphQLSchema | null = null;
 
+type GraphQLErrorBody = {
+  errors?: Array<{
+    extensions?: { code?: string };
+  }>;
+};
+
 // Exported to allow schema cache invalidation if needed (e.g., during testing).
 // Note: This should not be used in production. In Cloudflare Workers, isolates persist module state.
 // However, since drizzle-graphql builds the GraphQL schema from the statically bundled TypeScript
@@ -99,11 +105,31 @@ const graphQlRouter = new Hono<AppVariables>().use("*", async (c, next) => {
     }
   }
 
-  return graphqlServer({
+  const server = graphqlServer({
     schema: cachedSchema,
     graphiql: !isProduction,
     validationRules: isProduction ? [NoSchemaIntrospectionCustomRule] : [],
-  })(c, next);
+  });
+
+  const response = (await server(c, next)) ?? c.res;
+
+  if (response.status === 500) {
+    // @hono/graphql-server hardcodes 500 when a non-null field error bubbles
+    // to the root (result.data is null). Resolvers tag auth/ownership failures
+    // via error extensions; rewrite those to their proper status codes.
+    const body = (await response
+      .clone()
+      .json()
+      .catch(() => null)) as GraphQLErrorBody | null;
+    const code = body?.errors?.find(
+      (error) => error.extensions?.code !== undefined,
+    )?.extensions?.code;
+    if (code === "UNAUTHENTICATED" || code === "FORBIDDEN") {
+      return c.json(body, code === "UNAUTHENTICATED" ? 401 : 403);
+    }
+  }
+
+  return response;
 });
 
 export default graphQlRouter;
