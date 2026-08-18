@@ -6,6 +6,7 @@ import {
   SUBMIT_GUESS_MUTATION,
 } from "@shared/gqlQueries";
 import { sessionCompletedGates, sessionProgress } from "@shared/schema";
+import { SESSION_COOKIE_NAME } from "@worker-middleware/session";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
@@ -249,26 +250,32 @@ describe("POST /api/error telemetry", () => {
     vi.mocked(trackEvent).mockClear();
   });
 
-  function postError(body: string): Promise<Response> {
+  function postError(body: string, sessionId?: string): Promise<Response> {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (sessionId) {
+      headers.Cookie = `${SESSION_COOKIE_NAME}=${sessionId}`;
+    }
     return exports.default.fetch(
       new Request("http://localhost/api/error", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body,
       }),
     );
   }
 
-  it("emits client_error with sanitized detail and body-supplied session id", async () => {
+  it("emits client_error with sanitized detail under the session cookie id", async () => {
     const sessionId = makeSessionId("beacon");
     const response = await postError(
       JSON.stringify({
-        sessionId,
         source: "boundary",
         message: "boom token=secret",
         stack: "Error: boom\n  at fn (app.js:1:1)",
         path: "/programs/p1",
       }),
+      sessionId,
     );
 
     expect(response.status).toBe(200);
@@ -279,6 +286,29 @@ describe("POST /api/error telemetry", () => {
     expect(calls[0][1]).toMatchObject({ outcome: "boundary" });
     expect(calls[0][1].detail).toContain("token=[REDACTED]");
     expect(calls[0][1].detail).not.toContain("secret");
+  });
+
+  it("mints a session cookie and records a first-visit beacon under the minted id", async () => {
+    const response = await postError(
+      JSON.stringify({
+        source: "boot",
+        message: "bootstrap load failure",
+        path: "/",
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    const setCookie = response.headers.get("set-cookie");
+    expect(setCookie).toContain(`${SESSION_COOKIE_NAME}=`);
+    const mintedId = setCookie
+      ?.split(";")[0]
+      .replace(`${SESSION_COOKIE_NAME}=`, "");
+    expect(mintedId).toBeTruthy();
+
+    const calls = emitted("client_error");
+    expect(calls).toHaveLength(1);
+    expect(calls[0][0].get("sessionId")).toBe(mintedId);
+    expect(calls[0][1]).toMatchObject({ outcome: "boot" });
   });
 
   it("rejects an oversized body", async () => {
