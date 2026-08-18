@@ -14,7 +14,7 @@
 - Session state tracked in `session_progress` table — do not use KV for session data.
 - API surface is GraphQL only (`drizzle-graphql` auto-schema + custom gameplay resolvers in `src/worker/graphql/gameplay/`). There is no REST gameplay API — do not add one.
 - GraphQL query/mutation strings live only in `src/shared/gqlQueries.ts`. Frontend hooks/api files and integration tests import from there; never define query strings inline in consumer files.
-- Every gameplay session is identified by an `x-session-id` header, validated server-side against `session_progress`. Never trust a client-supplied `gateId`/`programId` without checking it against that session's row.
+- Every gameplay session is identified by a server-issued HttpOnly cookie (`anon_gameplay_session`, minted by `sessionMiddleware`), validated server-side against `session_progress`. Mutations additionally require the constant `x-session-id` same-origin tripwire header (`requireSessionHeader`). Never trust a client-supplied `gateId`/`programId` without checking it against that session's row.
 - Routing is client-side (via TanStack Router). Route structure: `/`, `/programs/select`, `/programs/$programId`.
 - Do not introduce gate-level URLs or client-side route guards that duplicate server logic.
 
@@ -36,7 +36,7 @@
 
 ## Auth & Authoring
 
-- Two identity systems coexist: `x-session-id` for anonymous gameplay, Better Auth session cookie for authorship. Auth is additive to gameplay, never a dependency.
+- Two identity systems coexist: the `anon_gameplay_session` HttpOnly cookie for anonymous gameplay, Better Auth session cookie for authorship. Auth is additive to gameplay, never a dependency.
 - **Route guards**: Use `requireUser(queryClient, returnTo)` from `-requireUser.ts` for any route that needs authentication. Throws TanStack Router `redirect` to `/login?return_to=...` if unauthenticated.
 - **Server-side auth**: Every management mutation must call `authorizeProgramMutation(db, programId, userId)` to verify program ownership before mutating. Never trust client-supplied IDs without this check.
 - **Program visibility**: `public` programs appear in the global list. `unlisted` programs are accessible only via direct link (`program(id)` resolver). No ACL table — visibility is a simple column check, not a permissions system.

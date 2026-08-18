@@ -106,7 +106,7 @@ e2e/                # Playwright specs + page objects
 **Request flow:**
 
 1. The Cloudflare Worker serves the static React SPA via the `assets` binding.
-2. On first load, a session ID is generated client-side and persisted in `localStorage`, then sent as an `x-session-id` header on every GraphQL request.
+2. `sessionMiddleware` mints the session ID server-side into the HttpOnly `anon_gameplay_session` cookie (`Path=/api`); GraphQL mutations carry a constant `x-session-id` same-origin tripwire header. No session data is generated or stored client-side.
 3. Selecting a program creates a `session_progress` row on the server, tracking the current gate and attempt count for that session; completed gates are recorded in a separate `session_completed_gates` join table.
 4. Each guess is submitted via the `submitGuess` GraphQL mutation, which validates it server-side against the active gate for that session — a guess for any other gate is rejected.
 5. If a player struggles on a gate, `requestClue` generates an AI hint (up to 3 per gate) once an attempt threshold is met.
