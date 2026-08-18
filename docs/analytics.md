@@ -3,9 +3,11 @@
 ## Goal
 
 Instrument gameplay, client errors, and AI usage with privacy-respecting,
-first-party analytics. No third-party SDKs, no cookies, no fingerprinting.
-Pseudonymous by default — events are keyed on a client-generated `sessionId`,
-never the Better Auth user.
+first-party analytics. No third-party SDKs, no third-party cookies, no
+fingerprinting. Anonymous gameplay identity is a server-issued HttpOnly cookie
+(`anon_gameplay_session`, `Path=/api`, minted by `sessionMiddleware`) — never
+client-generated, never sent as a header. Pseudonymous by default — events are
+keyed on that server-issued `sessionId`, never the Better Auth user.
 
 > This document describes the target state of the analytics stack.
 > Implementation lands incrementally across the analytics change stack
@@ -80,12 +82,13 @@ Playback and authoring remain GraphQL-only. The single `POST /api/error`
 endpoint is telemetry, not a gameplay or authoring path — it exists because
 client error capture must work exactly when the GraphQL client is broken
 (pre-bootstrap chunk load, boundary failure). `navigator.sendBeacon` cannot
-set headers, so a dedicated route is required and the `sessionId` travels in
-the request body (it cannot go in the `x-session-id` header). The client sends
-a `Blob` typed `application/json`; the route parses it as JSON.
+set headers, so identity rides the server-issued session cookie — the
+`sessionMiddleware` mints `anon_gameplay_session` on the same request when
+absent, so a first-visit pre-boot beacon is attributed in one round trip. The
+client sends a `Blob` typed `application/json`; the route parses it as JSON.
 
-The route validates the JSON body (size + schema), caps `sessionId` and field
-lengths server-side, and writes a `client_error` data point via `trackEvent`,
+The route validates the JSON body (size + schema) and caps field lengths
+server-side, writing a `client_error` data point via `trackEvent`,
 returning `{ ok: true }`. Client-side throttling is not an abuse control — a
 direct caller is not throttled; there is no server-side volume limiter yet. No
 queueing, no retries.
@@ -129,12 +132,14 @@ Analytics Engine's 90 days. Logs carry `sessionId`.
 
 ## Privacy posture
 
-- Pseudonymous: keyed on a client-generated random UUID (`sessionId`), never
-  the Better Auth user. A persistent pseudonymous identifier can still be
-  personal data (GDPR Art 4(5), CCPA "unique identifiers") — reusing
-  `sessionId` for leaderboards (see `docs/feature-ideas.md` §4.1) or exposing
-  these events externally requires a separate privacy review.
-- First-party: no third-party requests, no cookies, no fingerprinting.
+- Pseudonymous: keyed on a server-issued UUID (`sessionId`, minted by
+  `sessionMiddleware` into the `anon_gameplay_session` cookie), never the
+  Better Auth user. A persistent pseudonymous identifier can still be personal
+  data (GDPR Art 4(5), CCPA "unique identifiers") — reusing `sessionId` for
+  leaderboards (see `docs/feature-ideas.md` §4.1) or exposing these events
+  externally requires a separate privacy review.
+- First-party: no third-party requests, no third-party cookies, no
+  fingerprinting.
 - Data stays inside the Cloudflare account. Retention: Analytics Engine 90
   days; Workers Logs 3–7 days (plan-dependent).
 

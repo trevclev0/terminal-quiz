@@ -27,7 +27,6 @@ beforeEach(async () => {
 
   vi.stubEnv("DEV", false);
   sendBeaconMock.mockReset();
-  localStorage.setItem("terminal_quiz_session_id", "session-uuid-123");
   setSendBeacon(sendBeaconMock);
 });
 
@@ -46,7 +45,7 @@ afterEach(() => {
 });
 
 describe("reportError", () => {
-  it("sends a beacon with session id, source, and message", async () => {
+  it("sends a beacon with source, message, path, and user agent", async () => {
     reportError({ source: "boundary", message: "boom" });
 
     expect(sendBeaconMock).toHaveBeenCalledTimes(1);
@@ -55,7 +54,6 @@ describe("reportError", () => {
 
     const payload = JSON.parse(await body.text()) as Record<string, string>;
     expect(payload).toMatchObject({
-      sessionId: "session-uuid-123",
       source: "boundary",
       message: "boom",
     });

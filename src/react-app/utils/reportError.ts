@@ -1,5 +1,4 @@
 import { sanitizeErrorText } from "@shared/sanitizeError";
-import { getSessionId } from "./session";
 
 const RATE_LIMIT_MS = 1000;
 const MAX_STACK_LENGTH = 1024;
@@ -40,13 +39,6 @@ export function reportError({
 
   if (typeof navigator === "undefined" || !navigator.sendBeacon) return;
 
-  let sessionId: string;
-  try {
-    sessionId = getSessionId();
-  } catch {
-    return;
-  }
-
   // Combine so a boundary's info.componentStack (passed as `stack`) survives
   // alongside error.stack instead of being shadowed by it. Reserve budget for
   // the component stack: a long error.stack must not truncate it away.
@@ -61,7 +53,6 @@ export function reportError({
     .join("\n");
 
   const payload = {
-    sessionId,
     source,
     message: sanitizeErrorText(
       error?.message ?? message ?? "Unknown error",

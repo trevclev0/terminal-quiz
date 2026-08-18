@@ -1,5 +1,5 @@
 {
-  "instructions": "Follow AGENTS.md and CONVENTIONS.md strictly. Bun only, Cloudflare Workers runtime, GraphQL-only gameplay, session-scoped progression, two decoupled identity systems (x-session-id gameplay, Better Auth cookie for authorship).",
+  "instructions": "Follow AGENTS.md and CONVENTIONS.md strictly. Bun only, Cloudflare Workers runtime, GraphQL-only gameplay, session-scoped progression, two decoupled identity systems (server-issued anon_gameplay_session HttpOnly cookie for gameplay with a constant x-session-id same-origin tripwire on mutations, Better Auth cookie for authorship).",
   "commentTypes": ["logic", "syntax"],
   "strictness": 1,
   "statusCheck": false,

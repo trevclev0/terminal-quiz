@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { graphqlFetch } from "./graphQlClient";
 
-vi.mock("@utils/session", () => ({
-  getSessionId: () => "test-session-id",
-}));
-
 const mockFetch = vi.fn();
 
 beforeEach(() => {
@@ -41,7 +37,7 @@ describe("graphqlFetch", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-session-id": "test-session-id",
+        "x-session-id": "terminal-quiz",
       },
       body: JSON.stringify({
         query: "mutation { doThing }",
@@ -61,14 +57,14 @@ describe("graphqlFetch", () => {
     expect(callBody.variables).toBeUndefined();
   });
 
-  it("includes x-session-id header from session util", async () => {
+  it("includes the constant x-session-id tripwire header", async () => {
     mockFetch.mockResolvedValueOnce(okJsonResponse({ data: { ok: true } }));
 
     await graphqlFetch("{ test }");
 
     const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
     const headers = options.headers as Record<string, string>;
-    expect(headers["x-session-id"]).toBe("test-session-id");
+    expect(headers["x-session-id"]).toBe("terminal-quiz");
   });
 
   it("throws fallback message on HTTP 500 without body", async () => {

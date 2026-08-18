@@ -1,6 +1,9 @@
-import { getSessionId } from "@utils/session";
-
 const GRAPHQL_ENDPOINT = "/api/graphql";
+const SESSION_HEADER = "x-session-id";
+// Constant, value-agnostic same-origin tripwire required on mutations by the
+// worker's requireSessionHeader. Presence proves same-origin JS; identity is
+// the server-issued session cookie (HttpOnly), never this header.
+const SESSION_HEADER_VALUE = "terminal-quiz";
 
 export const graphqlFetch = async <T>(
   query: string,
@@ -10,7 +13,7 @@ export const graphqlFetch = async <T>(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-session-id": getSessionId(),
+      [SESSION_HEADER]: SESSION_HEADER_VALUE,
     },
     body: JSON.stringify({
       query,
