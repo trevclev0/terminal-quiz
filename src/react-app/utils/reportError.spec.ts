@@ -57,6 +57,7 @@ describe("reportError", () => {
       source: "boundary",
       message: "boom",
     });
+    expect(payload.sessionId).toBeUndefined();
     expect(payload.path).toBe(window.location.pathname);
     expect(payload.userAgent).toBe(navigator.userAgent);
   });
