@@ -35,10 +35,17 @@ There is a **single, server-authoritative gameplay flow**: a session ID is minte
 ## Local Development Setup
 
 ```bash
-mise install    # provisions bun pinned in mise.toml; if `bun` doesn't
-                 # resolve after this, mise's shims aren't on PATH —
-                 # run `mise activate` for your shell, or prefix
-                 # commands with `mise exec --`
+mise install    # provisions bun pinned in mise.toml
+
+# Activate mise so bun resolves in this shell (husky hooks run
+# `bun run lint-staged` / `bun run test --run` and fail with "command not
+# found" otherwise). Run once per session — the shims are not on PATH by
+# default, especially in non-interactive agent shells:
+eval "$(mise activate zsh)"
+
+# Fallback for any single command when activation isn't in effect:
+#   mise exec -- <cmd>
+# (e.g. `mise exec -- git commit ...` for the pre-commit hook)
 
 bun install
 
@@ -192,10 +199,14 @@ Husky hooks enforce this on every `git commit`. Headers are capped at 100 charac
 ✨ feat(gates): add AI guidance for repeated failed attempts
 🐛 fix(session): reject guesses submitted for a stale gate
 ♻️  refactor(hooks): extract useResetSession from useProgramPlay
-📚 docs: update AGENTS.md
+📝 docs: update AGENTS.md
 ```
 
 Do **not** bypass hooks with `--no-verify` unless documented.
+
+### Branch naming
+
+Branches follow `<git-commit-type>/<issue-id>-<kebab-case-brief-description>` (e.g. `fix/199-graphql-auth-status`). When a PR bundles multiple issues, use the primary issue's id. Omit the issue id for changes with no associated issue (e.g. `docs/agents-mise-activation`).
 
 ---
 
