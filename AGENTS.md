@@ -41,7 +41,7 @@ mise install    # provisions bun pinned in mise.toml
 # `bun run lint-staged` / `bun run test --run` and fail with "command not
 # found" otherwise). Run once per session — the shims are not on PATH by
 # default, especially in non-interactive agent shells:
-eval "$(mise activate zsh)"
+eval "$(mise activate)"
 
 # Fallback for any single command when activation isn't in effect:
 #   mise exec -- <cmd>
