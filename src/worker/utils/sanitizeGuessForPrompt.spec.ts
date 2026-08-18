@@ -2,6 +2,11 @@ import { MAX_GUESS_LENGTH } from "@worker-graphql/gameplay/guessValidation";
 import { describe, expect, it } from "vitest";
 import { sanitizeGuessForPrompt } from "./sanitizeGuessForPrompt";
 
+function trailingBackslashCount(str: string): number {
+  const match = str.match(/(\\*)$/);
+  return match ? match[1].length : 0;
+}
+
 describe("sanitizeGuessForPrompt", () => {
   it("passes plain text through unchanged", () => {
     expect(sanitizeGuessForPrompt("a normal guess")).toBe("a normal guess");
@@ -28,6 +33,20 @@ describe("sanitizeGuessForPrompt", () => {
   it("caps the length at MAX_GUESS_LENGTH", () => {
     const long = "x".repeat(MAX_GUESS_LENGTH + 100);
     expect(sanitizeGuessForPrompt(long)).toHaveLength(MAX_GUESS_LENGTH);
+  });
+
+  it("does not truncate mid-escape when escaping expands past the cap", () => {
+    const guess = '"'.repeat(MAX_GUESS_LENGTH);
+    const result = sanitizeGuessForPrompt(guess);
+    expect(result).toBe('\\"'.repeat(MAX_GUESS_LENGTH));
+    expect(trailingBackslashCount(result)).toBe(0);
+  });
+
+  it("keeps a terminal backslash fully escaped at the boundary", () => {
+    const guess = "\\".repeat(MAX_GUESS_LENGTH);
+    const result = sanitizeGuessForPrompt(guess);
+    expect(result).toBe("\\\\".repeat(MAX_GUESS_LENGTH));
+    expect(trailingBackslashCount(result) % 2).toBe(0);
   });
 
   it("neutralizes a prompt-injection guess structurally", () => {

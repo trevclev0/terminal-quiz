@@ -17,16 +17,19 @@ const isControlChar = (code: number): boolean =>
  * prompt's secret-ish `correctAnswer`, so it must not be able to break out of
  * its quoted slot or smuggle control characters into the prompt.
  *
- * Order matters: backslashes are escaped first so the backslash introduced by
+ * Order matters: the length cap is applied to the *raw* input before any
+ * escaping, so an accepted guess can never be truncated mid-escape (which
+ * would leave a dangling backslash that escapes the prompt slot's closing
+ * quote). Backslashes are escaped before quotes so the backslash introduced by
  * quote-escaping is not re-escaped.
  */
 export function sanitizeGuessForPrompt(guess: string): string {
   return guess
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"')
+    .slice(0, MAX_GUESS_LENGTH)
     .replace(/[\n\t]/g, " ")
     .split("")
     .filter((char) => !isControlChar(char.charCodeAt(0)))
     .join("")
-    .slice(0, MAX_GUESS_LENGTH);
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"');
 }
