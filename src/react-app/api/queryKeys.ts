@@ -1,6 +1,9 @@
 export const PROGRAM_KEYS = {
   all: ["programs"] as const,
-  single: (id: string) => ["programs", id] as const,
+  // Static "detail" discriminator keeps the dynamic id segment distinct from
+  // the fixed "inProgress"/"progression" markers, so a key can never collide
+  // with or prefix-match another shape.
+  single: (id: string) => ["programs", "detail", id] as const,
   inProgress: () => ["programs", "inProgress"] as const,
   progression: (programId: string) =>
     ["programs", "progression", programId] as const,
