@@ -31,10 +31,14 @@ jobs:
         run: mise run check:code
 
       - name: Run tests with coverage
+        id: tests
         run: mise run coverage
 
       - name: Report coverage
-        if: always()
+        # The report action reads coverage/coverage-summary.json, which the
+        # coverage run only writes on success. Without this gate a test
+        # failure cascades into a spurious ENOENT error.
+        if: steps.tests.outcome == 'success'
         uses: davelosert/vitest-coverage-report-action@v2
 
   integration-test:
