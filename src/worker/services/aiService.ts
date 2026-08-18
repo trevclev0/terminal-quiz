@@ -1,5 +1,6 @@
 import type { Ai, AiTextGenerationOutput } from "@cloudflare/workers-types";
 import { MAX_CLUES_PER_GATE } from "@shared/types";
+import { sanitizeGuessForPrompt } from "@worker-utils/sanitizeGuessForPrompt";
 import type { Context } from "hono";
 import { env } from "hono/adapter";
 
@@ -60,7 +61,7 @@ export async function generateClue(
     console.error("AI binding not available.");
     return { clueText: null, reason: "no_binding", latencyMs: 0 };
   }
-  const safeGuess = currentGuess.replace(/"/g, '\\"').replace(/\n/g, " ");
+  const safeGuess = sanitizeGuessForPrompt(currentGuess);
   let userPrompt = `Gate Question: "${gateQuestion}"
 Correct Answer (never reveal): "${correctAnswer}"
 Player's current incorrect guess: "${safeGuess}"
