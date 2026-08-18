@@ -41,6 +41,25 @@ type GraphQLErrorBody = {
   }>;
 };
 
+/**
+ * Derives the rewritten status for an auth-failure response, or null when the
+ * response mixes tagged and untagged errors — a real server failure is present
+ * alongside the auth error and must not be masked by a 401/403 rewrite.
+ */
+export function authFailureStatus(body: GraphQLErrorBody): 401 | 403 | null {
+  const codes = body.errors?.map((error) => error.extensions?.code);
+  if (!codes?.length) return null;
+
+  const status =
+    codes[0] === "UNAUTHENTICATED"
+      ? (401 as const)
+      : codes[0] === "FORBIDDEN"
+        ? (403 as const)
+        : null;
+  if (status === null || !codes.every((code) => code === codes[0])) return null;
+  return status;
+}
+
 // Exported to allow schema cache invalidation if needed (e.g., during testing).
 // Note: This should not be used in production. In Cloudflare Workers, isolates persist module state.
 // However, since drizzle-graphql builds the GraphQL schema from the statically bundled TypeScript
@@ -121,11 +140,9 @@ const graphQlRouter = new Hono<AppVariables>().use("*", async (c, next) => {
       .clone()
       .json()
       .catch(() => null)) as GraphQLErrorBody | null;
-    const code = body?.errors?.find(
-      (error) => error.extensions?.code !== undefined,
-    )?.extensions?.code;
-    if (code === "UNAUTHENTICATED" || code === "FORBIDDEN") {
-      return c.json(body, code === "UNAUTHENTICATED" ? 401 : 403);
+    const status = body ? authFailureStatus(body) : null;
+    if (status !== null) {
+      return c.json(body, status);
     }
   }
 
