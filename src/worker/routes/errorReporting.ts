@@ -4,7 +4,6 @@ import type { AppVariables } from "@worker-middleware/db";
 import { Hono } from "hono";
 
 const MAX_BODY_BYTES = 2048;
-const MAX_SESSION_ID_LENGTH = 64;
 const MAX_STACK_LENGTH = 1000;
 const MAX_FIELD_LENGTH = 200;
 
@@ -14,8 +13,10 @@ const MAX_FIELD_LENGTH = 200;
  * This is NOT a gameplay or authoring endpoint — it exists because error
  * capture must work exactly when the GraphQL client is broken (pre-bootstrap
  * chunk load, boundary failure). `navigator.sendBeacon` cannot set custom
- * headers, so the `sessionId` travels in the request body (a `Blob` typed
- * `application/json`). See docs/analytics.md "API boundary".
+ * headers, so identity rides the server-issued session cookie minted by
+ * `sessionMiddleware` on the same request when absent — a first-visit
+ * pre-boot beacon is minted and written under that id in one request.
+ * See docs/analytics.md "API boundary".
  *
  * Unauthenticated, so it validates the body size and schema, caps field
  * lengths, and sanitizes error text server-side. Client-side throttling is
@@ -48,10 +49,6 @@ export const errorReportingRouter = new Hono<AppVariables>().post(
       return c.json({ ok: false }, 400);
     }
     const fields = body as Record<string, unknown>;
-
-    if (typeof fields.sessionId === "string") {
-      c.set("sessionId", fields.sessionId.slice(0, MAX_SESSION_ID_LENGTH));
-    }
 
     const source = fields.source;
     if (source !== "boot" && source !== "route" && source !== "boundary") {

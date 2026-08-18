@@ -5,6 +5,7 @@ import {
   conditionalLogger,
   requestIdMiddleware,
 } from "@worker-middleware/logger";
+import { requireSessionHeader } from "@worker-middleware/requireSessionHeader";
 import { sessionMiddleware } from "@worker-middleware/session";
 import { errorReportingRouter } from "@worker-routes/errorReporting";
 import graphQlRouter from "@worker-routes/graphql";
@@ -50,6 +51,7 @@ const api = new Hono<AppVariables>()
     const auth = getAuth(c);
     return auth.handler(c.req.raw);
   })
+  .use("/graphql", requireSessionHeader)
   .use("/graphql", authMiddleware)
   .route("/graphql", graphQlRouter)
   .route("/error", errorReportingRouter);
