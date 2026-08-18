@@ -10,6 +10,10 @@
 
 import { betterAuth } from "better-auth/minimal";
 
+// Explicit annotation via the public import: betterAuth returns an
+// options-parameterized Auth type that declaration emit cannot name portably
+// (TS2883). ReturnType is constraint-resolved and not directly assignable, so
+// the cast mirrors src/worker/services/auth.ts.
 export const auth = betterAuth({
   user: {
     additionalFields: {
@@ -31,4 +35,4 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
     },
   },
-});
+}) as unknown as ReturnType<typeof betterAuth>;
