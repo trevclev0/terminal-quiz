@@ -174,10 +174,23 @@ describe("program queries", () => {
       variables: { programId: E2E_PROGRAM_ID },
     });
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(401);
     const errors = response.body.errors;
     expect(errors).toBeDefined();
     expect(errors?.[0]?.message).toContain("Unauthorized");
+  });
+
+  it("programGates rejects callers who do not own the program", async () => {
+    const response: GqlResponse = await gqlRequest(PROGRAM_GATES_QUERY, {
+      variables: { programId: E2E_PROGRAM_ID },
+      testUserId: TEST_USER_ID,
+      testSecret: INTEGRATION_TEST_SECRET,
+    });
+
+    expect(response.status).toBe(403);
+    const errors = response.body.errors;
+    expect(errors).toBeDefined();
+    expect(errors?.[0]?.message).toContain("do not own");
   });
 
   it("programGates returns gates for an owned program", async () => {
