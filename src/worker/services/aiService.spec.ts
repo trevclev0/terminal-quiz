@@ -160,4 +160,23 @@ describe("aiService", () => {
       "Previous clues already given",
     );
   });
+
+  it("sanitizes the player's guess before embedding it in the prompt", async () => {
+    const { c, aiRunMock } = createMockHonoContext();
+    aiRunMock.mockResolvedValue({ response: "clue" });
+
+    await generateClue(
+      c,
+      baseArgs.gateQuestion,
+      baseArgs.correctAnswer,
+      'guess with "quotes" and\nnewline',
+      [],
+    );
+
+    expect(aiRunMock).toHaveBeenCalledTimes(1);
+    const prompt = aiRunMock.mock.calls[0][1].messages[1].content;
+    expect(prompt).toContain('guess with \\"quotes\\" and newline');
+    expect(prompt).not.toContain('"quotes"');
+    expect(prompt).not.toContain("and\nnewline");
+  });
 });
