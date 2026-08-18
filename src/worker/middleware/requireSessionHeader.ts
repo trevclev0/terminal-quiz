@@ -1,11 +1,11 @@
-import { getOperationAST, parse } from "graphql";
+import { type DocumentNode, getOperationAST, parse } from "graphql";
 import { createMiddleware } from "hono/factory";
 import type { AppVariables } from "./db";
 
 const SESSION_HEADER = "x-session-id";
 
 /**
- * Same-origin tripwire for gameplay mutations — NOT a nonce.
+ * Same-origin tripwire for mutations — NOT a nonce.
  *
  * Identity comes from the server-issued HttpOnly cookie (see
  * `sessionMiddleware`). This guard only asserts the request came from
@@ -16,10 +16,12 @@ const SESSION_HEADER = "x-session-id";
  *
  * Uses a real GraphQL parse (`parse` + `getOperationAST`) — this is a
  * security control, not a string-match convenience. Fail-closed: malformed
- * JSON, unparseable queries, documents without a single resolvable operation
- * (e.g. multi-operation documents without an `operationName`), and any
- * mutation over GET are rejected; `undefined` operation types are never
- * treated as `"query"` and passed through.
+ * JSON, unparseable queries, and documents without a single resolvable
+ * operation (e.g. multi-operation documents without an `operationName`) are
+ * rejected before the header check; `undefined` operation types are never
+ * treated as `"query"` and passed through. A headerless GET with no `query`
+ * param is allowed through — that is the non-production GraphiQL entry
+ * request, which has no operation to protect.
  */
 export const requireSessionHeader = createMiddleware<AppVariables>(
   async (c, next) => {
@@ -54,51 +56,71 @@ export const requireSessionHeader = createMiddleware<AppVariables>(
           400,
         );
       }
-      try {
-        const ast = parse(query);
-        const op = getOperationAST(
-          ast,
-          typeof operationName === "string" ? operationName : undefined,
-        );
-        operationType = op?.operation;
-      } catch {
-        return c.json({ errors: [{ message: "GraphQL syntax error." }] }, 400);
-      }
+      const resolved = tryResolveOperation(
+        query,
+        typeof operationName === "string" ? operationName : undefined,
+      );
+      if (!resolved.ok) return c.json(resolved.errors, 400);
+      operationType = resolved.operationType;
     } else if (c.req.method === "GET") {
       const query = c.req.query("query");
-      if (query) {
-        try {
-          const ast = parse(query);
-          const op = getOperationAST(
-            ast,
-            c.req.query("operationName") || undefined,
-          );
-          operationType = op?.operation;
-        } catch {
-          return c.json(
-            { errors: [{ message: "GraphQL syntax error." }] },
-            400,
-          );
-        }
+      // Headerless query-less GET = GraphiQL entry request. Nothing to
+      // protect — let it through so graphqlServer can serve the UI.
+      if (!query) return next();
+      const resolved = tryResolveOperation(
+        query,
+        c.req.query("operationName") || undefined,
+      );
+      if (!resolved.ok) return c.json(resolved.errors, 400);
+      operationType = resolved.operationType;
+    }
+
+    if (operationType === "mutation") {
+      if (c.req.method === "GET") {
+        return c.json(
+          { errors: [{ message: "Mutations are not supported over GET." }] },
+          400,
+        );
       }
-    }
-
-    if (operationType === "mutation" && c.req.method === "GET") {
-      return c.json(
-        { errors: [{ message: "Mutations are not supported over GET." }] },
-        400,
-      );
-    }
-
-    // "query" passes freely; mutations and unresolvable operations (including
-    // `undefined`) require the header.
-    if (operationType !== "query" && !hasSessionHeader) {
-      return c.json(
-        { errors: [{ message: `Missing required ${SESSION_HEADER} header.` }] },
-        400,
-      );
+      if (!hasSessionHeader) {
+        return c.json(
+          {
+            errors: [{ message: `Missing required ${SESSION_HEADER} header.` }],
+          },
+          400,
+        );
+      }
     }
 
     return next();
   },
 );
+
+type ResolvedOperation =
+  | { ok: true; operationType: string }
+  | { ok: false; errors: { errors: { message: string }[] } };
+
+function tryResolveOperation(
+  query: string,
+  operationName: string | undefined,
+): ResolvedOperation {
+  let ast: DocumentNode;
+  try {
+    ast = parse(query);
+  } catch {
+    return {
+      ok: false,
+      errors: { errors: [{ message: "GraphQL syntax error." }] },
+    };
+  }
+  const op = getOperationAST(ast, operationName);
+  if (!op) {
+    return {
+      ok: false,
+      errors: {
+        errors: [{ message: "GraphQL operation could not be resolved." }],
+      },
+    };
+  }
+  return { ok: true, operationType: op.operation };
+}
