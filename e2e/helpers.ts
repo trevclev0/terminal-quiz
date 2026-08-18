@@ -1,6 +1,9 @@
 import type { Page } from "@playwright/test";
 import { DELETE_PROGRAM_MUTATION } from "../src/shared/gqlQueries";
-import { AUTH_BYPASS_USER_ID } from "../src/worker/test-utils/testConstants";
+import {
+  AUTH_BYPASS_USER_ID,
+  TRIPWIRE_HEADER_VALUE,
+} from "../src/worker/test-utils/testConstants";
 
 function getAuthBypassSecret(): string {
   const secret = process.env.AUTH_TEST_BYPASS_SECRET;
@@ -39,6 +42,7 @@ export async function deleteProgramViaApi(
       "Content-Type": "application/json",
       "x-auth-test-user-id": AUTH_BYPASS_USER_ID,
       "x-auth-test-user-secret": secret,
+      "x-session-id": TRIPWIRE_HEADER_VALUE,
     },
     data: {
       query: DELETE_PROGRAM_MUTATION,

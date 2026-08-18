@@ -1,6 +1,8 @@
 import { env, exports } from "cloudflare:workers";
 import {
+  GET_IN_PROGRESS_PROGRAM_QUERY,
   GET_PROGRAM_PROGRESSION_QUERY,
+  RESET_SESSION_MUTATION,
   SUBMIT_GUESS_MUTATION,
 } from "@shared/gqlQueries";
 import { sessionProgress } from "@shared/schema";
@@ -64,7 +66,6 @@ describe("server-issued session identity", () => {
 
   beforeEach(() => {
     invalidateCachedSchema();
-    vi.mocked(trackEvent).mockClear();
   });
 
   it("mints a session cookie and sets sessionId on first request", async () => {
@@ -177,11 +178,8 @@ describe("server-issued session identity", () => {
     expect(badQuery.status).toBe(400);
   });
 
-  it("rejects a multi-operation document without operationName — not treated as query", async () => {
-    const multiOp = `
-      query Q { getInProgressProgram }
-      mutation M { resetSession(programId: "${E2E_PROGRAM_ID}") }
-    `;
+  it("rejects a multi-operation document without an operationName", async () => {
+    const multiOp = `${GET_IN_PROGRESS_PROGRAM_QUERY}\n${RESET_SESSION_MUTATION}`;
 
     const response = await rawRequest("/api/graphql", {
       method: "POST",
@@ -192,12 +190,31 @@ describe("server-issued session identity", () => {
     expect(response.status).toBe(400);
     const body = (await response.json()) as { errors?: { message: string }[] };
     expect(body.errors?.[0]?.message).toBe(
-      `Missing required ${TRIPWIRE_HEADER} header.`,
+      "GraphQL operation could not be resolved.",
+    );
+  });
+
+  it("rejects a multi-operation document even with a header", async () => {
+    const multiOp = `${GET_IN_PROGRESS_PROGRAM_QUERY}\n${RESET_SESSION_MUTATION}`;
+
+    const response = await rawRequest("/api/graphql", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        [TRIPWIRE_HEADER]: "terminal-quiz",
+      },
+      body: JSON.stringify({ query: multiOp }),
+    });
+
+    expect(response.status).toBe(400);
+    const body = (await response.json()) as { errors?: { message: string }[] };
+    expect(body.errors?.[0]?.message).toBe(
+      "GraphQL operation could not be resolved.",
     );
   });
 
   it("rejects a mutation over GET", async () => {
-    const mutation = `mutation M { resetSession(programId: "${E2E_PROGRAM_ID}") }`;
+    const mutation = RESET_SESSION_MUTATION.replace(/\s+/g, " ");
     const response = await rawRequest(
       `/api/graphql?query=${encodeURIComponent(mutation)}`,
       {
@@ -213,11 +230,17 @@ describe("server-issued session identity", () => {
     );
   });
 
+  it("allows a headerless query-less GET through (GraphiQL entry)", async () => {
+    const response = await rawRequest("/api/graphql", { method: "GET" });
+
+    expect(response.status).toBe(200);
+  });
+
   it("sets the cookie scoped to /api with HttpOnly, Secure and SameSite=Lax", async () => {
     const response = await rawRequest("/api/graphql", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: "{ getInProgressProgram }" }),
+      body: JSON.stringify({ query: GET_IN_PROGRESS_PROGRAM_QUERY }),
     });
 
     const setCookie = response.headers.get("set-cookie") ?? "";

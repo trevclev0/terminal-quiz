@@ -1,11 +1,9 @@
 import { exports } from "cloudflare:workers";
 import { SESSION_COOKIE_NAME } from "@worker-middleware/session";
-
-const TRIPWIRE_HEADER = "x-session-id";
-// Constant, value-agnostic: presence proves same-origin JS (a cross-site
-// fetch cannot set a custom header; a <form> POST cannot set one at all).
-// Identity is carried by the server-issued session cookie only.
-const TRIPWIRE_VALUE = "terminal-quiz";
+import {
+  TRIPWIRE_HEADER,
+  TRIPWIRE_HEADER_VALUE,
+} from "@worker-test-utils/testConstants";
 
 export interface GqlRequestOptions {
   sessionId?: string;
@@ -44,7 +42,7 @@ export async function gqlRequest(
 ): Promise<GqlResponse> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    [TRIPWIRE_HEADER]: TRIPWIRE_VALUE,
+    [TRIPWIRE_HEADER]: TRIPWIRE_HEADER_VALUE,
   };
   if (opts.sessionId) {
     headers.Cookie = `${SESSION_COOKIE_NAME}=${opts.sessionId}`;
