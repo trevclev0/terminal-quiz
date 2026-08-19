@@ -1,28 +1,25 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { SubmitGuessMutation } from "../../../shared/generated/graphql";
 import { SUBMIT_GUESS_MUTATION } from "../../../shared/gqlQueries";
 import { graphqlFetch } from "../graphQlClient";
 import { PROGRAM_KEYS } from "../queryKeys";
 
-export type SubmitGuessResponse = {
-  success: boolean;
-  message?: string;
-  canRequestClue: boolean;
-  nextGate: {
-    id: string;
-    label: string;
-    question: string;
-  } | null;
-};
+export type SubmitGuessResponse = NonNullable<
+  SubmitGuessMutation["submitGuess"]
+>;
 
 const submitGuess = async (
   programId: string,
   gateId: string,
   guess: string,
 ): Promise<SubmitGuessResponse> => {
-  const result = await graphqlFetch<{ submitGuess: SubmitGuessResponse }>(
+  const result = await graphqlFetch<SubmitGuessMutation>(
     SUBMIT_GUESS_MUTATION,
     { programId, gateId, guess },
   );
+  if (result.submitGuess === null) {
+    throw new Error("submitGuess returned no payload.");
+  }
   return result.submitGuess;
 };
 

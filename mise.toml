@@ -68,6 +68,14 @@ description = "Generate Cloudflare types"
 run = "bun run seed:generate"
 description = "Compile scripts/seed.ts + seed-e2e.ts into scripts/generated/*.sql"
 
+[tasks."schema:generate"]
+run = "bun run schema:generate"
+description = "Dump GraphQL schema to graphql/schema.graphql"
+
+[tasks."gql:generate"]
+run = "bun run gql:generate"
+description = "Generate typed GraphQL operations from schema.graphql + gqlQueries.ts"
+
 [tasks."seed:local"]
 run = "bun run seed:local"
 description = "Seed local database"

@@ -10,7 +10,8 @@
       "**",
       "!!**/dist",
       "!!worker-configuration.d.ts",
-      "!!src/react-app/routeTree.gen.ts"
+      "!!src/react-app/routeTree.gen.ts",
+      "!!src/shared/generated/graphql.ts"
     ]
   },
   "formatter": {

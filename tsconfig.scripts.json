@@ -9,5 +9,6 @@
     "src/shared/schema.ts",
     "src/shared/authSchema.ts",
     "src/worker/test-utils/testConstants.ts"
-  ]
+  ],
+  "exclude": ["scripts/dump-schema.ts"]
 }

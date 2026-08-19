@@ -1,5 +1,17 @@
 {
   "files": [],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["./src/shared/*"],
+      "@worker-routes/*": ["./src/worker/routes/*"],
+      "@worker-middleware/*": ["./src/worker/middleware/*"],
+      "@worker-services/*": ["./src/worker/services/*"],
+      "@worker-utils/*": ["./src/worker/utils/*"],
+      "@worker-graphql/*": ["./src/worker/graphql/*"],
+      "@worker-test-utils/*": ["./src/worker/test-utils/*"]
+    }
+  },
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" },
