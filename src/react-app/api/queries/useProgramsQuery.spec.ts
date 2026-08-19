@@ -62,16 +62,14 @@ describe("useProgramsQuery", () => {
       headers: { get: () => "application/json" },
       ok: true,
       status: 200,
-      text: async () => {
-        throw new SyntaxError("Unexpected token <");
-      },
+      text: async () => "<html>",
     } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useProgramsQuery(), { wrapper });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error?.message).toBe("Unexpected token <");
+    expect(result.current.error).toBeInstanceOf(SyntaxError);
   });
 
   it("throws on network failure", async () => {

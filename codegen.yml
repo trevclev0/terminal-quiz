@@ -13,4 +13,3 @@ generates:
       skipTypename: true
       avoidOptionals:
         field: true
-        objectType: true

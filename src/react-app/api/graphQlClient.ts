@@ -43,7 +43,7 @@ export const graphqlRequest = async <
       document as unknown as RequestDocument,
       variables,
     );
-    if (data === undefined) {
+    if (data === undefined || data === null) {
       throw new Error("GraphQL response did not include data.");
     }
     return data;
