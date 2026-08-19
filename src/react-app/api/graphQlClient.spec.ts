@@ -1,5 +1,8 @@
-import type { TypedDocumentNode } from "@graphql-typed-document-node/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  GET_PROGRAMS_QUERY,
+  SUBMIT_GUESS_MUTATION,
+} from "../../shared/gqlQueries";
 import { graphqlRequest } from "./graphQlClient";
 
 const mockFetch = vi.fn();
@@ -7,17 +10,6 @@ const mockFetch = vi.fn();
 beforeEach(() => {
   globalThis.fetch = mockFetch;
 });
-
-const testDoc = "{ test }" as unknown as TypedDocumentNode<
-  { test: string },
-  Record<string, never>
->;
-
-const testDocWithVars =
-  "mutation DoThing($input: String!) { doThing(input: $input) }" as unknown as TypedDocumentNode<
-    { doThing: boolean },
-    { input: string }
-  >;
 
 const jsonResponse = (payload: unknown, status = 200) =>
   ({
@@ -32,17 +24,38 @@ const jsonResponse = (payload: unknown, status = 200) =>
 
 describe("graphqlRequest", () => {
   it("returns data on successful request", async () => {
-    mockFetch.mockResolvedValueOnce(jsonResponse({ data: { test: "abc" } }));
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse({
+        data: { programs: [{ id: "p1", name: "Program 1" }] },
+      }),
+    );
 
-    const result = await graphqlRequest(testDoc);
+    const result = await graphqlRequest(GET_PROGRAMS_QUERY);
 
-    expect(result).toEqual({ test: "abc" });
+    expect(result).toEqual({
+      programs: [{ id: "p1", name: "Program 1" }],
+    });
   });
 
   it("sends correct request shape", async () => {
-    mockFetch.mockResolvedValueOnce(jsonResponse({ data: { doThing: true } }));
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse({
+        data: {
+          submitGuess: {
+            success: true,
+            message: "ok",
+            canRequestClue: false,
+            nextGate: null,
+          },
+        },
+      }),
+    );
 
-    await graphqlRequest(testDocWithVars, { input: "foo" });
+    await graphqlRequest(SUBMIT_GUESS_MUTATION, {
+      programId: "prog-1",
+      gateId: "gate-1",
+      guess: "my answer",
+    });
 
     const [url, options] = mockFetch.mock.calls[0] as [Request, RequestInit];
     expect(new URL(url as unknown as string).pathname).toBe("/api/graphql");
@@ -50,25 +63,29 @@ describe("graphqlRequest", () => {
     const headers = new Headers(options.headers);
     expect(headers.get("Content-Type")).toBe("application/json");
     const body = JSON.parse(options.body as string);
-    expect(body.query).toContain("doThing");
-    expect(body.variables).toEqual({ input: "foo" });
+    expect(body.query).toContain("SubmitGuess");
+    expect(body.variables).toEqual({
+      programId: "prog-1",
+      gateId: "gate-1",
+      guess: "my answer",
+    });
   });
 
   it("omits variables when none provided", async () => {
-    mockFetch.mockResolvedValueOnce(jsonResponse({ data: { test: "x" } }));
+    mockFetch.mockResolvedValueOnce(jsonResponse({ data: { programs: [] } }));
 
-    await graphqlRequest(testDoc);
+    await graphqlRequest(GET_PROGRAMS_QUERY);
 
     const [, options] = mockFetch.mock.calls[0] as [Request, RequestInit];
     const body = JSON.parse(options.body as string);
-    expect(body.query).toBe("{ test }");
+    expect(body.query).toContain("GetPrograms");
     expect(body.variables).toBeUndefined();
   });
 
   it("includes the constant x-session-id tripwire header", async () => {
-    mockFetch.mockResolvedValueOnce(jsonResponse({ data: { test: "x" } }));
+    mockFetch.mockResolvedValueOnce(jsonResponse({ data: { programs: [] } }));
 
-    await graphqlRequest(testDoc);
+    await graphqlRequest(GET_PROGRAMS_QUERY);
 
     const [, options] = mockFetch.mock.calls[0] as [Request, RequestInit];
     const headers = new Headers(options.headers);
@@ -83,7 +100,7 @@ describe("graphqlRequest", () => {
       text: async () => "",
     } as unknown as Response);
 
-    await expect(graphqlRequest(testDoc)).rejects.toThrow(
+    await expect(graphqlRequest(GET_PROGRAMS_QUERY)).rejects.toThrow(
       "GraphQL request failed with HTTP 500.",
     );
   });
@@ -96,7 +113,7 @@ describe("graphqlRequest", () => {
       ),
     );
 
-    await expect(graphqlRequest(testDoc)).rejects.toThrow(
+    await expect(graphqlRequest(GET_PROGRAMS_QUERY)).rejects.toThrow(
       "Internal server error",
     );
   });
@@ -106,7 +123,9 @@ describe("graphqlRequest", () => {
       jsonResponse({ data: null, errors: [{ message: "Not found" }] }),
     );
 
-    await expect(graphqlRequest(testDoc)).rejects.toThrow("Not found");
+    await expect(graphqlRequest(GET_PROGRAMS_QUERY)).rejects.toThrow(
+      "Not found",
+    );
   });
 
   it("uses first error when multiple errors present", async () => {
@@ -117,30 +136,32 @@ describe("graphqlRequest", () => {
       }),
     );
 
-    await expect(graphqlRequest(testDoc)).rejects.toThrow("First error");
+    await expect(graphqlRequest(GET_PROGRAMS_QUERY)).rejects.toThrow(
+      "First error",
+    );
   });
 
   it("falls back to generic message when error has no message", async () => {
     mockFetch.mockResolvedValueOnce(jsonResponse({ data: null, errors: [{}] }));
 
-    await expect(graphqlRequest(testDoc)).rejects.toThrow(
+    await expect(graphqlRequest(GET_PROGRAMS_QUERY)).rejects.toThrow(
       "GraphQL request failed with HTTP 200.",
     );
   });
 
   it("returns data when errors array is empty but data is present", async () => {
     mockFetch.mockResolvedValueOnce(
-      jsonResponse({ data: { test: "valid" }, errors: [] }),
+      jsonResponse({ data: { programs: [] }, errors: [] }),
     );
 
-    const result = await graphqlRequest(testDoc);
-    expect(result).toEqual({ test: "valid" });
+    const result = await graphqlRequest(GET_PROGRAMS_QUERY);
+    expect(result).toEqual({ programs: [] });
   });
 
   it("throws when data field is missing from response", async () => {
     mockFetch.mockResolvedValueOnce(jsonResponse({}));
 
-    await expect(graphqlRequest(testDoc)).rejects.toThrow(
+    await expect(graphqlRequest(GET_PROGRAMS_QUERY)).rejects.toThrow(
       "GraphQL response did not include data.",
     );
   });
@@ -148,6 +169,8 @@ describe("graphqlRequest", () => {
   it("propagates network error when fetch fails", async () => {
     mockFetch.mockRejectedValueOnce(new TypeError("Failed to fetch"));
 
-    await expect(graphqlRequest(testDoc)).rejects.toThrow("Failed to fetch");
+    await expect(graphqlRequest(GET_PROGRAMS_QUERY)).rejects.toThrow(
+      "Failed to fetch",
+    );
   });
 });
