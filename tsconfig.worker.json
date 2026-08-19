@@ -14,5 +14,5 @@
       "@worker-test-utils/*": ["./src/worker/test-utils/*"]
     }
   },
-  "include": ["src/worker", "src/shared"]
+  "include": ["src/worker", "src/shared", "scripts/dump-schema.ts"]
 }

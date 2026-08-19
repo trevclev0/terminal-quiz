@@ -11,7 +11,8 @@
       "!!**/dist",
       "!!worker-configuration.d.ts",
       "!!src/react-app/routeTree.gen.ts",
-      "!!src/shared/generated/graphql.ts"
+      "!!src/shared/generated/graphql.ts",
+      "!!graphql/schema.graphql"
     ]
   },
   "formatter": {

@@ -92,6 +92,8 @@ export default defineConfig({
         "src/react-app/routes/__root.tsx",
         "src/shared/gqlQueries.ts",
         "src/worker/routes/graphql.ts",
+        "src/worker/routes/schema.ts",
+        "scripts/dump-schema.ts",
         "**/test-utils/**",
       ],
       reporter: ["text", "json-summary", "json"],
