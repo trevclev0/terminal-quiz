@@ -8,7 +8,7 @@ import { graphqlRequest } from "./graphQlClient";
 const mockFetch = vi.fn();
 
 beforeEach(() => {
-  globalThis.fetch = mockFetch;
+  vi.spyOn(globalThis, "fetch").mockImplementation(mockFetch);
 });
 
 const jsonResponse = (payload: unknown, status = 200) =>
@@ -163,6 +163,27 @@ describe("graphqlRequest", () => {
 
     await expect(graphqlRequest(GET_PROGRAMS_QUERY)).rejects.toThrow(
       "GraphQL response did not include data.",
+    );
+  });
+
+  it("throws when data is null with an empty errors array", async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse({ data: null, errors: [] }));
+
+    await expect(graphqlRequest(GET_PROGRAMS_QUERY)).rejects.toThrow(
+      "GraphQL response did not include data.",
+    );
+  });
+
+  it("propagates JSON parse errors unchanged", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: { get: () => "application/json" },
+      text: async () => "<html>",
+    } as unknown as Response);
+
+    await expect(graphqlRequest(GET_PROGRAMS_QUERY)).rejects.toBeInstanceOf(
+      SyntaxError,
     );
   });
 
