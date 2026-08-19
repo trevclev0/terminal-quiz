@@ -8,8 +8,9 @@
  *
  * The generated constants are re-exported here as the runtime API consumed
  * by hooks/api files and integration tests. Edit an operation string in
- * `./graphqlOperations.ts`, then run `bun run gql:generate` and commit the
- * regenerated output so the exported documents stay in sync.
+ * `./graphqlOperations.ts`, then run `bun run schema:generate && bun run
+ * gql:generate` and commit the regenerated output so the exported documents
+ * stay in sync.
  */
 
 import {
