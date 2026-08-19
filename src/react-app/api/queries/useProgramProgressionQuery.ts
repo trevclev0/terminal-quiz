@@ -1,26 +1,15 @@
+import type { GetProgramProgressionQuery } from "../../../shared/generated/graphql";
 import { GET_PROGRAM_PROGRESSION_QUERY } from "../../../shared/gqlQueries";
 import { graphqlRequest } from "../graphQlClient";
 import { PROGRAM_KEYS } from "../queryKeys";
 
-export type ActiveGate = {
-  id: string;
-  label: string;
-  question: string;
-};
+export type ProgramProgression = NonNullable<
+  GetProgramProgressionQuery["getProgramProgression"]
+>;
 
-export type CompletedGate = {
-  id: string;
-  label: string;
-  question: string;
-  correctAnswer: string;
-  successMessage: string;
-};
+export type ActiveGate = NonNullable<ProgramProgression["currentGate"]>;
 
-export type ProgramProgression = {
-  currentGate: ActiveGate | null;
-  completedGates: CompletedGate[];
-  status: string;
-};
+export type CompletedGate = ProgramProgression["completedGates"][number];
 
 const fetchProgramProgression = async (
   programId: string,

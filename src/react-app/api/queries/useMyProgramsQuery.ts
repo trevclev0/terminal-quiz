@@ -1,14 +1,12 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import type { MyProgramsQuery } from "../../../shared/generated/graphql";
 import { MY_PROGRAMS_QUERY } from "../../../shared/gqlQueries";
 import { graphqlRequest } from "../graphQlClient";
 import { MANAGEMENT_KEYS } from "../queryKeys";
 
-export type MyProgram = {
-  id: string;
-  name: string;
-  visibility: string;
-  authorId?: string | null;
-};
+export type MyProgram = NonNullable<
+  NonNullable<MyProgramsQuery["myPrograms"]>[number]
+>;
 
 const fetchMyPrograms = async (): Promise<MyProgram[]> => {
   const data = await graphqlRequest(MY_PROGRAMS_QUERY);

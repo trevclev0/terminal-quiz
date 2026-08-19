@@ -1,13 +1,9 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import type { MeQuery } from "../../../shared/generated/graphql";
 import { ME_QUERY } from "../../../shared/gqlQueries";
 import { graphqlRequest } from "../graphQlClient";
 
-export type Me = {
-  id: string;
-  email: string;
-  name: string;
-  image?: string | null;
-};
+export type Me = NonNullable<MeQuery["me"]>;
 
 const fetchMe = async (): Promise<Me | null> => {
   const data = await graphqlRequest(ME_QUERY);

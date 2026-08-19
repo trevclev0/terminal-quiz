@@ -1,15 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { CreateProgramMutation } from "../../../shared/generated/graphql";
 import { CREATE_PROGRAM_MUTATION } from "../../../shared/gqlQueries";
 import { graphqlRequest } from "../graphQlClient";
 import { MANAGEMENT_KEYS } from "../queryKeys";
 
-export type CreateProgramResponse = {
-  id: string;
-  name: string;
-  visibility: string;
-  authorId: string | null;
-  createdAt: string;
-};
+export type CreateProgramResponse = NonNullable<
+  CreateProgramMutation["createProgram"]
+>;
 
 const createProgram = async (
   name: string,
