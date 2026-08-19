@@ -1,7 +1,7 @@
 overwrite: true
 schema: ./graphql/schema.graphql
 documents:
-  - ./src/shared/gqlQueries.ts
+  - ./src/shared/graphqlOperations.ts
 generates:
   ./src/shared/generated/graphql.ts:
     plugins:
