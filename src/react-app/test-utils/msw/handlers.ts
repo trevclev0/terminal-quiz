@@ -1,3 +1,12 @@
+import {
+  GET_IN_PROGRESS_PROGRAM_QUERY,
+  GET_PROGRAM_PROGRESSION_QUERY,
+  GET_PROGRAMS_QUERY,
+  PROGRAM_QUERY,
+  REQUEST_CLUE_MUTATION,
+  RESET_SESSION_MUTATION,
+  SUBMIT_GUESS_MUTATION,
+} from "@shared/gqlQueries";
 import { graphql, HttpResponse, http } from "msw";
 import {
   mockProgram,
@@ -7,16 +16,16 @@ import {
   mockSubmitGuessResponse,
 } from "./fixtures";
 
-export const getProgramHandler = graphql.query("Program", () =>
+export const getProgramHandler = graphql.query(PROGRAM_QUERY, () =>
   HttpResponse.json({ data: { program: mockProgram() } }),
 );
 
-export const getProgramsHandler = graphql.query("GetPrograms", () =>
+export const getProgramsHandler = graphql.query(GET_PROGRAMS_QUERY, () =>
   HttpResponse.json({ data: { programs: mockPrograms() } }),
 );
 
 export const getProgramProgressionHandler = graphql.query(
-  "GetProgramProgression",
+  GET_PROGRAM_PROGRESSION_QUERY,
   () =>
     HttpResponse.json({
       data: { getProgramProgression: mockProgression() },
@@ -24,20 +33,21 @@ export const getProgramProgressionHandler = graphql.query(
 );
 
 export const getInProgressProgramHandler = graphql.query(
-  "GetInProgressProgram",
+  GET_IN_PROGRESS_PROGRAM_QUERY,
   () => HttpResponse.json({ data: { getInProgressProgram: null } }),
 );
 
-export const submitGuessHandler = graphql.mutation("SubmitGuess", () =>
+export const submitGuessHandler = graphql.mutation(SUBMIT_GUESS_MUTATION, () =>
   HttpResponse.json({ data: { submitGuess: mockSubmitGuessResponse() } }),
 );
 
-export const requestClueHandler = graphql.mutation("RequestClue", () =>
+export const requestClueHandler = graphql.mutation(REQUEST_CLUE_MUTATION, () =>
   HttpResponse.json({ data: { requestClue: mockRequestClueResponse() } }),
 );
 
-export const resetSessionHandler = graphql.mutation("ResetSession", () =>
-  HttpResponse.json({ data: { resetSession: true } }),
+export const resetSessionHandler = graphql.mutation(
+  RESET_SESSION_MUTATION,
+  () => HttpResponse.json({ data: { resetSession: true } }),
 );
 
 const getSessionHandler = http.get("/api/auth/get-session", () =>
