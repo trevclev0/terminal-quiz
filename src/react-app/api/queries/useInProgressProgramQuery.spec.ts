@@ -13,9 +13,11 @@ beforeEach(() => {
 describe("inProgressProgramQueryOptions", () => {
   it("returns program id when session has in-progress program", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { getInProgressProgram: "prog-1" } }),
-    } as Response);
+      text: async () =>
+        JSON.stringify({ data: { getInProgressProgram: "prog-1" } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(
@@ -29,9 +31,11 @@ describe("inProgressProgramQueryOptions", () => {
 
   it("returns null when no in-progress program exists", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { getInProgressProgram: null } }),
-    } as Response);
+      text: async () =>
+        JSON.stringify({ data: { getInProgressProgram: null } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(
@@ -56,9 +60,11 @@ describe("inProgressProgramQueryOptions", () => {
 
   it("sends GetInProgressProgram query", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { getInProgressProgram: null } }),
-    } as Response);
+      text: async () =>
+        JSON.stringify({ data: { getInProgressProgram: null } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     renderHook(() => useQuery(inProgressProgramQueryOptions), { wrapper });
@@ -76,10 +82,11 @@ describe("inProgressProgramQueryOptions", () => {
 
   it("rejects on query error", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: false,
       status: 500,
-      json: async () => ({}),
-    } as Response);
+      text: async () => JSON.stringify({}),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(

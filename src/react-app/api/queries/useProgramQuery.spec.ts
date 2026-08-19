@@ -12,9 +12,10 @@ describe("useProgramQuery", () => {
       authorId: "user-1",
     };
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { program: mockProgram } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { program: mockProgram } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useProgramQuery("prog-1"), {
@@ -27,9 +28,10 @@ describe("useProgramQuery", () => {
 
   it("returns null when program is not found", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { program: null } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { program: null } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useProgramQuery("missing"), {

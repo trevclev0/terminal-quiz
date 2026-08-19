@@ -19,9 +19,11 @@ describe("programProgressionQueryOptions", () => {
       status: "in_progress",
     };
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { getProgramProgression: progression } }),
-    } as Response);
+      text: async () =>
+        JSON.stringify({ data: { getProgramProgression: progression } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(
@@ -44,17 +46,19 @@ describe("programProgressionQueryOptions", () => {
 
   it("forwards programId in the query variables", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({
-        data: {
-          getProgramProgression: {
-            currentGate: null,
-            completedGates: [],
-            status: "in_progress",
+      text: async () =>
+        JSON.stringify({
+          data: {
+            getProgramProgression: {
+              currentGate: null,
+              completedGates: [],
+              status: "in_progress",
+            },
           },
-        },
-      }),
-    } as Response);
+        }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     renderHook(() => useQuery(programProgressionQueryOptions(mockProgramId)), {
@@ -74,10 +78,11 @@ describe("programProgressionQueryOptions", () => {
 
   it("rejects on query error", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: false,
       status: 500,
-      json: async () => ({}),
-    } as Response);
+      text: async () => JSON.stringify({}),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(
@@ -119,9 +124,11 @@ describe("programProgressionQueryOptions", () => {
       status: "completed",
     };
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { getProgramProgression: progression } }),
-    } as Response);
+      text: async () =>
+        JSON.stringify({ data: { getProgramProgression: progression } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(

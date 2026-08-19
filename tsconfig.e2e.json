@@ -8,6 +8,7 @@
   "include": [
     "e2e",
     "src/shared/gqlQueries.ts",
+    "src/shared/generated/graphql.ts",
     "src/worker/test-utils/testConstants.ts"
   ]
 }

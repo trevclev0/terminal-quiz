@@ -12,9 +12,10 @@ beforeEach(() => {
 describe("useDeleteProgramMutation", () => {
   it("sends delete mutation", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { deleteProgram: true } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { deleteProgram: true } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useDeleteProgramMutation(), {
@@ -32,9 +33,10 @@ describe("useDeleteProgramMutation", () => {
 
   it("invalidates myPrograms cache on success", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { deleteProgram: true } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { deleteProgram: true } }),
+    } as unknown as Response);
 
     const { queryClient, wrapper } = createQueryWrapper();
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");

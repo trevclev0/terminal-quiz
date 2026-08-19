@@ -1,6 +1,6 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { PROGRAM_GATES_QUERY } from "../../../shared/gqlQueries";
-import { graphqlFetch } from "../graphQlClient";
+import { graphqlRequest } from "../graphQlClient";
 import { MANAGEMENT_KEYS } from "../queryKeys";
 
 export type GateManagement = {
@@ -19,10 +19,7 @@ export type GateManagement = {
 const fetchProgramGates = async (
   programId: string,
 ): Promise<GateManagement[]> => {
-  const data = await graphqlFetch<{ programGates: GateManagement[] }>(
-    PROGRAM_GATES_QUERY,
-    { programId },
-  );
+  const data = await graphqlRequest(PROGRAM_GATES_QUERY, { programId });
   return data.programGates;
 };
 

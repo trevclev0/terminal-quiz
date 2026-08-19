@@ -7,9 +7,10 @@ describe("useMeQuery", () => {
   it("returns user when authenticated", async () => {
     const mockUser = { id: "1", email: "a@b.com", name: "Test", image: null };
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { me: mockUser } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { me: mockUser } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useMeQuery(), { wrapper });
@@ -20,9 +21,10 @@ describe("useMeQuery", () => {
 
   it("returns null when unauthenticated", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { me: null } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { me: null } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useMeQuery(), { wrapper });

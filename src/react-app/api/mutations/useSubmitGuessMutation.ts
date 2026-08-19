@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { SubmitGuessMutation } from "../../../shared/generated/graphql";
 import { SUBMIT_GUESS_MUTATION } from "../../../shared/gqlQueries";
-import { graphqlFetch } from "../graphQlClient";
+import { graphqlRequest } from "../graphQlClient";
 import { PROGRAM_KEYS } from "../queryKeys";
 
 export type SubmitGuessResponse = NonNullable<
@@ -13,10 +13,11 @@ const submitGuess = async (
   gateId: string,
   guess: string,
 ): Promise<SubmitGuessResponse> => {
-  const result = await graphqlFetch<SubmitGuessMutation>(
-    SUBMIT_GUESS_MUTATION,
-    { programId, gateId, guess },
-  );
+  const result = await graphqlRequest(SUBMIT_GUESS_MUTATION, {
+    programId,
+    gateId,
+    guess,
+  });
   if (result.submitGuess === null) {
     throw new Error("submitGuess returned no payload.");
   }

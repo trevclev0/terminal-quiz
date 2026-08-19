@@ -1,6 +1,6 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { ME_QUERY } from "../../../shared/gqlQueries";
-import { graphqlFetch } from "../graphQlClient";
+import { graphqlRequest } from "../graphQlClient";
 
 export type Me = {
   id: string;
@@ -10,7 +10,7 @@ export type Me = {
 };
 
 const fetchMe = async (): Promise<Me | null> => {
-  const data = await graphqlFetch<{ me: Me | null }>(ME_QUERY);
+  const data = await graphqlRequest(ME_QUERY);
   return data.me;
 };
 

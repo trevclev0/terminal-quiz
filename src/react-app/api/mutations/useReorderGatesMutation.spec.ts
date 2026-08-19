@@ -13,9 +13,10 @@ beforeEach(() => {
 describe("useReorderGatesMutation", () => {
   it("sends reorder mutation", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { reorderGates: true } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { reorderGates: true } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useReorderGatesMutation(PROGRAM_ID), {
@@ -39,9 +40,10 @@ describe("useReorderGatesMutation", () => {
 
   it("invalidates programGates cache on success", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { reorderGates: true } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { reorderGates: true } }),
+    } as unknown as Response);
 
     const { queryClient, wrapper } = createQueryWrapper();
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");

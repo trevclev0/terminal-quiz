@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { REQUEST_CLUE_MUTATION } from "../../../shared/gqlQueries";
-import { graphqlFetch } from "../graphQlClient";
+import { graphqlRequest } from "../graphQlClient";
 
 export type RequestClueResponse = {
   clueText: string | null;
@@ -16,10 +16,14 @@ const requestClue = async (
   gateId: string,
   currentGuess: string,
 ): Promise<RequestClueResponse> => {
-  const result = await graphqlFetch<{ requestClue: RequestClueResponse }>(
-    REQUEST_CLUE_MUTATION,
-    { programId, gateId, currentGuess },
-  );
+  const result = await graphqlRequest(REQUEST_CLUE_MUTATION, {
+    programId,
+    gateId,
+    currentGuess,
+  });
+  if (!result.requestClue) {
+    throw new Error("Failed to request clue.");
+  }
   return result.requestClue;
 };
 

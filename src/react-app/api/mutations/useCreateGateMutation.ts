@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CREATE_GATE_MUTATION } from "../../../shared/gqlQueries";
-import { graphqlFetch } from "../graphQlClient";
+import { graphqlRequest } from "../graphQlClient";
 import { MANAGEMENT_KEYS } from "../queryKeys";
 
 export type CreateGateVariables = {
@@ -16,7 +16,7 @@ export type CreateGateVariables = {
 };
 
 const createGate = async (variables: CreateGateVariables): Promise<void> => {
-  await graphqlFetch(CREATE_GATE_MUTATION, variables);
+  await graphqlRequest(CREATE_GATE_MUTATION, variables);
 };
 
 export const useCreateGateMutation = (programId: string) => {

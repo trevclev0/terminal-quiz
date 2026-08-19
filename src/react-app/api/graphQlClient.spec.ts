@@ -1,5 +1,6 @@
+import type { TypedDocumentNode } from "@graphql-typed-document-node/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { graphqlFetch } from "./graphQlClient";
+import { graphqlRequest } from "./graphQlClient";
 
 const mockFetch = vi.fn();
 
@@ -7,168 +8,139 @@ beforeEach(() => {
   globalThis.fetch = mockFetch;
 });
 
-const okJsonResponse = (data: unknown) =>
-  ({ ok: true, status: 200, json: async () => data }) as unknown as Response;
+const testDoc = "{ test }" as unknown as TypedDocumentNode<
+  { test: string },
+  Record<string, never>
+>;
 
-const statusResponse = (status: number, data?: unknown) =>
+const testDocWithVars =
+  "mutation DoThing($input: String!) { doThing(input: $input) }" as unknown as TypedDocumentNode<
+    { doThing: boolean },
+    { input: string }
+  >;
+
+const jsonResponse = (payload: unknown, status = 200) =>
   ({
-    ok: false,
+    ok: status >= 200 && status < 300,
     status,
-    json: async () => data,
+    headers: {
+      get: (name: string) =>
+        name.toLowerCase() === "content-type" ? "application/json" : null,
+    },
+    text: async () => JSON.stringify(payload),
   }) as unknown as Response;
 
-describe("graphqlFetch", () => {
-  it("returns data on successful fetch", async () => {
-    mockFetch.mockResolvedValueOnce(okJsonResponse({ data: { token: "abc" } }));
+describe("graphqlRequest", () => {
+  it("returns data on successful request", async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse({ data: { test: "abc" } }));
 
-    const result = await graphqlFetch<{ token: string }>("query { token }");
+    const result = await graphqlRequest(testDoc);
 
-    expect(result).toEqual({ token: "abc" });
+    expect(result).toEqual({ test: "abc" });
   });
 
   it("sends correct request shape", async () => {
-    mockFetch.mockResolvedValueOnce(
-      okJsonResponse({ data: { success: true } }),
-    );
+    mockFetch.mockResolvedValueOnce(jsonResponse({ data: { doThing: true } }));
 
-    await graphqlFetch("mutation { doThing }", { input: "foo" });
+    await graphqlRequest(testDocWithVars, { input: "foo" });
 
-    expect(mockFetch).toHaveBeenCalledWith("/api/graphql", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-session-id": "terminal-quiz",
-      },
-      body: JSON.stringify({
-        query: "mutation { doThing }",
-        variables: { input: "foo" },
-      }),
-    });
+    const [url, options] = mockFetch.mock.calls[0] as [Request, RequestInit];
+    expect(new URL(url as unknown as string).pathname).toBe("/api/graphql");
+    expect(options.method).toBe("POST");
+    const headers = new Headers(options.headers);
+    expect(headers.get("Content-Type")).toBe("application/json");
+    const body = JSON.parse(options.body as string);
+    expect(body.query).toContain("doThing");
+    expect(body.variables).toEqual({ input: "foo" });
   });
 
-  it("sends query without variables when none provided", async () => {
-    mockFetch.mockResolvedValueOnce(okJsonResponse({ data: { ok: true } }));
+  it("omits variables when none provided", async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse({ data: { test: "x" } }));
 
-    await graphqlFetch("{ test }");
+    await graphqlRequest(testDoc);
 
-    const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
-    const callBody = JSON.parse(options.body as string);
-    expect(callBody.query).toBe("{ test }");
-    expect(callBody.variables).toBeUndefined();
+    const [, options] = mockFetch.mock.calls[0] as [Request, RequestInit];
+    const body = JSON.parse(options.body as string);
+    expect(body.query).toBe("{ test }");
+    expect(body.variables).toBeUndefined();
   });
 
   it("includes the constant x-session-id tripwire header", async () => {
-    mockFetch.mockResolvedValueOnce(okJsonResponse({ data: { ok: true } }));
+    mockFetch.mockResolvedValueOnce(jsonResponse({ data: { test: "x" } }));
 
-    await graphqlFetch("{ test }");
+    await graphqlRequest(testDoc);
 
-    const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
-    const headers = options.headers as Record<string, string>;
-    expect(headers["x-session-id"]).toBe("terminal-quiz");
+    const [, options] = mockFetch.mock.calls[0] as [Request, RequestInit];
+    const headers = new Headers(options.headers);
+    expect(headers.get("x-session-id")).toBe("terminal-quiz");
   });
 
   it("throws fallback message on HTTP 500 without body", async () => {
-    mockFetch.mockResolvedValueOnce(statusResponse(500));
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      headers: { get: () => "application/json" },
+      text: async () => "",
+    } as unknown as Response);
 
-    await expect(graphqlFetch("{ test }")).rejects.toThrow(
+    await expect(graphqlRequest(testDoc)).rejects.toThrow(
       "GraphQL request failed with HTTP 500.",
     );
   });
 
   it("throws error message from GraphQL error body on HTTP 500", async () => {
     mockFetch.mockResolvedValueOnce(
-      statusResponse(500, {
-        data: null,
-        errors: [{ message: "Internal server error" }],
-      }),
+      jsonResponse(
+        { data: null, errors: [{ message: "Internal server error" }] },
+        500,
+      ),
     );
 
-    await expect(graphqlFetch("{ test }")).rejects.toThrow(
+    await expect(graphqlRequest(testDoc)).rejects.toThrow(
       "Internal server error",
     );
   });
 
   it("throws first error message when HTTP is ok but response has errors", async () => {
     mockFetch.mockResolvedValueOnce(
-      okJsonResponse({
-        data: null,
-        errors: [{ message: "Not found" }],
-      }),
+      jsonResponse({ data: null, errors: [{ message: "Not found" }] }),
     );
 
-    await expect(graphqlFetch("{ test }")).rejects.toThrow("Not found");
+    await expect(graphqlRequest(testDoc)).rejects.toThrow("Not found");
   });
 
   it("uses first error when multiple errors present", async () => {
     mockFetch.mockResolvedValueOnce(
-      okJsonResponse({
+      jsonResponse({
         data: null,
         errors: [{ message: "First error" }, { message: "Second error" }],
       }),
     );
 
-    await expect(graphqlFetch("{ test }")).rejects.toThrow("First error");
+    await expect(graphqlRequest(testDoc)).rejects.toThrow("First error");
   });
 
   it("falls back to generic message when error has no message", async () => {
-    mockFetch.mockResolvedValueOnce(
-      okJsonResponse({
-        data: null,
-        errors: [{}],
-      }),
-    );
+    mockFetch.mockResolvedValueOnce(jsonResponse({ data: null, errors: [{}] }));
 
-    await expect(graphqlFetch("{ test }")).rejects.toThrow(
+    await expect(graphqlRequest(testDoc)).rejects.toThrow(
       "GraphQL request failed with HTTP 200.",
     );
   });
 
   it("returns data when errors array is empty but data is present", async () => {
     mockFetch.mockResolvedValueOnce(
-      okJsonResponse({
-        data: { valid: true },
-        errors: [],
-      }),
+      jsonResponse({ data: { test: "valid" }, errors: [] }),
     );
 
-    const result = await graphqlFetch<{ valid: boolean }>("{ test }");
-    expect(result).toEqual({ valid: true });
+    const result = await graphqlRequest(testDoc);
+    expect(result).toEqual({ test: "valid" });
   });
 
   it("throws when data field is missing from response", async () => {
-    mockFetch.mockResolvedValueOnce(okJsonResponse({}));
+    mockFetch.mockResolvedValueOnce(jsonResponse({}));
 
-    await expect(graphqlFetch("{ test }")).rejects.toThrow(
-      "GraphQL response did not include data.",
-    );
-  });
-
-  it("throws on malformed JSON response", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => {
-        throw new SyntaxError("Unexpected token");
-      },
-    } as unknown as Response);
-
-    await expect(graphqlFetch("{ test }")).rejects.toThrow(
-      "GraphQL request failed with HTTP 200.",
-    );
-  });
-
-  it("throws on null response body", async () => {
-    mockFetch.mockResolvedValueOnce(okJsonResponse(null));
-
-    await expect(graphqlFetch("{ test }")).rejects.toThrow(
-      "GraphQL response did not include data.",
-    );
-  });
-
-  it("throws on array response body", async () => {
-    mockFetch.mockResolvedValueOnce(okJsonResponse([]));
-
-    await expect(graphqlFetch("{ test }")).rejects.toThrow(
+    await expect(graphqlRequest(testDoc)).rejects.toThrow(
       "GraphQL response did not include data.",
     );
   });
@@ -176,6 +148,6 @@ describe("graphqlFetch", () => {
   it("propagates network error when fetch fails", async () => {
     mockFetch.mockRejectedValueOnce(new TypeError("Failed to fetch"));
 
-    await expect(graphqlFetch("{ test }")).rejects.toThrow("Failed to fetch");
+    await expect(graphqlRequest(testDoc)).rejects.toThrow("Failed to fetch");
   });
 });

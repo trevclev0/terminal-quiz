@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UPDATE_GATE_MUTATION } from "../../../shared/gqlQueries";
-import { graphqlFetch } from "../graphQlClient";
+import { graphqlRequest } from "../graphQlClient";
 import { MANAGEMENT_KEYS } from "../queryKeys";
 
 export type UpdateGateVariables = {
@@ -16,7 +16,7 @@ export type UpdateGateVariables = {
 };
 
 const updateGate = async (variables: UpdateGateVariables): Promise<void> => {
-  await graphqlFetch(UPDATE_GATE_MUTATION, variables);
+  await graphqlRequest(UPDATE_GATE_MUTATION, variables);
 };
 
 export const useUpdateGateMutation = (programId: string) => {
