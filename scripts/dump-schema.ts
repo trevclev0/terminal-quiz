@@ -16,6 +16,10 @@ import { buildAppSchema } from "../src/worker/routes/schema";
 // replicates drizzle()'s schema config so db.query is populated the same way
 // the worker does. Regenerate on any schema change; CI diffs the committed
 // graphql/schema.graphql.
+//
+// Type-checked by the worker project (tsconfig.worker.json) so `tsc -b` (the
+// build) catches regressions in the schema generator; excluded from
+// tsconfig.scripts.json because it pulls in the worker module graph.
 const tablesConfig = extractTablesRelationalConfig(
   drizzleSchema,
   createTableRelationsHelpers,
