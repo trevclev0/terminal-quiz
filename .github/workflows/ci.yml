@@ -27,6 +27,16 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-env
 
+      - name: Check generated GraphQL artifacts are up to date
+        run: |
+          mise run schema:generate
+          mise run gql:generate
+          if ! git diff --exit-code --quiet -- graphql/schema.graphql src/shared/generated/graphql.ts; then
+            echo "::error::Generated GraphQL artifacts are out of date. Run 'bun run schema:generate && bun run gql:generate' and commit the output."
+            git diff --stat -- graphql/schema.graphql src/shared/generated/graphql.ts
+            exit 1
+          fi
+
       - name: Run Biome checks
         run: mise run check:code
 
