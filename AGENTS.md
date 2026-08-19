@@ -141,7 +141,9 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 │   │   ├── schema.ts          # Drizzle schema — single source of truth for DB + types
 │   │   ├── authSchema.ts      # Better Auth tables (user, account, session, verification)
 │   │   ├── types.ts           # Program, Gate, and related types (inferred from schema)
-│   │   └── gqlQueries.ts      # Single source of truth for all GraphQL query/mutation strings
+│   │   ├── graphqlOperations.ts # Codegen input: hand-written GraphQL operation strings
+│   │   ├── generated/         # graphql-codegen output (typed *Document constants, schema types)
+│   │   └── gqlQueries.ts      # Runtime API: re-exports generated *Document constants
 │   └── worker/
 │       ├── index.ts                # Hono entry, mounts /api/auth/* + /api/graphql
 │       ├── middleware/             # db (Drizzle setup), logger, session (reads x-session-id),
@@ -339,6 +341,6 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - Do not weaken `authorizeProgramMutation()` — every management mutation operating on an existing program/gate must re-verify `authorId` server-side (all except `createProgram`), never trust client-supplied program/gate IDs without ownership check
 - Do not introduce REST endpoints for authoring — management mutations are GraphQL only, same as gameplay
 - Do not allow open redirects in `/login` — `validateReturnTo()` must reject cross-origin, protocol-relative, and backslash-based return_to values
-- Do not define GraphQL query/mutation strings inline in frontend files — they belong in `src/shared/gqlQueries.ts` and are imported by hooks/api files and integration tests.
+- Do not define GraphQL query/mutation strings inline in frontend files — hand-written operation strings belong in `src/shared/graphqlOperations.ts` (codegen input), and hooks/api files and integration tests import the typed documents via `src/shared/gqlQueries.ts`.
 - Do not use inline `style={}` props on React elements — all styling must go in a co-located `ComponentName.module.css` file with CSS Module class names. Applies to all new components and any changes to existing component markup.
 - Do not reintroduce inline `<script>`/`<style>` blocks in `index.html` — a strict CSP is served from `public/_headers` (applied to all static assets), which blocks inline scripts/styles. The boot fallback script and CSS live in `public/boot.js` / `public/boot.css`; any new third-party script requires a deliberate CSP directive change.
