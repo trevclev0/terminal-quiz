@@ -1,11 +1,9 @@
 import { GET_IN_PROGRESS_PROGRAM_QUERY } from "../../../shared/gqlQueries";
-import { graphqlFetch } from "../graphQlClient";
+import { graphqlRequest } from "../graphQlClient";
 import { PROGRAM_KEYS } from "../queryKeys";
 
 const fetchInProgressProgram = async (): Promise<string | null> => {
-  const result = await graphqlFetch<{ getInProgressProgram: string | null }>(
-    GET_IN_PROGRESS_PROGRAM_QUERY,
-  );
+  const result = await graphqlRequest(GET_IN_PROGRESS_PROGRAM_QUERY);
   return result.getInProgressProgram;
 };
 

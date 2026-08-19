@@ -19,9 +19,10 @@ describe("useSubmitGuessMutation", () => {
       nextGate: { id: "gate-2", label: "Gate 2", question: "Next?" },
     };
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { submitGuess: response } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { submitGuess: response } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useSubmitGuessMutation(mockProgramId), {
@@ -38,13 +39,19 @@ describe("useSubmitGuessMutation", () => {
 
   it("sends correct mutation query and variables", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({
-        data: {
-          submitGuess: { success: true, canRequestClue: false, nextGate: null },
-        },
-      }),
-    } as Response);
+      text: async () =>
+        JSON.stringify({
+          data: {
+            submitGuess: {
+              success: true,
+              canRequestClue: false,
+              nextGate: null,
+            },
+          },
+        }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useSubmitGuessMutation(mockProgramId), {
@@ -66,13 +73,19 @@ describe("useSubmitGuessMutation", () => {
 
   it("invalidates progression cache on success", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({
-        data: {
-          submitGuess: { success: true, canRequestClue: false, nextGate: null },
-        },
-      }),
-    } as Response);
+      text: async () =>
+        JSON.stringify({
+          data: {
+            submitGuess: {
+              success: true,
+              canRequestClue: false,
+              nextGate: null,
+            },
+          },
+        }),
+    } as unknown as Response);
 
     const { queryClient, wrapper } = createQueryWrapper();
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
@@ -91,11 +104,13 @@ describe("useSubmitGuessMutation", () => {
 
   it("rejects on GraphQL error response", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({
-        errors: [{ message: "Invalid guess" }],
-      }),
-    } as Response);
+      text: async () =>
+        JSON.stringify({
+          errors: [{ message: "Invalid guess" }],
+        }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useSubmitGuessMutation(mockProgramId), {
@@ -109,10 +124,11 @@ describe("useSubmitGuessMutation", () => {
 
   it("rejects on HTTP failure", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: false,
       status: 500,
-      json: async () => ({}),
-    } as Response);
+      text: async () => JSON.stringify({}),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useSubmitGuessMutation(mockProgramId), {

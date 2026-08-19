@@ -20,9 +20,10 @@ describe("useProgramGatesQuery", () => {
       },
     ];
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { programGates: mockGates } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { programGates: mockGates } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useProgramGatesQuery("prog-1"), {

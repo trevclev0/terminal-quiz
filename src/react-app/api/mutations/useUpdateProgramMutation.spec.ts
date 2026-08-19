@@ -12,17 +12,19 @@ beforeEach(() => {
 describe("useUpdateProgramMutation", () => {
   it("sends update mutation", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({
-        data: {
-          updateProgram: {
-            id: "prog-1",
-            name: "Updated",
-            visibility: "unlisted",
+      text: async () =>
+        JSON.stringify({
+          data: {
+            updateProgram: {
+              id: "prog-1",
+              name: "Updated",
+              visibility: "unlisted",
+            },
           },
-        },
-      }),
-    } as Response);
+        }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useUpdateProgramMutation(), {
@@ -48,17 +50,19 @@ describe("useUpdateProgramMutation", () => {
 
   it("invalidates myPrograms cache on success", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({
-        data: {
-          updateProgram: {
-            id: "prog-1",
-            name: "Updated",
-            visibility: "public",
+      text: async () =>
+        JSON.stringify({
+          data: {
+            updateProgram: {
+              id: "prog-1",
+              name: "Updated",
+              visibility: "public",
+            },
           },
-        },
-      }),
-    } as Response);
+        }),
+    } as unknown as Response);
 
     const { queryClient, wrapper } = createQueryWrapper();
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");

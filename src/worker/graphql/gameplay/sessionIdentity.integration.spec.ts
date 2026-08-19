@@ -14,6 +14,7 @@ import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
 import { drizzle } from "drizzle-orm/d1";
+import { print } from "graphql";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@worker-graphql/gameplay/analytics", () => ({
@@ -102,7 +103,7 @@ describe("server-issued session identity", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        query: GET_PROGRAM_PROGRESSION_QUERY,
+        query: print(GET_PROGRAM_PROGRESSION_QUERY),
         variables: { programId: E2E_PROGRAM_ID },
       }),
     });
@@ -124,7 +125,7 @@ describe("server-issued session identity", () => {
         Cookie: `${SESSION_COOKIE_NAME}=${sessionId}`,
       },
       body: JSON.stringify({
-        query: SUBMIT_GUESS_MUTATION,
+        query: print(SUBMIT_GUESS_MUTATION),
         variables: {
           programId: E2E_PROGRAM_ID,
           gateId: E2E_GATE_1_ID,
@@ -179,7 +180,7 @@ describe("server-issued session identity", () => {
   });
 
   it("rejects a multi-operation document without an operationName", async () => {
-    const multiOp = `${GET_IN_PROGRESS_PROGRAM_QUERY}\n${RESET_SESSION_MUTATION}`;
+    const multiOp = `${print(GET_IN_PROGRESS_PROGRAM_QUERY)}\n${print(RESET_SESSION_MUTATION)}`;
 
     const response = await rawRequest("/api/graphql", {
       method: "POST",
@@ -195,7 +196,7 @@ describe("server-issued session identity", () => {
   });
 
   it("rejects a multi-operation document even with a header", async () => {
-    const multiOp = `${GET_IN_PROGRESS_PROGRAM_QUERY}\n${RESET_SESSION_MUTATION}`;
+    const multiOp = `${print(GET_IN_PROGRESS_PROGRAM_QUERY)}\n${print(RESET_SESSION_MUTATION)}`;
 
     const response = await rawRequest("/api/graphql", {
       method: "POST",
@@ -214,7 +215,7 @@ describe("server-issued session identity", () => {
   });
 
   it("rejects a mutation over GET", async () => {
-    const mutation = RESET_SESSION_MUTATION.replace(/\s+/g, " ");
+    const mutation = print(RESET_SESSION_MUTATION).replace(/\s+/g, " ");
     const response = await rawRequest(
       `/api/graphql?query=${encodeURIComponent(mutation)}`,
       {

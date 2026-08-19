@@ -12,9 +12,10 @@ describe("useProgramsQuery", () => {
 
   it("fetches and returns programs successfully", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { programs: mockPrograms } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { programs: mockPrograms } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
 
@@ -26,9 +27,11 @@ describe("useProgramsQuery", () => {
 
   it("throws an error if the HTTP request fails", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: false,
       status: 500,
-    } as Response);
+      text: async () => "",
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useProgramsQuery(), { wrapper });
@@ -41,9 +44,11 @@ describe("useProgramsQuery", () => {
 
   it("throws the first GraphQL error message", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ errors: [{ message: "Access denied" }] }),
-    } as Response);
+      text: async () =>
+        JSON.stringify({ errors: [{ message: "Access denied" }] }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useProgramsQuery(), { wrapper });
@@ -54,9 +59,10 @@ describe("useProgramsQuery", () => {
 
   it("throws when response is malformed JSON", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
       status: 200,
-      json: async () => {
+      text: async () => {
         throw new SyntaxError("Unexpected token <");
       },
     } as unknown as Response);
@@ -65,9 +71,7 @@ describe("useProgramsQuery", () => {
     const { result } = renderHook(() => useProgramsQuery(), { wrapper });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error?.message).toBe(
-      "GraphQL request failed with HTTP 200.",
-    );
+    expect(result.current.error?.message).toBe("Unexpected token <");
   });
 
   it("throws on network failure", async () => {

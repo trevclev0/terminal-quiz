@@ -4,6 +4,8 @@ import {
   TRIPWIRE_HEADER,
   TRIPWIRE_HEADER_VALUE,
 } from "@worker-test-utils/testConstants";
+import type { DocumentNode } from "graphql";
+import { print } from "graphql";
 
 export interface GqlRequestOptions {
   sessionId?: string;
@@ -37,7 +39,7 @@ export interface GqlResponse {
  * the CSRF guard.
  */
 export async function gqlRequest(
-  query: string,
+  query: string | DocumentNode,
   opts: GqlRequestOptions = {},
 ): Promise<GqlResponse> {
   const headers: Record<string, string> = {
@@ -57,12 +59,14 @@ export async function gqlRequest(
     headers["x-auth-test-user-secret"] = opts.testSecret;
   }
 
+  const queryText = typeof query === "string" ? query : print(query);
+
   const response = await exports.default.fetch(
     new Request("http://localhost/api/graphql", {
       method: "POST",
       headers,
       body: JSON.stringify({
-        query,
+        query: queryText,
         variables: opts.variables ?? {},
       }),
     }),

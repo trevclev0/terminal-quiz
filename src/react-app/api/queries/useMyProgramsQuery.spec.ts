@@ -9,9 +9,10 @@ describe("useMyProgramsQuery", () => {
       { id: "1", name: "My Program", visibility: "public", authorId: "user-1" },
     ];
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { myPrograms: mockPrograms } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { myPrograms: mockPrograms } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useMyProgramsQuery(), { wrapper });
@@ -22,9 +23,10 @@ describe("useMyProgramsQuery", () => {
 
   it("returns empty array when null", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { myPrograms: null } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { myPrograms: null } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useMyProgramsQuery(), { wrapper });

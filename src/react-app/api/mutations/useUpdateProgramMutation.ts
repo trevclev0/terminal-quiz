@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UPDATE_PROGRAM_MUTATION } from "../../../shared/gqlQueries";
-import { graphqlFetch } from "../graphQlClient";
+import { graphqlRequest } from "../graphQlClient";
 import { MANAGEMENT_KEYS } from "../queryKeys";
 
 const updateProgram = async (
@@ -8,7 +8,7 @@ const updateProgram = async (
   name?: string,
   visibility?: string,
 ): Promise<void> => {
-  await graphqlFetch(UPDATE_PROGRAM_MUTATION, { id, name, visibility });
+  await graphqlRequest(UPDATE_PROGRAM_MUTATION, { id, name, visibility });
 };
 
 export const useUpdateProgramMutation = () => {

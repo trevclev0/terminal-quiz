@@ -13,17 +13,19 @@ beforeEach(() => {
 describe("useUpdateGateMutation", () => {
   it("sends update gate mutation", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({
-        data: {
-          updateGate: {
-            id: "gate-1",
-            label: "Updated",
-            sequenceOrder: 1,
+      text: async () =>
+        JSON.stringify({
+          data: {
+            updateGate: {
+              id: "gate-1",
+              label: "Updated",
+              sequenceOrder: 1,
+            },
           },
-        },
-      }),
-    } as Response);
+        }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useUpdateGateMutation(PROGRAM_ID), {
@@ -45,13 +47,15 @@ describe("useUpdateGateMutation", () => {
 
   it("invalidates programGates cache on success", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({
-        data: {
-          updateGate: { id: "gate-1", label: "Updated", sequenceOrder: 1 },
-        },
-      }),
-    } as Response);
+      text: async () =>
+        JSON.stringify({
+          data: {
+            updateGate: { id: "gate-1", label: "Updated", sequenceOrder: 1 },
+          },
+        }),
+    } as unknown as Response);
 
     const { queryClient, wrapper } = createQueryWrapper();
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");

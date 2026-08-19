@@ -18,9 +18,10 @@ describe("useRequestClueMutation", () => {
       cluesRemaining: 2,
     };
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { requestClue: response } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { requestClue: response } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useRequestClueMutation(mockProgramId), {
@@ -37,17 +38,19 @@ describe("useRequestClueMutation", () => {
 
   it("sends correct mutation query and variables", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({
-        data: {
-          requestClue: {
-            clueText: "Hint",
-            isClueLimitReached: false,
-            cluesRemaining: 2,
+      text: async () =>
+        JSON.stringify({
+          data: {
+            requestClue: {
+              clueText: "Hint",
+              isClueLimitReached: false,
+              cluesRemaining: 2,
+            },
           },
-        },
-      }),
-    } as Response);
+        }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useRequestClueMutation(mockProgramId), {
@@ -72,17 +75,19 @@ describe("useRequestClueMutation", () => {
 
   it("returns null clueText when clue cannot be generated", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({
-        data: {
-          requestClue: {
-            clueText: null,
-            isClueLimitReached: true,
-            cluesRemaining: 0,
+      text: async () =>
+        JSON.stringify({
+          data: {
+            requestClue: {
+              clueText: null,
+              isClueLimitReached: true,
+              cluesRemaining: 0,
+            },
           },
-        },
-      }),
-    } as Response);
+        }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useRequestClueMutation(mockProgramId), {
@@ -101,9 +106,11 @@ describe("useRequestClueMutation", () => {
 
   it("rejects on GraphQL error response", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ errors: [{ message: "Clue limit reached" }] }),
-    } as Response);
+      text: async () =>
+        JSON.stringify({ errors: [{ message: "Clue limit reached" }] }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useRequestClueMutation(mockProgramId), {
@@ -130,10 +137,11 @@ describe("useRequestClueMutation", () => {
 
   it("rejects on HTTP failure", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: false,
       status: 500,
-      json: async () => ({}),
-    } as Response);
+      text: async () => JSON.stringify({}),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useRequestClueMutation(mockProgramId), {
@@ -147,17 +155,19 @@ describe("useRequestClueMutation", () => {
 
   it("does not invalidate query cache (no onSuccess handler)", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({
-        data: {
-          requestClue: {
-            clueText: "Hint",
-            isClueLimitReached: false,
-            cluesRemaining: 2,
+      text: async () =>
+        JSON.stringify({
+          data: {
+            requestClue: {
+              clueText: "Hint",
+              isClueLimitReached: false,
+              cluesRemaining: 2,
+            },
           },
-        },
-      }),
-    } as Response);
+        }),
+    } as unknown as Response);
 
     const { queryClient, wrapper } = createQueryWrapper();
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");

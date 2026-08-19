@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DELETE_GATE_MUTATION } from "../../../shared/gqlQueries";
-import { graphqlFetch } from "../graphQlClient";
+import { graphqlRequest } from "../graphQlClient";
 import { MANAGEMENT_KEYS } from "../queryKeys";
 
 const deleteGate = async (id: string): Promise<void> => {
-  await graphqlFetch(DELETE_GATE_MUTATION, { id });
+  await graphqlRequest(DELETE_GATE_MUTATION, { id });
 };
 
 export const useDeleteGateMutation = (programId: string) => {

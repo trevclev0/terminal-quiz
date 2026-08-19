@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CREATE_PROGRAM_MUTATION } from "../../../shared/gqlQueries";
-import { graphqlFetch } from "../graphQlClient";
+import { graphqlRequest } from "../graphQlClient";
 import { MANAGEMENT_KEYS } from "../queryKeys";
 
 export type CreateProgramResponse = {
@@ -15,10 +15,13 @@ const createProgram = async (
   name: string,
   visibility: string,
 ): Promise<CreateProgramResponse> => {
-  const result = await graphqlFetch<{ createProgram: CreateProgramResponse }>(
-    CREATE_PROGRAM_MUTATION,
-    { name, visibility },
-  );
+  const result = await graphqlRequest(CREATE_PROGRAM_MUTATION, {
+    name,
+    visibility,
+  });
+  if (!result.createProgram) {
+    throw new Error("Failed to create program.");
+  }
   return result.createProgram;
 };
 

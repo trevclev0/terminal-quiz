@@ -19,9 +19,10 @@ describe("useCreateProgramMutation", () => {
       createdAt: "2024-01-01T00:00:00.000Z",
     };
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { createProgram: response } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { createProgram: response } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useCreateProgramMutation(), {
@@ -38,19 +39,21 @@ describe("useCreateProgramMutation", () => {
 
   it("invalidates myPrograms cache on success", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({
-        data: {
-          createProgram: {
-            id: "prog-1",
-            name: "My Program",
-            visibility: "public",
-            authorId: "user-1",
-            createdAt: "2024-01-01T00:00:00.000Z",
+      text: async () =>
+        JSON.stringify({
+          data: {
+            createProgram: {
+              id: "prog-1",
+              name: "My Program",
+              visibility: "public",
+              authorId: "user-1",
+              createdAt: "2024-01-01T00:00:00.000Z",
+            },
           },
-        },
-      }),
-    } as Response);
+        }),
+    } as unknown as Response);
 
     const { queryClient, wrapper } = createQueryWrapper();
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");

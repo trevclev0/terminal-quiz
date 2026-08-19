@@ -12,9 +12,10 @@ beforeEach(() => {
 describe("useResetSession", () => {
   it("returns true on successful reset", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { resetSession: true } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { resetSession: true } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useResetSession(), { wrapper });
@@ -26,9 +27,10 @@ describe("useResetSession", () => {
 
   it("sends correct mutation query and variables", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { resetSession: true } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { resetSession: true } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useResetSession(), { wrapper });
@@ -44,9 +46,10 @@ describe("useResetSession", () => {
 
   it("invalidates progression cache on success", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { resetSession: true } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { resetSession: true } }),
+    } as unknown as Response);
 
     const { queryClient, wrapper } = createQueryWrapper();
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
@@ -63,10 +66,11 @@ describe("useResetSession", () => {
 
   it("invalidates progression cache on mutation failure (onSettled)", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: false,
       status: 500,
-      json: async () => ({}),
-    } as Response);
+      text: async () => JSON.stringify({}),
+    } as unknown as Response);
 
     const { queryClient, wrapper } = createQueryWrapper();
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
@@ -85,9 +89,10 @@ describe("useResetSession", () => {
 
   it("does not invalidate cache when programId is missing", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { resetSession: true } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { resetSession: true } }),
+    } as unknown as Response);
 
     const { queryClient, wrapper } = createQueryWrapper();
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
@@ -101,9 +106,11 @@ describe("useResetSession", () => {
 
   it("rejects on GraphQL error response", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ errors: [{ message: "Session not found" }] }),
-    } as Response);
+      text: async () =>
+        JSON.stringify({ errors: [{ message: "Session not found" }] }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useResetSession(), { wrapper });
@@ -115,10 +122,11 @@ describe("useResetSession", () => {
 
   it("rejects on HTTP failure", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: false,
       status: 500,
-      json: async () => ({}),
-    } as Response);
+      text: async () => JSON.stringify({}),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useResetSession(), { wrapper });

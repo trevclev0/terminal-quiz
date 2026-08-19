@@ -2,6 +2,7 @@
 type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 /** Internal type. DO NOT USE DIRECTLY. */
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
+import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 /** All built-in and custom scalars, mapped to their actual values */
@@ -20,18 +21,18 @@ export type ActiveGate = {
 };
 
 export type AiUsageFilters = {
-  OR: InputMaybe<Array<AiUsageFiltersOr>>;
-  requestCount: InputMaybe<AiUsageRequestCountFilters>;
-  usageDate: InputMaybe<AiUsageUsageDateFilters>;
+  OR?: InputMaybe<Array<AiUsageFiltersOr>>;
+  requestCount?: InputMaybe<AiUsageRequestCountFilters>;
+  usageDate?: InputMaybe<AiUsageUsageDateFilters>;
 };
 
 export type AiUsageFiltersOr = {
-  requestCount: InputMaybe<AiUsageRequestCountFilters>;
-  usageDate: InputMaybe<AiUsageUsageDateFilters>;
+  requestCount?: InputMaybe<AiUsageRequestCountFilters>;
+  usageDate?: InputMaybe<AiUsageUsageDateFilters>;
 };
 
 export type AiUsageInsertInput = {
-  requestCount: InputMaybe<Scalars['Int']['input']>;
+  requestCount?: InputMaybe<Scalars['Int']['input']>;
   usageDate: Scalars['String']['input'];
 };
 
@@ -41,47 +42,47 @@ export type AiUsageItem = {
 };
 
 export type AiUsageOrderBy = {
-  requestCount: InputMaybe<InnerOrder>;
-  usageDate: InputMaybe<InnerOrder>;
+  requestCount?: InputMaybe<InnerOrder>;
+  usageDate?: InputMaybe<InnerOrder>;
 };
 
 export type AiUsageRequestCountFilters = {
-  OR: InputMaybe<Array<AiUsageRequestCountfiltersOr>>;
-  eq: InputMaybe<Scalars['Int']['input']>;
-  gt: InputMaybe<Scalars['Int']['input']>;
-  gte: InputMaybe<Scalars['Int']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<AiUsageRequestCountfiltersOr>>;
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Int']['input']>;
-  lte: InputMaybe<Scalars['Int']['input']>;
-  ne: InputMaybe<Scalars['Int']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type AiUsageRequestCountfiltersOr = {
-  eq: InputMaybe<Scalars['Int']['input']>;
-  gt: InputMaybe<Scalars['Int']['input']>;
-  gte: InputMaybe<Scalars['Int']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Int']['input']>;
-  lte: InputMaybe<Scalars['Int']['input']>;
-  ne: InputMaybe<Scalars['Int']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type AiUsageSelectItem = {
@@ -90,189 +91,189 @@ export type AiUsageSelectItem = {
 };
 
 export type AiUsageUpdateInput = {
-  requestCount: InputMaybe<Scalars['Int']['input']>;
-  usageDate: InputMaybe<Scalars['String']['input']>;
+  requestCount?: InputMaybe<Scalars['Int']['input']>;
+  usageDate?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type AiUsageUsageDateFilters = {
-  OR: InputMaybe<Array<AiUsageUsageDatefiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<AiUsageUsageDatefiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type AiUsageUsageDatefiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ClueRateLimitsAttemptCountAtRequestFilters = {
-  OR: InputMaybe<Array<ClueRateLimitsAttemptCountAtRequestfiltersOr>>;
-  eq: InputMaybe<Scalars['Int']['input']>;
-  gt: InputMaybe<Scalars['Int']['input']>;
-  gte: InputMaybe<Scalars['Int']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<ClueRateLimitsAttemptCountAtRequestfiltersOr>>;
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Int']['input']>;
-  lte: InputMaybe<Scalars['Int']['input']>;
-  ne: InputMaybe<Scalars['Int']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ClueRateLimitsAttemptCountAtRequestfiltersOr = {
-  eq: InputMaybe<Scalars['Int']['input']>;
-  gt: InputMaybe<Scalars['Int']['input']>;
-  gte: InputMaybe<Scalars['Int']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Int']['input']>;
-  lte: InputMaybe<Scalars['Int']['input']>;
-  ne: InputMaybe<Scalars['Int']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ClueRateLimitsFilters = {
-  OR: InputMaybe<Array<ClueRateLimitsFiltersOr>>;
-  attemptCountAtRequest: InputMaybe<ClueRateLimitsAttemptCountAtRequestFilters>;
-  gateId: InputMaybe<ClueRateLimitsGateIdFilters>;
-  id: InputMaybe<ClueRateLimitsIdFilters>;
-  requestedAt: InputMaybe<ClueRateLimitsRequestedAtFilters>;
-  sessionProgressId: InputMaybe<ClueRateLimitsSessionProgressIdFilters>;
+  OR?: InputMaybe<Array<ClueRateLimitsFiltersOr>>;
+  attemptCountAtRequest?: InputMaybe<ClueRateLimitsAttemptCountAtRequestFilters>;
+  gateId?: InputMaybe<ClueRateLimitsGateIdFilters>;
+  id?: InputMaybe<ClueRateLimitsIdFilters>;
+  requestedAt?: InputMaybe<ClueRateLimitsRequestedAtFilters>;
+  sessionProgressId?: InputMaybe<ClueRateLimitsSessionProgressIdFilters>;
 };
 
 export type ClueRateLimitsFiltersOr = {
-  attemptCountAtRequest: InputMaybe<ClueRateLimitsAttemptCountAtRequestFilters>;
-  gateId: InputMaybe<ClueRateLimitsGateIdFilters>;
-  id: InputMaybe<ClueRateLimitsIdFilters>;
-  requestedAt: InputMaybe<ClueRateLimitsRequestedAtFilters>;
-  sessionProgressId: InputMaybe<ClueRateLimitsSessionProgressIdFilters>;
+  attemptCountAtRequest?: InputMaybe<ClueRateLimitsAttemptCountAtRequestFilters>;
+  gateId?: InputMaybe<ClueRateLimitsGateIdFilters>;
+  id?: InputMaybe<ClueRateLimitsIdFilters>;
+  requestedAt?: InputMaybe<ClueRateLimitsRequestedAtFilters>;
+  sessionProgressId?: InputMaybe<ClueRateLimitsSessionProgressIdFilters>;
 };
 
 export type ClueRateLimitsGateIdFilters = {
-  OR: InputMaybe<Array<ClueRateLimitsGateIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<ClueRateLimitsGateIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ClueRateLimitsGateIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ClueRateLimitsIdFilters = {
-  OR: InputMaybe<Array<ClueRateLimitsIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<ClueRateLimitsIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ClueRateLimitsIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ClueRateLimitsInsertInput = {
-  attemptCountAtRequest: InputMaybe<Scalars['Int']['input']>;
-  gateId: InputMaybe<Scalars['String']['input']>;
-  id: InputMaybe<Scalars['String']['input']>;
+  attemptCountAtRequest?: InputMaybe<Scalars['Int']['input']>;
+  gateId?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  requestedAt: InputMaybe<Scalars['String']['input']>;
+  requestedAt?: InputMaybe<Scalars['String']['input']>;
   sessionProgressId: Scalars['String']['input'];
 };
 
@@ -286,62 +287,62 @@ export type ClueRateLimitsItem = {
 };
 
 export type ClueRateLimitsOrderBy = {
-  attemptCountAtRequest: InputMaybe<InnerOrder>;
-  gateId: InputMaybe<InnerOrder>;
-  id: InputMaybe<InnerOrder>;
-  requestedAt: InputMaybe<InnerOrder>;
-  sessionProgressId: InputMaybe<InnerOrder>;
+  attemptCountAtRequest?: InputMaybe<InnerOrder>;
+  gateId?: InputMaybe<InnerOrder>;
+  id?: InputMaybe<InnerOrder>;
+  requestedAt?: InputMaybe<InnerOrder>;
+  sessionProgressId?: InputMaybe<InnerOrder>;
 };
 
 export type ClueRateLimitsRequestedAtFilters = {
-  OR: InputMaybe<Array<ClueRateLimitsRequestedAtfiltersOr>>;
+  OR?: InputMaybe<Array<ClueRateLimitsRequestedAtfiltersOr>>;
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ClueRateLimitsRequestedAtfiltersOr = {
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ClueRateLimitsSelectItem = {
@@ -356,46 +357,46 @@ export type ClueRateLimitsSelectItem = {
 
 
 export type ClueRateLimitsSelectItemSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type ClueRateLimitsSessionProgressIdFilters = {
-  OR: InputMaybe<Array<ClueRateLimitsSessionProgressIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<ClueRateLimitsSessionProgressIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ClueRateLimitsSessionProgressIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ClueRateLimitsSessionProgressRelation = {
@@ -420,36 +421,36 @@ export type ClueRateLimitsSessionProgressRelation = {
 
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<SessionCompletedGatesOrderBy>;
-  where: InputMaybe<SessionCompletedGatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<SessionCompletedGatesOrderBy>;
+  where?: InputMaybe<SessionCompletedGatesFilters>;
 };
 
 
 export type ClueRateLimitsSessionProgressRelationCurrentGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type ClueRateLimitsSessionProgressRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type ClueRateLimitsSessionProgressRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 
 export type ClueRateLimitsSessionProgressRelationRateLimitsArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<ClueRateLimitsOrderBy>;
-  where: InputMaybe<ClueRateLimitsFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ClueRateLimitsOrderBy>;
+  where?: InputMaybe<ClueRateLimitsFilters>;
 };
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesRelation = {
@@ -464,12 +465,12 @@ export type ClueRateLimitsSessionProgressRelationCompletedGatesRelation = {
 
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelation = {
@@ -491,15 +492,15 @@ export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelat
 
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelationGateCluesRelation = {
@@ -516,12 +517,12 @@ export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelat
 
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelationGateCluesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelationGateCluesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelationGateCluesRelationGateRelation = {
@@ -566,10 +567,10 @@ export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelat
 
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelationProgramRelationGatesRelation = {
@@ -621,15 +622,15 @@ export type ClueRateLimitsSessionProgressRelationCurrentGateRelation = {
 
 
 export type ClueRateLimitsSessionProgressRelationCurrentGateRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type ClueRateLimitsSessionProgressRelationCurrentGateRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type ClueRateLimitsSessionProgressRelationCurrentGateRelationGateCluesRelation = {
@@ -646,12 +647,12 @@ export type ClueRateLimitsSessionProgressRelationCurrentGateRelationGateCluesRel
 
 
 export type ClueRateLimitsSessionProgressRelationCurrentGateRelationGateCluesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type ClueRateLimitsSessionProgressRelationCurrentGateRelationGateCluesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type ClueRateLimitsSessionProgressRelationCurrentGateRelationGateCluesRelationGateRelation = {
@@ -696,10 +697,10 @@ export type ClueRateLimitsSessionProgressRelationCurrentGateRelationProgramRelat
 
 
 export type ClueRateLimitsSessionProgressRelationCurrentGateRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type ClueRateLimitsSessionProgressRelationCurrentGateRelationProgramRelationGatesRelation = {
@@ -731,12 +732,12 @@ export type ClueRateLimitsSessionProgressRelationGateCluesRelation = {
 
 
 export type ClueRateLimitsSessionProgressRelationGateCluesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type ClueRateLimitsSessionProgressRelationGateCluesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type ClueRateLimitsSessionProgressRelationGateCluesRelationGateRelation = {
@@ -758,15 +759,15 @@ export type ClueRateLimitsSessionProgressRelationGateCluesRelationGateRelation =
 
 
 export type ClueRateLimitsSessionProgressRelationGateCluesRelationGateRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type ClueRateLimitsSessionProgressRelationGateCluesRelationGateRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type ClueRateLimitsSessionProgressRelationGateCluesRelationGateRelationGateCluesRelation = {
@@ -791,10 +792,10 @@ export type ClueRateLimitsSessionProgressRelationGateCluesRelationGateRelationPr
 
 
 export type ClueRateLimitsSessionProgressRelationGateCluesRelationGateRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type ClueRateLimitsSessionProgressRelationGateCluesRelationGateRelationProgramRelationGatesRelation = {
@@ -839,10 +840,10 @@ export type ClueRateLimitsSessionProgressRelationProgramRelation = {
 
 
 export type ClueRateLimitsSessionProgressRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelation = {
@@ -864,15 +865,15 @@ export type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelation = 
 
 
 export type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelationGateCluesRelation = {
@@ -889,12 +890,12 @@ export type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelationGat
 
 
 export type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelationGateCluesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelationGateCluesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelationGateCluesRelationGateRelation = {
@@ -946,12 +947,12 @@ export type ClueRateLimitsSessionProgressRelationRateLimitsRelation = {
 };
 
 export type ClueRateLimitsUpdateInput = {
-  attemptCountAtRequest: InputMaybe<Scalars['Int']['input']>;
-  gateId: InputMaybe<Scalars['String']['input']>;
-  id: InputMaybe<Scalars['String']['input']>;
+  attemptCountAtRequest?: InputMaybe<Scalars['Int']['input']>;
+  gateId?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  requestedAt: InputMaybe<Scalars['String']['input']>;
-  sessionProgressId: InputMaybe<Scalars['String']['input']>;
+  requestedAt?: InputMaybe<Scalars['String']['input']>;
+  sessionProgressId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CompletedGate = {
@@ -963,190 +964,190 @@ export type CompletedGate = {
 };
 
 export type GateCluesAttemptCountAtRequestFilters = {
-  OR: InputMaybe<Array<GateCluesAttemptCountAtRequestfiltersOr>>;
-  eq: InputMaybe<Scalars['Int']['input']>;
-  gt: InputMaybe<Scalars['Int']['input']>;
-  gte: InputMaybe<Scalars['Int']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<GateCluesAttemptCountAtRequestfiltersOr>>;
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Int']['input']>;
-  lte: InputMaybe<Scalars['Int']['input']>;
-  ne: InputMaybe<Scalars['Int']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GateCluesAttemptCountAtRequestfiltersOr = {
-  eq: InputMaybe<Scalars['Int']['input']>;
-  gt: InputMaybe<Scalars['Int']['input']>;
-  gte: InputMaybe<Scalars['Int']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Int']['input']>;
-  lte: InputMaybe<Scalars['Int']['input']>;
-  ne: InputMaybe<Scalars['Int']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GateCluesClueTextFilters = {
-  OR: InputMaybe<Array<GateCluesClueTextfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<GateCluesClueTextfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GateCluesClueTextfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GateCluesCreatedAtFilters = {
-  OR: InputMaybe<Array<GateCluesCreatedAtfiltersOr>>;
+  OR?: InputMaybe<Array<GateCluesCreatedAtfiltersOr>>;
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GateCluesCreatedAtfiltersOr = {
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GateCluesFilters = {
-  OR: InputMaybe<Array<GateCluesFiltersOr>>;
-  attemptCountAtRequest: InputMaybe<GateCluesAttemptCountAtRequestFilters>;
-  clueText: InputMaybe<GateCluesClueTextFilters>;
-  createdAt: InputMaybe<GateCluesCreatedAtFilters>;
-  gateId: InputMaybe<GateCluesGateIdFilters>;
-  id: InputMaybe<GateCluesIdFilters>;
-  sessionProgressId: InputMaybe<GateCluesSessionProgressIdFilters>;
+  OR?: InputMaybe<Array<GateCluesFiltersOr>>;
+  attemptCountAtRequest?: InputMaybe<GateCluesAttemptCountAtRequestFilters>;
+  clueText?: InputMaybe<GateCluesClueTextFilters>;
+  createdAt?: InputMaybe<GateCluesCreatedAtFilters>;
+  gateId?: InputMaybe<GateCluesGateIdFilters>;
+  id?: InputMaybe<GateCluesIdFilters>;
+  sessionProgressId?: InputMaybe<GateCluesSessionProgressIdFilters>;
 };
 
 export type GateCluesFiltersOr = {
-  attemptCountAtRequest: InputMaybe<GateCluesAttemptCountAtRequestFilters>;
-  clueText: InputMaybe<GateCluesClueTextFilters>;
-  createdAt: InputMaybe<GateCluesCreatedAtFilters>;
-  gateId: InputMaybe<GateCluesGateIdFilters>;
-  id: InputMaybe<GateCluesIdFilters>;
-  sessionProgressId: InputMaybe<GateCluesSessionProgressIdFilters>;
+  attemptCountAtRequest?: InputMaybe<GateCluesAttemptCountAtRequestFilters>;
+  clueText?: InputMaybe<GateCluesClueTextFilters>;
+  createdAt?: InputMaybe<GateCluesCreatedAtFilters>;
+  gateId?: InputMaybe<GateCluesGateIdFilters>;
+  id?: InputMaybe<GateCluesIdFilters>;
+  sessionProgressId?: InputMaybe<GateCluesSessionProgressIdFilters>;
 };
 
 export type GateCluesGateIdFilters = {
-  OR: InputMaybe<Array<GateCluesGateIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<GateCluesGateIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GateCluesGateIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GateCluesGateRelation = {
@@ -1168,15 +1169,15 @@ export type GateCluesGateRelation = {
 
 
 export type GateCluesGateRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type GateCluesGateRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type GateCluesGateRelationGateCluesRelation = {
@@ -1201,10 +1202,10 @@ export type GateCluesGateRelationProgramRelation = {
 
 
 export type GateCluesGateRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type GateCluesGateRelationProgramRelationGatesRelation = {
@@ -1223,51 +1224,51 @@ export type GateCluesGateRelationProgramRelationGatesRelation = {
 };
 
 export type GateCluesIdFilters = {
-  OR: InputMaybe<Array<GateCluesIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<GateCluesIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GateCluesIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GateCluesInsertInput = {
   attemptCountAtRequest: Scalars['Int']['input'];
   clueText: Scalars['String']['input'];
   /** Date */
-  createdAt: InputMaybe<Scalars['String']['input']>;
+  createdAt?: InputMaybe<Scalars['String']['input']>;
   gateId: Scalars['String']['input'];
-  id: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   sessionProgressId: Scalars['String']['input'];
 };
 
@@ -1282,12 +1283,12 @@ export type GateCluesItem = {
 };
 
 export type GateCluesOrderBy = {
-  attemptCountAtRequest: InputMaybe<InnerOrder>;
-  clueText: InputMaybe<InnerOrder>;
-  createdAt: InputMaybe<InnerOrder>;
-  gateId: InputMaybe<InnerOrder>;
-  id: InputMaybe<InnerOrder>;
-  sessionProgressId: InputMaybe<InnerOrder>;
+  attemptCountAtRequest?: InputMaybe<InnerOrder>;
+  clueText?: InputMaybe<InnerOrder>;
+  createdAt?: InputMaybe<InnerOrder>;
+  gateId?: InputMaybe<InnerOrder>;
+  id?: InputMaybe<InnerOrder>;
+  sessionProgressId?: InputMaybe<InnerOrder>;
 };
 
 export type GateCluesSelectItem = {
@@ -1304,51 +1305,51 @@ export type GateCluesSelectItem = {
 
 
 export type GateCluesSelectItemGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type GateCluesSelectItemSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type GateCluesSessionProgressIdFilters = {
-  OR: InputMaybe<Array<GateCluesSessionProgressIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<GateCluesSessionProgressIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GateCluesSessionProgressIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GateCluesSessionProgressRelation = {
@@ -1373,36 +1374,36 @@ export type GateCluesSessionProgressRelation = {
 
 
 export type GateCluesSessionProgressRelationCompletedGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<SessionCompletedGatesOrderBy>;
-  where: InputMaybe<SessionCompletedGatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<SessionCompletedGatesOrderBy>;
+  where?: InputMaybe<SessionCompletedGatesFilters>;
 };
 
 
 export type GateCluesSessionProgressRelationCurrentGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type GateCluesSessionProgressRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type GateCluesSessionProgressRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 
 export type GateCluesSessionProgressRelationRateLimitsArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<ClueRateLimitsOrderBy>;
-  where: InputMaybe<ClueRateLimitsFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ClueRateLimitsOrderBy>;
+  where?: InputMaybe<ClueRateLimitsFilters>;
 };
 
 export type GateCluesSessionProgressRelationCompletedGatesRelation = {
@@ -1417,12 +1418,12 @@ export type GateCluesSessionProgressRelationCompletedGatesRelation = {
 
 
 export type GateCluesSessionProgressRelationCompletedGatesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type GateCluesSessionProgressRelationCompletedGatesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type GateCluesSessionProgressRelationCompletedGatesRelationGateRelation = {
@@ -1444,15 +1445,15 @@ export type GateCluesSessionProgressRelationCompletedGatesRelationGateRelation =
 
 
 export type GateCluesSessionProgressRelationCompletedGatesRelationGateRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type GateCluesSessionProgressRelationCompletedGatesRelationGateRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type GateCluesSessionProgressRelationCompletedGatesRelationGateRelationGateCluesRelation = {
@@ -1477,10 +1478,10 @@ export type GateCluesSessionProgressRelationCompletedGatesRelationGateRelationPr
 
 
 export type GateCluesSessionProgressRelationCompletedGatesRelationGateRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type GateCluesSessionProgressRelationCompletedGatesRelationGateRelationProgramRelationGatesRelation = {
@@ -1532,15 +1533,15 @@ export type GateCluesSessionProgressRelationCurrentGateRelation = {
 
 
 export type GateCluesSessionProgressRelationCurrentGateRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type GateCluesSessionProgressRelationCurrentGateRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type GateCluesSessionProgressRelationCurrentGateRelationGateCluesRelation = {
@@ -1565,10 +1566,10 @@ export type GateCluesSessionProgressRelationCurrentGateRelationProgramRelation =
 
 
 export type GateCluesSessionProgressRelationCurrentGateRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type GateCluesSessionProgressRelationCurrentGateRelationProgramRelationGatesRelation = {
@@ -1608,10 +1609,10 @@ export type GateCluesSessionProgressRelationProgramRelation = {
 
 
 export type GateCluesSessionProgressRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type GateCluesSessionProgressRelationProgramRelationGatesRelation = {
@@ -1633,15 +1634,15 @@ export type GateCluesSessionProgressRelationProgramRelationGatesRelation = {
 
 
 export type GateCluesSessionProgressRelationProgramRelationGatesRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type GateCluesSessionProgressRelationProgramRelationGatesRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type GateCluesSessionProgressRelationProgramRelationGatesRelationGateCluesRelation = {
@@ -1675,7 +1676,7 @@ export type GateCluesSessionProgressRelationRateLimitsRelation = {
 
 
 export type GateCluesSessionProgressRelationRateLimitsRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type GateCluesSessionProgressRelationRateLimitsRelationSessionProgressRelation = {
@@ -1694,13 +1695,13 @@ export type GateCluesSessionProgressRelationRateLimitsRelationSessionProgressRel
 };
 
 export type GateCluesUpdateInput = {
-  attemptCountAtRequest: InputMaybe<Scalars['Int']['input']>;
-  clueText: InputMaybe<Scalars['String']['input']>;
+  attemptCountAtRequest?: InputMaybe<Scalars['Int']['input']>;
+  clueText?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  createdAt: InputMaybe<Scalars['String']['input']>;
-  gateId: InputMaybe<Scalars['String']['input']>;
-  id: InputMaybe<Scalars['String']['input']>;
-  sessionProgressId: InputMaybe<Scalars['String']['input']>;
+  createdAt?: InputMaybe<Scalars['String']['input']>;
+  gateId?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  sessionProgressId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GateManagement = {
@@ -1717,161 +1718,161 @@ export type GateManagement = {
 };
 
 export type GatesAcceptanceThresholdFilters = {
-  OR: InputMaybe<Array<GatesAcceptanceThresholdfiltersOr>>;
-  eq: InputMaybe<Scalars['Float']['input']>;
-  gt: InputMaybe<Scalars['Float']['input']>;
-  gte: InputMaybe<Scalars['Float']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<GatesAcceptanceThresholdfiltersOr>>;
+  eq?: InputMaybe<Scalars['Float']['input']>;
+  gt?: InputMaybe<Scalars['Float']['input']>;
+  gte?: InputMaybe<Scalars['Float']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Float']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Float']['input']>;
-  lte: InputMaybe<Scalars['Float']['input']>;
-  ne: InputMaybe<Scalars['Float']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Float']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Float']['input']>;
+  lte?: InputMaybe<Scalars['Float']['input']>;
+  ne?: InputMaybe<Scalars['Float']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Float']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Float']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesAcceptanceThresholdfiltersOr = {
-  eq: InputMaybe<Scalars['Float']['input']>;
-  gt: InputMaybe<Scalars['Float']['input']>;
-  gte: InputMaybe<Scalars['Float']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['Float']['input']>;
+  gt?: InputMaybe<Scalars['Float']['input']>;
+  gte?: InputMaybe<Scalars['Float']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Float']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Float']['input']>;
-  lte: InputMaybe<Scalars['Float']['input']>;
-  ne: InputMaybe<Scalars['Float']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Float']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Float']['input']>;
+  lte?: InputMaybe<Scalars['Float']['input']>;
+  ne?: InputMaybe<Scalars['Float']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Float']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Float']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesCorrectAnswerFilters = {
-  OR: InputMaybe<Array<GatesCorrectAnswerfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<GatesCorrectAnswerfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesCorrectAnswerfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesCreatedAtFilters = {
-  OR: InputMaybe<Array<GatesCreatedAtfiltersOr>>;
+  OR?: InputMaybe<Array<GatesCreatedAtfiltersOr>>;
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesCreatedAtfiltersOr = {
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesFilters = {
-  OR: InputMaybe<Array<GatesFiltersOr>>;
-  acceptanceThreshold: InputMaybe<GatesAcceptanceThresholdFilters>;
-  correctAnswer: InputMaybe<GatesCorrectAnswerFilters>;
-  createdAt: InputMaybe<GatesCreatedAtFilters>;
-  guidanceEnabled: InputMaybe<GatesGuidanceEnabledFilters>;
-  guidanceThreshold: InputMaybe<GatesGuidanceThresholdFilters>;
-  id: InputMaybe<GatesIdFilters>;
-  label: InputMaybe<GatesLabelFilters>;
-  programId: InputMaybe<GatesProgramIdFilters>;
-  question: InputMaybe<GatesQuestionFilters>;
-  sequenceOrder: InputMaybe<GatesSequenceOrderFilters>;
-  successMessage: InputMaybe<GatesSuccessMessageFilters>;
+  OR?: InputMaybe<Array<GatesFiltersOr>>;
+  acceptanceThreshold?: InputMaybe<GatesAcceptanceThresholdFilters>;
+  correctAnswer?: InputMaybe<GatesCorrectAnswerFilters>;
+  createdAt?: InputMaybe<GatesCreatedAtFilters>;
+  guidanceEnabled?: InputMaybe<GatesGuidanceEnabledFilters>;
+  guidanceThreshold?: InputMaybe<GatesGuidanceThresholdFilters>;
+  id?: InputMaybe<GatesIdFilters>;
+  label?: InputMaybe<GatesLabelFilters>;
+  programId?: InputMaybe<GatesProgramIdFilters>;
+  question?: InputMaybe<GatesQuestionFilters>;
+  sequenceOrder?: InputMaybe<GatesSequenceOrderFilters>;
+  successMessage?: InputMaybe<GatesSuccessMessageFilters>;
 };
 
 export type GatesFiltersOr = {
-  acceptanceThreshold: InputMaybe<GatesAcceptanceThresholdFilters>;
-  correctAnswer: InputMaybe<GatesCorrectAnswerFilters>;
-  createdAt: InputMaybe<GatesCreatedAtFilters>;
-  guidanceEnabled: InputMaybe<GatesGuidanceEnabledFilters>;
-  guidanceThreshold: InputMaybe<GatesGuidanceThresholdFilters>;
-  id: InputMaybe<GatesIdFilters>;
-  label: InputMaybe<GatesLabelFilters>;
-  programId: InputMaybe<GatesProgramIdFilters>;
-  question: InputMaybe<GatesQuestionFilters>;
-  sequenceOrder: InputMaybe<GatesSequenceOrderFilters>;
-  successMessage: InputMaybe<GatesSuccessMessageFilters>;
+  acceptanceThreshold?: InputMaybe<GatesAcceptanceThresholdFilters>;
+  correctAnswer?: InputMaybe<GatesCorrectAnswerFilters>;
+  createdAt?: InputMaybe<GatesCreatedAtFilters>;
+  guidanceEnabled?: InputMaybe<GatesGuidanceEnabledFilters>;
+  guidanceThreshold?: InputMaybe<GatesGuidanceThresholdFilters>;
+  id?: InputMaybe<GatesIdFilters>;
+  label?: InputMaybe<GatesLabelFilters>;
+  programId?: InputMaybe<GatesProgramIdFilters>;
+  question?: InputMaybe<GatesQuestionFilters>;
+  sequenceOrder?: InputMaybe<GatesSequenceOrderFilters>;
+  successMessage?: InputMaybe<GatesSuccessMessageFilters>;
 };
 
 export type GatesGateCluesRelation = {
@@ -1888,12 +1889,12 @@ export type GatesGateCluesRelation = {
 
 
 export type GatesGateCluesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type GatesGateCluesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type GatesGateCluesRelationGateRelation = {
@@ -1933,36 +1934,36 @@ export type GatesGateCluesRelationSessionProgressRelation = {
 
 
 export type GatesGateCluesRelationSessionProgressRelationCompletedGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<SessionCompletedGatesOrderBy>;
-  where: InputMaybe<SessionCompletedGatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<SessionCompletedGatesOrderBy>;
+  where?: InputMaybe<SessionCompletedGatesFilters>;
 };
 
 
 export type GatesGateCluesRelationSessionProgressRelationCurrentGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type GatesGateCluesRelationSessionProgressRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type GatesGateCluesRelationSessionProgressRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 
 export type GatesGateCluesRelationSessionProgressRelationRateLimitsArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<ClueRateLimitsOrderBy>;
-  where: InputMaybe<ClueRateLimitsFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ClueRateLimitsOrderBy>;
+  where?: InputMaybe<ClueRateLimitsFilters>;
 };
 
 export type GatesGateCluesRelationSessionProgressRelationCompletedGatesRelation = {
@@ -1977,12 +1978,12 @@ export type GatesGateCluesRelationSessionProgressRelationCompletedGatesRelation 
 
 
 export type GatesGateCluesRelationSessionProgressRelationCompletedGatesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type GatesGateCluesRelationSessionProgressRelationCompletedGatesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type GatesGateCluesRelationSessionProgressRelationCompletedGatesRelationGateRelation = {
@@ -2052,10 +2053,10 @@ export type GatesGateCluesRelationSessionProgressRelationProgramRelation = {
 
 
 export type GatesGateCluesRelationSessionProgressRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type GatesGateCluesRelationSessionProgressRelationProgramRelationGatesRelation = {
@@ -2085,7 +2086,7 @@ export type GatesGateCluesRelationSessionProgressRelationRateLimitsRelation = {
 
 
 export type GatesGateCluesRelationSessionProgressRelationRateLimitsRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type GatesGateCluesRelationSessionProgressRelationRateLimitsRelationSessionProgressRelation = {
@@ -2104,134 +2105,134 @@ export type GatesGateCluesRelationSessionProgressRelationRateLimitsRelationSessi
 };
 
 export type GatesGuidanceEnabledFilters = {
-  OR: InputMaybe<Array<GatesGuidanceEnabledfiltersOr>>;
-  eq: InputMaybe<Scalars['Boolean']['input']>;
-  gt: InputMaybe<Scalars['Boolean']['input']>;
-  gte: InputMaybe<Scalars['Boolean']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<GatesGuidanceEnabledfiltersOr>>;
+  eq?: InputMaybe<Scalars['Boolean']['input']>;
+  gt?: InputMaybe<Scalars['Boolean']['input']>;
+  gte?: InputMaybe<Scalars['Boolean']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Boolean']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Boolean']['input']>;
-  lte: InputMaybe<Scalars['Boolean']['input']>;
-  ne: InputMaybe<Scalars['Boolean']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Boolean']['input']>;
+  lte?: InputMaybe<Scalars['Boolean']['input']>;
+  ne?: InputMaybe<Scalars['Boolean']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Boolean']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesGuidanceEnabledfiltersOr = {
-  eq: InputMaybe<Scalars['Boolean']['input']>;
-  gt: InputMaybe<Scalars['Boolean']['input']>;
-  gte: InputMaybe<Scalars['Boolean']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['Boolean']['input']>;
+  gt?: InputMaybe<Scalars['Boolean']['input']>;
+  gte?: InputMaybe<Scalars['Boolean']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Boolean']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Boolean']['input']>;
-  lte: InputMaybe<Scalars['Boolean']['input']>;
-  ne: InputMaybe<Scalars['Boolean']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Boolean']['input']>;
+  lte?: InputMaybe<Scalars['Boolean']['input']>;
+  ne?: InputMaybe<Scalars['Boolean']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Boolean']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesGuidanceThresholdFilters = {
-  OR: InputMaybe<Array<GatesGuidanceThresholdfiltersOr>>;
-  eq: InputMaybe<Scalars['Int']['input']>;
-  gt: InputMaybe<Scalars['Int']['input']>;
-  gte: InputMaybe<Scalars['Int']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<GatesGuidanceThresholdfiltersOr>>;
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Int']['input']>;
-  lte: InputMaybe<Scalars['Int']['input']>;
-  ne: InputMaybe<Scalars['Int']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesGuidanceThresholdfiltersOr = {
-  eq: InputMaybe<Scalars['Int']['input']>;
-  gt: InputMaybe<Scalars['Int']['input']>;
-  gte: InputMaybe<Scalars['Int']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Int']['input']>;
-  lte: InputMaybe<Scalars['Int']['input']>;
-  ne: InputMaybe<Scalars['Int']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesIdFilters = {
-  OR: InputMaybe<Array<GatesIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<GatesIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesInsertInput = {
-  acceptanceThreshold: InputMaybe<Scalars['Float']['input']>;
+  acceptanceThreshold?: InputMaybe<Scalars['Float']['input']>;
   correctAnswer: Scalars['String']['input'];
   /** Date */
-  createdAt: InputMaybe<Scalars['String']['input']>;
-  guidanceEnabled: InputMaybe<Scalars['Boolean']['input']>;
-  guidanceThreshold: InputMaybe<Scalars['Int']['input']>;
-  id: InputMaybe<Scalars['String']['input']>;
+  createdAt?: InputMaybe<Scalars['String']['input']>;
+  guidanceEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  guidanceThreshold?: InputMaybe<Scalars['Int']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   label: Scalars['String']['input'];
   programId: Scalars['String']['input'];
   question: Scalars['String']['input'];
-  sequenceOrder: InputMaybe<Scalars['Int']['input']>;
+  sequenceOrder?: InputMaybe<Scalars['Int']['input']>;
   successMessage: Scalars['String']['input'];
 };
 
@@ -2251,95 +2252,95 @@ export type GatesItem = {
 };
 
 export type GatesLabelFilters = {
-  OR: InputMaybe<Array<GatesLabelfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<GatesLabelfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesLabelfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesOrderBy = {
-  acceptanceThreshold: InputMaybe<InnerOrder>;
-  correctAnswer: InputMaybe<InnerOrder>;
-  createdAt: InputMaybe<InnerOrder>;
-  guidanceEnabled: InputMaybe<InnerOrder>;
-  guidanceThreshold: InputMaybe<InnerOrder>;
-  id: InputMaybe<InnerOrder>;
-  label: InputMaybe<InnerOrder>;
-  programId: InputMaybe<InnerOrder>;
-  question: InputMaybe<InnerOrder>;
-  sequenceOrder: InputMaybe<InnerOrder>;
-  successMessage: InputMaybe<InnerOrder>;
+  acceptanceThreshold?: InputMaybe<InnerOrder>;
+  correctAnswer?: InputMaybe<InnerOrder>;
+  createdAt?: InputMaybe<InnerOrder>;
+  guidanceEnabled?: InputMaybe<InnerOrder>;
+  guidanceThreshold?: InputMaybe<InnerOrder>;
+  id?: InputMaybe<InnerOrder>;
+  label?: InputMaybe<InnerOrder>;
+  programId?: InputMaybe<InnerOrder>;
+  question?: InputMaybe<InnerOrder>;
+  sequenceOrder?: InputMaybe<InnerOrder>;
+  successMessage?: InputMaybe<InnerOrder>;
 };
 
 export type GatesProgramIdFilters = {
-  OR: InputMaybe<Array<GatesProgramIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<GatesProgramIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesProgramIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesProgramRelation = {
@@ -2354,10 +2355,10 @@ export type GatesProgramRelation = {
 
 
 export type GatesProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type GatesProgramRelationGatesRelation = {
@@ -2376,42 +2377,42 @@ export type GatesProgramRelationGatesRelation = {
 };
 
 export type GatesQuestionFilters = {
-  OR: InputMaybe<Array<GatesQuestionfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<GatesQuestionfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesQuestionfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesSelectItem = {
@@ -2433,108 +2434,108 @@ export type GatesSelectItem = {
 
 
 export type GatesSelectItemGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type GatesSelectItemProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type GatesSequenceOrderFilters = {
-  OR: InputMaybe<Array<GatesSequenceOrderfiltersOr>>;
-  eq: InputMaybe<Scalars['Int']['input']>;
-  gt: InputMaybe<Scalars['Int']['input']>;
-  gte: InputMaybe<Scalars['Int']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<GatesSequenceOrderfiltersOr>>;
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Int']['input']>;
-  lte: InputMaybe<Scalars['Int']['input']>;
-  ne: InputMaybe<Scalars['Int']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesSequenceOrderfiltersOr = {
-  eq: InputMaybe<Scalars['Int']['input']>;
-  gt: InputMaybe<Scalars['Int']['input']>;
-  gte: InputMaybe<Scalars['Int']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Int']['input']>;
-  lte: InputMaybe<Scalars['Int']['input']>;
-  ne: InputMaybe<Scalars['Int']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesSuccessMessageFilters = {
-  OR: InputMaybe<Array<GatesSuccessMessagefiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<GatesSuccessMessagefiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesSuccessMessagefiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GatesUpdateInput = {
-  acceptanceThreshold: InputMaybe<Scalars['Float']['input']>;
-  correctAnswer: InputMaybe<Scalars['String']['input']>;
+  acceptanceThreshold?: InputMaybe<Scalars['Float']['input']>;
+  correctAnswer?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  createdAt: InputMaybe<Scalars['String']['input']>;
-  guidanceEnabled: InputMaybe<Scalars['Boolean']['input']>;
-  guidanceThreshold: InputMaybe<Scalars['Int']['input']>;
-  id: InputMaybe<Scalars['String']['input']>;
-  label: InputMaybe<Scalars['String']['input']>;
-  programId: InputMaybe<Scalars['String']['input']>;
-  question: InputMaybe<Scalars['String']['input']>;
-  sequenceOrder: InputMaybe<Scalars['Int']['input']>;
-  successMessage: InputMaybe<Scalars['String']['input']>;
+  createdAt?: InputMaybe<Scalars['String']['input']>;
+  guidanceEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  guidanceThreshold?: InputMaybe<Scalars['Int']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  label?: InputMaybe<Scalars['String']['input']>;
+  programId?: InputMaybe<Scalars['String']['input']>;
+  question?: InputMaybe<Scalars['String']['input']>;
+  sequenceOrder?: InputMaybe<Scalars['Int']['input']>;
+  successMessage?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type InnerOrder = {
@@ -2565,10 +2566,10 @@ export type Mutation = {
 
 
 export type MutationCreateGateArgs = {
-  acceptanceThreshold: InputMaybe<Scalars['Float']['input']>;
+  acceptanceThreshold?: InputMaybe<Scalars['Float']['input']>;
   correctAnswer: Scalars['String']['input'];
-  guidanceEnabled: InputMaybe<Scalars['Boolean']['input']>;
-  guidanceThreshold: InputMaybe<Scalars['Int']['input']>;
+  guidanceEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  guidanceThreshold?: InputMaybe<Scalars['Int']['input']>;
   label: Scalars['String']['input'];
   programId: Scalars['String']['input'];
   question: Scalars['String']['input'];
@@ -2579,7 +2580,7 @@ export type MutationCreateGateArgs = {
 
 export type MutationCreateProgramArgs = {
   name: Scalars['String']['input'];
-  visibility: InputMaybe<Scalars['String']['input']>;
+  visibility?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -2619,22 +2620,22 @@ export type MutationSubmitGuessArgs = {
 
 
 export type MutationUpdateGateArgs = {
-  acceptanceThreshold: InputMaybe<Scalars['Float']['input']>;
-  correctAnswer: InputMaybe<Scalars['String']['input']>;
-  guidanceEnabled: InputMaybe<Scalars['Boolean']['input']>;
-  guidanceThreshold: InputMaybe<Scalars['Int']['input']>;
+  acceptanceThreshold?: InputMaybe<Scalars['Float']['input']>;
+  correctAnswer?: InputMaybe<Scalars['String']['input']>;
+  guidanceEnabled?: InputMaybe<Scalars['Boolean']['input']>;
+  guidanceThreshold?: InputMaybe<Scalars['Int']['input']>;
   id: Scalars['String']['input'];
-  label: InputMaybe<Scalars['String']['input']>;
-  question: InputMaybe<Scalars['String']['input']>;
-  sequenceOrder: InputMaybe<Scalars['Int']['input']>;
-  successMessage: InputMaybe<Scalars['String']['input']>;
+  label?: InputMaybe<Scalars['String']['input']>;
+  question?: InputMaybe<Scalars['String']['input']>;
+  sequenceOrder?: InputMaybe<Scalars['Int']['input']>;
+  successMessage?: InputMaybe<Scalars['String']['input']>;
 };
 
 
 export type MutationUpdateProgramArgs = {
   id: Scalars['String']['input'];
-  name: InputMaybe<Scalars['String']['input']>;
-  visibility: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  visibility?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** Order by direction */
@@ -2661,110 +2662,110 @@ export type ProgramManagement = {
 };
 
 export type ProgramsAuthorIdFilters = {
-  OR: InputMaybe<Array<ProgramsAuthorIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<ProgramsAuthorIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ProgramsAuthorIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ProgramsCreatedAtFilters = {
-  OR: InputMaybe<Array<ProgramsCreatedAtfiltersOr>>;
+  OR?: InputMaybe<Array<ProgramsCreatedAtfiltersOr>>;
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ProgramsCreatedAtfiltersOr = {
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ProgramsFilters = {
-  OR: InputMaybe<Array<ProgramsFiltersOr>>;
-  authorId: InputMaybe<ProgramsAuthorIdFilters>;
-  createdAt: InputMaybe<ProgramsCreatedAtFilters>;
-  id: InputMaybe<ProgramsIdFilters>;
-  name: InputMaybe<ProgramsNameFilters>;
-  visibility: InputMaybe<ProgramsVisibilityFilters>;
+  OR?: InputMaybe<Array<ProgramsFiltersOr>>;
+  authorId?: InputMaybe<ProgramsAuthorIdFilters>;
+  createdAt?: InputMaybe<ProgramsCreatedAtFilters>;
+  id?: InputMaybe<ProgramsIdFilters>;
+  name?: InputMaybe<ProgramsNameFilters>;
+  visibility?: InputMaybe<ProgramsVisibilityFilters>;
 };
 
 export type ProgramsFiltersOr = {
-  authorId: InputMaybe<ProgramsAuthorIdFilters>;
-  createdAt: InputMaybe<ProgramsCreatedAtFilters>;
-  id: InputMaybe<ProgramsIdFilters>;
-  name: InputMaybe<ProgramsNameFilters>;
-  visibility: InputMaybe<ProgramsVisibilityFilters>;
+  authorId?: InputMaybe<ProgramsAuthorIdFilters>;
+  createdAt?: InputMaybe<ProgramsCreatedAtFilters>;
+  id?: InputMaybe<ProgramsIdFilters>;
+  name?: InputMaybe<ProgramsNameFilters>;
+  visibility?: InputMaybe<ProgramsVisibilityFilters>;
 };
 
 export type ProgramsGatesRelation = {
@@ -2786,15 +2787,15 @@ export type ProgramsGatesRelation = {
 
 
 export type ProgramsGatesRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type ProgramsGatesRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type ProgramsGatesRelationGateCluesRelation = {
@@ -2811,12 +2812,12 @@ export type ProgramsGatesRelationGateCluesRelation = {
 
 
 export type ProgramsGatesRelationGateCluesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type ProgramsGatesRelationGateCluesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type ProgramsGatesRelationGateCluesRelationGateRelation = {
@@ -2856,36 +2857,36 @@ export type ProgramsGatesRelationGateCluesRelationSessionProgressRelation = {
 
 
 export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationCompletedGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<SessionCompletedGatesOrderBy>;
-  where: InputMaybe<SessionCompletedGatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<SessionCompletedGatesOrderBy>;
+  where?: InputMaybe<SessionCompletedGatesFilters>;
 };
 
 
 export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationCurrentGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 
 export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationRateLimitsArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<ClueRateLimitsOrderBy>;
-  where: InputMaybe<ClueRateLimitsFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ClueRateLimitsOrderBy>;
+  where?: InputMaybe<ClueRateLimitsFilters>;
 };
 
 export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationCompletedGatesRelation = {
@@ -2900,12 +2901,12 @@ export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationComplet
 
 
 export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationCompletedGatesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationCompletedGatesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationCompletedGatesRelationGateRelation = {
@@ -2984,7 +2985,7 @@ export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationRateLim
 
 
 export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationRateLimitsRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationRateLimitsRelationSessionProgressRelation = {
@@ -3012,51 +3013,51 @@ export type ProgramsGatesRelationProgramRelation = {
 };
 
 export type ProgramsIdFilters = {
-  OR: InputMaybe<Array<ProgramsIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<ProgramsIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ProgramsIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ProgramsInsertInput = {
-  authorId: InputMaybe<Scalars['String']['input']>;
+  authorId?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  createdAt: InputMaybe<Scalars['String']['input']>;
-  id: InputMaybe<Scalars['String']['input']>;
+  createdAt?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  visibility: InputMaybe<Scalars['String']['input']>;
+  visibility?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ProgramsItem = {
@@ -3069,50 +3070,50 @@ export type ProgramsItem = {
 };
 
 export type ProgramsNameFilters = {
-  OR: InputMaybe<Array<ProgramsNamefiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<ProgramsNamefiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ProgramsNamefiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ProgramsOrderBy = {
-  authorId: InputMaybe<InnerOrder>;
-  createdAt: InputMaybe<InnerOrder>;
-  id: InputMaybe<InnerOrder>;
-  name: InputMaybe<InnerOrder>;
-  visibility: InputMaybe<InnerOrder>;
+  authorId?: InputMaybe<InnerOrder>;
+  createdAt?: InputMaybe<InnerOrder>;
+  id?: InputMaybe<InnerOrder>;
+  name?: InputMaybe<InnerOrder>;
+  visibility?: InputMaybe<InnerOrder>;
 };
 
 export type ProgramsSelectItem = {
@@ -3127,58 +3128,58 @@ export type ProgramsSelectItem = {
 
 
 export type ProgramsSelectItemGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type ProgramsUpdateInput = {
-  authorId: InputMaybe<Scalars['String']['input']>;
+  authorId?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  createdAt: InputMaybe<Scalars['String']['input']>;
-  id: InputMaybe<Scalars['String']['input']>;
-  name: InputMaybe<Scalars['String']['input']>;
-  visibility: InputMaybe<Scalars['String']['input']>;
+  createdAt?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  visibility?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ProgramsVisibilityFilters = {
-  OR: InputMaybe<Array<ProgramsVisibilityfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<ProgramsVisibilityfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ProgramsVisibilityfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ProgressionPayload = {
@@ -3222,108 +3223,108 @@ export type RequestClueResult = {
 };
 
 export type SessionCompletedGatesCompletedAtFilters = {
-  OR: InputMaybe<Array<SessionCompletedGatesCompletedAtfiltersOr>>;
+  OR?: InputMaybe<Array<SessionCompletedGatesCompletedAtfiltersOr>>;
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionCompletedGatesCompletedAtfiltersOr = {
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionCompletedGatesFilters = {
-  OR: InputMaybe<Array<SessionCompletedGatesFiltersOr>>;
-  completedAt: InputMaybe<SessionCompletedGatesCompletedAtFilters>;
-  gateId: InputMaybe<SessionCompletedGatesGateIdFilters>;
-  id: InputMaybe<SessionCompletedGatesIdFilters>;
-  sessionProgressId: InputMaybe<SessionCompletedGatesSessionProgressIdFilters>;
+  OR?: InputMaybe<Array<SessionCompletedGatesFiltersOr>>;
+  completedAt?: InputMaybe<SessionCompletedGatesCompletedAtFilters>;
+  gateId?: InputMaybe<SessionCompletedGatesGateIdFilters>;
+  id?: InputMaybe<SessionCompletedGatesIdFilters>;
+  sessionProgressId?: InputMaybe<SessionCompletedGatesSessionProgressIdFilters>;
 };
 
 export type SessionCompletedGatesFiltersOr = {
-  completedAt: InputMaybe<SessionCompletedGatesCompletedAtFilters>;
-  gateId: InputMaybe<SessionCompletedGatesGateIdFilters>;
-  id: InputMaybe<SessionCompletedGatesIdFilters>;
-  sessionProgressId: InputMaybe<SessionCompletedGatesSessionProgressIdFilters>;
+  completedAt?: InputMaybe<SessionCompletedGatesCompletedAtFilters>;
+  gateId?: InputMaybe<SessionCompletedGatesGateIdFilters>;
+  id?: InputMaybe<SessionCompletedGatesIdFilters>;
+  sessionProgressId?: InputMaybe<SessionCompletedGatesSessionProgressIdFilters>;
 };
 
 export type SessionCompletedGatesGateIdFilters = {
-  OR: InputMaybe<Array<SessionCompletedGatesGateIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<SessionCompletedGatesGateIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionCompletedGatesGateIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionCompletedGatesGateRelation = {
@@ -3345,15 +3346,15 @@ export type SessionCompletedGatesGateRelation = {
 
 
 export type SessionCompletedGatesGateRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type SessionCompletedGatesGateRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type SessionCompletedGatesGateRelationGateCluesRelation = {
@@ -3370,12 +3371,12 @@ export type SessionCompletedGatesGateRelationGateCluesRelation = {
 
 
 export type SessionCompletedGatesGateRelationGateCluesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type SessionCompletedGatesGateRelationGateCluesRelationGateRelation = {
@@ -3415,36 +3416,36 @@ export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRel
 
 
 export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationCompletedGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<SessionCompletedGatesOrderBy>;
-  where: InputMaybe<SessionCompletedGatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<SessionCompletedGatesOrderBy>;
+  where?: InputMaybe<SessionCompletedGatesFilters>;
 };
 
 
 export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationCurrentGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 
 export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationRateLimitsArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<ClueRateLimitsOrderBy>;
-  where: InputMaybe<ClueRateLimitsFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ClueRateLimitsOrderBy>;
+  where?: InputMaybe<ClueRateLimitsFilters>;
 };
 
 export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationCompletedGatesRelation = {
@@ -3492,10 +3493,10 @@ export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRel
 
 
 export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationProgramRelationGatesRelation = {
@@ -3525,7 +3526,7 @@ export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRel
 
 
 export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationRateLimitsRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationRateLimitsRelationSessionProgressRelation = {
@@ -3555,10 +3556,10 @@ export type SessionCompletedGatesGateRelationProgramRelation = {
 
 
 export type SessionCompletedGatesGateRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type SessionCompletedGatesGateRelationProgramRelationGatesRelation = {
@@ -3577,49 +3578,49 @@ export type SessionCompletedGatesGateRelationProgramRelationGatesRelation = {
 };
 
 export type SessionCompletedGatesIdFilters = {
-  OR: InputMaybe<Array<SessionCompletedGatesIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<SessionCompletedGatesIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionCompletedGatesIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionCompletedGatesInsertInput = {
   /** Date */
-  completedAt: InputMaybe<Scalars['String']['input']>;
+  completedAt?: InputMaybe<Scalars['String']['input']>;
   gateId: Scalars['String']['input'];
-  id: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   sessionProgressId: Scalars['String']['input'];
 };
 
@@ -3632,10 +3633,10 @@ export type SessionCompletedGatesItem = {
 };
 
 export type SessionCompletedGatesOrderBy = {
-  completedAt: InputMaybe<InnerOrder>;
-  gateId: InputMaybe<InnerOrder>;
-  id: InputMaybe<InnerOrder>;
-  sessionProgressId: InputMaybe<InnerOrder>;
+  completedAt?: InputMaybe<InnerOrder>;
+  gateId?: InputMaybe<InnerOrder>;
+  id?: InputMaybe<InnerOrder>;
+  sessionProgressId?: InputMaybe<InnerOrder>;
 };
 
 export type SessionCompletedGatesSelectItem = {
@@ -3650,51 +3651,51 @@ export type SessionCompletedGatesSelectItem = {
 
 
 export type SessionCompletedGatesSelectItemGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type SessionCompletedGatesSelectItemSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type SessionCompletedGatesSessionProgressIdFilters = {
-  OR: InputMaybe<Array<SessionCompletedGatesSessionProgressIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<SessionCompletedGatesSessionProgressIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionCompletedGatesSessionProgressIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionCompletedGatesSessionProgressRelation = {
@@ -3719,36 +3720,36 @@ export type SessionCompletedGatesSessionProgressRelation = {
 
 
 export type SessionCompletedGatesSessionProgressRelationCompletedGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<SessionCompletedGatesOrderBy>;
-  where: InputMaybe<SessionCompletedGatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<SessionCompletedGatesOrderBy>;
+  where?: InputMaybe<SessionCompletedGatesFilters>;
 };
 
 
 export type SessionCompletedGatesSessionProgressRelationCurrentGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type SessionCompletedGatesSessionProgressRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type SessionCompletedGatesSessionProgressRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 
 export type SessionCompletedGatesSessionProgressRelationRateLimitsArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<ClueRateLimitsOrderBy>;
-  where: InputMaybe<ClueRateLimitsFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ClueRateLimitsOrderBy>;
+  where?: InputMaybe<ClueRateLimitsFilters>;
 };
 
 export type SessionCompletedGatesSessionProgressRelationCompletedGatesRelation = {
@@ -3778,15 +3779,15 @@ export type SessionCompletedGatesSessionProgressRelationCurrentGateRelation = {
 
 
 export type SessionCompletedGatesSessionProgressRelationCurrentGateRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type SessionCompletedGatesSessionProgressRelationCurrentGateRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type SessionCompletedGatesSessionProgressRelationCurrentGateRelationGateCluesRelation = {
@@ -3803,12 +3804,12 @@ export type SessionCompletedGatesSessionProgressRelationCurrentGateRelationGateC
 
 
 export type SessionCompletedGatesSessionProgressRelationCurrentGateRelationGateCluesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type SessionCompletedGatesSessionProgressRelationCurrentGateRelationGateCluesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type SessionCompletedGatesSessionProgressRelationCurrentGateRelationGateCluesRelationGateRelation = {
@@ -3853,10 +3854,10 @@ export type SessionCompletedGatesSessionProgressRelationCurrentGateRelationProgr
 
 
 export type SessionCompletedGatesSessionProgressRelationCurrentGateRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type SessionCompletedGatesSessionProgressRelationCurrentGateRelationProgramRelationGatesRelation = {
@@ -3888,12 +3889,12 @@ export type SessionCompletedGatesSessionProgressRelationGateCluesRelation = {
 
 
 export type SessionCompletedGatesSessionProgressRelationGateCluesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type SessionCompletedGatesSessionProgressRelationGateCluesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type SessionCompletedGatesSessionProgressRelationGateCluesRelationGateRelation = {
@@ -3915,15 +3916,15 @@ export type SessionCompletedGatesSessionProgressRelationGateCluesRelationGateRel
 
 
 export type SessionCompletedGatesSessionProgressRelationGateCluesRelationGateRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type SessionCompletedGatesSessionProgressRelationGateCluesRelationGateRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type SessionCompletedGatesSessionProgressRelationGateCluesRelationGateRelationGateCluesRelation = {
@@ -3948,10 +3949,10 @@ export type SessionCompletedGatesSessionProgressRelationGateCluesRelationGateRel
 
 
 export type SessionCompletedGatesSessionProgressRelationGateCluesRelationGateRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type SessionCompletedGatesSessionProgressRelationGateCluesRelationGateRelationProgramRelationGatesRelation = {
@@ -3996,10 +3997,10 @@ export type SessionCompletedGatesSessionProgressRelationProgramRelation = {
 
 
 export type SessionCompletedGatesSessionProgressRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRelation = {
@@ -4021,15 +4022,15 @@ export type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRela
 
 
 export type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRelationGateCluesRelation = {
@@ -4046,12 +4047,12 @@ export type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRela
 
 
 export type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRelationGateCluesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRelationGateCluesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRelationGateCluesRelationGateRelation = {
@@ -4105,7 +4106,7 @@ export type SessionCompletedGatesSessionProgressRelationRateLimitsRelation = {
 
 
 export type SessionCompletedGatesSessionProgressRelationRateLimitsRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type SessionCompletedGatesSessionProgressRelationRateLimitsRelationSessionProgressRelation = {
@@ -4125,100 +4126,100 @@ export type SessionCompletedGatesSessionProgressRelationRateLimitsRelationSessio
 
 export type SessionCompletedGatesUpdateInput = {
   /** Date */
-  completedAt: InputMaybe<Scalars['String']['input']>;
-  gateId: InputMaybe<Scalars['String']['input']>;
-  id: InputMaybe<Scalars['String']['input']>;
-  sessionProgressId: InputMaybe<Scalars['String']['input']>;
+  completedAt?: InputMaybe<Scalars['String']['input']>;
+  gateId?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  sessionProgressId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressAttemptCountFilters = {
-  OR: InputMaybe<Array<SessionProgressAttemptCountfiltersOr>>;
-  eq: InputMaybe<Scalars['Int']['input']>;
-  gt: InputMaybe<Scalars['Int']['input']>;
-  gte: InputMaybe<Scalars['Int']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<SessionProgressAttemptCountfiltersOr>>;
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Int']['input']>;
-  lte: InputMaybe<Scalars['Int']['input']>;
-  ne: InputMaybe<Scalars['Int']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressAttemptCountfiltersOr = {
-  eq: InputMaybe<Scalars['Int']['input']>;
-  gt: InputMaybe<Scalars['Int']['input']>;
-  gte: InputMaybe<Scalars['Int']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['Int']['input']>;
-  lte: InputMaybe<Scalars['Int']['input']>;
-  ne: InputMaybe<Scalars['Int']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['Int']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressCompletedAtFilters = {
-  OR: InputMaybe<Array<SessionProgressCompletedAtfiltersOr>>;
+  OR?: InputMaybe<Array<SessionProgressCompletedAtfiltersOr>>;
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressCompletedAtfiltersOr = {
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressCompletedGatesRelation = {
@@ -4233,12 +4234,12 @@ export type SessionProgressCompletedGatesRelation = {
 
 
 export type SessionProgressCompletedGatesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type SessionProgressCompletedGatesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type SessionProgressCompletedGatesRelationGateRelation = {
@@ -4260,15 +4261,15 @@ export type SessionProgressCompletedGatesRelationGateRelation = {
 
 
 export type SessionProgressCompletedGatesRelationGateRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type SessionProgressCompletedGatesRelationGateRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type SessionProgressCompletedGatesRelationGateRelationGateCluesRelation = {
@@ -4285,12 +4286,12 @@ export type SessionProgressCompletedGatesRelationGateRelationGateCluesRelation =
 
 
 export type SessionProgressCompletedGatesRelationGateRelationGateCluesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type SessionProgressCompletedGatesRelationGateRelationGateCluesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type SessionProgressCompletedGatesRelationGateRelationGateCluesRelationGateRelation = {
@@ -4335,10 +4336,10 @@ export type SessionProgressCompletedGatesRelationGateRelationProgramRelation = {
 
 
 export type SessionProgressCompletedGatesRelationGateRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type SessionProgressCompletedGatesRelationGateRelationProgramRelationGatesRelation = {
@@ -4372,42 +4373,42 @@ export type SessionProgressCompletedGatesRelationSessionProgressRelation = {
 };
 
 export type SessionProgressCurrentGateIdFilters = {
-  OR: InputMaybe<Array<SessionProgressCurrentGateIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<SessionProgressCurrentGateIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressCurrentGateIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressCurrentGateRelation = {
@@ -4429,15 +4430,15 @@ export type SessionProgressCurrentGateRelation = {
 
 
 export type SessionProgressCurrentGateRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type SessionProgressCurrentGateRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type SessionProgressCurrentGateRelationGateCluesRelation = {
@@ -4454,12 +4455,12 @@ export type SessionProgressCurrentGateRelationGateCluesRelation = {
 
 
 export type SessionProgressCurrentGateRelationGateCluesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type SessionProgressCurrentGateRelationGateCluesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type SessionProgressCurrentGateRelationGateCluesRelationGateRelation = {
@@ -4504,10 +4505,10 @@ export type SessionProgressCurrentGateRelationProgramRelation = {
 
 
 export type SessionProgressCurrentGateRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type SessionProgressCurrentGateRelationProgramRelationGatesRelation = {
@@ -4526,28 +4527,28 @@ export type SessionProgressCurrentGateRelationProgramRelationGatesRelation = {
 };
 
 export type SessionProgressFilters = {
-  OR: InputMaybe<Array<SessionProgressFiltersOr>>;
-  attemptCount: InputMaybe<SessionProgressAttemptCountFilters>;
-  completedAt: InputMaybe<SessionProgressCompletedAtFilters>;
-  currentGateId: InputMaybe<SessionProgressCurrentGateIdFilters>;
-  id: InputMaybe<SessionProgressIdFilters>;
-  programId: InputMaybe<SessionProgressProgramIdFilters>;
-  sessionId: InputMaybe<SessionProgressSessionIdFilters>;
-  startedAt: InputMaybe<SessionProgressStartedAtFilters>;
-  status: InputMaybe<SessionProgressStatusFilters>;
-  updatedAt: InputMaybe<SessionProgressUpdatedAtFilters>;
+  OR?: InputMaybe<Array<SessionProgressFiltersOr>>;
+  attemptCount?: InputMaybe<SessionProgressAttemptCountFilters>;
+  completedAt?: InputMaybe<SessionProgressCompletedAtFilters>;
+  currentGateId?: InputMaybe<SessionProgressCurrentGateIdFilters>;
+  id?: InputMaybe<SessionProgressIdFilters>;
+  programId?: InputMaybe<SessionProgressProgramIdFilters>;
+  sessionId?: InputMaybe<SessionProgressSessionIdFilters>;
+  startedAt?: InputMaybe<SessionProgressStartedAtFilters>;
+  status?: InputMaybe<SessionProgressStatusFilters>;
+  updatedAt?: InputMaybe<SessionProgressUpdatedAtFilters>;
 };
 
 export type SessionProgressFiltersOr = {
-  attemptCount: InputMaybe<SessionProgressAttemptCountFilters>;
-  completedAt: InputMaybe<SessionProgressCompletedAtFilters>;
-  currentGateId: InputMaybe<SessionProgressCurrentGateIdFilters>;
-  id: InputMaybe<SessionProgressIdFilters>;
-  programId: InputMaybe<SessionProgressProgramIdFilters>;
-  sessionId: InputMaybe<SessionProgressSessionIdFilters>;
-  startedAt: InputMaybe<SessionProgressStartedAtFilters>;
-  status: InputMaybe<SessionProgressStatusFilters>;
-  updatedAt: InputMaybe<SessionProgressUpdatedAtFilters>;
+  attemptCount?: InputMaybe<SessionProgressAttemptCountFilters>;
+  completedAt?: InputMaybe<SessionProgressCompletedAtFilters>;
+  currentGateId?: InputMaybe<SessionProgressCurrentGateIdFilters>;
+  id?: InputMaybe<SessionProgressIdFilters>;
+  programId?: InputMaybe<SessionProgressProgramIdFilters>;
+  sessionId?: InputMaybe<SessionProgressSessionIdFilters>;
+  startedAt?: InputMaybe<SessionProgressStartedAtFilters>;
+  status?: InputMaybe<SessionProgressStatusFilters>;
+  updatedAt?: InputMaybe<SessionProgressUpdatedAtFilters>;
 };
 
 export type SessionProgressGateCluesRelation = {
@@ -4564,12 +4565,12 @@ export type SessionProgressGateCluesRelation = {
 
 
 export type SessionProgressGateCluesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type SessionProgressGateCluesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type SessionProgressGateCluesRelationGateRelation = {
@@ -4591,15 +4592,15 @@ export type SessionProgressGateCluesRelationGateRelation = {
 
 
 export type SessionProgressGateCluesRelationGateRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type SessionProgressGateCluesRelationGateRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type SessionProgressGateCluesRelationGateRelationGateCluesRelation = {
@@ -4624,10 +4625,10 @@ export type SessionProgressGateCluesRelationGateRelationProgramRelation = {
 
 
 export type SessionProgressGateCluesRelationGateRelationProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type SessionProgressGateCluesRelationGateRelationProgramRelationGatesRelation = {
@@ -4661,57 +4662,57 @@ export type SessionProgressGateCluesRelationSessionProgressRelation = {
 };
 
 export type SessionProgressIdFilters = {
-  OR: InputMaybe<Array<SessionProgressIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<SessionProgressIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressInsertInput = {
-  attemptCount: InputMaybe<Scalars['Int']['input']>;
+  attemptCount?: InputMaybe<Scalars['Int']['input']>;
   /** Date */
-  completedAt: InputMaybe<Scalars['String']['input']>;
-  currentGateId: InputMaybe<Scalars['String']['input']>;
-  id: InputMaybe<Scalars['String']['input']>;
+  completedAt?: InputMaybe<Scalars['String']['input']>;
+  currentGateId?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   programId: Scalars['String']['input'];
   sessionId: Scalars['String']['input'];
   /** Date */
-  startedAt: InputMaybe<Scalars['String']['input']>;
-  status: InputMaybe<Scalars['String']['input']>;
+  startedAt?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  updatedAt: InputMaybe<Scalars['String']['input']>;
+  updatedAt?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressItem = {
@@ -4730,54 +4731,54 @@ export type SessionProgressItem = {
 };
 
 export type SessionProgressOrderBy = {
-  attemptCount: InputMaybe<InnerOrder>;
-  completedAt: InputMaybe<InnerOrder>;
-  currentGateId: InputMaybe<InnerOrder>;
-  id: InputMaybe<InnerOrder>;
-  programId: InputMaybe<InnerOrder>;
-  sessionId: InputMaybe<InnerOrder>;
-  startedAt: InputMaybe<InnerOrder>;
-  status: InputMaybe<InnerOrder>;
-  updatedAt: InputMaybe<InnerOrder>;
+  attemptCount?: InputMaybe<InnerOrder>;
+  completedAt?: InputMaybe<InnerOrder>;
+  currentGateId?: InputMaybe<InnerOrder>;
+  id?: InputMaybe<InnerOrder>;
+  programId?: InputMaybe<InnerOrder>;
+  sessionId?: InputMaybe<InnerOrder>;
+  startedAt?: InputMaybe<InnerOrder>;
+  status?: InputMaybe<InnerOrder>;
+  updatedAt?: InputMaybe<InnerOrder>;
 };
 
 export type SessionProgressProgramIdFilters = {
-  OR: InputMaybe<Array<SessionProgressProgramIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<SessionProgressProgramIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressProgramIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressProgramRelation = {
@@ -4792,10 +4793,10 @@ export type SessionProgressProgramRelation = {
 
 
 export type SessionProgressProgramRelationGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GatesOrderBy>;
-  where: InputMaybe<GatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GatesOrderBy>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 export type SessionProgressProgramRelationGatesRelation = {
@@ -4817,15 +4818,15 @@ export type SessionProgressProgramRelationGatesRelation = {
 
 
 export type SessionProgressProgramRelationGatesRelationGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type SessionProgressProgramRelationGatesRelationProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 export type SessionProgressProgramRelationGatesRelationGateCluesRelation = {
@@ -4842,12 +4843,12 @@ export type SessionProgressProgramRelationGatesRelationGateCluesRelation = {
 
 
 export type SessionProgressProgramRelationGatesRelationGateCluesRelationGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type SessionProgressProgramRelationGatesRelationGateCluesRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type SessionProgressProgramRelationGatesRelationGateCluesRelationGateRelation = {
@@ -4901,7 +4902,7 @@ export type SessionProgressRateLimitsRelation = {
 
 
 export type SessionProgressRateLimitsRelationSessionProgressArgs = {
-  where: InputMaybe<SessionProgressFilters>;
+  where?: InputMaybe<SessionProgressFilters>;
 };
 
 export type SessionProgressRateLimitsRelationSessionProgressRelation = {
@@ -4941,231 +4942,231 @@ export type SessionProgressSelectItem = {
 
 
 export type SessionProgressSelectItemCompletedGatesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<SessionCompletedGatesOrderBy>;
-  where: InputMaybe<SessionCompletedGatesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<SessionCompletedGatesOrderBy>;
+  where?: InputMaybe<SessionCompletedGatesFilters>;
 };
 
 
 export type SessionProgressSelectItemCurrentGateArgs = {
-  where: InputMaybe<GatesFilters>;
+  where?: InputMaybe<GatesFilters>;
 };
 
 
 export type SessionProgressSelectItemGateCluesArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<GateCluesOrderBy>;
-  where: InputMaybe<GateCluesFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<GateCluesOrderBy>;
+  where?: InputMaybe<GateCluesFilters>;
 };
 
 
 export type SessionProgressSelectItemProgramArgs = {
-  where: InputMaybe<ProgramsFilters>;
+  where?: InputMaybe<ProgramsFilters>;
 };
 
 
 export type SessionProgressSelectItemRateLimitsArgs = {
-  limit: InputMaybe<Scalars['Int']['input']>;
-  offset: InputMaybe<Scalars['Int']['input']>;
-  orderBy: InputMaybe<ClueRateLimitsOrderBy>;
-  where: InputMaybe<ClueRateLimitsFilters>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ClueRateLimitsOrderBy>;
+  where?: InputMaybe<ClueRateLimitsFilters>;
 };
 
 export type SessionProgressSessionIdFilters = {
-  OR: InputMaybe<Array<SessionProgressSessionIdfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<SessionProgressSessionIdfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressSessionIdfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressStartedAtFilters = {
-  OR: InputMaybe<Array<SessionProgressStartedAtfiltersOr>>;
+  OR?: InputMaybe<Array<SessionProgressStartedAtfiltersOr>>;
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressStartedAtfiltersOr = {
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressStatusFilters = {
-  OR: InputMaybe<Array<SessionProgressStatusfiltersOr>>;
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  OR?: InputMaybe<Array<SessionProgressStatusfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressStatusfiltersOr = {
-  eq: InputMaybe<Scalars['String']['input']>;
-  gt: InputMaybe<Scalars['String']['input']>;
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
-  lt: InputMaybe<Scalars['String']['input']>;
-  lte: InputMaybe<Scalars['String']['input']>;
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressUpdateInput = {
-  attemptCount: InputMaybe<Scalars['Int']['input']>;
+  attemptCount?: InputMaybe<Scalars['Int']['input']>;
   /** Date */
-  completedAt: InputMaybe<Scalars['String']['input']>;
-  currentGateId: InputMaybe<Scalars['String']['input']>;
-  id: InputMaybe<Scalars['String']['input']>;
-  programId: InputMaybe<Scalars['String']['input']>;
-  sessionId: InputMaybe<Scalars['String']['input']>;
+  completedAt?: InputMaybe<Scalars['String']['input']>;
+  currentGateId?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  programId?: InputMaybe<Scalars['String']['input']>;
+  sessionId?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  startedAt: InputMaybe<Scalars['String']['input']>;
-  status: InputMaybe<Scalars['String']['input']>;
+  startedAt?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  updatedAt: InputMaybe<Scalars['String']['input']>;
+  updatedAt?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressUpdatedAtFilters = {
-  OR: InputMaybe<Array<SessionProgressUpdatedAtfiltersOr>>;
+  OR?: InputMaybe<Array<SessionProgressUpdatedAtfiltersOr>>;
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressUpdatedAtfiltersOr = {
   /** Date */
-  eq: InputMaybe<Scalars['String']['input']>;
+  eq?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gt: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  gte: InputMaybe<Scalars['String']['input']>;
-  ilike: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  inArray: InputMaybe<Array<Scalars['String']['input']>>;
-  isNotNull: InputMaybe<Scalars['Boolean']['input']>;
-  isNull: InputMaybe<Scalars['Boolean']['input']>;
-  like: InputMaybe<Scalars['String']['input']>;
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lt: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  lte: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
   /** Date */
-  ne: InputMaybe<Scalars['String']['input']>;
-  notIlike: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<Date> */
-  notInArray: InputMaybe<Array<Scalars['String']['input']>>;
-  notLike: InputMaybe<Scalars['String']['input']>;
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SubmitGuessPayload = {
@@ -5243,7 +5244,7 @@ export type MeQuery = { me: { id: string, email: string, name: string, image: st
 
 export type CreateProgramMutationVariables = Exact<{
   name: string;
-  visibility: string | null | undefined;
+  visibility?: string | null | undefined;
 }>;
 
 
@@ -5251,8 +5252,8 @@ export type CreateProgramMutation = { createProgram: { id: string, name: string,
 
 export type UpdateProgramMutationVariables = Exact<{
   id: string;
-  name: string | null | undefined;
-  visibility: string | null | undefined;
+  name?: string | null | undefined;
+  visibility?: string | null | undefined;
 }>;
 
 
@@ -5272,9 +5273,9 @@ export type CreateGateMutationVariables = Exact<{
   correctAnswer: string;
   successMessage: string;
   sequenceOrder: number;
-  acceptanceThreshold: number | null | undefined;
-  guidanceEnabled: boolean | null | undefined;
-  guidanceThreshold: number | null | undefined;
+  acceptanceThreshold?: number | null | undefined;
+  guidanceEnabled?: boolean | null | undefined;
+  guidanceThreshold?: number | null | undefined;
 }>;
 
 
@@ -5282,14 +5283,14 @@ export type CreateGateMutation = { createGate: { id: string, programId: string, 
 
 export type UpdateGateMutationVariables = Exact<{
   id: string;
-  label: string | null | undefined;
-  question: string | null | undefined;
-  correctAnswer: string | null | undefined;
-  successMessage: string | null | undefined;
-  sequenceOrder: number | null | undefined;
-  acceptanceThreshold: number | null | undefined;
-  guidanceEnabled: boolean | null | undefined;
-  guidanceThreshold: number | null | undefined;
+  label?: string | null | undefined;
+  question?: string | null | undefined;
+  correctAnswer?: string | null | undefined;
+  successMessage?: string | null | undefined;
+  sequenceOrder?: number | null | undefined;
+  acceptanceThreshold?: number | null | undefined;
+  guidanceEnabled?: boolean | null | undefined;
+  guidanceThreshold?: number | null | undefined;
 }>;
 
 
@@ -5309,3 +5310,22 @@ export type ReorderGatesMutationVariables = Exact<{
 
 
 export type ReorderGatesMutation = { reorderGates: boolean };
+
+
+export const SubmitGuessDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SubmitGuess"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"gateId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"guess"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"submitGuess"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}},{"kind":"Argument","name":{"kind":"Name","value":"gateId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"gateId"}}},{"kind":"Argument","name":{"kind":"Name","value":"guess"},"value":{"kind":"Variable","name":{"kind":"Name","value":"guess"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"canRequestClue"}},{"kind":"Field","name":{"kind":"Name","value":"nextGate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}}]}}]}}]}}]} as unknown as DocumentNode<SubmitGuessMutation, SubmitGuessMutationVariables>;
+export const RequestClueDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RequestClue"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"gateId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"currentGuess"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"requestClue"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}},{"kind":"Argument","name":{"kind":"Name","value":"gateId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"gateId"}}},{"kind":"Argument","name":{"kind":"Name","value":"currentGuess"},"value":{"kind":"Variable","name":{"kind":"Name","value":"currentGuess"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"clueText"}},{"kind":"Field","name":{"kind":"Name","value":"isClueLimitReached"}},{"kind":"Field","name":{"kind":"Name","value":"cluesRemaining"}},{"kind":"Field","name":{"kind":"Name","value":"isRateLimited"}},{"kind":"Field","name":{"kind":"Name","value":"retryAfterMs"}},{"kind":"Field","name":{"kind":"Name","value":"isAiBudgetExhausted"}}]}}]}}]} as unknown as DocumentNode<RequestClueMutation, RequestClueMutationVariables>;
+export const ResetSessionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ResetSession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resetSession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}}]}]}}]} as unknown as DocumentNode<ResetSessionMutation, ResetSessionMutationVariables>;
+export const GetProgramsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetPrograms"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"programs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]} as unknown as DocumentNode<GetProgramsQuery, GetProgramsQueryVariables>;
+export const GetProgramProgressionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetProgramProgression"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getProgramProgression"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currentGate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}}]}},{"kind":"Field","name":{"kind":"Name","value":"completedGates"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}},{"kind":"Field","name":{"kind":"Name","value":"correctAnswer"}},{"kind":"Field","name":{"kind":"Name","value":"successMessage"}}]}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]}}]} as unknown as DocumentNode<GetProgramProgressionQuery, GetProgramProgressionQueryVariables>;
+export const GetInProgressProgramDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetInProgressProgram"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getInProgressProgram"}}]}}]} as unknown as DocumentNode<GetInProgressProgramQuery, GetInProgressProgramQueryVariables>;
+export const ProgramDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Program"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"program"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]} as unknown as DocumentNode<ProgramQuery, ProgramQueryVariables>;
+export const ProgramGatesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ProgramGates"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"programGates"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"programId"}},{"kind":"Field","name":{"kind":"Name","value":"sequenceOrder"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}},{"kind":"Field","name":{"kind":"Name","value":"correctAnswer"}},{"kind":"Field","name":{"kind":"Name","value":"successMessage"}},{"kind":"Field","name":{"kind":"Name","value":"acceptanceThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"guidanceEnabled"}},{"kind":"Field","name":{"kind":"Name","value":"guidanceThreshold"}}]}}]}}]} as unknown as DocumentNode<ProgramGatesQuery, ProgramGatesQueryVariables>;
+export const MyProgramsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"MyPrograms"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myPrograms"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"visibility"}},{"kind":"Field","name":{"kind":"Name","value":"authorId"}}]}}]}}]} as unknown as DocumentNode<MyProgramsQuery, MyProgramsQueryVariables>;
+export const MeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Me"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"me"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"image"}}]}}]}}]} as unknown as DocumentNode<MeQuery, MeQueryVariables>;
+export const CreateProgramDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateProgram"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"visibility"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createProgram"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}},{"kind":"Argument","name":{"kind":"Name","value":"visibility"},"value":{"kind":"Variable","name":{"kind":"Name","value":"visibility"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"visibility"}},{"kind":"Field","name":{"kind":"Name","value":"authorId"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]} as unknown as DocumentNode<CreateProgramMutation, CreateProgramMutationVariables>;
+export const UpdateProgramDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateProgram"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"visibility"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateProgram"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}},{"kind":"Argument","name":{"kind":"Name","value":"visibility"},"value":{"kind":"Variable","name":{"kind":"Name","value":"visibility"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"visibility"}}]}}]}}]} as unknown as DocumentNode<UpdateProgramMutation, UpdateProgramMutationVariables>;
+export const DeleteProgramDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteProgram"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteProgram"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<DeleteProgramMutation, DeleteProgramMutationVariables>;
+export const CreateGateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateGate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"label"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"question"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"correctAnswer"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"successMessage"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sequenceOrder"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"acceptanceThreshold"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"guidanceEnabled"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"guidanceThreshold"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createGate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}},{"kind":"Argument","name":{"kind":"Name","value":"label"},"value":{"kind":"Variable","name":{"kind":"Name","value":"label"}}},{"kind":"Argument","name":{"kind":"Name","value":"question"},"value":{"kind":"Variable","name":{"kind":"Name","value":"question"}}},{"kind":"Argument","name":{"kind":"Name","value":"correctAnswer"},"value":{"kind":"Variable","name":{"kind":"Name","value":"correctAnswer"}}},{"kind":"Argument","name":{"kind":"Name","value":"successMessage"},"value":{"kind":"Variable","name":{"kind":"Name","value":"successMessage"}}},{"kind":"Argument","name":{"kind":"Name","value":"sequenceOrder"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sequenceOrder"}}},{"kind":"Argument","name":{"kind":"Name","value":"acceptanceThreshold"},"value":{"kind":"Variable","name":{"kind":"Name","value":"acceptanceThreshold"}}},{"kind":"Argument","name":{"kind":"Name","value":"guidanceEnabled"},"value":{"kind":"Variable","name":{"kind":"Name","value":"guidanceEnabled"}}},{"kind":"Argument","name":{"kind":"Name","value":"guidanceThreshold"},"value":{"kind":"Variable","name":{"kind":"Name","value":"guidanceThreshold"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"programId"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}},{"kind":"Field","name":{"kind":"Name","value":"sequenceOrder"}}]}}]}}]} as unknown as DocumentNode<CreateGateMutation, CreateGateMutationVariables>;
+export const UpdateGateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateGate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"label"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"question"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"correctAnswer"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"successMessage"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sequenceOrder"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"acceptanceThreshold"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"guidanceEnabled"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"guidanceThreshold"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateGate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"label"},"value":{"kind":"Variable","name":{"kind":"Name","value":"label"}}},{"kind":"Argument","name":{"kind":"Name","value":"question"},"value":{"kind":"Variable","name":{"kind":"Name","value":"question"}}},{"kind":"Argument","name":{"kind":"Name","value":"correctAnswer"},"value":{"kind":"Variable","name":{"kind":"Name","value":"correctAnswer"}}},{"kind":"Argument","name":{"kind":"Name","value":"successMessage"},"value":{"kind":"Variable","name":{"kind":"Name","value":"successMessage"}}},{"kind":"Argument","name":{"kind":"Name","value":"sequenceOrder"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sequenceOrder"}}},{"kind":"Argument","name":{"kind":"Name","value":"acceptanceThreshold"},"value":{"kind":"Variable","name":{"kind":"Name","value":"acceptanceThreshold"}}},{"kind":"Argument","name":{"kind":"Name","value":"guidanceEnabled"},"value":{"kind":"Variable","name":{"kind":"Name","value":"guidanceEnabled"}}},{"kind":"Argument","name":{"kind":"Name","value":"guidanceThreshold"},"value":{"kind":"Variable","name":{"kind":"Name","value":"guidanceThreshold"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"sequenceOrder"}}]}}]}}]} as unknown as DocumentNode<UpdateGateMutation, UpdateGateMutationVariables>;
+export const DeleteGateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteGate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteGate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<DeleteGateMutation, DeleteGateMutationVariables>;
+export const ReorderGatesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ReorderGates"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"orderedGateIds"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"reorderGates"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}},{"kind":"Argument","name":{"kind":"Name","value":"orderedGateIds"},"value":{"kind":"Variable","name":{"kind":"Name","value":"orderedGateIds"}}}]}]}}]} as unknown as DocumentNode<ReorderGatesMutation, ReorderGatesMutationVariables>;

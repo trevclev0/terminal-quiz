@@ -13,9 +13,10 @@ beforeEach(() => {
 describe("useDeleteGateMutation", () => {
   it("sends delete gate mutation", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { deleteGate: true } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { deleteGate: true } }),
+    } as unknown as Response);
 
     const { wrapper } = createQueryWrapper();
     const { result } = renderHook(() => useDeleteGateMutation(PROGRAM_ID), {
@@ -33,9 +34,10 @@ describe("useDeleteGateMutation", () => {
 
   it("invalidates programGates cache on success", async () => {
     mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
       ok: true,
-      json: async () => ({ data: { deleteGate: true } }),
-    } as Response);
+      text: async () => JSON.stringify({ data: { deleteGate: true } }),
+    } as unknown as Response);
 
     const { queryClient, wrapper } = createQueryWrapper();
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");

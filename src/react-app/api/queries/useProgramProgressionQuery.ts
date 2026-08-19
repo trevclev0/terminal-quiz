@@ -1,5 +1,5 @@
 import { GET_PROGRAM_PROGRESSION_QUERY } from "../../../shared/gqlQueries";
-import { graphqlFetch } from "../graphQlClient";
+import { graphqlRequest } from "../graphQlClient";
 import { PROGRAM_KEYS } from "../queryKeys";
 
 export type ActiveGate = {
@@ -24,10 +24,10 @@ export type ProgramProgression = {
 
 const fetchProgramProgression = async (
   programId: string,
-): Promise<ProgramProgression> => {
-  const result = await graphqlFetch<{
-    getProgramProgression: ProgramProgression;
-  }>(GET_PROGRAM_PROGRESSION_QUERY, { programId });
+): Promise<ProgramProgression | null> => {
+  const result = await graphqlRequest(GET_PROGRAM_PROGRESSION_QUERY, {
+    programId,
+  });
   return result.getProgramProgression;
 };
 

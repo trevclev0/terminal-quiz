@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { REORDER_GATES_MUTATION } from "../../../shared/gqlQueries";
-import { graphqlFetch } from "../graphQlClient";
+import { graphqlRequest } from "../graphQlClient";
 import { MANAGEMENT_KEYS } from "../queryKeys";
 
 export type ReorderGatesVariables = {
@@ -11,7 +11,7 @@ export type ReorderGatesVariables = {
 const reorderGates = async (
   variables: ReorderGatesVariables,
 ): Promise<void> => {
-  await graphqlFetch(REORDER_GATES_MUTATION, variables);
+  await graphqlRequest(REORDER_GATES_MUTATION, variables);
 };
 
 export const useReorderGatesMutation = (programId: string) => {

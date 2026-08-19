@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { print } from "graphql";
 import { DELETE_PROGRAM_MUTATION } from "../src/shared/gqlQueries";
 import {
   AUTH_BYPASS_USER_ID,
@@ -45,7 +46,7 @@ export async function deleteProgramViaApi(
       "x-session-id": TRIPWIRE_HEADER_VALUE,
     },
     data: {
-      query: DELETE_PROGRAM_MUTATION,
+      query: print(DELETE_PROGRAM_MUTATION),
       variables: { id: programId },
     },
   });
