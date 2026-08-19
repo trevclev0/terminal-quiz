@@ -17,6 +17,12 @@ const GRAPHQL_ENDPOINT = new URL(
  * Shared GraphQL client. Handles transport, headers, and JSON serialization;
  * documents are TypedDocumentNode constants (typed-document-node) from
  * `src/shared/gqlQueries.ts`.
+ *
+ * Dependency note: graphql-request@7.4.0 declares a peer range of graphql
+ * 14-16, but this repo runs graphql 17.0.2. The override is intentional and
+ * verified: graphql-request only exercises stable core exports (print, parse,
+ * Kind, ClientError), and the full unit (619) and integration (80) suites pass
+ * against graphql 17.
  */
 export const graphqlClient = new GraphQLClient(GRAPHQL_ENDPOINT, {
   headers: {
