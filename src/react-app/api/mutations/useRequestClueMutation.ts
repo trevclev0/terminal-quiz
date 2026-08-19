@@ -1,15 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
+import type { RequestClueMutation } from "../../../shared/generated/graphql";
 import { REQUEST_CLUE_MUTATION } from "../../../shared/gqlQueries";
 import { graphqlRequest } from "../graphQlClient";
 
-export type RequestClueResponse = {
-  clueText: string | null;
-  isClueLimitReached: boolean;
-  cluesRemaining: number;
-  isRateLimited: boolean;
-  retryAfterMs: number | null;
-  isAiBudgetExhausted: boolean;
-};
+export type RequestClueResponse = NonNullable<
+  RequestClueMutation["requestClue"]
+>;
 
 const requestClue = async (
   programId: string,
