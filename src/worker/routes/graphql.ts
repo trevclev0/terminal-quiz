@@ -1,36 +1,8 @@
 import { graphqlServer } from "@hono/graphql-server";
-import { me } from "@worker-graphql/gameplay/authQueries";
-import {
-  createGate,
-  deleteGate,
-  updateGate,
-} from "@worker-graphql/gameplay/gateMutations";
-import {
-  createProgram,
-  deleteProgram,
-  updateProgram,
-} from "@worker-graphql/gameplay/programMutations";
-import {
-  getPrograms,
-  myPrograms,
-  program,
-  programGates,
-} from "@worker-graphql/gameplay/programQueries";
-import { reorderGates } from "@worker-graphql/gameplay/reorderGatesMutation";
-import { requestClue } from "@worker-graphql/gameplay/requestClueMutation";
-import { resetSession } from "@worker-graphql/gameplay/resetSessionMutation";
-import {
-  getInProgressProgram,
-  getProgramProgression,
-} from "@worker-graphql/gameplay/sessionQueries";
-import { submitGuess } from "@worker-graphql/gameplay/submitGuessMutation";
 import type { AppVariables } from "@worker-middleware/db";
-import { buildSchema } from "drizzle-graphql";
-import {
-  GraphQLObjectType,
-  GraphQLSchema,
-  NoSchemaIntrospectionCustomRule,
-} from "graphql";
+import { buildAppSchema } from "@worker-routes/schema";
+import type { GraphQLSchema } from "graphql";
+import { NoSchemaIntrospectionCustomRule } from "graphql";
 import { Hono } from "hono";
 
 let cachedSchema: GraphQLSchema | null = null;
@@ -75,41 +47,8 @@ const graphQlRouter = new Hono<AppVariables>().use("*", async (c, next) => {
   if (!cachedSchema) {
     try {
       const currentDb = c.get("db");
-      const { entities } = buildSchema(currentDb);
 
-      cachedSchema = new GraphQLSchema({
-        query: new GraphQLObjectType({
-          name: "Query",
-          fields: {
-            me,
-            myPrograms,
-            program,
-            programs: getPrograms,
-            programGates,
-            getProgramProgression,
-            getInProgressProgram,
-          },
-        }),
-        mutation: new GraphQLObjectType({
-          name: "Mutation",
-          fields: {
-            submitGuess,
-            requestClue,
-            resetSession,
-            createProgram,
-            updateProgram,
-            deleteProgram,
-            createGate,
-            updateGate,
-            deleteGate,
-            reorderGates,
-          },
-        }),
-        types: [
-          ...Object.values(entities.types),
-          ...Object.values(entities.inputs),
-        ],
-      });
+      cachedSchema = buildAppSchema(currentDb);
     } catch (schemaError) {
       console.error("Critical error building GraphQL Schema:", schemaError);
 

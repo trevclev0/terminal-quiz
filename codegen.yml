@@ -1,0 +1,13 @@
+overwrite: true
+schema: ./graphql/schema.graphql
+documents:
+  - ./src/shared/gqlQueries.ts
+generates:
+  ./src/shared/generated/graphql.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+    config:
+      useTypeImports: true
+      skipTypename: true
+      avoidOptionals: true

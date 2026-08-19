@@ -5,7 +5,9 @@
  * from here. Never define query strings inline in consumer files.
  */
 
-export const SUBMIT_GUESS_MUTATION = `
+export const SUBMIT_GUESS_MUTATION =
+  /* GraphQL */
+  `
   mutation SubmitGuess($programId: String!, $gateId: String!, $guess: String!) {
     submitGuess(programId: $programId, gateId: $gateId, guess: $guess) {
       success
@@ -20,7 +22,9 @@ export const SUBMIT_GUESS_MUTATION = `
   }
 `;
 
-export const REQUEST_CLUE_MUTATION = `
+export const REQUEST_CLUE_MUTATION =
+  /* GraphQL */
+  `
   mutation RequestClue($programId: String!, $gateId: String!, $currentGuess: String!) {
     requestClue(programId: $programId, gateId: $gateId, currentGuess: $currentGuess) {
       clueText
@@ -33,13 +37,17 @@ export const REQUEST_CLUE_MUTATION = `
   }
 `;
 
-export const RESET_SESSION_MUTATION = `
+export const RESET_SESSION_MUTATION =
+  /* GraphQL */
+  `
   mutation ResetSession($programId: String!) {
     resetSession(programId: $programId)
   }
 `;
 
-export const GET_PROGRAMS_QUERY = `
+export const GET_PROGRAMS_QUERY =
+  /* GraphQL */
+  `
   query GetPrograms {
     programs {
       id
@@ -48,7 +56,9 @@ export const GET_PROGRAMS_QUERY = `
   }
 `;
 
-export const GET_PROGRAM_PROGRESSION_QUERY = `
+export const GET_PROGRAM_PROGRESSION_QUERY =
+  /* GraphQL */
+  `
   query GetProgramProgression($programId: String!) {
     getProgramProgression(programId: $programId) {
       currentGate {
@@ -68,13 +78,17 @@ export const GET_PROGRAM_PROGRESSION_QUERY = `
   }
 `;
 
-export const GET_IN_PROGRESS_PROGRAM_QUERY = `
+export const GET_IN_PROGRESS_PROGRAM_QUERY =
+  /* GraphQL */
+  `
   query GetInProgressProgram {
     getInProgressProgram
   }
 `;
 
-export const PROGRAM_QUERY = `
+export const PROGRAM_QUERY =
+  /* GraphQL */
+  `
   query Program($id: String!) {
     program(id: $id) {
       id
@@ -83,7 +97,9 @@ export const PROGRAM_QUERY = `
   }
 `;
 
-export const PROGRAM_GATES_QUERY = `
+export const PROGRAM_GATES_QUERY =
+  /* GraphQL */
+  `
   query ProgramGates($programId: String!) {
     programGates(programId: $programId) {
       id
@@ -100,7 +116,9 @@ export const PROGRAM_GATES_QUERY = `
   }
 `;
 
-export const MY_PROGRAMS_QUERY = `
+export const MY_PROGRAMS_QUERY =
+  /* GraphQL */
+  `
   query MyPrograms {
     myPrograms {
       id
@@ -111,7 +129,9 @@ export const MY_PROGRAMS_QUERY = `
   }
 `;
 
-export const ME_QUERY = `
+export const ME_QUERY =
+  /* GraphQL */
+  `
   query Me {
     me {
       id
@@ -122,7 +142,9 @@ export const ME_QUERY = `
   }
 `;
 
-export const CREATE_PROGRAM_MUTATION = `
+export const CREATE_PROGRAM_MUTATION =
+  /* GraphQL */
+  `
   mutation CreateProgram($name: String!, $visibility: String) {
     createProgram(name: $name, visibility: $visibility) {
       id
@@ -134,7 +156,9 @@ export const CREATE_PROGRAM_MUTATION = `
   }
 `;
 
-export const UPDATE_PROGRAM_MUTATION = `
+export const UPDATE_PROGRAM_MUTATION =
+  /* GraphQL */
+  `
   mutation UpdateProgram($id: String!, $name: String, $visibility: String) {
     updateProgram(id: $id, name: $name, visibility: $visibility) {
       id
@@ -144,13 +168,17 @@ export const UPDATE_PROGRAM_MUTATION = `
   }
 `;
 
-export const DELETE_PROGRAM_MUTATION = `
+export const DELETE_PROGRAM_MUTATION =
+  /* GraphQL */
+  `
   mutation DeleteProgram($id: String!) {
     deleteProgram(id: $id)
   }
 `;
 
-export const CREATE_GATE_MUTATION = `
+export const CREATE_GATE_MUTATION =
+  /* GraphQL */
+  `
   mutation CreateGate(
     $programId: String!
     $label: String!
@@ -182,7 +210,9 @@ export const CREATE_GATE_MUTATION = `
   }
 `;
 
-export const UPDATE_GATE_MUTATION = `
+export const UPDATE_GATE_MUTATION =
+  /* GraphQL */
+  `
   mutation UpdateGate(
     $id: String!
     $label: String
@@ -212,13 +242,17 @@ export const UPDATE_GATE_MUTATION = `
   }
 `;
 
-export const DELETE_GATE_MUTATION = `
+export const DELETE_GATE_MUTATION =
+  /* GraphQL */
+  `
   mutation DeleteGate($id: String!) {
     deleteGate(id: $id)
   }
 `;
 
-export const REORDER_GATES_MUTATION = `
+export const REORDER_GATES_MUTATION =
+  /* GraphQL */
+  `
   mutation ReorderGates($programId: String!, $orderedGateIds: [String!]!) {
     reorderGates(programId: $programId, orderedGateIds: $orderedGateIds)
   }
