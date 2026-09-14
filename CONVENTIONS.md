@@ -24,6 +24,9 @@
 - TanStack Router for all routing. Use `createFileRoute`; do not use manual route objects.
 - Named exports preferred. Default exports only where TanStack Router file-based routing requires.
 - All styling must use CSS Modules (`ComponentName.module.css`). No inline `style={}` props or CSS-in-JS libraries. Every component gets its own `.module.css` file co-located in the same directory.
+- Style primitives shared by several components live in non-co-located modules that no single component owns: `base.module.css` (form-control chrome, field wrapper, error text) and `select.module.css` (select chrome and sizing). Add to these only when a rule is genuinely shared — a one-off belongs in the component's own module.
+- Prefer consuming a shared primitive with `composes: <class> from "./base.module.css"` inside the component's own module, so call sites keep referring to their own `styles.*` and the component keeps a single styling entry point. Importing the shared module directly in TSX (as the select styles do) is acceptable where the shared class must be combined with others at the call site.
+- A class that `composes` a shared primitive must only add properties, never redeclare ones the primitive already sets — composed classes are separate rules, so an override would depend on stylesheet order rather than the cascade. Genuine overrides need higher specificity (e.g. `.input[aria-invalid="true"]`).
 - Do not use `useEffect` for data fetching — use TanStack Query (`useQuery`, `useMutation`).
 - Adjust `staleTime` intentionally per query based on how fresh that data needs to be (e.g. long `staleTime` for rarely-changing program lists, `staleTime: 0` where session state must always be current); do not leave it at the default if it causes unnecessary refetches in tests or stale reads in the UI.
 

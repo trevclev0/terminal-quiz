@@ -11,13 +11,9 @@
 }
 
 .input {
+  composes: control from "./base.module.css";
   flex: 1;
   min-width: 200px;
-  border: 1px solid var(--green);
-  background-color: inherit;
-  color: var(--green);
-  font-family: inherit;
-  font-size: inherit;
   padding: 0.5rem;
 }
 
@@ -86,7 +82,5 @@
 }
 
 .errorText {
-  color: var(--red);
-  font-size: 0.85em;
-  margin-top: 0.5rem;
+  composes: errorText from "./base.module.css";
 }

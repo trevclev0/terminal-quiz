@@ -1,0 +1,46 @@
+/*
+ * Shared style primitives. No single component owns this module — consume its
+ * classes with `composes:` from a component's own `.module.css` so call sites
+ * keep referring to their own `styles.*`.
+ */
+
+/*
+ * Terminal chrome shared by every text-entry control. Deliberately sets no
+ * padding or sizing so consumers layer those on without overriding anything
+ * declared here.
+ */
+.control {
+  border: 1px solid var(--green);
+  background-color: inherit;
+  color: var(--green);
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* The standard text input used across the program and gate forms. */
+.input {
+  composes: control;
+  padding: 0.375rem 0.5rem;
+  min-width: 180px;
+}
+
+.textarea {
+  composes: input;
+  resize: vertical;
+}
+
+/* Label + control wrapper. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: var(--light-grey);
+  font-size: 0.85em;
+}
+
+/* Inline mutation/validation failure message. */
+.errorText {
+  color: var(--red);
+  font-size: 0.85em;
+  margin-top: 0.5rem;
+}

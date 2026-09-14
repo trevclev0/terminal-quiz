@@ -5,12 +5,8 @@
   flex-wrap: wrap;
 }
 
-.label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  color: var(--light-grey);
-  font-size: 0.85em;
+.field {
+  composes: field from "./base.module.css";
 }
 
 .requiredField::after {
@@ -19,13 +15,7 @@
 }
 
 .input {
-  border: 1px solid var(--green);
-  background-color: inherit;
-  color: var(--green);
-  font-family: inherit;
-  font-size: inherit;
-  padding: 0.375rem 0.5rem;
-  min-width: 180px;
+  composes: input from "./base.module.css";
 }
 
 .input[aria-invalid="true"] {
@@ -43,7 +33,5 @@
 }
 
 .errorText {
-  color: var(--red);
-  font-size: 0.85em;
-  margin-top: 0.5rem;
+  composes: errorText from "./base.module.css";
 }

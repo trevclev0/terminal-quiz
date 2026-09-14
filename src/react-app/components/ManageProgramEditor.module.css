@@ -30,7 +30,5 @@
 }
 
 .errorText {
-  color: var(--red);
-  font-size: 0.85em;
-  margin-top: 0.5rem;
+  composes: errorText from "./base.module.css";
 }

@@ -110,6 +110,9 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 
 ```sh
 .
+├── docs/                         # Decisions and reference material only — architecture notes, rejected
+│                                #   proposals, completed-refactor records. Plans for in-flight work live
+│                                #   in GitHub issues, not here.
 ├── e2e/                          # Playwright E2E specs + page objects (gameplay, clue, reset-flow, wrong-answer, smoke, authoring)
 ├── migrations/                  # Drizzle SQL migrations + meta/ snapshots
 ├── public/                      # Static assets
@@ -342,5 +345,6 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - Do not introduce REST endpoints for authoring — management mutations are GraphQL only, same as gameplay
 - Do not allow open redirects in `/login` — `validateReturnTo()` must reject cross-origin, protocol-relative, and backslash-based return_to values
 - Do not define GraphQL query/mutation strings inline in frontend files — hand-written operation strings belong in `src/shared/graphqlOperations.ts` (codegen input), and hooks/api files and integration tests import the typed documents via `src/shared/gqlQueries.ts`.
-- Do not use inline `style={}` props on React elements — all styling must go in a co-located `ComponentName.module.css` file with CSS Module class names. Applies to all new components and any changes to existing component markup.
+- Do not use inline `style={}` props on React elements — all styling must go in a co-located `ComponentName.module.css` file with CSS Module class names. Applies to all new components and any changes to existing component markup. Primitives shared across components are the one exception to co-location: they live in `base.module.css` / `select.module.css` and are pulled in with `composes:` (see CONVENTIONS.md).
+- Do not write refactor or feature plans into `docs/` — the plan for in-flight work belongs in its GitHub issue, where it closes itself against the PRs. `docs/` is for decisions and reference material that outlive the work (see `docs/file-length-refactor.md`, kept as a record of a completed effort).
 - Do not reintroduce inline `<script>`/`<style>` blocks in `index.html` — a strict CSP is served from `public/_headers` (applied to all static assets), which blocks inline scripts/styles. The boot fallback script and CSS live in `public/boot.js` / `public/boot.css`; any new third-party script requires a deliberate CSP directive change.
