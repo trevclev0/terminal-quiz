@@ -5,15 +5,6 @@
   flex-wrap: wrap;
 }
 
-.field {
-  composes: field from "./base.module.css";
-}
-
-.requiredField::after {
-  content: " *";
-  color: var(--accent);
-}
-
 .input {
   composes: input from "./base.module.css";
 }
@@ -30,8 +21,4 @@
   padding: 0.375rem 1rem;
   color: var(--accent);
   border-color: var(--accent);
-}
-
-.errorText {
-  composes: errorText from "./base.module.css";
 }

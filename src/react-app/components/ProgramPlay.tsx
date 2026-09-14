@@ -2,6 +2,7 @@ import { programProgressionQueryOptions } from "@api/queries/useProgramProgressi
 import { useProgramQuery } from "@api/queries/useProgramQuery";
 import ActiveGate from "@components/ActiveGate";
 import CompletedGate from "@components/CompletedGate";
+import LoadingScreen from "@components/LoadingScreen";
 import TerminalConfirmModal from "@components/TerminalConfirmModal";
 import useProgramPlay from "@hooks/useProgramPlay";
 import useProgressionScroll from "@hooks/useProgressionScroll";
@@ -83,7 +84,7 @@ function ProgramPlay() {
   }, [isTheEnd]);
 
   if (isLoading) {
-    return <h2 className="loading-screen">Loading Program...</h2>;
+    return <LoadingScreen message="Loading Program..." />;
   }
 
   const handleSelectNewProgram = () => {

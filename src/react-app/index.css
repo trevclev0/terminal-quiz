@@ -53,10 +53,6 @@ button:focus-visible {
   width: 100%;
 }
 
-.loading-screen {
-  text-align: center;
-}
-
 summary {
   padding: 1rem;
   cursor: pointer;

@@ -34,15 +34,6 @@
   margin-bottom: 0.75rem;
 }
 
-.field {
-  composes: field from "./base.module.css";
-}
-
-.requiredField::after {
-  content: " *";
-  color: var(--accent);
-}
-
 .helperText {
   color: var(--faded-green);
   font-size: 0.8em;
@@ -150,8 +141,4 @@
   padding: 0.375rem 1rem;
   color: var(--red);
   border-color: var(--red);
-}
-
-.errorText {
-  composes: errorText from "./base.module.css";
 }

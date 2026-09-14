@@ -10,15 +10,6 @@
   margin: 0 0 0.5rem;
 }
 
-.field {
-  composes: field from "./base.module.css";
-}
-
-.requiredField::after {
-  content: " *";
-  color: var(--accent);
-}
-
 .input {
   composes: input from "./base.module.css";
 }
@@ -29,8 +20,4 @@
 
 .button {
   padding: 0.375rem 1rem;
-}
-
-.errorText {
-  composes: errorText from "./base.module.css";
 }

@@ -1,0 +1,3 @@
+.errorText {
+  composes: errorText from "./base.module.css";
+}
