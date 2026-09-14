@@ -90,7 +90,11 @@ export default function ManageProgramsList() {
           {createMutation.isPending ? "Creating..." : "Create Program"}
         </button>
       </form>
-      <MutationError action="create" error={createMutation.error?.message} />
+      <MutationError
+        action="create"
+        isError={createMutation.isError}
+        error={createMutation.error?.message}
+      />
 
       {programs && programs.length === 0 ? (
         <p className={styles.empty}>
@@ -149,6 +153,7 @@ export default function ManageProgramsList() {
           ))}
           <MutationError
             action="delete"
+            isError={deleteMutation.isError}
             error={deleteMutation.error?.message}
           />
         </div>
