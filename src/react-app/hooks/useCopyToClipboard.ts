@@ -16,11 +16,13 @@ type CopyResult = {
  *
  * Success and failure share one state slot, so the two can never be displayed
  * at once, and a single timer means a re-copy restarts the countdown instead of
- * leaking the previous one.
+ * leaking the previous one. Only the most recently started copy can set that
+ * slot, so an earlier write settling late cannot move the feedback.
  */
 export function useCopyToClipboard(resetMs = 2000) {
   const [result, setResult] = useState<CopyResult | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestRequestRef = useRef(0);
 
   useEffect(() => {
     if (result === null) return;
@@ -34,12 +36,22 @@ export function useCopyToClipboard(resetMs = 2000) {
   }, [result, resetMs]);
 
   const copy = async (text: string, key?: string) => {
+    const requestId = ++latestRequestRef.current;
+
+    let status: CopyResult["status"];
     try {
       await navigator.clipboard.writeText(text);
-      setResult({ status: "copied", key });
+      status = "copied";
     } catch {
-      setResult({ status: "failed", key });
+      status = "failed";
     }
+
+    // Clipboard writes can settle out of order. A later copy has already
+    // superseded this one, so dropping the stale result keeps the feedback —
+    // and its reset timer — on the row the user asked for most recently.
+    if (latestRequestRef.current !== requestId) return;
+
+    setResult({ status, key });
   };
 
   const statusOf = (key?: string): CopyStatus =>
