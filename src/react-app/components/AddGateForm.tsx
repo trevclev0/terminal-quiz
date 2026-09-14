@@ -1,5 +1,7 @@
 import type { SubmitEvent } from "react";
 import styles from "./AddGateForm.module.css";
+import FormField from "./FormField";
+import MutationError from "./MutationError";
 import type { NewGateForm } from "./manageEditorTypes";
 
 type AddGateFormProps = {
@@ -24,11 +26,8 @@ export default function AddGateForm({
       aria-label="Add Gate"
     >
       <h3 className={styles.addGateTitle}>Add Gate</h3>
-      {createError && (
-        <p className={styles.errorText}>Failed to add: {createError}</p>
-      )}
-      <label className={styles.field}>
-        <span className={styles.requiredField}>Label</span>
+      <MutationError action="add" error={createError} />
+      <FormField label="Label" required>
         <input
           type="text"
           value={newGate.label}
@@ -37,9 +36,8 @@ export default function AddGateForm({
           disabled={isPending}
           required
         />
-      </label>
-      <label className={styles.field}>
-        <span className={styles.requiredField}>Question</span>
+      </FormField>
+      <FormField label="Question" required>
         <textarea
           value={newGate.question}
           onChange={(e) => onNewGateChange({ question: e.target.value })}
@@ -48,9 +46,8 @@ export default function AddGateForm({
           disabled={isPending}
           required
         />
-      </label>
-      <label className={styles.field}>
-        <span className={styles.requiredField}>Correct Answer</span>
+      </FormField>
+      <FormField label="Correct Answer" required>
         <input
           type="text"
           value={newGate.correctAnswer}
@@ -59,9 +56,8 @@ export default function AddGateForm({
           disabled={isPending}
           required
         />
-      </label>
-      <label className={styles.field}>
-        <span className={styles.requiredField}>Success Message</span>
+      </FormField>
+      <FormField label="Success Message" required>
         <textarea
           value={newGate.successMessage}
           onChange={(e) => onNewGateChange({ successMessage: e.target.value })}
@@ -70,7 +66,7 @@ export default function AddGateForm({
           disabled={isPending}
           required
         />
-      </label>
+      </FormField>
       <button
         type="submit"
         disabled={

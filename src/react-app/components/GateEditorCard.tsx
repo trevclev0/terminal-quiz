@@ -1,4 +1,6 @@
+import FormField from "./FormField";
 import styles from "./GateEditorCard.module.css";
+import MutationError from "./MutationError";
 import type { GateForm } from "./manageEditorTypes";
 
 type GateEditorCardProps = {
@@ -75,8 +77,7 @@ export default function GateEditorCard({
       </div>
 
       <div className={styles.gateFields}>
-        <label className={styles.field}>
-          <span className={styles.requiredField}>Label</span>
+        <FormField label="Label" required>
           <input
             type="text"
             value={draft.label}
@@ -85,9 +86,8 @@ export default function GateEditorCard({
             required
             aria-invalid={draft.label.trim() === ""}
           />
-        </label>
-        <label className={styles.field}>
-          <span className={styles.requiredField}>Question</span>
+        </FormField>
+        <FormField label="Question" required>
           <textarea
             value={draft.question}
             onChange={(e) => onDraftChange({ question: e.target.value })}
@@ -96,9 +96,8 @@ export default function GateEditorCard({
             required
             aria-invalid={draft.question.trim() === ""}
           />
-        </label>
-        <label className={styles.field}>
-          <span className={styles.requiredField}>Correct Answer</span>
+        </FormField>
+        <FormField label="Correct Answer" required>
           <input
             type="text"
             value={draft.correctAnswer}
@@ -107,9 +106,8 @@ export default function GateEditorCard({
             required
             aria-invalid={draft.correctAnswer.trim() === ""}
           />
-        </label>
-        <label className={styles.field}>
-          <span className={styles.requiredField}>Success Message</span>
+        </FormField>
+        <FormField label="Success Message" required>
           <textarea
             value={draft.successMessage}
             onChange={(e) => onDraftChange({ successMessage: e.target.value })}
@@ -118,7 +116,7 @@ export default function GateEditorCard({
             required
             aria-invalid={draft.successMessage.trim() === ""}
           />
-        </label>
+        </FormField>
       </div>
 
       <details className={styles.advancedDetails}>
@@ -126,8 +124,7 @@ export default function GateEditorCard({
           Advanced — guidance {guidanceState} · acceptance {acceptancePercent}
         </summary>
         <div className={styles.inlineFields}>
-          <label className={styles.field}>
-            Acceptance
+          <FormField label="Acceptance">
             <input
               type="number"
               step="0.001"
@@ -143,7 +140,7 @@ export default function GateEditorCard({
               }}
               className={styles.inputSmall}
             />
-          </label>
+          </FormField>
           <label className={styles.checkboxField}>
             <input
               type="checkbox"
@@ -156,8 +153,7 @@ export default function GateEditorCard({
             <span className={styles.checkboxBox} aria-hidden="true" />
             Guidance Enabled
           </label>
-          <label className={styles.field}>
-            Guidance Threshold
+          <FormField label="Guidance Threshold">
             <input
               type="number"
               min="1"
@@ -179,7 +175,7 @@ export default function GateEditorCard({
             <span className={styles.helperText}>
               First clue unlocks after N failed guesses
             </span>
-          </label>
+          </FormField>
         </div>
       </details>
 
@@ -201,12 +197,8 @@ export default function GateEditorCard({
           Delete Gate
         </button>
       </div>
-      {updateError && (
-        <p className={styles.errorText}>Failed to save: {updateError}</p>
-      )}
-      {deleteError && (
-        <p className={styles.errorText}>Failed to delete: {deleteError}</p>
-      )}
+      <MutationError action="save" error={updateError} />
+      <MutationError action="delete" error={deleteError} />
     </div>
   );
 }

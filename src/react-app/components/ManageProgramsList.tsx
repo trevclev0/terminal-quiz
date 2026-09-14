@@ -4,7 +4,9 @@ import { useMyProgramsQuery } from "@api/queries/useMyProgramsQuery";
 import { useCopyToClipboard } from "@hooks/useCopyToClipboard";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { type SubmitEvent, useState } from "react";
+import LoadingScreen from "./LoadingScreen";
 import styles from "./ManageProgramsList.module.css";
+import MutationError from "./MutationError";
 import selectStyles from "./select.module.css";
 
 export default function ManageProgramsList() {
@@ -49,7 +51,7 @@ export default function ManageProgramsList() {
   };
 
   if (isLoading) {
-    return <h2 className="loading-screen">Loading Programs...</h2>;
+    return <LoadingScreen message="Loading Programs..." />;
   }
 
   if (error) {
@@ -88,11 +90,7 @@ export default function ManageProgramsList() {
           {createMutation.isPending ? "Creating..." : "Create Program"}
         </button>
       </form>
-      {createMutation.isError && (
-        <p className={styles.errorText}>
-          Failed to create: {createMutation.error?.message}
-        </p>
-      )}
+      <MutationError action="create" error={createMutation.error?.message} />
 
       {programs && programs.length === 0 ? (
         <p className={styles.empty}>
@@ -149,11 +147,10 @@ export default function ManageProgramsList() {
               </button>
             </div>
           ))}
-          {deleteMutation.isError && (
-            <p className={styles.errorText}>
-              Failed to delete: {deleteMutation.error?.message}
-            </p>
-          )}
+          <MutationError
+            action="delete"
+            error={deleteMutation.error?.message}
+          />
         </div>
       )}
     </div>

@@ -1,0 +1,8 @@
+.field {
+  composes: field from "./base.module.css";
+}
+
+.requiredField::after {
+  content: " *";
+  color: var(--accent);
+}

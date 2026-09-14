@@ -1,4 +1,5 @@
 import { programsQueryOptions } from "@api/queries/useProgramsQuery";
+import LoadingScreen from "@components/LoadingScreen";
 import ProgramSelector from "@components/ProgramSelector";
 import RouteErrorFallback from "@components/RouteErrorFallback";
 import { createFileRoute } from "@tanstack/react-router";
@@ -9,7 +10,7 @@ interface ErrorComponentProps {
 }
 
 function PendingComponent() {
-  return <h2 className="loading-screen">Loading Programs...</h2>;
+  return <LoadingScreen message="Loading Programs..." />;
 }
 
 function ErrorComponent({ error, reset }: ErrorComponentProps) {

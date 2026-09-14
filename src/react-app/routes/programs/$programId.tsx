@@ -1,11 +1,12 @@
 import { programProgressionQueryOptions } from "@api/queries/useProgramProgressionQuery";
 import { programQueryOptions } from "@api/queries/useProgramQuery";
+import LoadingScreen from "@components/LoadingScreen";
 import RouteErrorFallback from "@components/RouteErrorFallback";
 import { createFileRoute } from "@tanstack/react-router";
 import ProgramPlay from "../../components/ProgramPlay";
 
 function PendingComponent() {
-  return <h2 className="loading-screen">Loading Program...</h2>;
+  return <LoadingScreen message="Loading Program..." />;
 }
 
 interface ErrorComponentProps {

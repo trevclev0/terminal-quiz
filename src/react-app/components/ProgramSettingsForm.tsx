@@ -1,4 +1,6 @@
 import { useCopyToClipboard } from "@hooks/useCopyToClipboard";
+import FormField from "./FormField";
+import MutationError from "./MutationError";
 import styles from "./ProgramSettingsForm.module.css";
 import selectStyles from "./select.module.css";
 
@@ -30,8 +32,7 @@ export default function ProgramSettingsForm({
   return (
     <>
       <div className={styles.metaRow}>
-        <label className={styles.field}>
-          <span className={styles.requiredField}>Name</span>
+        <FormField label="Name" required>
           <input
             type="text"
             value={programName}
@@ -40,9 +41,8 @@ export default function ProgramSettingsForm({
             required
             aria-invalid={programName.trim() === ""}
           />
-        </label>
-        <label className={styles.field}>
-          Visibility
+        </FormField>
+        <FormField label="Visibility">
           <span className={selectStyles.selectContainer}>
             <select
               value={programVisibility}
@@ -53,7 +53,7 @@ export default function ProgramSettingsForm({
               <option value="unlisted">Unlisted</option>
             </select>
           </span>
-        </label>
+        </FormField>
         <button
           type="button"
           onClick={onSave}
@@ -76,9 +76,7 @@ export default function ProgramSettingsForm({
           </button>
         )}
       </div>
-      {updateError && (
-        <p className={styles.errorText}>Failed to save: {updateError}</p>
-      )}
+      <MutationError action="save" error={updateError} />
     </>
   );
 }

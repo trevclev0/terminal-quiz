@@ -12,7 +12,9 @@ import { useProgramSettings } from "@hooks/useProgramSettings";
 import type { SubmitEvent } from "react";
 import AddGateForm from "./AddGateForm";
 import GateEditorCard from "./GateEditorCard";
+import LoadingScreen from "./LoadingScreen";
 import styles from "./ManageProgramEditor.module.css";
+import MutationError from "./MutationError";
 import ProgramSettingsForm from "./ProgramSettingsForm";
 
 export default function ManageProgramEditor({
@@ -112,7 +114,7 @@ export default function ManageProgramEditor({
   };
 
   if (programsLoading || isLoading) {
-    return <h2 className="loading-screen">Loading Editor...</h2>;
+    return <LoadingScreen message="Loading Editor..." />;
   }
 
   if (!program) {
@@ -148,11 +150,7 @@ export default function ManageProgramEditor({
           </p>
         )}
 
-        {reorderGates.isError && (
-          <p className={styles.errorText}>
-            Failed to reorder: {reorderGates.error?.message}
-          </p>
-        )}
+        <MutationError action="reorder" error={reorderGates.error?.message} />
 
         <div className={styles.gateList}>
           {gates?.map((gate, idx) => {

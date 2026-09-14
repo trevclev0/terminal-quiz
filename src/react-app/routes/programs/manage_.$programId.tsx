@@ -1,12 +1,13 @@
 import { myProgramsQueryOptions } from "@api/queries/useMyProgramsQuery";
 import { programGatesQueryOptions } from "@api/queries/useProgramGatesQuery";
+import LoadingScreen from "@components/LoadingScreen";
 import ManageProgramEditor from "@components/ManageProgramEditor";
 import RouteErrorFallback from "@components/RouteErrorFallback";
 import { createFileRoute } from "@tanstack/react-router";
 import { requireUser } from "./-requireUser";
 
 function PendingComponent() {
-  return <h2 className="loading-screen">Loading Editor...</h2>;
+  return <LoadingScreen message="Loading Editor..." />;
 }
 
 interface ErrorComponentProps {
