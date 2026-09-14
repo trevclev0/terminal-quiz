@@ -37,6 +37,12 @@ jobs:
             exit 1
           fi
 
+      # Typecheck here rather than only inside `build` (Deploy), so a
+      # type-level break in a dependency bump fails in ~seconds on the
+      # PR instead of burning a Cloudflare preview deploy.
+      - name: Run typecheck
+        run: mise run typecheck
+
       - name: Run Biome checks
         run: mise run check:code
 
