@@ -35,11 +35,7 @@
 }
 
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  color: var(--light-grey);
-  font-size: 0.85em;
+  composes: field from "./base.module.css";
 }
 
 .requiredField::after {
@@ -58,34 +54,17 @@
 }
 
 .input {
-  border: 1px solid var(--green);
-  background-color: inherit;
-  color: var(--green);
-  font-family: inherit;
-  font-size: inherit;
-  padding: 0.375rem 0.5rem;
-  min-width: 180px;
+  composes: input from "./base.module.css";
 }
 
 .inputSmall {
-  border: 1px solid var(--green);
-  background-color: inherit;
-  color: var(--green);
-  font-family: inherit;
-  font-size: inherit;
+  composes: control from "./base.module.css";
   padding: 0.375rem 0.5rem;
   width: 80px;
 }
 
 .textarea {
-  border: 1px solid var(--green);
-  background-color: inherit;
-  color: var(--green);
-  font-family: inherit;
-  font-size: inherit;
-  padding: 0.375rem 0.5rem;
-  resize: vertical;
-  min-width: 180px;
+  composes: textarea from "./base.module.css";
 }
 
 .checkboxField {
@@ -174,7 +153,5 @@
 }
 
 .errorText {
-  color: var(--red);
-  font-size: 0.85em;
-  margin-top: 0.5rem;
+  composes: errorText from "./base.module.css";
 }

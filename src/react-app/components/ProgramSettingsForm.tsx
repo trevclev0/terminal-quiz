@@ -30,7 +30,7 @@ export default function ProgramSettingsForm({
   return (
     <>
       <div className={styles.metaRow}>
-        <label className={styles.label}>
+        <label className={styles.field}>
           <span className={styles.requiredField}>Name</span>
           <input
             type="text"
@@ -41,7 +41,7 @@ export default function ProgramSettingsForm({
             aria-invalid={programName.trim() === ""}
           />
         </label>
-        <label className={styles.label}>
+        <label className={styles.field}>
           Visibility
           <span className={selectStyles.selectContainer}>
             <select
