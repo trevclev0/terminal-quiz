@@ -15,14 +15,13 @@ function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-export default function RouteErrorFallback({
-  error,
-  reset,
-  message = "Something went wrong.",
-}: RouteErrorFallbackProps) {
-  // Presence check, not truthiness: a loader can throw 0, false or "", and
-  // those must still report and show details rather than read as "no error".
-  const hasError = error !== undefined;
+export default function RouteErrorFallback(props: RouteErrorFallbackProps) {
+  const { error, reset, message = "Something went wrong." } = props;
+  // Presence of the prop, not truthiness or definedness of its value: a loader
+  // can throw 0, false, "", null or undefined, and every one of those must
+  // still report and show details. Only an omitted prop means "no error", so
+  // test the key — JSX keeps it even when the value is undefined.
+  const hasError = "error" in props;
 
   useEffect(() => {
     if (hasError) {
