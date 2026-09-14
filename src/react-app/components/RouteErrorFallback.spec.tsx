@@ -45,6 +45,23 @@ describe("RouteErrorFallback", () => {
       render(<RouteErrorFallback error="plain string failure" />);
       expect(screen.getByText("plain string failure")).toBeInTheDocument();
     });
+
+    it.each([
+      ["zero", 0, "0"],
+      ["false", false, "false"],
+      ["an empty string", "", ""],
+      ["null", null, "null"],
+    ])("still reports %s as an error", (_label, thrown, expected) => {
+      render(<RouteErrorFallback error={thrown} />);
+      expect(screen.getByText("Error details")).toBeInTheDocument();
+      expect(console.error).toHaveBeenCalledWith(
+        "[RouteErrorFallback]",
+        thrown,
+      );
+      if (expected !== "") {
+        expect(screen.getByText(expected)).toBeInTheDocument();
+      }
+    });
   });
 
   describe("retry button", () => {

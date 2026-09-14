@@ -20,11 +20,12 @@ export default function RouteErrorFallback({
   reset,
   message = "Something went wrong.",
 }: RouteErrorFallbackProps) {
-  // `error` is `unknown`, so coerce before using it as a JSX guard.
-  const hasError = Boolean(error);
+  // Presence check, not truthiness: a loader can throw 0, false or "", and
+  // those must still report and show details rather than read as "no error".
+  const hasError = error !== undefined;
 
   useEffect(() => {
-    if (error) {
+    if (hasError) {
       console.error("[RouteErrorFallback]", error);
       // reportError only accepts an Error for stack extraction; a non-Error
       // throw still reports, carrying its description as the message.
@@ -34,7 +35,7 @@ export default function RouteErrorFallback({
           : { source: "route", message: describeError(error) },
       );
     }
-  }, [error]);
+  }, [error, hasError]);
 
   return (
     <div className={styles.errorScreen}>
