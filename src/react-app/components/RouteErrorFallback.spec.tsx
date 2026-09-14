@@ -40,6 +40,11 @@ describe("RouteErrorFallback", () => {
       render(<RouteErrorFallback />);
       expect(screen.queryByText("Error details")).not.toBeInTheDocument();
     });
+
+    it("renders a non-Error throw as text instead of a blank details", () => {
+      render(<RouteErrorFallback error="plain string failure" />);
+      expect(screen.getByText("plain string failure")).toBeInTheDocument();
+    });
   });
 
   describe("retry button", () => {

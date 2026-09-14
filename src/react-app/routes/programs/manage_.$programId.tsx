@@ -3,16 +3,14 @@ import { programGatesQueryOptions } from "@api/queries/useProgramGatesQuery";
 import LoadingScreen from "@components/LoadingScreen";
 import ManageProgramEditor from "@components/ManageProgramEditor";
 import RouteErrorFallback from "@components/RouteErrorFallback";
-import { createFileRoute } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  type ErrorComponentProps,
+} from "@tanstack/react-router";
 import { requireUser } from "./-requireUser";
 
 function PendingComponent() {
   return <LoadingScreen message="Loading Editor..." />;
-}
-
-interface ErrorComponentProps {
-  error: Error;
-  reset: () => void;
 }
 
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
