@@ -1,11 +1,10 @@
 import { inProgressProgramQueryOptions } from "@api/queries/useInProgressProgramQuery";
 import RouteErrorFallback from "@components/RouteErrorFallback";
-import { createFileRoute, redirect } from "@tanstack/react-router";
-
-interface ErrorComponentProps {
-  error: Error;
-  reset: () => void;
-}
+import {
+  createFileRoute,
+  type ErrorComponentProps,
+  redirect,
+} from "@tanstack/react-router";
 
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
   return (
