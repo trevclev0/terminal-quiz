@@ -51,6 +51,7 @@ describe("RouteErrorFallback", () => {
       ["false", false, "false"],
       ["an empty string", "", ""],
       ["null", null, "null"],
+      ["undefined", undefined, "undefined"],
     ])("still reports %s as an error", (_label, thrown, expected) => {
       render(<RouteErrorFallback error={thrown} />);
       expect(screen.getByText("Error details")).toBeInTheDocument();
