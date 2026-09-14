@@ -1,8 +1,9 @@
 import { useCreateProgramMutation } from "@api/mutations/useCreateProgramMutation";
 import { useDeleteProgramMutation } from "@api/mutations/useDeleteProgramMutation";
 import { useMyProgramsQuery } from "@api/queries/useMyProgramsQuery";
+import { useCopyToClipboard } from "@hooks/useCopyToClipboard";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { type SubmitEvent, useEffect, useRef, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import styles from "./ManageProgramsList.module.css";
 import selectStyles from "./select.module.css";
 
@@ -14,9 +15,7 @@ export default function ManageProgramsList() {
 
   const [newName, setNewName] = useState("");
   const [newVisibility, setNewVisibility] = useState("public");
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [copyFailedId, setCopyFailedId] = useState<string | null>(null);
-  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { copy, statusOf } = useCopyToClipboard();
 
   const handleCreate = async (e: SubmitEvent) => {
     e.preventDefault();
@@ -36,46 +35,8 @@ export default function ManageProgramsList() {
     }
   };
 
-  const handleCopyLink = async (id: string) => {
-    try {
-      await navigator.clipboard.writeText(
-        `${window.location.origin}/programs/${id}`,
-      );
-      setCopiedId(id);
-    } catch {
-      setCopyFailedId(id);
-    }
-  };
-
-  useEffect(() => {
-    if (copiedId) {
-      copyTimerRef.current = setTimeout(() => setCopiedId(null), 2000);
-    }
-    return () => {
-      if (copyTimerRef.current !== null) {
-        clearTimeout(copyTimerRef.current);
-      }
-    };
-  }, [copiedId]);
-
-  useEffect(() => {
-    if (copyFailedId) {
-      copyTimerRef.current = setTimeout(() => setCopyFailedId(null), 2000);
-    }
-    return () => {
-      if (copyTimerRef.current !== null) {
-        clearTimeout(copyTimerRef.current);
-      }
-    };
-  }, [copyFailedId]);
-
-  useEffect(() => {
-    return () => {
-      if (copyTimerRef.current !== null) {
-        clearTimeout(copyTimerRef.current);
-      }
-    };
-  }, []);
+  const handleCopyLink = (id: string) =>
+    copy(`${window.location.origin}/programs/${id}`, id);
 
   const handleDelete = (id: string) => {
     if (
@@ -164,9 +125,9 @@ export default function ManageProgramsList() {
                   onClick={() => handleCopyLink(program.id)}
                   className={styles.copyLinkButton}
                 >
-                  {copyFailedId === program.id
+                  {statusOf(program.id) === "failed"
                     ? "Failed"
-                    : copiedId === program.id
+                    : statusOf(program.id) === "copied"
                       ? "Copied!"
                       : "Copy Link"}
                 </button>

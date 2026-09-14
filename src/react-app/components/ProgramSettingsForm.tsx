@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCopyToClipboard } from "@hooks/useCopyToClipboard";
 import styles from "./ProgramSettingsForm.module.css";
 import selectStyles from "./select.module.css";
 
@@ -25,43 +25,7 @@ export default function ProgramSettingsForm({
   copyUrl,
   updateError,
 }: ProgramSettingsFormProps) {
-  const [copied, setCopied] = useState(false);
-  const [copyFailed, setCopyFailed] = useState(false);
-  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const copyFailedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (copied) {
-      copiedTimerRef.current = setTimeout(() => setCopied(false), 2000);
-    }
-    return () => {
-      if (copiedTimerRef.current !== null) {
-        clearTimeout(copiedTimerRef.current);
-      }
-    };
-  }, [copied]);
-
-  useEffect(() => {
-    if (copyFailed) {
-      copyFailedTimerRef.current = setTimeout(() => setCopyFailed(false), 2000);
-    }
-    return () => {
-      if (copyFailedTimerRef.current !== null) {
-        clearTimeout(copyFailedTimerRef.current);
-      }
-    };
-  }, [copyFailed]);
-
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(copyUrl);
-      setCopied(true);
-      setCopyFailed(false);
-    } catch {
-      setCopyFailed(true);
-      setCopied(false);
-    }
-  };
+  const { copy, status } = useCopyToClipboard();
 
   return (
     <>
@@ -101,10 +65,14 @@ export default function ProgramSettingsForm({
         {isUnlisted && (
           <button
             type="button"
-            onClick={handleCopyLink}
+            onClick={() => copy(copyUrl)}
             className={styles.copyLinkButton}
           >
-            {copyFailed ? "Failed" : copied ? "Copied!" : "Copy Link"}
+            {status === "failed"
+              ? "Failed"
+              : status === "copied"
+                ? "Copied!"
+                : "Copy Link"}
           </button>
         )}
       </div>
