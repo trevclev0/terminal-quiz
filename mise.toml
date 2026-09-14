@@ -17,6 +17,10 @@ description = "Format code"
 run = "bun run check:code"
 description = "Check code"
 
+[tasks.typecheck]
+run = "bun run typecheck"
+description = "Typecheck all tsconfig projects"
+
 [tasks.build]
 run = "bun run build"
 description = "Build project"
