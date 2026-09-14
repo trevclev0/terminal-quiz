@@ -150,7 +150,11 @@ export default function ManageProgramEditor({
           </p>
         )}
 
-        <MutationError action="reorder" error={reorderGates.error?.message} />
+        <MutationError
+          action="reorder"
+          isError={reorderGates.isError}
+          error={reorderGates.error?.message}
+        />
 
         <div className={styles.gateList}>
           {gates?.map((gate, idx) => {
