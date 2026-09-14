@@ -9,6 +9,25 @@ function stubClipboard(writeText: ReturnType<typeof vi.fn>) {
   });
 }
 
+type Deferred = { resolve: () => void; reject: () => void };
+
+/** Stubs the clipboard so each write stays pending until settled by hand. */
+function stubDeferredClipboard() {
+  const pending: Deferred[] = [];
+  stubClipboard(
+    vi.fn(
+      () =>
+        new Promise<void>((resolve, reject) => {
+          pending.push({
+            resolve: () => resolve(),
+            reject: () => reject(new Error("denied")),
+          });
+        }),
+    ),
+  );
+  return pending;
+}
+
 describe("useCopyToClipboard", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -156,6 +175,66 @@ describe("useCopyToClipboard", () => {
       act(() => {
         vi.advanceTimersByTime(1500);
       });
+      expect(result.current.statusOf("row-2")).toBe("idle");
+      expect(vi.getTimerCount()).toBe(0);
+    });
+  });
+
+  describe("out-of-order settlement", () => {
+    // Regression: without a guard the last write to settle won, so a slow
+    // earlier copy could move the feedback onto the wrong row.
+    it("keeps the newest copy's result when an older one settles last", async () => {
+      const pending = stubDeferredClipboard();
+      const { result } = renderHook(() => useCopyToClipboard());
+
+      act(() => {
+        result.current.copy("https://example.com/a", "row-1");
+        result.current.copy("https://example.com/b", "row-2");
+      });
+
+      await act(async () => pending[1].resolve());
+      await act(async () => pending[0].resolve());
+
+      expect(result.current.statusOf("row-2")).toBe("copied");
+      expect(result.current.statusOf("row-1")).toBe("idle");
+    });
+
+    it("does not let a stale failure override a newer success", async () => {
+      const pending = stubDeferredClipboard();
+      const { result } = renderHook(() => useCopyToClipboard());
+
+      act(() => {
+        result.current.copy("https://example.com/a", "row-1");
+        result.current.copy("https://example.com/b", "row-2");
+      });
+
+      await act(async () => pending[1].resolve());
+      await act(async () => pending[0].reject());
+
+      expect(result.current.statusOf("row-2")).toBe("copied");
+      expect(result.current.statusOf("row-1")).toBe("idle");
+    });
+
+    it("runs only the newest copy's reset timer", async () => {
+      const pending = stubDeferredClipboard();
+      const { result } = renderHook(() => useCopyToClipboard());
+
+      act(() => {
+        result.current.copy("https://example.com/a", "row-1");
+        result.current.copy("https://example.com/b", "row-2");
+      });
+
+      await act(async () => pending[1].resolve());
+      await act(async () => pending[0].resolve());
+
+      // One timer, and it belongs to the newest copy — not the stale one.
+      expect(result.current.statusOf("row-2")).toBe("copied");
+      expect(vi.getTimerCount()).toBe(1);
+
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
       expect(result.current.statusOf("row-2")).toBe("idle");
       expect(vi.getTimerCount()).toBe(0);
     });
