@@ -70,4 +70,79 @@ test.describe("@full", () => {
     await gamePage.waitForTheEnd();
     expect(await gamePage.isGameComplete()).toBe(true);
   });
+
+  test("delete gate → cancel keeps it, confirm removes it", async ({
+    page,
+  }) => {
+    await setupAuthBypass(page);
+
+    const managePage = new ManageProgramsPage(page);
+    await managePage.goto();
+    await managePage.waitForLoad();
+
+    const editorPage = await managePage.createProgram("E2E Gate Delete");
+    createdProgramId = editorPage.programId;
+    await editorPage.waitForLoad();
+
+    await editorPage.addGate({
+      label: "Keeper Gate",
+      question: "Kept?",
+      correctAnswer: "yes",
+      successMessage: "Kept.",
+    });
+    await editorPage.addGate({
+      label: "Doomed Gate",
+      question: "Deleted?",
+      correctAnswer: "yes",
+      successMessage: "Gone.",
+    });
+
+    // Cancelling the dialog leaves the gate in place.
+    await editorPage.clickDeleteGate(1);
+    expect(await editorPage.isDeleteDialogVisible()).toBe(true);
+    await editorPage.cancelDeleteGate();
+    expect(await editorPage.getGateLabels()).toContain("Doomed Gate");
+
+    // Confirming removes it.
+    await editorPage.clickDeleteGate(1);
+    expect(await editorPage.isDeleteDialogVisible()).toBe(true);
+    await editorPage.confirmDeleteGate();
+
+    const remaining = await editorPage.getGateLabels();
+    expect(remaining).toContain("Keeper Gate");
+    expect(remaining).not.toContain("Doomed Gate");
+  });
+
+  test("delete program → cancel keeps it, confirm removes it", async ({
+    page,
+  }) => {
+    await setupAuthBypass(page);
+
+    const managePage = new ManageProgramsPage(page);
+    await managePage.goto();
+    await managePage.waitForLoad();
+
+    const editorPage = await managePage.createProgram("E2E Program Delete");
+    createdProgramId = editorPage.programId;
+    await editorPage.waitForLoad();
+
+    await managePage.goto();
+    await managePage.waitForLoad();
+
+    // Cancelling the dialog leaves the program in the list.
+    await managePage.clickDeleteProgram("E2E Program Delete");
+    expect(await managePage.isDeleteDialogVisible()).toBe(true);
+    await managePage.cancelDeleteProgram();
+    expect(await managePage.getProgramNames()).toContain("E2E Program Delete");
+
+    // Confirming removes it, so afterEach has nothing left to clean up.
+    await managePage.clickDeleteProgram("E2E Program Delete");
+    expect(await managePage.isDeleteDialogVisible()).toBe(true);
+    await managePage.confirmDeleteProgram("E2E Program Delete");
+    createdProgramId = null;
+
+    expect(await managePage.getProgramNames()).not.toContain(
+      "E2E Program Delete",
+    );
+  });
 });

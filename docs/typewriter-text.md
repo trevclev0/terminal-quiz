@@ -567,7 +567,7 @@ decision" above.
 
 **Program-level narrative text** (broader UI surfaces):
 - Program name title, "The End" heading + completion copy, confirm-modal
-  message, in `ProgramPlay.tsx` / `TerminalConfirmModal.tsx`
+  message, in `ProgramPlay.tsx` / `ConfirmDialog.tsx`
 - Explicit rule worth preserving if this is picked up: list/button/menu
   labels (`ProgramSelector`, `NavBar`, `LoginPage`) stay static; only
   narrative/description prose animates. This is also the mechanism that
@@ -595,7 +595,7 @@ scope is Phase 1/2 only):
 | `CompletedGate` successMessage | `components/CompletedGate.tsx` | Built — pull-forward (uncommitted) |
 | Program name title | `components/ProgramPlay.tsx` | Deferred |
 | "The End" + completion copy | `components/ProgramPlay.tsx` | Deferred |
-| `TerminalConfirmModal` message | `components/TerminalConfirmModal.tsx` | Deferred |
+| `ConfirmDialog` message | `components/ConfirmDialog.tsx` | Deferred |
 | `ProgramSelector` / `NavBar` / `LoginPage` labels | various | Deferred (likely stays static per the labels-stay-static rule) |
 | Global toggle + hotkey + speed setting | new settings layer | Deferred |
 

@@ -131,7 +131,7 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 │   │   │   └── mutations/                   # useSubmitGuessMutation, useRequestClueMutation,
 │   │   │                                    # useCreateProgramMutation, etc.
 │   │   ├── components/       # ActiveGate, CompletedGate, ErrorBoundary, ProgramPlay,
-│   │   │                     # ProgramSelector, RouteErrorFallback, TerminalConfirmModal,
+│   │   │                     # ProgramSelector, RouteErrorFallback, ConfirmDialog,
 │   │   │                     # ManageProgramsList, ManageProgramEditor, NavBar, LoginPage
 │   │   ├── hooks/             # useProgramPlay, usePrograms, useProgressionScroll,
 │   │   │                     # useResetSession, useShake
@@ -325,7 +325,7 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - **Session ID** — minted server-side into the HttpOnly `anon_gameplay_session` cookie (`Path=/api`, `Secure` outside development) by `sessionMiddleware`; never client-generated or sent as a header. Mutations additionally require the constant `x-session-id` same-origin tripwire header (enforced by `requireSessionHeader`)
 - **`submitGuess`** — the authoritative gameplay mutation. It re-validates that the session's `session_progress.currentGateId` matches the submitted `gateId` before checking the guess, rejecting mismatches as a "desync" error. This is what prevents a session from submitting guesses for gates it hasn't reached (IDOR protection) — do not weaken this check
 - **Clue system** — `requestClue` generates an AI hint via Cloudflare Workers AI once `attemptCount` meets a gate's `guidanceThreshold`; eligibility rules (attempt threshold, per-gate cap of `MAX_CLUES_PER_GATE = 3`, no duplicate clue per attempt count) live in `src/worker/graphql/gameplay/clueEligibility.ts` and must stay in sync with any clue-flow changes. A global daily budget guardrail (`AI_DAILY_CLUE_BUDGET`, default 150, tracked in `ai_usage` via `src/worker/graphql/gameplay/aiBudget.ts`) rejects new generations with `isAiBudgetExhausted: true` once the UTC day's successful-generation count reaches the cap — checked before the rate-limit claim, incremented only after a clue is stored
-- **`resetSession`** — clears a session's progress (and its `session_completed_gates` / `gate_clues` rows) on a program, used by both "Play again" and "Select new program" (after a `TerminalConfirmModal` confirmation) at the end of a program
+- **`resetSession`** — clears a session's progress (and its `session_completed_gates` / `gate_clues` rows) on a program, used by both "Play again" and "Select new program" (after a `ConfirmDialog` confirmation) at the end of a program
 
 ---
 

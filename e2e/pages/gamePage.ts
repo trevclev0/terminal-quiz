@@ -263,13 +263,13 @@ export class GamePage {
 
   /**
    * Click "Select new program" button at The End screen.
-   * Opens the TerminalConfirmModal.
+   * Opens the reset ConfirmDialog.
    */
   async clickSelectNewProgram(): Promise<void> {
     await this.page.locator('button[title="Select new program"]').click();
   }
 
-  // ─── TerminalConfirmModal helpers ──────────────────────────────────
+  // ─── Reset ConfirmDialog helpers ───────────────────────────────────
 
   /**
    * Check if the reset confirmation dialog is visible.

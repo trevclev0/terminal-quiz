@@ -122,32 +122,52 @@ describe("ManageProgramsList", () => {
     });
   });
 
-  it("calls delete mutation on confirm", async () => {
-    vi.stubGlobal(
-      "confirm",
-      vi.fn(() => true),
-    );
-
+  it("opens the confirm dialog instead of deleting immediately", async () => {
     render(<ManageProgramsList />);
 
     const deleteButtons = screen.getAllByText("Delete");
     await userEvent.click(deleteButtons[0]);
+
+    expect(
+      screen.getByRole("dialog", { name: "Delete Program Confirmation" }),
+    ).toBeInTheDocument();
+    expect(mockDeleteMutate).not.toHaveBeenCalled();
+  });
+
+  it("names the program in the confirm dialog", async () => {
+    render(<ManageProgramsList />);
+
+    const deleteButtons = screen.getAllByText("Delete");
+    await userEvent.click(deleteButtons[0]);
+
+    expect(
+      screen.getByText(
+        'Delete "Program Alpha" and all its gates? This cannot be undone.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("calls delete mutation on confirm", async () => {
+    render(<ManageProgramsList />);
+
+    const deleteButtons = screen.getAllByText("Delete");
+    await userEvent.click(deleteButtons[0]);
+    await userEvent.click(screen.getByText("Delete Program"));
 
     expect(mockDeleteMutate).toHaveBeenCalledWith({ id: "prog-1" });
   });
 
-  it("does not call delete mutation when confirm is cancelled", async () => {
-    vi.stubGlobal(
-      "confirm",
-      vi.fn(() => false),
-    );
-
+  it("does not call delete mutation when the dialog is cancelled", async () => {
     render(<ManageProgramsList />);
 
     const deleteButtons = screen.getAllByText("Delete");
     await userEvent.click(deleteButtons[0]);
+    await userEvent.click(screen.getByText("Cancel"));
 
     expect(mockDeleteMutate).not.toHaveBeenCalled();
+    expect(
+      screen.queryByRole("dialog", { name: "Delete Program Confirmation" }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows error when create mutation fails", () => {

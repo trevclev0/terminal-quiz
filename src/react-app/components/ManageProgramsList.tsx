@@ -4,6 +4,7 @@ import { useMyProgramsQuery } from "@api/queries/useMyProgramsQuery";
 import { useCopyToClipboard } from "@hooks/useCopyToClipboard";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { type SubmitEvent, useState } from "react";
+import ConfirmDialog from "./ConfirmDialog";
 import LoadingScreen from "./LoadingScreen";
 import styles from "./ManageProgramsList.module.css";
 import MutationError from "./MutationError";
@@ -16,6 +17,7 @@ export default function ManageProgramsList() {
   const navigate = useNavigate();
 
   const [newName, setNewName] = useState("");
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [newVisibility, setNewVisibility] = useState("public");
   const { copy, statusOf } = useCopyToClipboard();
 
@@ -40,15 +42,13 @@ export default function ManageProgramsList() {
   const handleCopyLink = (id: string) =>
     copy(`${window.location.origin}/programs/${id}`, id);
 
-  const handleDelete = (id: string) => {
-    if (
-      window.confirm(
-        "Delete this program and all its gates? This cannot be undone.",
-      )
-    ) {
-      deleteMutation.mutate({ id });
-    }
+  const handleConfirmDelete = () => {
+    if (!pendingDeleteId) return;
+    deleteMutation.mutate({ id: pendingDeleteId });
+    setPendingDeleteId(null);
   };
+
+  const pendingDeleteProgram = programs?.find((p) => p.id === pendingDeleteId);
 
   if (isLoading) {
     return <LoadingScreen message="Loading Programs..." />;
@@ -143,7 +143,7 @@ export default function ManageProgramsList() {
               </Link>
               <button
                 type="button"
-                onClick={() => handleDelete(program.id)}
+                onClick={() => setPendingDeleteId(program.id)}
                 disabled={deleteMutation.isPending}
                 className={styles.deleteButton}
               >
@@ -157,6 +157,18 @@ export default function ManageProgramsList() {
             error={deleteMutation.error?.message}
           />
         </div>
+      )}
+
+      {pendingDeleteProgram && (
+        <ConfirmDialog
+          ariaLabel="Delete Program Confirmation"
+          message={`Delete "${pendingDeleteProgram.name}" and all its gates? This cannot be undone.`}
+          confirmLabel="Delete Program"
+          onConfirm={handleConfirmDelete}
+          cancelLabel="Cancel"
+          onCancel={() => setPendingDeleteId(null)}
+          tone="danger"
+        />
       )}
     </div>
   );

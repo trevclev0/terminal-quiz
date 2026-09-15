@@ -200,17 +200,31 @@ describe("ManageProgramEditor", () => {
     expect(saveButtons[0]).toBeDisabled();
   });
 
-  it("deletes a gate after confirm", async () => {
+  it("opens the confirm dialog instead of deleting immediately", async () => {
     const { mockDeleteGate } = setupMocks();
-    vi.stubGlobal(
-      "confirm",
-      vi.fn(() => true),
-    );
 
     render(<ManageProgramEditor programId={PROGRAM_ID} />);
 
     const deleteButtons = screen.getAllByText("Delete Gate");
     await userEvent.click(deleteButtons[0]);
+
+    expect(
+      screen.getByRole("dialog", { name: "Delete Gate Confirmation" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Delete gate "Gate One"? This cannot be undone.'),
+    ).toBeInTheDocument();
+    expect(mockDeleteGate.mutate).not.toHaveBeenCalled();
+  });
+
+  it("deletes a gate after confirm", async () => {
+    const { mockDeleteGate } = setupMocks();
+
+    render(<ManageProgramEditor programId={PROGRAM_ID} />);
+
+    const deleteButtons = screen.getAllByText("Delete Gate");
+    await userEvent.click(deleteButtons[0]);
+    await userEvent.click(screen.getByText("Delete"));
 
     expect(mockDeleteGate.mutate).toHaveBeenCalledWith(
       { id: "gate-1" },
@@ -219,6 +233,21 @@ describe("ManageProgramEditor", () => {
         onError: expect.any(Function),
       }),
     );
+  });
+
+  it("does not delete a gate when the dialog is cancelled", async () => {
+    const { mockDeleteGate } = setupMocks();
+
+    render(<ManageProgramEditor programId={PROGRAM_ID} />);
+
+    const deleteButtons = screen.getAllByText("Delete Gate");
+    await userEvent.click(deleteButtons[0]);
+    await userEvent.click(screen.getByText("Cancel"));
+
+    expect(mockDeleteGate.mutate).not.toHaveBeenCalled();
+    expect(
+      screen.queryByRole("dialog", { name: "Delete Gate Confirmation" }),
+    ).not.toBeInTheDocument();
   });
 
   it("reorders gates up", async () => {
@@ -374,15 +403,11 @@ describe("ManageProgramEditor", () => {
         ),
       },
     });
-    vi.stubGlobal(
-      "confirm",
-      vi.fn(() => true),
-    );
-
     render(<ManageProgramEditor programId={PROGRAM_ID} />);
 
     const deleteButtons = screen.getAllByText("Delete Gate");
     await userEvent.click(deleteButtons[0]);
+    await userEvent.click(screen.getByText("Delete"));
 
     expect(
       screen.getByText("Failed to delete: Delete failed"),
@@ -417,17 +442,13 @@ describe("ManageProgramEditor", () => {
         ),
       },
     });
-    vi.stubGlobal(
-      "confirm",
-      vi.fn(() => true),
-    );
-
     render(<ManageProgramEditor programId={PROGRAM_ID} />);
 
     const saveGateButtons = screen.getAllByText("Save Gate");
     await userEvent.click(saveGateButtons[0]);
     const deleteButtons = screen.getAllByText("Delete Gate");
     await userEvent.click(deleteButtons[1]);
+    await userEvent.click(screen.getByText("Delete"));
 
     expect(
       screen.getByText("Failed to save: Update failed"),

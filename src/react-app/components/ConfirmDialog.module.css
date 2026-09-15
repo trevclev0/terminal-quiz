@@ -60,7 +60,21 @@
   outline-offset: 2px;
 }
 
+.actionButton[data-tone="danger"] {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.actionButton[data-tone="danger"]:focus-visible {
+  outline-color: var(--red);
+}
+
+/*
+ * Composes the shared error primitive and only adds the gap before the action
+ * row — per CONVENTIONS.md a composed class must never redeclare what it
+ * composes.
+ */
 .error {
-  color: var(--red, #ff3333);
-  margin: 0 0 1rem 0;
+  composes: errorText from "./base.module.css";
+  margin-bottom: 1rem;
 }
