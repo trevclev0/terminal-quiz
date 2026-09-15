@@ -10,6 +10,9 @@ import styles from "./ManageProgramsList.module.css";
 import MutationError from "./MutationError";
 import selectStyles from "./select.module.css";
 
+const deleteProgramMessage = (name: string) =>
+  `Delete "${name}" and all its gates? This cannot be undone.`;
+
 export default function ManageProgramsList() {
   const { data: programs, isLoading, error } = useMyProgramsQuery();
   const createMutation = useCreateProgramMutation();
@@ -162,7 +165,7 @@ export default function ManageProgramsList() {
       {pendingDeleteProgram && (
         <ConfirmDialog
           ariaLabel="Delete Program Confirmation"
-          message={`Delete "${pendingDeleteProgram.name}" and all its gates? This cannot be undone.`}
+          message={deleteProgramMessage(pendingDeleteProgram.name)}
           confirmLabel="Delete Program"
           onConfirm={handleConfirmDelete}
           cancelLabel="Cancel"
