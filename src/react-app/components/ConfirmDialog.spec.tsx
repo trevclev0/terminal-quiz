@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import ConfirmDialog from "./ConfirmDialog";
 
@@ -119,7 +120,7 @@ describe("ConfirmDialog", () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
-  it("falls back to the [x] for focus when a danger dialog has no cancel", () => {
+  it("falls back to the [x] when a danger dialog has no cancel", () => {
     render(<ConfirmDialog {...baseProps} onConfirm={vi.fn()} tone="danger" />);
     expect(screen.getByText("[x]")).toHaveFocus();
   });
@@ -139,6 +140,35 @@ describe("ConfirmDialog", () => {
   it("leaves the confirm button untoned by default", () => {
     render(<ConfirmDialog {...baseProps} onConfirm={vi.fn()} />);
     expect(screen.getByText("Confirm")).not.toHaveAttribute("data-tone");
+  });
+
+  it("restores focus to the trigger when the dialog unmounts", async () => {
+    function Harness() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Open
+          </button>
+          {open && (
+            <ConfirmDialog
+              {...baseProps}
+              onConfirm={vi.fn()}
+              onCancel={() => setOpen(false)}
+            />
+          )}
+        </>
+      );
+    }
+
+    render(<Harness />);
+    const trigger = screen.getByText("Open");
+
+    await userEvent.click(trigger);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByText("[x]"));
+    expect(trigger).toHaveFocus();
   });
 
   it("calls onCancel when Escape key is pressed", () => {
