@@ -9,8 +9,9 @@ import { useGateDrafts } from "@hooks/useGateDrafts";
 import { useGateErrorState } from "@hooks/useGateErrorState";
 import { useNewGateForm } from "@hooks/useNewGateForm";
 import { useProgramSettings } from "@hooks/useProgramSettings";
-import type { SubmitEvent } from "react";
+import { type SubmitEvent, useState } from "react";
 import AddGateForm from "./AddGateForm";
+import ConfirmDialog from "./ConfirmDialog";
 import GateEditorCard from "./GateEditorCard";
 import LoadingScreen from "./LoadingScreen";
 import styles from "./ManageProgramEditor.module.css";
@@ -50,6 +51,9 @@ export default function ManageProgramEditor({
     gateDeleteError,
   } = useGateErrorState(updateGate.error?.message, deleteGate.error?.message);
   const { newGate, onNewGateChange, resetNewGate } = useNewGateForm();
+  const [pendingDeleteGateId, setPendingDeleteGateId] = useState<string | null>(
+    null,
+  );
 
   const handleSaveProgram = () => {
     updateProgram.mutate({
@@ -72,16 +76,17 @@ export default function ManageProgramEditor({
     );
   };
 
-  const handleDeleteGate = (gateId: string) => {
-    if (window.confirm("Delete this gate? This cannot be undone.")) {
-      deleteGate.mutate(
-        { id: gateId },
-        {
-          onSuccess: () => recordDeleteResult(gateId, true),
-          onError: () => recordDeleteResult(gateId, false),
-        },
-      );
-    }
+  const handleConfirmDeleteGate = () => {
+    const gateId = pendingDeleteGateId;
+    if (!gateId) return;
+    setPendingDeleteGateId(null);
+    deleteGate.mutate(
+      { id: gateId },
+      {
+        onSuccess: () => recordDeleteResult(gateId, true),
+        onError: () => recordDeleteResult(gateId, false),
+      },
+    );
   };
 
   const handleReorder = (idx: number, direction: "up" | "down") => {
@@ -112,6 +117,10 @@ export default function ManageProgramEditor({
       { onSuccess: resetNewGate },
     );
   };
+
+  const pendingDeleteLabel = pendingDeleteGateId
+    ? gateDrafts[pendingDeleteGateId]?.label.trim()
+    : undefined;
 
   if (programsLoading || isLoading) {
     return <LoadingScreen message="Loading Editor..." />;
@@ -173,7 +182,7 @@ export default function ManageProgramEditor({
                 savingGateId={savingGateId}
                 onReorder={handleReorder}
                 onSave={handleSaveGate}
-                onDelete={handleDeleteGate}
+                onDelete={setPendingDeleteGateId}
                 onDraftChange={(patch) =>
                   setGateDrafts((prev) => ({
                     ...prev,
@@ -195,6 +204,22 @@ export default function ManageProgramEditor({
           createError={createGate.error?.message}
         />
       </section>
+
+      {pendingDeleteGateId && (
+        <ConfirmDialog
+          ariaLabel="Delete Gate Confirmation"
+          message={
+            pendingDeleteLabel
+              ? `Delete gate "${pendingDeleteLabel}"? This cannot be undone.`
+              : "Delete this gate? This cannot be undone."
+          }
+          confirmLabel="Delete"
+          onConfirm={handleConfirmDeleteGate}
+          cancelLabel="Cancel"
+          onCancel={() => setPendingDeleteGateId(null)}
+          tone="danger"
+        />
+      )}
     </div>
   );
 }

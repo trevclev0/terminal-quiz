@@ -2,8 +2,8 @@ import { programProgressionQueryOptions } from "@api/queries/useProgramProgressi
 import { useProgramQuery } from "@api/queries/useProgramQuery";
 import ActiveGate from "@components/ActiveGate";
 import CompletedGate from "@components/CompletedGate";
+import ConfirmDialog from "@components/ConfirmDialog";
 import LoadingScreen from "@components/LoadingScreen";
-import TerminalConfirmModal from "@components/TerminalConfirmModal";
 import useProgramPlay from "@hooks/useProgramPlay";
 import useProgressionScroll from "@hooks/useProgressionScroll";
 import { Route } from "@routes/programs/$programId";
@@ -199,10 +199,13 @@ function ProgramPlay() {
         </div>
       )}
       {isConfirmOpen && (
-        <TerminalConfirmModal
+        <ConfirmDialog
+          ariaLabel="Reset Progress Confirmation"
           message={`Reset your progress on "${programName}" before selecting a new one?`}
+          confirmLabel="Reset Progress"
           onConfirm={handleConfirmReset}
-          onKeepProgress={handleKeepProgress}
+          secondaryLabel="Keep Progress"
+          onSecondary={handleKeepProgress}
           onCancel={handleCancelReset}
           errorMessage={resetError}
         />

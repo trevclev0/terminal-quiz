@@ -51,6 +51,49 @@ export class ManageProgramEditorPage {
     return labels;
   }
 
+  // ─── Delete confirmation (ConfirmDialog) ───────────────────────────
+
+  private deleteDialog() {
+    return this.page.locator('dialog[aria-label="Delete Gate Confirmation"]');
+  }
+
+  /**
+   * Click "Delete Gate" on the gate card at `index`, opening the dialog.
+   */
+  async clickDeleteGate(index: number): Promise<void> {
+    await this.page
+      .locator("[class*='gateCard']")
+      .nth(index)
+      .getByRole("button", { name: "Delete Gate" })
+      .click();
+  }
+
+  async isDeleteDialogVisible(): Promise<boolean> {
+    return this.deleteDialog().isVisible();
+  }
+
+  /**
+   * Confirm the pending gate delete and wait for the card count to drop.
+   */
+  async confirmDeleteGate(): Promise<void> {
+    const gateCards = this.page.locator("[class*='gateCard']");
+    const previousCount = await gateCards.count();
+
+    await this.deleteDialog()
+      .getByRole("button", { name: "Delete", exact: true })
+      .click();
+
+    await expect(gateCards).toHaveCount(previousCount - 1);
+  }
+
+  /**
+   * Dismiss the pending gate delete via the "Cancel" button.
+   */
+  async cancelDeleteGate(): Promise<void> {
+    await this.deleteDialog().getByRole("button", { name: "Cancel" }).click();
+    await expect(this.deleteDialog()).toBeHidden();
+  }
+
   async clickPlay() {
     await this.page.goto(`/programs/${this.programId}`);
   }
