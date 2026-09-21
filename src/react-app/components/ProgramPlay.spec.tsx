@@ -2,6 +2,7 @@ import { BootProvider, useBoot } from "@contexts/BootContext";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { handlers } from "@test-utils/msw/handlers";
 import { createQueryWrapper } from "@test-utils/queryTestUtils";
+import { stubReducedMotion } from "@test-utils/reducedMotion";
 import {
   act,
   fireEvent,
@@ -156,6 +157,8 @@ describe("ProgramPlay Component", () => {
   afterAll(() => server.close());
 
   beforeEach(() => {
+    // These tests assert on the finished end screen, not on it typing out.
+    stubReducedMotion();
     vi.clearAllMocks();
     vi.mocked(useProgramPlay).mockReturnValue(mockUseProgramPlay);
     vi.mocked(useProgramQuery).mockReturnValue({
@@ -210,7 +213,11 @@ describe("ProgramPlay Component", () => {
     );
 
     render(<ProgramPlay />, { wrapper });
-    await screen.findByText("The End");
+    // The heading is dual-node (sr-only + animated), so it is matched by
+    // testid rather than text. Buttons are revealed by the heading
+    // finishing, so waiting on them is what makes the end screen ready.
+    await screen.findByTestId("the-end-heading");
+    await screen.findByText("Select new program");
   }
 
   it("renders loading state when data is loading", () => {
