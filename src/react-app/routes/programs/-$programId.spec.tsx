@@ -7,6 +7,7 @@ import {
   mockProgression,
   renderWithRouter,
 } from "@test-utils";
+import { stubReducedMotion } from "@test-utils/reducedMotion";
 import { screen, waitFor } from "@testing-library/react";
 import { graphql, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
@@ -14,6 +15,7 @@ import {
   afterAll,
   afterEach,
   beforeAll,
+  beforeEach,
   describe,
   expect,
   it,
@@ -31,6 +33,11 @@ const server = setupServer(
 );
 
 describe("Program Play Route Integration", () => {
+  // The full route tree mounts CrtOverlay, whose boot sequence gates the
+  // typed surfaces below it. These specs assert on routing, not on the
+  // boot animation, so skip straight past it.
+  beforeEach(() => stubReducedMotion());
+
   beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
   afterEach(() => server.resetHandlers());
   afterAll(() => server.close());
@@ -72,12 +79,12 @@ describe("Program Play Route Integration", () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText("The End")).toBeInTheDocument();
+        expect(screen.getByTestId("the-end-heading")).toBeInTheDocument();
       },
       { timeout: LOADER_TIMEOUT_MS },
     );
 
-    expect(screen.getByText("Select new program")).toBeInTheDocument();
+    await screen.findByText("Select new program");
     expect(screen.getByText("Play program again")).toBeEnabled();
   });
 

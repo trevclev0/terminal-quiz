@@ -30,3 +30,4 @@ export {
   LOADER_TIMEOUT_MS,
   renderWithRouter,
 } from "./reactRouterUtils";
+export { stubReducedMotion } from "./reducedMotion";

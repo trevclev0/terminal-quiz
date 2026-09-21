@@ -4,6 +4,7 @@ import ActiveGate from "@components/ActiveGate";
 import CompletedGate from "@components/CompletedGate";
 import ConfirmDialog from "@components/ConfirmDialog";
 import LoadingScreen from "@components/LoadingScreen";
+import ProgramEnding from "@components/ProgramEnding";
 import { useBoot } from "@contexts/BootContext";
 import useProgramPlay from "@hooks/useProgramPlay";
 import useProgressionScroll from "@hooks/useProgressionScroll";
@@ -70,7 +71,6 @@ function ProgramPlay() {
   const [resetError, setResetError] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const selectNewProgramRef = useRef<HTMLButtonElement>(null);
 
   const programName = program?.name ?? programId;
 
@@ -84,13 +84,6 @@ function ProgramPlay() {
       inputRef.current.focus();
     }
   }, [currentGate?.id, isPending]);
-
-  // Focus select new program button when the program is completed
-  useEffect(() => {
-    if (isTheEnd) {
-      selectNewProgramRef.current?.focus();
-    }
-  }, [isTheEnd]);
 
   if (isLoading) {
     return <LoadingScreen message="Loading Program..." />;
@@ -178,35 +171,13 @@ function ProgramPlay() {
         />
       )}
       {isTheEnd && (
-        <div id="classic-ending">
-          <h2>The End</h2>
-          {resetError && <p className="error-message">{resetError}</p>}
-          <div className="action-buttons">
-            <button
-              ref={selectNewProgramRef}
-              type="button"
-              onClick={handleSelectNewProgram}
-              disabled={resetSessionMutation.isPending}
-              title="Select new program"
-            >
-              Select new program
-            </button>
-            <button
-              type="button"
-              onClick={handlePlayAgain}
-              disabled={resetSessionMutation.isPending}
-              title={
-                resetSessionMutation.isPending
-                  ? "Restarting..."
-                  : "Play program again"
-              }
-            >
-              {resetSessionMutation.isPending
-                ? "Restarting..."
-                : "Play program again"}
-            </button>
-          </div>
-        </div>
+        <ProgramEnding
+          canType={bootComplete}
+          resetError={resetError}
+          isResetting={resetSessionMutation.isPending}
+          onSelectNewProgram={handleSelectNewProgram}
+          onPlayAgain={handlePlayAgain}
+        />
       )}
       {isConfirmOpen && (
         <ConfirmDialog

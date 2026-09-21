@@ -1,4 +1,5 @@
 import { BootProvider, useBoot } from "@contexts/BootContext";
+import { stubReducedMotion } from "@test-utils/reducedMotion";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import CrtOverlay, {
@@ -315,22 +316,6 @@ function renderWithBoot() {
       <CrtOverlay />
       <BootProbe />
     </BootProvider>,
-  );
-}
-
-function stubReducedMotion(matches: boolean) {
-  vi.stubGlobal(
-    "matchMedia",
-    vi.fn((query: string) => ({
-      matches: query.includes("prefers-reduced-motion") ? matches : false,
-      media: query,
-      onchange: null,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    })),
   );
 }
 

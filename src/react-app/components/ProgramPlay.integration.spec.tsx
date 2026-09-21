@@ -4,6 +4,7 @@ import {
   mockProgression,
 } from "@test-utils/msw/fixtures";
 import { createQueryWrapper } from "@test-utils/queryTestUtils";
+import { stubReducedMotion } from "@test-utils/reducedMotion";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { graphql, HttpResponse } from "msw";
@@ -12,6 +13,7 @@ import {
   afterAll,
   afterEach,
   beforeAll,
+  beforeEach,
   describe,
   expect,
   it,
@@ -108,6 +110,11 @@ const server = setupServer(
 );
 
 describe("ProgramPlay Integration", () => {
+  // The End types at 120ms/char; these tests assert on the finished
+  // screen, so they should not depend on that animation completing
+  // inside a default findBy timeout.
+  beforeEach(() => stubReducedMotion());
+
   beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
   afterEach(() => {
     server.resetHandlers();
@@ -134,7 +141,9 @@ describe("ProgramPlay Integration", () => {
     await user.keyboard("{Enter}");
 
     await waitFor(() => {
-      expect(screen.getByText("Access Granted.")).toBeInTheDocument();
+      expect(screen.getByTestId("success-message")).toHaveTextContent(
+        "Access Granted.",
+      );
     });
 
     // Wait for success message typing to complete, then next gate question to start
@@ -201,7 +210,9 @@ describe("ProgramPlay Integration", () => {
     await user.click(screen.getByText("Get 1st Clue"));
 
     await waitFor(() => {
-      expect(screen.getByText("Try thinking of 2+2")).toBeInTheDocument();
+      expect(screen.getByTestId("clue-text")).toHaveTextContent(
+        "Try thinking of 2+2",
+      );
     });
   });
 
@@ -268,8 +279,8 @@ describe("ProgramPlay Integration", () => {
 
     render(<ProgramPlay />, { wrapper });
 
-    await screen.findByText("The End");
-    expect(screen.getByText("Play program again")).toBeInTheDocument();
+    await screen.findByTestId("the-end-heading");
+    await screen.findByText("Play program again");
     expect(screen.getByText("Select new program")).toBeInTheDocument();
 
     await user.click(screen.getByText("Play program again"));

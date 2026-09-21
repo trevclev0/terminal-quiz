@@ -3,11 +3,20 @@ import {
   createTestRouter,
   renderWithRouter,
 } from "@test-utils/reactRouterUtils";
+import { stubReducedMotion } from "@test-utils/reducedMotion";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { graphql, HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from "vitest";
 import type { ProgramProgression } from "../api/queries/useProgramProgressionQuery";
 
 let progressionData: ProgramProgression = mockProgression();
@@ -89,6 +98,11 @@ const server = setupServer(
 );
 
 describe("Cross-Route Flow", () => {
+  // The full route tree mounts CrtOverlay, whose boot sequence gates the
+  // typed surfaces below it. These specs assert on routing, not on the
+  // boot animation, so skip straight past it.
+  beforeEach(() => stubReducedMotion());
+
   beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
   afterEach(() => {
     server.resetHandlers();
@@ -113,10 +127,10 @@ describe("Cross-Route Flow", () => {
     await user.keyboard("{Enter}");
 
     await waitFor(() => {
-      expect(screen.getByText("The End")).toBeInTheDocument();
+      expect(screen.getByTestId("the-end-heading")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Play program again")).toBeInTheDocument();
+    await screen.findByText("Play program again");
 
     await user.click(screen.getByText("Play program again"));
 
