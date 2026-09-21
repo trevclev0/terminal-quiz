@@ -4,6 +4,7 @@ import ActiveGate from "@components/ActiveGate";
 import CompletedGate from "@components/CompletedGate";
 import ConfirmDialog from "@components/ConfirmDialog";
 import LoadingScreen from "@components/LoadingScreen";
+import { useBoot } from "@contexts/BootContext";
 import useProgramPlay from "@hooks/useProgramPlay";
 import useProgressionScroll from "@hooks/useProgressionScroll";
 import { Route } from "@routes/programs/$programId";
@@ -21,6 +22,8 @@ function ProgramPlay() {
   );
 
   const { data: program } = useProgramQuery(programId);
+
+  const { bootComplete } = useBoot();
 
   const currentGate = progression?.currentGate ?? null;
   const completedGates = progression?.completedGates ?? [];
@@ -54,8 +57,14 @@ function ProgramPlay() {
     setReleasedGateId(currentGate?.id ?? null);
   }, [currentGate?.id]);
 
+  // Boot gates the head of the typing chain, whichever surface that turns out
+  // to be on this mount: the first question on a fresh start, or the last
+  // completed gate's successMessage on a mid-program reload. Everything
+  // downstream is already sequenced by `releasedGateId`, so holding the head
+  // is enough to keep the boot banner from typing over gameplay text.
   const canTypeQuestion =
-    completedGates.length === 0 || releasedGateId === currentGate?.id;
+    bootComplete &&
+    (completedGates.length === 0 || releasedGateId === currentGate?.id);
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
@@ -138,6 +147,7 @@ function ProgramPlay() {
           id={`gate-${index}`}
           gate={gate}
           isLast={index === completedGates.length - 1 && !!currentGate}
+          canType={bootComplete}
           onComplete={
             index === completedGates.length - 1 && currentGate
               ? handleSuccessMessageComplete

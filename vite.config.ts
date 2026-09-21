@@ -24,6 +24,9 @@ export default defineConfig({
       "@components": fileURLToPath(
         new URL("./src/react-app/components", import.meta.url),
       ),
+      "@contexts": fileURLToPath(
+        new URL("./src/react-app/contexts", import.meta.url),
+      ),
       "@routes": fileURLToPath(
         new URL("./src/react-app/routes", import.meta.url),
       ),

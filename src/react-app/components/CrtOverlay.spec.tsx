@@ -1,5 +1,5 @@
+import { BootProvider, useBoot } from "@contexts/BootContext";
 import { act, fireEvent, render, screen } from "@testing-library/react";
-
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import CrtOverlay, {
   BANNER_PAUSE_MS,
@@ -294,5 +294,104 @@ describe("CrtOverlay", () => {
       "title",
       "Toggle CRT effect (Ctrl+Shift+,)",
     );
+  });
+});
+
+// CrtOverlay is the only thing that knows when the boot sequence is over.
+// Typed gameplay surfaces gate their mount on the flag it reports, so every
+// path into `done` — typed-out banner, power-off skip, reduced-motion skip —
+// has to report, or the typing chain hangs and the player sees no question.
+function BootProbe() {
+  const { bootComplete } = useBoot();
+
+  return (
+    <span data-testid="boot-flag">{bootComplete ? "done" : "booting"}</span>
+  );
+}
+
+function renderWithBoot() {
+  return render(
+    <BootProvider>
+      <CrtOverlay />
+      <BootProbe />
+    </BootProvider>,
+  );
+}
+
+function stubReducedMotion(matches: boolean) {
+  vi.stubGlobal(
+    "matchMedia",
+    vi.fn((query: string) => ({
+      matches: query.includes("prefers-reduced-motion") ? matches : false,
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  );
+}
+
+describe("CrtOverlay boot reporting", () => {
+  it("withholds the boot flag until the banner has typed out", () => {
+    localStorage.setItem(
+      "terminal_quiz_crt_settings",
+      JSON.stringify(FULL_SETTINGS),
+    );
+    renderWithBoot();
+
+    expect(screen.getByTestId("boot-flag")).toHaveTextContent("booting");
+
+    act(() => vi.advanceTimersByTime(BOOT_BANNER_MS));
+    expect(screen.getByTestId("boot-flag")).toHaveTextContent("booting");
+
+    act(() => vi.advanceTimersByTime(BANNER_TYPING_MS));
+    expect(screen.getByTestId("boot-flag")).toHaveTextContent("booting");
+
+    act(() => vi.advanceTimersByTime(BANNER_PAUSE_MS));
+
+    expect(screen.getByTestId("boot-flag")).toHaveTextContent("done");
+  });
+
+  it("reports immediately when power-on boot is disabled", () => {
+    localStorage.setItem(
+      "terminal_quiz_crt_settings",
+      JSON.stringify({ ...FULL_SETTINGS, powerOn: false }),
+    );
+    renderWithBoot();
+
+    expect(screen.getByTestId("boot-flag")).toHaveTextContent("done");
+  });
+
+  it("reports immediately under prefers-reduced-motion", () => {
+    localStorage.setItem(
+      "terminal_quiz_crt_settings",
+      JSON.stringify(FULL_SETTINGS),
+    );
+    stubReducedMotion(true);
+
+    renderWithBoot();
+
+    expect(screen.getByTestId("boot-flag")).toHaveTextContent("done");
+  });
+
+  it("reports when every CRT effect is switched off", () => {
+    localStorage.setItem(
+      "terminal_quiz_crt_settings",
+      JSON.stringify({
+        scanlines: false,
+        glow: false,
+        textGlow: false,
+        chromaticAberration: false,
+        flicker: false,
+        powerOn: false,
+      }),
+    );
+    renderWithBoot();
+
+    expect(screen.queryByTestId("crt-overlay")).not.toBeInTheDocument();
+    expect(screen.getByTestId("boot-flag")).toHaveTextContent("done");
   });
 });

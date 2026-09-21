@@ -4,13 +4,25 @@ import "@testing-library/jest-dom/vitest";
 import type { CompletedGate as CompletedGateType } from "@api/queries/useProgramProgressionQuery";
 import CompletedGate from "./CompletedGate";
 
-vi.mock("@hooks/useTypewriter", () => ({
-  default: (text: string) => ({
-    displayedText: text,
-    isComplete: true,
-    skip: () => {},
-  }),
-}));
+// Mirrors the real hook's contract closely enough for these tests: text is
+// revealed for whichever mount receives it, and completion is reported once
+// from an effect. Reporting matters here — it is what releases the next
+// gate's question, so a held-back message must not report.
+vi.mock("@hooks/useTypewriter", async () => {
+  const { useEffect } = await import("react");
+
+  return {
+    default: (text: string, options?: { onComplete?: () => void }) => {
+      const onComplete = options?.onComplete;
+
+      useEffect(() => {
+        onComplete?.();
+      }, [onComplete]);
+
+      return { displayedText: text, isComplete: true, skip: () => {} };
+    },
+  };
+});
 
 const mockCompletedGate: CompletedGateType = {
   id: "gate-1",
@@ -86,5 +98,84 @@ describe("CompletedGate", () => {
     };
     render(<CompletedGate id="gate-0" gate={gate} />);
     expect(screen.getByText(longQuestion)).toBeInTheDocument();
+  });
+});
+
+describe("CompletedGate boot gating", () => {
+  it("holds the last gate's message back until cleared to type", () => {
+    render(
+      <CompletedGate
+        id="gate-0"
+        gate={mockCompletedGate}
+        isLast
+        canType={false}
+      />,
+    );
+
+    expect(screen.getByTestId("success-message")).toHaveTextContent("");
+  });
+
+  it("types the last gate's message once cleared", () => {
+    render(
+      <CompletedGate id="gate-0" gate={mockCompletedGate} isLast canType />,
+    );
+
+    expect(screen.getByTestId("success-message")).toHaveTextContent("Correct!");
+  });
+
+  // The release signal for the next gate's question. Firing it while the
+  // boot sequence is still running is exactly the overlap this gating
+  // exists to prevent.
+  it("does not report completion while held back", () => {
+    const onComplete = vi.fn();
+
+    render(
+      <CompletedGate
+        id="gate-0"
+        gate={mockCompletedGate}
+        isLast
+        canType={false}
+        onComplete={onComplete}
+      />,
+    );
+
+    expect(onComplete).not.toHaveBeenCalled();
+  });
+
+  it("reports completion once cleared to type", () => {
+    const onComplete = vi.fn();
+
+    render(
+      <CompletedGate
+        id="gate-0"
+        gate={mockCompletedGate}
+        isLast
+        canType
+        onComplete={onComplete}
+      />,
+    );
+
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders earlier gates statically regardless of the boot flag", () => {
+    render(
+      <CompletedGate id="gate-0" gate={mockCompletedGate} canType={false} />,
+    );
+
+    expect(screen.getByTestId("success-message")).toHaveTextContent("Correct!");
+  });
+
+  it("keeps the message readable to assistive tech while held back", () => {
+    const { container } = render(
+      <CompletedGate
+        id="gate-0"
+        gate={mockCompletedGate}
+        isLast
+        canType={false}
+      />,
+    );
+
+    expect(container.querySelector(".sr-only")).toHaveTextContent("Correct!");
   });
 });

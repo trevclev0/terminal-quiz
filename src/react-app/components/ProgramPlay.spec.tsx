@@ -1,10 +1,18 @@
+import { BootProvider, useBoot } from "@contexts/BootContext";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { handlers } from "@test-utils/msw/handlers";
 import { createQueryWrapper } from "@test-utils/queryTestUtils";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { graphql, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
+import type { ReactNode } from "react";
 import {
   afterAll,
   afterEach,
@@ -103,6 +111,22 @@ const mockUseProgramPlay = {
 };
 
 vi.mocked(useProgramPlay).mockReturnValue(mockUseProgramPlay);
+
+// Lets a test flip the boot flag the way CrtOverlay does in the real tree.
+function BootHarness({ children }: { children: ReactNode }) {
+  const { markBootComplete } = useBoot();
+
+  return (
+    <>
+      <button
+        type="button"
+        data-testid="finish-boot"
+        onClick={markBootComplete}
+      />
+      {children}
+    </>
+  );
+}
 
 const mockPrograms = [{ id: "test-program-id", name: "Test Program" }];
 
@@ -305,6 +329,87 @@ describe("ProgramPlay Component", () => {
     await waitFor(() => {
       const latestCall = vi.mocked(ActiveGate).mock.calls.at(-1);
       expect(latestCall?.[0].enabled).toBe(true);
+    });
+  });
+
+  it("holds the first question back until the boot sequence reports", async () => {
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], mockPrograms);
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      mockProgression,
+    );
+
+    render(
+      <BootProvider>
+        <BootHarness>
+          <ProgramPlay />
+        </BootHarness>
+      </BootProvider>,
+      { wrapper },
+    );
+
+    await screen.findByText("Test Program");
+    expect(vi.mocked(ActiveGate).mock.calls[0][0].enabled).toBe(false);
+
+    fireEvent.click(screen.getByTestId("finish-boot"));
+
+    await waitFor(() => {
+      const latestCall = vi.mocked(ActiveGate).mock.calls.at(-1);
+      expect(latestCall?.[0].enabled).toBe(true);
+    });
+  });
+
+  // On a mid-program reload the first surface to type is the last completed
+  // gate's successMessage, not the question — so that is what has to wait on
+  // boot. Gating only the question would leave this path still overlapping.
+  it("holds a resumed success message back until the boot sequence reports", async () => {
+    const progressionWithCompleted = {
+      currentGate: {
+        id: "gate-2",
+        label: "Gate 2",
+        question: "What is 3+3?",
+      },
+      completedGates: [
+        {
+          id: "gate-1",
+          label: "Gate 1",
+          question: "What is 2+2?",
+          correctAnswer: "4",
+          successMessage: "Correct!",
+        },
+      ],
+      status: "in_progress",
+    };
+
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], mockPrograms);
+    queryClient.setQueryData(
+      ["programs", "progression", "test-program-id"],
+      progressionWithCompleted,
+    );
+
+    render(
+      <BootProvider>
+        <BootHarness>
+          <ProgramPlay />
+        </BootHarness>
+      </BootProvider>,
+      { wrapper },
+    );
+
+    await screen.findByText("Test Program");
+
+    expect(vi.mocked(CompletedGate).mock.calls[0][0].canType).toBe(false);
+    expect(vi.mocked(ActiveGate).mock.calls[0][0].enabled).toBe(false);
+
+    fireEvent.click(screen.getByTestId("finish-boot"));
+
+    await waitFor(() => {
+      const latestCall = vi.mocked(CompletedGate).mock.calls.at(-1);
+      expect(latestCall?.[0].canType).toBe(true);
     });
   });
 

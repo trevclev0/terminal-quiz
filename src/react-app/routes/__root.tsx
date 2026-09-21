@@ -1,5 +1,6 @@
 import CrtOverlay from "@components/CrtOverlay";
 import NavBar from "@components/NavBar";
+import { BootProvider } from "@contexts/BootContext";
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 
@@ -13,7 +14,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 export function RootComponent() {
   return (
-    <>
+    <BootProvider>
       <CrtOverlay />
       <NavBar />
       <main>
@@ -22,6 +23,6 @@ export function RootComponent() {
       {/* Automatically excludes itself from production bundles */}
       {/* TODO: Re-enable devtools in development once TanStack Router Devtools is updated */}
       {/* <TanStackRouterDevtools /> */}
-    </>
+    </BootProvider>
   );
 }
