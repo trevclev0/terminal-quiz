@@ -1,3 +1,4 @@
+import { useBoot } from "@contexts/BootContext";
 import useCrtPreferences from "@hooks/useCrtPreferences";
 import useTypewriter from "@hooks/useTypewriter";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -37,6 +38,7 @@ function BootBanner({ onComplete }: { onComplete: () => void }) {
 function CrtOverlay() {
   const { settings, presetLabel, cyclePreset, isFirstVisit } =
     useCrtPreferences();
+  const { markBootComplete } = useBoot();
 
   const isFullPreset = useMemo(() => presetLabel === "full", [presetLabel]);
 
@@ -78,6 +80,15 @@ function CrtOverlay() {
     const timer = setTimeout(() => setBootStage("done"), BANNER_PAUSE_MS);
     return () => clearTimeout(timer);
   }, [bootStage, bannerDone]);
+
+  // One reporting point for every path into `done` — the typing-driven
+  // transition, the fallback timer, and both skips (power-off and
+  // reduced-motion) which seed `bootStage` as "done" before first paint.
+  // Consumers gate typing on this, so missing a path would hang the chain.
+  useEffect(() => {
+    if (bootStage !== "done") return;
+    markBootComplete();
+  }, [bootStage, markBootComplete]);
 
   useEffect(() => {
     if (!settings.flicker) return;
