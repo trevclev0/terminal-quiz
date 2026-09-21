@@ -74,6 +74,29 @@ describe("reportError", () => {
     expect(payload.path).toBe("/programs/x");
   });
 
+  // An empty error message is not nullish, so it slipped past both the
+  // explicit `message` argument and the "Unknown error" default — the beacon
+  // fired but carried nothing identifying.
+  it("falls back to the message argument when error.message is empty", async () => {
+    reportError({
+      source: "boundary",
+      error: new Error(""),
+      message: "explicit fallback",
+    });
+
+    const body = sendBeaconMock.mock.calls[0][1] as Blob;
+    const payload = JSON.parse(await body.text()) as Record<string, string>;
+    expect(payload.message).toBe("explicit fallback");
+  });
+
+  it("falls back to Unknown error when nothing carries a message", async () => {
+    reportError({ source: "boundary", error: new Error("") });
+
+    const body = sendBeaconMock.mock.calls[0][1] as Blob;
+    const payload = JSON.parse(await body.text()) as Record<string, string>;
+    expect(payload.message).toBe("Unknown error");
+  });
+
   it("sanitizes sensitive text before sending", async () => {
     reportError({
       source: "boundary",
