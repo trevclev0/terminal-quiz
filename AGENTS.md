@@ -131,10 +131,14 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 │   │   │   └── mutations/                   # useSubmitGuessMutation, useRequestClueMutation,
 │   │   │                                    # useCreateProgramMutation, etc.
 │   │   ├── components/       # ActiveGate, CompletedGate, ErrorBoundary, ProgramPlay,
-│   │   │                     # ProgramSelector, RouteErrorFallback, ConfirmDialog,
-│   │   │                     # ManageProgramsList, ManageProgramEditor, NavBar, LoginPage
+│   │   │                     # ProgramEnding, ProgramSelector, RouteErrorFallback,
+│   │   │                     # ConfirmDialog, ManageProgramsList, ManageProgramEditor,
+│   │   │                     # NavBar, LoginPage, CrtOverlay
+│   │   ├── contexts/          # BootContext — bootComplete flag reported by
+│   │   │                     # CrtOverlay, gating the typed gameplay surfaces
 │   │   ├── hooks/             # useProgramPlay, usePrograms, useProgressionScroll,
-│   │   │                     # useResetSession, useShake
+│   │   │                     # useResetSession, useShake, useTypewriter,
+│   │   │                     # useCrtPreferences
 │   │   ├── routes/            # TanStack file-based routes: __root, index, login,
 │   │   │                     # programs/select, programs/$programId,
 │   │   │                     # programs/manage, programs/manage/$programId
