@@ -1,5 +1,6 @@
 import useTypewriter from "@hooks/useTypewriter";
 import { useCallback, useEffect, useRef, useState } from "react";
+import styles from "./ProgramEnding.module.css";
 
 export const THE_END_TEXT = "The End";
 // Deliberately slower than gameplay text. This is the terminal moment at the
@@ -58,15 +59,15 @@ export default function ProgramEnding({
   }, [headingTyped]);
 
   return (
-    <div id="classic-ending">
+    <div id="classic-ending" className={styles.ending}>
       {canType ? (
         <TypedHeading onComplete={handleHeadingComplete} />
       ) : (
         <EndingHeading displayedText="" />
       )}
-      {resetError && <p className="error-message">{resetError}</p>}
+      {resetError && <p className={styles.resetError}>{resetError}</p>}
       {headingTyped && (
-        <div className="action-buttons">
+        <div className={styles.actionButtons}>
           <button
             ref={selectNewProgramRef}
             type="button"

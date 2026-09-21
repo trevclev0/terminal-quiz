@@ -1,0 +1,24 @@
+.ending {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.resetError {
+  composes: errorText from "./base.module.css";
+}
+
+.actionButtons {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  width: 100%;
+  justify-content: center;
+}
+
+@media (max-width: 600px) {
+  .actionButtons {
+    flex-direction: column;
+    width: 100%;
+  }
+}
