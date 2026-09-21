@@ -54,8 +54,11 @@ export function reportError({
 
   const payload = {
     source,
+    // `||`, not `??`: an Error carrying an empty message would otherwise
+    // skip both fallbacks — the explicit `message` argument and the default
+    // — and post a beacon that records the failure but identifies nothing.
     message: sanitizeErrorText(
-      error?.message ?? message ?? "Unknown error",
+      error?.message || message || "Unknown error",
       MAX_FIELD_LENGTH,
     ),
     stack: sanitizeErrorText(stackText, MAX_STACK_LENGTH),

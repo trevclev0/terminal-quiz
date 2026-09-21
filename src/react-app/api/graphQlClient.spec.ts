@@ -149,6 +149,19 @@ describe("graphqlRequest", () => {
     );
   });
 
+  // The spec requires a `message` field on every GraphQL error but does not
+  // require it to be non-empty, and an empty string is not nullish — so this
+  // slipped past the `??` fallback and surfaced as Error("").
+  it("falls back to generic message when error message is empty", async () => {
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse({ data: null, errors: [{ message: "" }] }),
+    );
+
+    await expect(graphqlRequest(GET_PROGRAMS_QUERY)).rejects.toThrow(
+      "GraphQL request failed with HTTP 200.",
+    );
+  });
+
   it("returns data when errors array is empty but data is present", async () => {
     mockFetch.mockResolvedValueOnce(
       jsonResponse({ data: { programs: [] }, errors: [] }),

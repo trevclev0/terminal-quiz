@@ -55,8 +55,12 @@ export const graphqlRequest = async <
     return data;
   } catch (error) {
     if (error instanceof ClientError) {
+      // `||`, not `??`: the GraphQL spec requires errors to carry a
+      // `message` field but does not require it to be non-empty, and an
+      // Error("") is as useless to every consumer downstream as no message
+      // at all.
       const message =
-        error.response.errors?.[0]?.message ??
+        error.response.errors?.[0]?.message ||
         `GraphQL request failed with HTTP ${error.response.status}.`;
       throw new Error(message);
     }
