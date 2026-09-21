@@ -7,13 +7,31 @@ import { mockCssModuleProxy } from "@test-utils/cssModuleMock";
 import { createRef, type SubmitEvent } from "react";
 import ActiveGate from "./ActiveGate";
 
-vi.mock("@hooks/useTypewriter", () => ({
-  default: (text: string, options?: { enabled?: boolean }) => ({
-    displayedText: options?.enabled === false ? "" : text,
-    isComplete: options?.enabled !== false,
-    skip: () => {},
-  }),
-}));
+// Completion has to be reported for these tests, not just text: it is what
+// releases the newest clue to start typing once the question is done.
+vi.mock("@hooks/useTypewriter", async () => {
+  const { useEffect } = await import("react");
+
+  return {
+    default: (
+      text: string,
+      options?: { enabled?: boolean; onComplete?: () => void },
+    ) => {
+      const enabled = options?.enabled !== false;
+      const onComplete = options?.onComplete;
+
+      useEffect(() => {
+        onComplete?.();
+      }, [onComplete]);
+
+      return {
+        displayedText: enabled ? text : "",
+        isComplete: enabled,
+        skip: () => {},
+      };
+    },
+  };
+});
 vi.mock("./ActiveGate.module.css", () => ({ default: mockCssModuleProxy() }));
 vi.mock("./Gate.module.css", () => ({ default: mockCssModuleProxy() }));
 
@@ -238,8 +256,9 @@ describe("Clue Functionality", () => {
   it("renders clues in a list when clues array is not empty", () => {
     renderActiveGate({ clues: ["First Clue", "Second Clue"] });
     expect(screen.getByText("Clues:")).toBeInTheDocument();
-    expect(screen.getByText("First Clue")).toBeInTheDocument();
-    expect(screen.getByText("Second Clue")).toBeInTheDocument();
+    expect(
+      screen.getAllByTestId("clue-text").map((node) => node.textContent),
+    ).toEqual(["First Clue", "Second Clue"]);
   });
 
   it("renders 'Get Final Clue' button when clues length is MAX_CLUES_PER_GATE - 1", () => {
@@ -320,5 +339,51 @@ describe("Clue Functionality", () => {
     });
     const button = screen.getByRole("button", { name: /get.*clue/i });
     expect(button).not.toBeDisabled();
+  });
+});
+
+describe("Clue typing", () => {
+  it("holds the newest clue back until the question has typed", () => {
+    renderActiveGate({ enabled: false, clues: ["First Clue", "Latest Clue"] });
+
+    expect(
+      screen.getAllByTestId("clue-text").map((node) => node.textContent),
+    ).toEqual(["First Clue", ""]);
+  });
+
+  it("types the newest clue once the question is done", () => {
+    renderActiveGate({ enabled: true, clues: ["First Clue", "Latest Clue"] });
+
+    expect(
+      screen.getAllByTestId("clue-text").map((node) => node.textContent),
+    ).toEqual(["First Clue", "Latest Clue"]);
+  });
+
+  it("keeps a held-back clue readable to assistive tech", () => {
+    const { container } = renderActiveGate({
+      enabled: false,
+      clues: ["Latest Clue"],
+    });
+
+    const srOnly = Array.from(container.querySelectorAll(".sr-only")).map(
+      (node) => node.textContent,
+    );
+    expect(srOnly).toContain("Latest Clue");
+  });
+
+  it("hides every animated clue node from assistive tech", () => {
+    renderActiveGate({ clues: ["First Clue", "Latest Clue"] });
+
+    for (const node of screen.getAllByTestId("clue-text")) {
+      expect(node).toHaveAttribute("aria-hidden", "true");
+    }
+  });
+
+  it("announces each clue once rather than per character", () => {
+    const { container } = renderActiveGate({ clues: ["Latest Clue"] });
+
+    const liveRegion = container.querySelector('[aria-live="polite"]');
+    expect(liveRegion).not.toBeNull();
+    expect(liveRegion?.querySelectorAll(".sr-only")).toHaveLength(1);
   });
 });

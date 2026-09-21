@@ -2,6 +2,7 @@ import type { ActiveGate as ActiveGateType } from "@api/queries/useProgramProgre
 import useTypewriter from "@hooks/useTypewriter";
 import { MAX_CLUES_PER_GATE } from "@shared/types";
 import type { ChangeEvent, RefObject, SubmitEvent } from "react";
+import { useCallback, useState } from "react";
 import styles from "./ActiveGate.module.css";
 import gateStyles from "./Gate.module.css";
 
@@ -32,13 +33,49 @@ type ActiveGateProps = {
 // frame while `enabled` is false (the hook resolves `enabled: false` to
 // instant full text), then wipe and retype once enabled — a visible flash.
 // See docs/typewriter-text.md §2b (same pattern as the boot banner).
-function TypedQuestion({ text }: { text: string }) {
-  const { displayedText } = useTypewriter(text);
+function TypedQuestion({
+  text,
+  onComplete,
+}: {
+  text: string;
+  onComplete: () => void;
+}) {
+  const { displayedText } = useTypewriter(text, { onComplete });
   return (
     <p className="description" aria-hidden="true">
       {displayedText}
     </p>
   );
+}
+
+// Dual-node: assistive tech reads the full clue from the sr-only span the
+// moment it lands, while the aria-hidden span carries whatever has been
+// typed so far. Without the split, the polite live region would announce
+// the clue again on every character.
+function ClueLine({
+  text,
+  displayedText,
+}: {
+  text: string;
+  displayedText: string;
+}) {
+  return (
+    <li className={styles.clueLine}>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true" data-testid="clue-text">
+        {displayedText}
+      </span>
+    </li>
+  );
+}
+
+// Mounted only once the question has finished typing, so a clue arriving
+// mid-question — or both landing together on a reload — never types over
+// it. Mounting is the gate rather than the hook's `enabled` flag, for the
+// same reason as TypedQuestion above.
+function TypedClue({ text }: { text: string }) {
+  const { displayedText } = useTypewriter(text);
+  return <ClueLine text={text} displayedText={displayedText} />;
 }
 
 export default function ActiveGate({
@@ -64,6 +101,12 @@ export default function ActiveGate({
 to submit`;
   const isMutationPending = requestClueMutation?.isPending ?? false;
   const isClueCooldown = cooldownSeconds > 0;
+  // Released by the question finishing, so the newest clue never types in
+  // parallel with it. ProgramPlay keys ActiveGate on the gate id, so this
+  // resets with the remount on every gate change.
+  const [questionTyped, setQuestionTyped] = useState(false);
+  const handleQuestionComplete = useCallback(() => setQuestionTyped(true), []);
+
   const clueNumber = clues.length + 1;
   const clueSuffix =
     clueNumber === 1
@@ -96,7 +139,10 @@ to submit`;
             {gate.question}
           </span>
           {enabled ? (
-            <TypedQuestion text={gate.question} />
+            <TypedQuestion
+              text={gate.question}
+              onComplete={handleQuestionComplete}
+            />
           ) : (
             <p className="description" aria-hidden="true" />
           )}
@@ -160,15 +206,22 @@ to submit`;
             <div className={styles.cluesList} aria-live="polite">
               <p className={styles.cluesHeading}>Clues:</p>
               <ul className={styles.cluesBulletList}>
-                {clues.map((clue) => (
-                  <li
-                    key={clue}
-                    className={styles.clueLine}
-                    data-testid="clue-text"
-                  >
-                    {clue}
-                  </li>
-                ))}
+                {clues.map((clue, index) => {
+                  // Only the newest clue types. Earlier ones are settled
+                  // context, same call as CompletedGate makes for solved
+                  // success messages.
+                  if (index !== clues.length - 1) {
+                    return (
+                      <ClueLine key={clue} text={clue} displayedText={clue} />
+                    );
+                  }
+
+                  return questionTyped ? (
+                    <TypedClue key={clue} text={clue} />
+                  ) : (
+                    <ClueLine key={clue} text={clue} displayedText="" />
+                  );
+                })}
               </ul>
             </div>
           )}
