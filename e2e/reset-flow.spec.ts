@@ -16,19 +16,19 @@ async function completeE2EProgram(page: Page): Promise<GamePage> {
   // Gate 1: "blue"
   await gamePage.submitAnswer("blue");
   const r1 = await gamePage.waitForVerificationComplete();
-  expect(r1).toContain("Correct!");
+  expect(r1).toContain("ACCESS GRANTED");
   await gamePage.waitForActiveGateLabel("Gate 2");
 
   // Gate 2: "4"
   await gamePage.submitAnswer("4");
   const r2 = await gamePage.waitForVerificationComplete();
-  expect(r2).toContain("Correct!");
+  expect(r2).toContain("ACCESS GRANTED");
   await gamePage.waitForActiveGateLabel("Gate 3");
 
   // Gate 3: "cold"
   await gamePage.submitAnswer("cold");
   const r3 = await gamePage.waitForVerificationComplete();
-  expect(r3).toContain("Correct!");
+  expect(r3).toContain("ACCESS GRANTED");
   await gamePage.waitForTheEnd();
 
   return gamePage;

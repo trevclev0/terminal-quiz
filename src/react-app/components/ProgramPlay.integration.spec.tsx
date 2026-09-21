@@ -58,7 +58,7 @@ const server = setupServer(
             id: "gate-1",
             label: "Gate 1",
             correctAnswer: "4",
-            successMessage: "Access Granted.",
+            successMessage: "Correct! Two plus two is four.",
           }),
         ],
       });
@@ -66,7 +66,7 @@ const server = setupServer(
         data: {
           submitGuess: {
             success: true,
-            message: "Access Granted.",
+            message: "ACCESS GRANTED.",
             canRequestClue: false,
             nextGate: null,
           },
@@ -140,9 +140,13 @@ describe("ProgramPlay Integration", () => {
     await user.type(input, "4");
     await user.keyboard("{Enter}");
 
+    // The gate's successMessage is revealed by CompletedGate, not by the
+    // response line. Syncing on it here rather than on the response line,
+    // which is transient: the mocked progression resolves in the same tick,
+    // so ActiveGate has already unmounted by the time this runs.
     await waitFor(() => {
       expect(screen.getByTestId("success-message")).toHaveTextContent(
-        "Access Granted.",
+        "Correct! Two plus two is four.",
       );
     });
 

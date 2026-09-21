@@ -11,6 +11,13 @@ import {
 import { MAX_GUESS_LENGTH } from "./guessValidation";
 import { type AppGraphQLContext, SubmitGuessPayloadType } from "./types";
 
+// The terminal's own response line, not authored content. The gate's
+// successMessage is delivered by the progression query and revealed by
+// CompletedGate; returning it here too made it render in full before that
+// reveal could type it out (#301).
+const ACCESS_GRANTED = "ACCESS GRANTED.";
+const ACCESS_DENIED = "ACCESS DENIED. INCORRECT SYNTAX OR VALUE.";
+
 export const submitGuess = {
   type: SubmitGuessPayloadType,
   args: {
@@ -97,7 +104,7 @@ export const submitGuess = {
 
       return {
         success: false,
-        message: "ACCESS DENIED. INCORRECT SYNTAX OR VALUE.",
+        message: ACCESS_DENIED,
         nextGate: null,
         canRequestClue,
       };
@@ -165,7 +172,7 @@ export const submitGuess = {
 
     return {
       success: true,
-      message: activeGate.successMessage,
+      message: ACCESS_GRANTED,
       nextGate,
       canRequestClue: false,
     };

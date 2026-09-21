@@ -122,15 +122,18 @@ export class GamePage {
   }
 
   /**
-   * Check if the guess for the most recently submitted gate was successful
-   * by checking the status message for "Correct!" prefix.
+   * Check if the guess for the most recently submitted gate was successful.
+   *
+   * Keys off the terminal's own response line rather than the gate's
+   * authored successMessage, which is seed content and no longer appears
+   * here — it is revealed by the completed gate instead (#301).
    */
   async isGuessSuccessful(): Promise<boolean> {
     const status = this.page.locator("[role='status']");
     try {
       await status.waitFor({ state: "visible", timeout: 5000 });
       const text = await status.textContent();
-      return text?.trim().startsWith("Correct!") ?? false;
+      return text?.includes("ACCESS GRANTED") ?? false;
     } catch {
       return false;
     }

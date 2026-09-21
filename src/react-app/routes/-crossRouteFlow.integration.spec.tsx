@@ -49,7 +49,7 @@ const server = setupServer(
         data: {
           submitGuess: {
             success: true,
-            message: "Access Granted.",
+            message: "ACCESS GRANTED.",
             canRequestClue: false,
             nextGate: null,
           },

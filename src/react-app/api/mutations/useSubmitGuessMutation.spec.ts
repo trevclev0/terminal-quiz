@@ -14,7 +14,7 @@ describe("useSubmitGuessMutation", () => {
   it("submits guess and returns response on success", async () => {
     const response = {
       success: true,
-      message: "Access Granted.",
+      message: "ACCESS GRANTED.",
       canRequestClue: false,
       nextGate: { id: "gate-2", label: "Gate 2", question: "Next?" },
     };
