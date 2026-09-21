@@ -379,4 +379,36 @@ describe("CrtOverlay boot reporting", () => {
     expect(screen.queryByTestId("crt-overlay")).not.toBeInTheDocument();
     expect(screen.getByTestId("boot-flag")).toHaveTextContent("done");
   });
+
+  // Only the "full" preset has powerOn, and cyclePreset descends with a wrap,
+  // so a single click from "off" replays the whole boot sequence. The typed
+  // surfaces have to be re-gated for it, or a gate entered during the replay
+  // types behind the overlay.
+  it("re-gates typing when cycling the preset restarts the boot", () => {
+    localStorage.setItem(
+      "terminal_quiz_crt_settings",
+      JSON.stringify({
+        scanlines: false,
+        glow: false,
+        textGlow: false,
+        chromaticAberration: false,
+        flicker: false,
+        powerOn: false,
+      }),
+    );
+    renderWithBoot();
+
+    expect(screen.getByTestId("boot-flag")).toHaveTextContent("done");
+
+    act(() => {
+      fireEvent.click(screen.getByTestId("crt-status"));
+    });
+
+    expect(screen.getByTestId("crt-poweron")).toBeInTheDocument();
+    expect(screen.getByTestId("boot-flag")).toHaveTextContent("booting");
+
+    advancePastBoot();
+
+    expect(screen.getByTestId("boot-flag")).toHaveTextContent("done");
+  });
 });

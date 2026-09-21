@@ -4,12 +4,15 @@ import "@testing-library/jest-dom/vitest";
 import { BootProvider, useBoot } from "./BootContext";
 
 function BootProbe() {
-  const { bootComplete, markBootComplete } = useBoot();
+  const { bootComplete, markBootComplete, resetBoot } = useBoot();
 
   return (
-    <button type="button" onClick={markBootComplete} data-testid="probe">
-      {bootComplete ? "complete" : "booting"}
-    </button>
+    <>
+      <button type="button" onClick={markBootComplete} data-testid="probe">
+        {bootComplete ? "complete" : "booting"}
+      </button>
+      <button type="button" onClick={resetBoot} data-testid="reset" />
+    </>
   );
 }
 
@@ -73,5 +76,36 @@ describe("BootContext", () => {
 
     expect(first).toHaveTextContent("complete");
     expect(second).toHaveTextContent("complete");
+  });
+
+  // The boot sequence replays when the CRT preset is cycled back to one with
+  // powerOn, and the typed surfaces have to be re-gated for it.
+  it("goes back to incomplete when a new boot starts", () => {
+    render(
+      <BootProvider>
+        <BootProbe />
+      </BootProvider>,
+    );
+
+    fireEvent.click(screen.getByTestId("probe"));
+    expect(screen.getByTestId("probe")).toHaveTextContent("complete");
+
+    fireEvent.click(screen.getByTestId("reset"));
+
+    expect(screen.getByTestId("probe")).toHaveTextContent("booting");
+  });
+
+  it("can report complete again after a reset", () => {
+    render(
+      <BootProvider>
+        <BootProbe />
+      </BootProvider>,
+    );
+
+    fireEvent.click(screen.getByTestId("probe"));
+    fireEvent.click(screen.getByTestId("reset"));
+    fireEvent.click(screen.getByTestId("probe"));
+
+    expect(screen.getByTestId("probe")).toHaveTextContent("complete");
   });
 });

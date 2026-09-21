@@ -38,7 +38,7 @@ function BootBanner({ onComplete }: { onComplete: () => void }) {
 function CrtOverlay() {
   const { settings, presetLabel, cyclePreset, isFirstVisit } =
     useCrtPreferences();
-  const { markBootComplete } = useBoot();
+  const { markBootComplete, resetBoot } = useBoot();
 
   const isFullPreset = useMemo(() => presetLabel === "full", [presetLabel]);
 
@@ -59,6 +59,9 @@ function CrtOverlay() {
       setBootStage("done");
       return;
     }
+    // Only on the path that actually starts a boot — the two skips above
+    // return early and report complete instead.
+    resetBoot();
     setBannerDone(false);
     setBootStage("flash");
     const timers = [
@@ -67,7 +70,7 @@ function CrtOverlay() {
       setTimeout(() => setBootStage("banner"), BOOT_BANNER_MS),
     ];
     return () => timers.forEach(clearTimeout);
-  }, [settings.powerOn]);
+  }, [settings.powerOn, resetBoot]);
 
   useEffect(() => {
     if (bootStage !== "banner") return;

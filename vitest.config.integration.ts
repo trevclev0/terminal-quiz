@@ -87,6 +87,11 @@ export default defineConfig({
     // Mirror unit test config — automatically reset mocks between tests
     clearMocks: true,
     restoreMocks: true,
+    // restoreMocks does not cover vi.stubGlobal, so a stubbed global
+    // (matchMedia, localStorage) would otherwise outlive the test that
+    // set it. No suite here uses concurrent tests, which is the one
+    // case where this option bites.
+    unstubGlobals: true,
     // NOTE: V8 coverage (@vitest/coverage-v8) is incompatible with
     // @cloudflare/vitest-pool-workers — the workerd runtime does not
     // support the Node.js inspector protocol required for V8 coverage.
