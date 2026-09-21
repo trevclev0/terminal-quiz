@@ -72,6 +72,11 @@ export default defineConfig({
     exclude: [...configDefaults.exclude, "src/**/*.integration.spec.ts"],
     clearMocks: true,
     restoreMocks: true,
+    // restoreMocks does not cover vi.stubGlobal, so a stubbed global
+    // (matchMedia, localStorage) would otherwise outlive the test that
+    // set it. No suite here uses concurrent tests, which is the one
+    // case where this option bites.
+    unstubGlobals: true,
     coverage: {
       include: ["src/**/*.{ts,tsx}", "scripts/**/*.ts"],
       exclude: [

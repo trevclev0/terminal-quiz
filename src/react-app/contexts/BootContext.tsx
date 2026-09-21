@@ -10,6 +10,7 @@ import {
 export type BootContextValue = {
   bootComplete: boolean;
   markBootComplete: () => void;
+  resetBoot: () => void;
 };
 
 // Fails open on purpose. Typed surfaces gate their *mount* on `bootComplete`,
@@ -19,6 +20,7 @@ export type BootContextValue = {
 const BootContext = createContext<BootContextValue>({
   bootComplete: true,
   markBootComplete: () => {},
+  resetBoot: () => {},
 });
 
 export function BootProvider({ children }: { children: ReactNode }) {
@@ -26,9 +28,14 @@ export function BootProvider({ children }: { children: ReactNode }) {
 
   const markBootComplete = useCallback(() => setBootComplete(true), []);
 
+  // The boot sequence can replay — cycling the CRT preset back to one with
+  // powerOn re-runs it. Without re-gating, a gate entered during the replay
+  // types behind the overlay, which is the race this whole flag exists for.
+  const resetBoot = useCallback(() => setBootComplete(false), []);
+
   const value = useMemo(
-    () => ({ bootComplete, markBootComplete }),
-    [bootComplete, markBootComplete],
+    () => ({ bootComplete, markBootComplete, resetBoot }),
+    [bootComplete, markBootComplete, resetBoot],
   );
 
   return <BootContext.Provider value={value}>{children}</BootContext.Provider>;
