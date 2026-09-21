@@ -168,8 +168,8 @@ describe("ActiveGate", () => {
   });
 
   it("renders response message without .fail class for correct response", () => {
-    renderActiveGate({ message: "Access Granted.", guessSucceeded: true });
-    const response = screen.getByText("Access Granted.");
+    renderActiveGate({ message: "ACCESS GRANTED.", guessSucceeded: true });
+    const response = screen.getByText("ACCESS GRANTED.");
     expect(response).not.toHaveClass("fail");
     expect(response).toHaveClass("response");
   });

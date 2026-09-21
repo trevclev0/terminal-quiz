@@ -68,7 +68,7 @@ export const mockSubmitGuessResponse = (
   overrides: Partial<SubmitGuessResponse> = {},
 ): SubmitGuessResponse => ({
   success: true,
-  message: "Access Granted.",
+  message: "ACCESS GRANTED.",
   canRequestClue: false,
   nextGate: null,
   ...overrides,

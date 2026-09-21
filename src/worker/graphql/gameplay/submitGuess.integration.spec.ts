@@ -76,9 +76,12 @@ describe("submitGuess mutation", () => {
 
     const data = response.body.data as SubmitGuessData;
     expect(data.submitGuess.success).toBe(true);
-    expect(data.submitGuess.message).toBe(
-      "Correct! The sky is blue during a clear day.",
-    );
+    // The terminal's response line, not the gate's authored
+    // successMessage — that arrives via the progression query and is typed
+    // out by CompletedGate. Returning it here too rendered it in full
+    // before the reveal could run (#301).
+    expect(data.submitGuess.message).toBe("ACCESS GRANTED.");
+    expect(data.submitGuess.message).not.toContain("Correct!");
     expect(data.submitGuess.canRequestClue).toBe(false);
     expect(data.submitGuess.nextGate).not.toBeNull();
     expect(data.submitGuess.nextGate?.id).toBe(E2E_GATE_2_ID);

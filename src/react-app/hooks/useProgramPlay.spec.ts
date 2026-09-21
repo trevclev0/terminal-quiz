@@ -106,7 +106,7 @@ describe("useProgramPlay", () => {
     expect(preventDefault).toHaveBeenCalled();
   });
 
-  it('sets message to "Access Granted."', async () => {
+  it("passes the mutation's response message through", async () => {
     const { result } = renderHook(
       () => useProgramPlay({ programId, currentGateId }),
       { wrapper },

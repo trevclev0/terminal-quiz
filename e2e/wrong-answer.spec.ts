@@ -30,7 +30,7 @@ test.describe("@full wrong answer flow", () => {
     // Submit correct answer — should proceed to Gate 2
     await gamePage.submitAnswer("blue");
     const result = await gamePage.waitForVerificationComplete();
-    expect(result).toContain("Correct!");
+    expect(result).toContain("ACCESS GRANTED");
 
     await gamePage.waitForActiveGateLabel("Gate 2");
     const label = await gamePage.getActiveGateLabel();
