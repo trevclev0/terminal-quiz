@@ -100,6 +100,9 @@ bun run seed:e2e:preview # seed:generate, then wrangler d1 execute --file=script
 
 bun run commit           # git-cz, interactive commit prompt (preferred over `git commit`)
 bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
+
+bun run eval:clues       # manual real-model clue prompt eval — plan only; add --yes to spend
+                         #   one Workers AI call per case (docs/clue-prompt-eval.md). Never in CI.
 ```
 
 > Every command above also has a matching `mise run <task>` alias defined in `mise.toml` (e.g. `mise run test:run`, `mise run check:code`, `mise run test:e2e`).
@@ -117,7 +120,8 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 ├── migrations/                  # Drizzle SQL migrations + meta/ snapshots
 ├── public/                      # Static assets
 ├── scripts/                     # seedGenerator.ts + typed seedData.ts/seedE2eData.ts (checked in,
-│                                #   compiled by seed.ts/seed-e2e.ts into git-ignored generated/*.sql)
+│                                #   compiled by seed.ts/seed-e2e.ts into git-ignored generated/*.sql),
+│                                #   eval-clues.ts (manual real-model clue prompt eval)
 ├── src/
 │   ├── react-app/
 │   │   ├── api/
@@ -341,7 +345,7 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - **Guess acceptance** — Levenshtein similarity ≥ a per-gate `acceptanceThreshold` (default 0.875) via `leven`, checked server-side in `src/worker/utils/isGuessCloseEnough.ts`
 - **Session ID** — minted server-side into the HttpOnly `anon_gameplay_session` cookie (`Path=/api`, `Secure` outside development) by `sessionMiddleware`; never client-generated or sent as a header. Mutations additionally require the constant `x-session-id` same-origin tripwire header (enforced by `requireSessionHeader`)
 - **`submitGuess`** — the authoritative gameplay mutation. It re-validates that the session's `session_progress.currentGateId` matches the submitted `gateId` before checking the guess, rejecting mismatches as a "desync" error. This is what prevents a session from submitting guesses for gates it hasn't reached (IDOR protection) — do not weaken this check
-- **Clue system** — `requestClue` generates an AI hint via Cloudflare Workers AI once `attemptCount` meets a gate's `guidanceThreshold`; eligibility rules (attempt threshold, per-gate cap of `MAX_CLUES_PER_GATE = 3`, no duplicate clue per attempt count) live in `src/worker/graphql/gameplay/clueEligibility.ts` and must stay in sync with any clue-flow changes. A global daily budget guardrail (`AI_DAILY_CLUE_BUDGET`, default 150, tracked in `ai_usage` via `src/worker/graphql/gameplay/aiBudget.ts`) rejects new generations with `isAiBudgetExhausted: true` once the UTC day's successful-generation count reaches the cap — checked before the rate-limit claim, incremented only after a clue is stored
+- **Clue system** — `requestClue` generates an AI hint via Cloudflare Workers AI once `attemptCount` meets a gate's `guidanceThreshold`; eligibility rules (attempt threshold, per-gate cap of `MAX_CLUES_PER_GATE = 3`, no duplicate clue per attempt count) live in `src/worker/graphql/gameplay/clueEligibility.ts` and must stay in sync with any clue-flow changes. A global daily budget guardrail (`AI_DAILY_CLUE_BUDGET`, default 150, tracked in `ai_usage` via `src/worker/graphql/gameplay/aiBudget.ts`) rejects new generations with `isAiBudgetExhausted: true` once the UTC day's successful-generation count reaches the cap — checked before the rate-limit claim, incremented only after a clue is stored. `aiService` asks the model for a `{ clue }` JSON envelope (`CLUE_RESPONSE_FORMAT`, plain text still parsed as a fallback) and passes the player's guess as its own labeled, untrusted `user` message; the `answer_leak` regex stays the backstop
 - **`resetSession`** — clears a session's progress (and its `session_completed_gates` / `gate_clues` rows) on a program, used by both "Play again" and "Select new program" (after a `ConfirmDialog` confirmation) at the end of a program
 
 ---
@@ -360,6 +364,7 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - Do not expose Better Auth tables through the auto-GraphQL schema — keep `authSchema.ts` on its own Drizzle instance, never passed to `buildSchema()`
 - Do not weaken `authorizeProgramMutation()` — every management mutation operating on an existing program/gate must re-verify `authorId` server-side (all except `createProgram`), never trust client-supplied program/gate IDs without ownership check
 - Do not introduce REST endpoints for authoring — management mutations are GraphQL only, same as gameplay
+- Do not wire `scripts/eval-clues.ts`, or any new real-model call, into tests or CI — every call spends the daily neuron allocation real players' clues draw on. Unit and integration tiers mock the AI; the one existing exception is the E2E `@full clue flow` spec, which requests one real clue per preview run
 - Do not allow open redirects in `/login` — `validateReturnTo()` must reject cross-origin, protocol-relative, and backslash-based return_to values
 - Do not hand-roll input validation in resolvers or authoring forms — add or reuse a schema in `src/shared/validation.ts` so the client and server share one rule
 - Do not define GraphQL query/mutation strings inline in frontend files — hand-written operation strings belong in `src/shared/graphqlOperations.ts` (codegen input), and hooks/api files and integration tests import the typed documents via `src/shared/gqlQueries.ts`.
