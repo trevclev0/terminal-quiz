@@ -1,6 +1,12 @@
 import { createMockHonoContext } from "@worker-test-utils/mockEnv";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { buildClueMessages, generateClue } from "./aiService";
+import {
+  buildClueMessages,
+  CLUE_MODEL,
+  CLUE_RESPONSE_FORMAT,
+  extractClueText,
+  generateClue,
+} from "./aiService";
 
 vi.mock("hono/adapter", () => ({
   env: vi.fn((c) => c.env),
@@ -178,6 +184,109 @@ describe("aiService", () => {
     expect(prompt).toContain('guess with \\"quotes\\" and newline');
     expect(prompt).not.toContain('"quotes"');
     expect(prompt).not.toContain("and\nnewline");
+  });
+
+  it("requests the { clue } JSON schema from the clue model", async () => {
+    const { c, aiRunMock } = createMockHonoContext();
+    aiRunMock.mockResolvedValue({ response: { clue: "clue" } });
+
+    await generateClue(
+      c,
+      baseArgs.gateQuestion,
+      baseArgs.correctAnswer,
+      baseArgs.currentGuess,
+      [],
+    );
+
+    const [model, inputs] = aiRunMock.mock.calls[0];
+    expect(model).toBe(CLUE_MODEL);
+    expect(inputs.response_format).toEqual(CLUE_RESPONSE_FORMAT);
+  });
+
+  it("returns the trimmed clue from a structured envelope", async () => {
+    const { c, aiRunMock } = createMockHonoContext();
+    aiRunMock.mockResolvedValue({ response: { clue: "  a clue  " } });
+
+    const result = await generateClue(
+      c,
+      baseArgs.gateQuestion,
+      baseArgs.correctAnswer,
+      baseArgs.currentGuess,
+      [],
+    );
+
+    expect(result).toMatchObject({ clueText: "a clue", reason: "success" });
+  });
+
+  it("still applies the answer_leak check to a structured clue", async () => {
+    const { c, aiRunMock } = createMockHonoContext();
+    aiRunMock.mockResolvedValue({ response: { clue: "It is FOUR" } });
+
+    const result = await generateClue(
+      c,
+      baseArgs.gateQuestion,
+      baseArgs.correctAnswer,
+      baseArgs.currentGuess,
+      [],
+    );
+
+    expect(result).toMatchObject({ clueText: null, reason: "answer_leak" });
+  });
+
+  it("reports a malformed envelope instead of showing it as a clue", async () => {
+    const { c, aiRunMock } = createMockHonoContext();
+    aiRunMock.mockResolvedValue({ response: { hint: "wrong key" } });
+
+    const result = await generateClue(
+      c,
+      baseArgs.gateQuestion,
+      baseArgs.correctAnswer,
+      baseArgs.currentGuess,
+      [],
+    );
+
+    expect(result).toMatchObject({ clueText: null, reason: "malformed" });
+  });
+});
+
+describe("extractClueText", () => {
+  it("reads the clue from a parsed envelope", () => {
+    expect(extractClueText({ clue: " hint " })).toEqual({
+      kind: "clue",
+      text: "hint",
+    });
+  });
+
+  it("parses an envelope that arrives as a JSON string", () => {
+    expect(extractClueText('{"clue":"hint"}')).toEqual({
+      kind: "clue",
+      text: "hint",
+    });
+  });
+
+  it("falls back to plain text when the model ignores the schema", () => {
+    expect(extractClueText("  plain hint ")).toEqual({
+      kind: "clue",
+      text: "plain hint",
+    });
+  });
+
+  it("treats truncated or wrongly shaped JSON as malformed", () => {
+    for (const response of [
+      '{"clue": "cut off mid',
+      '{"hint":"x"}',
+      { clue: 42 },
+      [],
+      42,
+    ]) {
+      expect(extractClueText(response)).toEqual({ kind: "malformed" });
+    }
+  });
+
+  it("treats a missing or blank clue as empty", () => {
+    for (const response of [undefined, null, "   ", { clue: "  " }]) {
+      expect(extractClueText(response)).toEqual({ kind: "empty" });
+    }
   });
 });
 

@@ -30,6 +30,7 @@ vi.mock("@worker-services/aiService", () => ({
 }));
 
 import { trackEvent } from "@worker-graphql/gameplay/analytics";
+import { generateClue } from "@worker-services/aiService";
 
 const db = drizzle(env.DB);
 
@@ -211,6 +212,33 @@ describe("analytics event emission", () => {
       attemptCount: 2,
     });
     expect(typeof calls[0][1].aiLatencyMs).toBe("number");
+  });
+
+  it("emits clue_requested ai_failed:malformed for an unusable AI envelope", async () => {
+    vi.mocked(generateClue).mockResolvedValueOnce({
+      clueText: null,
+      reason: "malformed",
+      latencyMs: 12,
+    });
+    const sessionId = makeSessionId("clue-malformed");
+    await insertSession(sessionId, E2E_GATE_1_ID, { attemptCount: 2 });
+
+    const response: GqlResponse = await gqlRequest(REQUEST_CLUE_MUTATION, {
+      sessionId,
+      variables: {
+        programId: E2E_PROGRAM_ID,
+        gateId: E2E_GATE_1_ID,
+        currentGuess: "red",
+      },
+    });
+
+    expect(response.body.errors).toBeUndefined();
+    const calls = emitted("clue_requested");
+    expect(calls).toHaveLength(1);
+    expect(calls[0][1]).toMatchObject({
+      outcome: "ai_failed:malformed",
+      aiLatencyMs: 12,
+    });
   });
 
   it("emits session_reset when a session row exists", async () => {

@@ -64,7 +64,7 @@ high-cardinality; use it as a drill-down field, not a grouping dimension.
 | `gate_attempt`     | `submitGuess`, incorrect path      | `incorrect`                                                 |
 | `gate_completed`   | `submitGuess`, correct path        | `correct`                                                   |
 | `program_completed`| `submitGuess`, correct path with status `completed` | `complete`                                      |
-| `clue_requested`   | `requestClue`                      | `not_eligible` \| `budget_exhausted` \| `rate_limited` \| `success` \| `duplicate` \| `ai_failed:{no_binding\|empty\|answer_leak\|error}` |
+| `clue_requested`   | `requestClue`                      | `not_eligible` \| `budget_exhausted` \| `rate_limited` \| `success` \| `duplicate` \| `ai_failed:{no_binding\|empty\|malformed\|answer_leak\|error}` |
 | `session_reset`    | `resetSession`, only when a session row actually exists | `reset` |
 | `client_error`     | `POST /api/error` beacon           | `boundary` \| `route` \| `boot`                             |
 
