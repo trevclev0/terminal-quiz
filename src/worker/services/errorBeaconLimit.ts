@@ -41,11 +41,13 @@ export type ErrorBeaconLimitResult =
       retryAfterSeconds: number;
     };
 
+/** A positive integer from an env var, or `fallback` when unset/invalid. */
 export function parseLimit(raw: string | undefined, fallback: number): number {
   const parsed = raw === undefined ? Number.NaN : Number.parseInt(raw, 10);
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+/** Canonical dotted-quad form of an IPv4 address, or null if not one. */
 function normalizeIpv4(ip: string): string | null {
   const match = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(ip);
   if (!match) return null;
@@ -53,6 +55,10 @@ function normalizeIpv4(ip: string): string | null {
   return octets.every((octet) => octet <= 255) ? octets.join(".") : null;
 }
 
+/**
+ * The eight 16-bit groups of an IPv6 address — expanding "::" and a trailing
+ * dotted quad — or null if `ip` is not a valid IPv6 address.
+ */
 function parseIpv6(ip: string): number[] | null {
   // Drop a zone id (fe80::1%eth0) — it names a local interface, not a host.
   const halves = ip.split("%")[0].split("::");
