@@ -45,6 +45,12 @@ export default defineConfig({
             // boundary without coupling to DEFAULT_AI_DAILY_CLUE_BUDGET.
             // Each test file resets ai_usage in beforeEach.
             AI_DAILY_CLUE_BUDGET: "3",
+            // Low error-beacon caps so limiter tests hit both boundaries in
+            // a few requests. Beacon specs outside the limiter spec send
+            // fewer than 3 accepted beacons per file, so they never trip
+            // these; the limiter spec clears its table in beforeEach.
+            ERROR_BEACON_IP_HOURLY_LIMIT: "3",
+            ERROR_BEACON_DAILY_BUDGET: "5",
             // Pass migrations + seed SQL as bindings for runtime application
             TEST_MIGRATIONS: migrations,
             TEST_SEED_SQL: seedSQL,
