@@ -1,6 +1,6 @@
 import type { ActiveGate as ActiveGateType } from "@api/queries/useProgramProgressionQuery";
 import useTypewriter from "@hooks/useTypewriter";
-import { MAX_CLUES_PER_GATE } from "@shared/types";
+import { MAX_CLUES_PER_GATE, MAX_GUESS_LENGTH } from "@shared/types";
 import type { ChangeEvent, RefObject, SubmitEvent } from "react";
 import { useCallback, useState } from "react";
 import styles from "./ActiveGate.module.css";
@@ -156,6 +156,7 @@ to submit`;
               ref={inputRef}
               type="text"
               placeholder="enter password..."
+              maxLength={MAX_GUESS_LENGTH}
               value={guess}
               onChange={changeHandler}
               className={gateStyles.gateInput}

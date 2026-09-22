@@ -1,4 +1,5 @@
 import { gateClues } from "@shared/schema";
+import { guessSchema, parseOrThrow } from "@shared/validation";
 import { generateClue } from "@worker-services/aiService";
 import { GraphQLNonNull, GraphQLString } from "graphql";
 import { env } from "hono/adapter";
@@ -17,7 +18,6 @@ import {
   MAX_CLUES_PER_GATE,
 } from "./clueEligibility";
 import { claimClueRateLimit } from "./clueRateLimit";
-import { MAX_GUESS_LENGTH } from "./guessValidation";
 import { type AppGraphQLContext, RequestClueResultType } from "./types";
 
 export const requestClue = {
@@ -35,10 +35,10 @@ export const requestClue = {
     const db = context.get("db");
     const sessionId = context.get("sessionId");
 
-    const currentGuess = args.currentGuess.trim();
-    if (currentGuess.length === 0 || currentGuess.length > MAX_GUESS_LENGTH) {
-      throw new Error("Invalid current guess length.");
-    }
+    const currentGuess = parseOrThrow(
+      guessSchema("Invalid current guess length."),
+      args.currentGuess,
+    );
 
     if (!sessionId) throw new Error("Unauthorized: Missing Session ID");
 

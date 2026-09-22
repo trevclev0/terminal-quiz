@@ -1,4 +1,4 @@
-import { MAX_GUESS_LENGTH } from "@worker-graphql/gameplay/guessValidation";
+import { MAX_GUESS_LENGTH } from "@shared/types";
 import { describe, expect, it } from "vitest";
 import { sanitizeGuessForPrompt } from "./sanitizeGuessForPrompt";
 

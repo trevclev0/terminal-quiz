@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import type { ActiveGate as ActiveGateType } from "@api/queries/useProgramProgressionQuery";
-import { MAX_CLUES_PER_GATE } from "@shared/types";
+import { MAX_CLUES_PER_GATE, MAX_GUESS_LENGTH } from "@shared/types";
 import { mockCssModuleProxy } from "@test-utils/cssModuleMock";
 import { createRef, type SubmitEvent } from "react";
 import ActiveGate from "./ActiveGate";
@@ -134,6 +134,14 @@ describe("ActiveGate", () => {
   it("input is enabled by default", () => {
     renderActiveGate();
     expect(screen.getByRole("textbox")).not.toBeDisabled();
+  });
+
+  it("caps the guess at the server's MAX_GUESS_LENGTH", () => {
+    renderActiveGate();
+    expect(screen.getByRole("textbox")).toHaveAttribute(
+      "maxLength",
+      String(MAX_GUESS_LENGTH),
+    );
   });
 
   it("input is disabled when isPending is true", () => {

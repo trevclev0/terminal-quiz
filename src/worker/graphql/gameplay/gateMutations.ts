@@ -1,4 +1,9 @@
 import { gates } from "@shared/schema";
+import {
+  createGateInputSchema,
+  parseOrThrow,
+  updateGateInputSchema,
+} from "@shared/validation";
 import { and, eq } from "drizzle-orm";
 import {
   GraphQLBoolean,
@@ -8,11 +13,7 @@ import {
   GraphQLString,
 } from "graphql";
 import { authorizeProgramMutation } from "./authorizeProgram";
-import {
-  assertGuidanceThreshold,
-  assertRequiredText,
-  requireUser,
-} from "./managementHelpers";
+import { definedFields, requireUser } from "./managementHelpers";
 import { type AppGraphQLContext, GateManagementType } from "./types";
 
 export const createGate = {
@@ -44,53 +45,36 @@ export const createGate = {
     context: AppGraphQLContext,
   ) => {
     const userId = requireUser(context.get("user"));
+    const input = parseOrThrow(createGateInputSchema, {
+      label: args.label,
+      question: args.question,
+      correctAnswer: args.correctAnswer,
+      successMessage: args.successMessage,
+      sequenceOrder: args.sequenceOrder,
+      // An explicit GraphQL null means "column default", same as omitting.
+      acceptanceThreshold: args.acceptanceThreshold ?? undefined,
+      guidanceEnabled: args.guidanceEnabled ?? undefined,
+      guidanceThreshold: args.guidanceThreshold ?? undefined,
+    });
+
     const db = context.get("db");
-
     await authorizeProgramMutation(db, args.programId, userId);
-
-    const label = assertRequiredText(args.label, "label");
-    const question = assertRequiredText(args.question, "question");
-    const correctAnswer = assertRequiredText(
-      args.correctAnswer,
-      "correctAnswer",
-    );
-    const successMessage = assertRequiredText(
-      args.successMessage,
-      "successMessage",
-    );
-    if (args.guidanceThreshold !== undefined) {
-      assertGuidanceThreshold(args.guidanceThreshold);
-    }
-
-    if (args.sequenceOrder < 1) {
-      throw new Error("sequenceOrder must be a positive integer.");
-    }
 
     const existing = await db.query.gates.findFirst({
       where: and(
         eq(gates.programId, args.programId),
-        eq(gates.sequenceOrder, args.sequenceOrder),
+        eq(gates.sequenceOrder, input.sequenceOrder),
       ),
     });
     if (existing) {
       throw new Error(
-        `Sequence order ${args.sequenceOrder} is already taken for this program.`,
+        `Sequence order ${input.sequenceOrder} is already taken for this program.`,
       );
     }
 
     const [result] = await db
       .insert(gates)
-      .values({
-        programId: args.programId,
-        label,
-        question,
-        correctAnswer,
-        successMessage,
-        sequenceOrder: args.sequenceOrder,
-        acceptanceThreshold: args.acceptanceThreshold ?? undefined,
-        guidanceEnabled: args.guidanceEnabled ?? undefined,
-        guidanceThreshold: args.guidanceThreshold ?? undefined,
-      })
+      .values({ programId: args.programId, ...input })
       .returning();
 
     return result;
@@ -126,68 +110,41 @@ export const updateGate = {
     context: AppGraphQLContext,
   ) => {
     const userId = requireUser(context.get("user"));
-    const db = context.get("db");
+    const { id, ...fields } = args;
+    const updateData = definedFields(
+      parseOrThrow(updateGateInputSchema, fields),
+    );
+    if (Object.keys(updateData).length === 0) {
+      throw new Error("No fields to update.");
+    }
 
+    const db = context.get("db");
     const gate = await db.query.gates.findFirst({
-      where: eq(gates.id, args.id),
+      where: eq(gates.id, id),
     });
     if (!gate) throw new Error("Gate not found.");
 
     await authorizeProgramMutation(db, gate.programId, userId);
 
-    if (args.sequenceOrder !== undefined) {
-      if (args.sequenceOrder < 1) {
-        throw new Error("sequenceOrder must be a positive integer.");
+    const { sequenceOrder } = updateData;
+    if (sequenceOrder !== undefined && sequenceOrder !== gate.sequenceOrder) {
+      const collision = await db.query.gates.findFirst({
+        where: and(
+          eq(gates.programId, gate.programId),
+          eq(gates.sequenceOrder, sequenceOrder),
+        ),
+      });
+      if (collision) {
+        throw new Error(
+          `Sequence order ${sequenceOrder} is already taken for this program.`,
+        );
       }
-      if (args.sequenceOrder !== gate.sequenceOrder) {
-        const collision = await db.query.gates.findFirst({
-          where: and(
-            eq(gates.programId, gate.programId),
-            eq(gates.sequenceOrder, args.sequenceOrder),
-          ),
-        });
-        if (collision) {
-          throw new Error(
-            `Sequence order ${args.sequenceOrder} is already taken for this program.`,
-          );
-        }
-      }
-    }
-
-    const updateData: Record<string, unknown> = {};
-    if (args.label !== undefined)
-      updateData.label = assertRequiredText(args.label, "label");
-    if (args.question !== undefined)
-      updateData.question = assertRequiredText(args.question, "question");
-    if (args.correctAnswer !== undefined)
-      updateData.correctAnswer = assertRequiredText(
-        args.correctAnswer,
-        "correctAnswer",
-      );
-    if (args.successMessage !== undefined)
-      updateData.successMessage = assertRequiredText(
-        args.successMessage,
-        "successMessage",
-      );
-    if (args.sequenceOrder !== undefined)
-      updateData.sequenceOrder = args.sequenceOrder;
-    if (args.acceptanceThreshold !== undefined)
-      updateData.acceptanceThreshold = args.acceptanceThreshold;
-    if (args.guidanceEnabled !== undefined)
-      updateData.guidanceEnabled = args.guidanceEnabled;
-    if (args.guidanceThreshold !== undefined) {
-      assertGuidanceThreshold(args.guidanceThreshold);
-      updateData.guidanceThreshold = args.guidanceThreshold;
-    }
-
-    if (Object.keys(updateData).length === 0) {
-      throw new Error("No fields to update.");
     }
 
     const [result] = await db
       .update(gates)
       .set(updateData)
-      .where(eq(gates.id, args.id))
+      .where(eq(gates.id, id))
       .returning();
 
     return result;

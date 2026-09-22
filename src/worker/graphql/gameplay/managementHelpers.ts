@@ -1,27 +1,4 @@
-import { MAX_CLUES_PER_GATE } from "@shared/types";
 import type { AppGraphQLContext } from "./types";
-
-export type Visibility = "public" | "unlisted";
-
-const VALID_VISIBILITY: ReadonlySet<Visibility> = new Set([
-  "public",
-  "unlisted",
-]);
-
-function assertRequiredText(value: string, fieldName: string): string {
-  if (value.trim().length === 0) {
-    throw new Error(`${fieldName} is required.`);
-  }
-  return value.trim();
-}
-
-function assertGuidanceThreshold(value: number): void {
-  if (!Number.isInteger(value) || value < 1 || value > MAX_CLUES_PER_GATE) {
-    throw new Error(
-      `guidanceThreshold must be an integer between 1 and ${MAX_CLUES_PER_GATE}.`,
-    );
-  }
-}
 
 function requireUser(user: AppGraphQLContext["var"]["user"]): string {
   if (!user?.id) {
@@ -30,17 +7,16 @@ function requireUser(user: AppGraphQLContext["var"]["user"]): string {
   return user.id;
 }
 
-function assertVisibility(value: string): asserts value is Visibility {
-  if (!VALID_VISIBILITY.has(value as Visibility)) {
-    throw new Error(
-      `Invalid visibility "${value}". Must be "public" or "unlisted".`,
-    );
-  }
+/**
+ * Drops fields whose value is undefined — what's left is exactly what an
+ * update mutation was asked to change.
+ */
+function definedFields<T extends Record<string, unknown>>(
+  fields: T,
+): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(fields).filter(([, value]) => value !== undefined),
+  ) as Partial<T>;
 }
 
-export {
-  assertGuidanceThreshold,
-  assertRequiredText,
-  assertVisibility,
-  requireUser,
-};
+export { definedFields, requireUser };

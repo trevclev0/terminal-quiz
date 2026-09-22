@@ -1,4 +1,4 @@
-import { MAX_GUESS_LENGTH } from "@worker-graphql/gameplay/guessValidation";
+import { MAX_GUESS_LENGTH } from "@shared/types";
 
 // C0 controls except tab/newline (handled separately) plus DEL.
 const CONTROL_CHAR_RANGES: ReadonlyArray<readonly [number, number]> = [

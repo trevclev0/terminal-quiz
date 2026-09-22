@@ -83,6 +83,19 @@ describe("AddGateForm", () => {
     expect(screen.getByRole("button", { name: "Add Gate" })).toBeDisabled();
   });
 
+  it("disables submit while any field is whitespace-only", () => {
+    setup({
+      newGate: {
+        label: "Gate",
+        question: "Q?",
+        correctAnswer: "A",
+        successMessage: "   ",
+      },
+    });
+
+    expect(screen.getByRole("button", { name: "Add Gate" })).toBeDisabled();
+  });
+
   it("disables inputs and shows Adding label while pending", () => {
     setup({
       newGate: { ...emptyNewGate, label: "New Gate" },
