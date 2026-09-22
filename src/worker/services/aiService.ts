@@ -112,7 +112,11 @@ type ExtractedClue =
   | { kind: "malformed" };
 
 function clueFromEnvelope(envelope: unknown): ExtractedClue {
-  if (typeof envelope !== "object" || envelope === null) {
+  if (
+    typeof envelope !== "object" ||
+    envelope === null ||
+    Array.isArray(envelope)
+  ) {
     return { kind: "malformed" };
   }
   const { clue } = envelope as { clue?: unknown };
@@ -122,29 +126,48 @@ function clueFromEnvelope(envelope: unknown): ExtractedClue {
 }
 
 // A model that ignores the schema often wraps its answer — JSON or not — in
-// a markdown code fence (```json … ```). Group 1 is the fenced body.
-const CODE_FENCE = /^```[a-z]*\s*([\s\S]*?)\s*```$/i;
+// a Markdown code fence: three or more backticks or tildes, an optional info
+// string such as "json", and a closing run of the same character at least
+// as long as the opener. Group 3 is the fenced body.
+const CODE_FENCE = /^(([`~])\2{2,})[a-z]*\s*([\s\S]*?)\s*\1\2*$/i;
+
+function parseJson(text: string): { ok: true; value: unknown } | { ok: false } {
+  try {
+    return { ok: true, value: JSON.parse(text) };
+  } catch {
+    return { ok: false };
+  }
+}
 
 /**
  * Pulls the clue out of the model's `response` field. JSON mode hands back
- * an already-parsed `{ clue }` object; a response that is still a JSON
- * string is parsed first, after unwrapping any markdown code fence. A
- * response that starts like JSON but isn't a `{ clue: string }` object is
- * malformed — never shown to a player as a clue. Any other string is a
- * model that answered in plain text despite the schema, and is used as the
- * clue (the pre-structured-output path).
+ * an already-parsed `{ clue }` object. A string response — the model
+ * serialized its JSON, or ignored the schema — is unwrapped from any
+ * Markdown code fence, then classified:
+ * - valid JSON: a `{ clue }` object yields the clue; a JSON string literal
+ *   yields its contents; anything else (array, number, boolean, null, an
+ *   object without a string clue) is malformed
+ * - not JSON but shaped like it (starts with `{` or `[`, e.g. truncated at
+ *   max_tokens): malformed
+ * - otherwise plain text, used as the clue (the pre-structured-output path)
+ *
+ * Malformed output is never shown to a player.
  */
 export function extractClueText(response: unknown): ExtractedClue {
   if (typeof response === "string") {
     const trimmed = response.trim();
-    const text = (CODE_FENCE.exec(trimmed)?.[1] ?? trimmed).trim();
+    const text = (CODE_FENCE.exec(trimmed)?.[3] ?? trimmed).trim();
     if (!text) return { kind: "empty" };
-    if (!text.startsWith("{")) return { kind: "clue", text };
-    try {
-      return clueFromEnvelope(JSON.parse(text));
-    } catch {
-      return { kind: "malformed" };
+    const parsed = parseJson(text);
+    if (parsed.ok) {
+      if (typeof parsed.value !== "string") {
+        return clueFromEnvelope(parsed.value);
+      }
+      const literal = parsed.value.trim();
+      return literal ? { kind: "clue", text: literal } : { kind: "empty" };
     }
+    if (/^[{[]/.test(text)) return { kind: "malformed" };
+    return { kind: "clue", text };
   }
   if (response === undefined || response === null) return { kind: "empty" };
   return clueFromEnvelope(response);
