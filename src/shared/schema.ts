@@ -190,10 +190,10 @@ export const aiUsage = sqliteTable("ai_usage", {
 // Fixed-window counters bounding Analytics Engine writes from the public
 // POST /api/error beacon (#254). One row per (bucket, window): `ip:<hmac>`
 // buckets count one client's beacons per clock hour, the `global` bucket
-// counts every accepted beacon per UTC day. request_count only ever counts
-// accepted beacons — a rejected claim leaves the row untouched. Rows are
-// transient: each carries its window's end in expires_at and is pruned once
-// that passes, so no client identifier outlives its window.
+// counts every accepted beacon per UTC day. request_count counts claimed
+// slots only — a claim rejected at the limit leaves the row untouched. Rows are
+// transient: each carries its window's end in expires_at, and the next
+// claim after an hour's grace past that deletes it.
 export const errorBeaconLimits = sqliteTable(
   "error_beacon_limits",
   {
@@ -204,7 +204,7 @@ export const errorBeaconLimits = sqliteTable(
   },
   (t) => [
     primaryKey({ columns: [t.bucketKey, t.windowStart] }),
-    // Serves the expiry prune (WHERE expires_at <= now)
+    // Serves the expiry prune (WHERE expires_at <= now - grace)
     index("error_beacon_limits_expires_at_idx").on(t.expiresAt),
   ],
 );

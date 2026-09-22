@@ -123,8 +123,13 @@ abuse control — a direct caller ignores it.
 - **Privacy.** Client buckets are stored as `ip:<hmac>` — HMAC-SHA-256 under
   a key derived (HKDF) from `BETTER_AUTH_SECRET` — never the address itself.
   An unkeyed digest would not do: an IPv4 address falls to enumerating 2^32
-  candidates. Rows are pruned once their window ends (at most an hour for a
-  client bucket).
+  candidates.
+- **Retention.** A row is deleted by the first claim made more than an hour
+  (`PRUNE_GRACE_MS`) after its window ends, so a client bucket normally lives
+  about two hours. The grace is load-bearing: a beacon that read the clock
+  just before a boundary may claim after it, and if the ended window's row
+  were already gone the claim would recreate it at count 1 and slip past a
+  spent limit.
 - **Cost.** One D1 batch per beacon, plus one upsert for the daily claim once
   the client claim succeeds. A beacon its client cap rejects writes no
   counter row.
@@ -178,10 +183,10 @@ Analytics Engine's 90 days. Logs carry `sessionId`.
   fingerprinting.
 - Data stays inside the Cloudflare account. Retention: Analytics Engine 90
   days; Workers Logs 3–7 days (plan-dependent).
-- The error-beacon limiter persists no IP address — only a keyed hash, pruned
-  once its window (at most an hour) ends. D1 Time Travel can still restore a
-  pruned row for up to 30 days, which is why the hash is keyed rather than a
-  plain digest.
+- The error-beacon limiter persists no IP address — only a keyed hash, deleted
+  about two hours after its clock-hour window opens (see *Volume limiter*). D1
+  Time Travel can still restore a deleted row for up to 30 days, which is why
+  the hash is keyed rather than a plain digest.
 
 ## Reference queries
 

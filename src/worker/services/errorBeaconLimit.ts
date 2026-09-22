@@ -13,6 +13,15 @@ export const DEFAULT_ERROR_BEACON_DAILY_BUDGET = 1000;
 
 export const HOUR_MS = 60 * 60 * 1000;
 export const DAY_MS = 24 * HOUR_MS;
+
+// How long an ended window's row survives before the prune may delete it.
+// A claim picks its windows from the clock reading taken when the beacon
+// arrived, so a beacon in flight across a boundary still claims in the
+// window that just ended. Had the prune already deleted that row, the claim
+// would recreate it at count 1 and slip past an exhausted limit. The grace
+// outlasts any request by orders of magnitude, so a late claim always meets
+// the row it would otherwise recreate.
+export const PRUNE_GRACE_MS = HOUR_MS;
 export const GLOBAL_BUCKET_KEY = "global";
 const UNKNOWN_SUBJECT = "unknown";
 const HASH_PURPOSE = "error-beacon-limit";
@@ -198,9 +207,10 @@ function claimSlot(
  * The global claim runs only once the client claim has succeeded, so a
  * client already over its own limit cannot burn the shared daily budget and
  * starve everyone else's error reports. The converse is accepted: a beacon
- * the global ceiling rejects has still spent its client's slot. Expired
- * windows (every client's) are pruned in the same batch as the client claim,
- * so abandoned buckets never accumulate.
+ * the global ceiling rejects has still spent its client's slot. Windows
+ * that ended more than PRUNE_GRACE_MS ago (every client's) are pruned in
+ * the same batch as the client claim, so abandoned buckets never
+ * accumulate.
  */
 export async function claimErrorBeaconSlot(
   db: Db,
@@ -213,7 +223,9 @@ export async function claimErrorBeaconSlot(
     claimSlot(db, clientBucketKey, hourStartMs, HOUR_MS, limits.ipHourlyLimit),
     db
       .delete(errorBeaconLimits)
-      .where(lte(errorBeaconLimits.expiresAt, new Date(nowMs))),
+      .where(
+        lte(errorBeaconLimits.expiresAt, new Date(nowMs - PRUNE_GRACE_MS)),
+      ),
   ]);
   if (clientClaim.length === 0) {
     return {

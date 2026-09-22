@@ -4,14 +4,22 @@ import { errorBeaconLimits } from "@shared/schema";
 import { SESSION_COOKIE_NAME } from "@worker-middleware/session";
 import {
   claimErrorBeaconSlot,
-  DAY_MS,
   GLOBAL_BUCKET_KEY,
   HOUR_MS,
+  PRUNE_GRACE_MS,
 } from "@worker-services/errorBeaconLimit";
 import { setupTestDb } from "@worker-test-utils/setupDb";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
 // trackEvent is the Analytics Engine write — counting its calls is how these
 // specs prove a rejected beacon writes nothing.
@@ -30,6 +38,11 @@ const IP_HOURLY_LIMIT = 3;
 const DAILY_BUDGET = 5;
 
 const VALID_BODY = JSON.stringify({ source: "boundary", message: "boom" });
+
+// The route reads the clock itself, so pin it: 10:30 UTC is 30 minutes into
+// a clock hour and 13.5 hours before UTC midnight, so no test can straddle a
+// window boundary and every Retry-After is exact.
+const FIXED_NOW = Date.UTC(2026, 0, 15, 10, 30);
 
 type BeaconOptions = { ip?: string; sessionId?: string; body?: string };
 
@@ -73,8 +86,14 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(FIXED_NOW);
   await db.delete(errorBeaconLimits);
   vi.mocked(trackEvent).mockClear();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("POST /api/error volume limiter", () => {
@@ -117,9 +136,8 @@ describe("POST /api/error volume limiter", () => {
     const rejected = await postBeacon({ ip: "203.0.113.10" });
 
     expect(rejected.status).toBe(429);
-    const retryAfter = Number(rejected.headers.get("retry-after"));
-    expect(retryAfter).toBeGreaterThanOrEqual(1);
-    expect(retryAfter).toBeLessThanOrEqual(HOUR_MS / 1000);
+    // 10:30 → 11:00
+    expect(rejected.headers.get("retry-after")).toBe("1800");
   });
 
   it("gives each client IP its own bucket", async () => {
@@ -146,9 +164,8 @@ describe("POST /api/error volume limiter", () => {
     const rejected = await postBeacon({ ip: "198.51.100.200" });
     expect(rejected.status).toBe(429);
     expect(await rejected.json()).toEqual({ ok: false });
-    const retryAfter = Number(rejected.headers.get("retry-after"));
-    expect(retryAfter).toBeGreaterThanOrEqual(1);
-    expect(retryAfter).toBeLessThanOrEqual(DAY_MS / 1000);
+    // 10:30 → UTC midnight
+    expect(rejected.headers.get("retry-after")).toBe("48600");
     expect(vi.mocked(trackEvent)).toHaveBeenCalledTimes(DAILY_BUDGET);
     expect(await globalCount()).toBe(DAILY_BUDGET);
   });
@@ -198,22 +215,38 @@ describe("POST /api/error volume limiter", () => {
     expect(clientKey).not.toContain(ip);
   });
 
-  it("prunes expired windows when a beacon is claimed", async () => {
-    const past = Date.now() - 2 * HOUR_MS;
+  async function insertEndedWindow(bucketKey: string, endedMsAgo: number) {
+    const expiresAt = FIXED_NOW - endedMsAgo;
     await db.insert(errorBeaconLimits).values({
-      bucketKey: "ip:stale",
-      windowStart: new Date(past),
+      bucketKey,
+      windowStart: new Date(expiresAt - HOUR_MS),
       requestCount: 3,
-      expiresAt: new Date(past + HOUR_MS),
+      expiresAt: new Date(expiresAt),
     });
+  }
+
+  async function bucketExists(bucketKey: string): Promise<boolean> {
+    const rows = await db
+      .select()
+      .from(errorBeaconLimits)
+      .where(eq(errorBeaconLimits.bucketKey, bucketKey));
+    return rows.length > 0;
+  }
+
+  it("prunes windows that ended more than the grace period ago", async () => {
+    await insertEndedWindow("ip:stale", PRUNE_GRACE_MS + 60_000);
 
     await postBeacon({ ip: "203.0.113.17" });
 
-    const stale = await db
-      .select()
-      .from(errorBeaconLimits)
-      .where(eq(errorBeaconLimits.bucketKey, "ip:stale"));
-    expect(stale).toHaveLength(0);
+    expect(await bucketExists("ip:stale")).toBe(false);
+  });
+
+  it("keeps a just-ended window through the grace period", async () => {
+    await insertEndedWindow("ip:recent", 30 * 60_000);
+
+    await postBeacon({ ip: "203.0.113.18" });
+
+    expect(await bucketExists("ip:recent")).toBe(true);
   });
 });
 
@@ -249,5 +282,22 @@ describe("claimErrorBeaconSlot windows", () => {
     expect(
       await claimErrorBeaconSlot(db, "ip:day-b", tight, afterMidnight),
     ).toEqual({ allowed: true });
+  });
+
+  it("does not let a claim in flight across midnight recreate a spent day", async () => {
+    const tight = { ipHourlyLimit: 10, dailyBudget: 1 };
+    const beforeMidnight = Date.UTC(2026, 0, 15, 23, 59, 59, 999);
+    const afterMidnight = Date.UTC(2026, 0, 16, 0, 0, 0, 1);
+    // Yesterday's whole budget is spent.
+    expect(
+      await claimErrorBeaconSlot(db, "ip:first", tight, beforeMidnight),
+    ).toEqual({ allowed: true });
+    // A beacon arriving after midnight runs the prune…
+    await claimErrorBeaconSlot(db, "ip:second", tight, afterMidnight);
+    // …and only then does a beacon that read the clock before midnight reach
+    // its claims. It must meet yesterday's spent row, not recreate it at 1.
+    expect(
+      await claimErrorBeaconSlot(db, "ip:late", tight, beforeMidnight),
+    ).toMatchObject({ allowed: false, scope: "global" });
   });
 });
