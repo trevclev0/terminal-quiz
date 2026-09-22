@@ -274,6 +274,36 @@ describe("extractClueText", () => {
     }
   });
 
+  it("unwraps tilde and longer fences that close with a matching run", () => {
+    for (const response of [
+      '~~~json\n{"clue":"hint"}\n~~~',
+      '````\n{"clue":"hint"}\n`````',
+    ]) {
+      expect(extractClueText(response)).toEqual({ kind: "clue", text: "hint" });
+    }
+  });
+
+  it("leaves a fence alone when its closing run does not match", () => {
+    expect(extractClueText('```json\n{"clue":"hint"}\n~~~')).toEqual({
+      kind: "clue",
+      text: '```json\n{"clue":"hint"}\n~~~',
+    });
+  });
+
+  it("classifies serialized JSON before falling back to plain text", () => {
+    expect(extractClueText('"quoted hint"')).toEqual({
+      kind: "clue",
+      text: "quoted hint",
+    });
+    for (const response of ['["hint"]', "42", "true", "null", "[broken"]) {
+      expect(extractClueText(response)).toEqual({ kind: "malformed" });
+    }
+    expect(extractClueText("Think of {curly} things")).toEqual({
+      kind: "clue",
+      text: "Think of {curly} things",
+    });
+  });
+
   it("unwraps a fenced plain-text clue and rejects fenced broken JSON", () => {
     expect(extractClueText("```\nplain hint\n```")).toEqual({
       kind: "clue",

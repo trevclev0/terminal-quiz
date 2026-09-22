@@ -114,14 +114,31 @@ function wranglerLoginToken(): string | undefined {
   }
 }
 
+type Account = { id: string; name: string };
+
+function isAccount(value: unknown): value is Account {
+  if (typeof value !== "object" || value === null) return false;
+  const { id, name } = value as { id?: unknown; name?: unknown };
+  return typeof id === "string" && typeof name === "string";
+}
+
+/** The token's account ID when it has exactly one; undefined otherwise. */
 async function soleAccountId(apiToken: string): Promise<string | undefined> {
-  const response = await fetch(`${API_BASE}/accounts`, {
-    headers: { Authorization: `Bearer ${apiToken}` },
-  });
-  const body = (await response.json()) as {
-    result?: { id: string; name: string }[];
-  };
-  const accounts = body.result ?? [];
+  let body: unknown;
+  try {
+    const response = await fetch(`${API_BASE}/accounts`, {
+      headers: { Authorization: `Bearer ${apiToken}` },
+    });
+    body = await response.json();
+  } catch {
+    return undefined;
+  }
+  const result =
+    typeof body === "object" && body !== null
+      ? (body as { result?: unknown }).result
+      : undefined;
+  if (!Array.isArray(result) || !result.every(isAccount)) return undefined;
+  const accounts: Account[] = result;
   if (accounts.length === 1) return accounts[0].id;
   if (accounts.length > 1) {
     console.error("Several accounts — set CLOUDFLARE_ACCOUNT_ID to one of:");
