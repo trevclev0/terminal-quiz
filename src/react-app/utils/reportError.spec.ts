@@ -89,6 +89,14 @@ describe("reportError", () => {
     expect(payload.message).toBe("explicit fallback");
   });
 
+  it("falls back to the real pathname when path is empty", async () => {
+    reportError({ source: "route", message: "boom", path: "" });
+
+    const body = sendBeaconMock.mock.calls[0][1] as Blob;
+    const payload = JSON.parse(await body.text()) as Record<string, string>;
+    expect(payload.path).toBe(window.location.pathname);
+  });
+
   it("falls back to Unknown error when nothing carries a message", async () => {
     reportError({ source: "boundary", error: new Error("") });
 
