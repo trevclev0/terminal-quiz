@@ -17,6 +17,7 @@
     "test:e2e": "bun run seed:e2e:local && playwright test",
     "schema:generate": "bun run scripts/dump-schema.ts",
     "gql:generate": "graphql-codegen --config codegen.yml",
+    "eval:clues": "bun run scripts/eval-clues.ts",
     "seed:generate": "bun run scripts/seed.ts && bun run scripts/seed-e2e.ts",
     "seed:e2e:local": "bun run seed:generate && wrangler d1 execute terminal-quest --local --file=scripts/generated/seed-e2e.sql",
     "seed:e2e:preview": "bun run seed:generate && wrangler d1 execute terminal-quest-preview --remote --env preview --file=scripts/generated/seed-e2e.sql",

@@ -14,6 +14,7 @@
     // Type-checked by the worker project (tsconfig.worker.json) — pulls in the
     // worker module graph (Cloudflare types + aliases), which this node-only
     // project can't resolve.
-    "scripts/dump-schema.ts"
+    "scripts/dump-schema.ts",
+    "scripts/eval-clues.ts"
   ]
 }

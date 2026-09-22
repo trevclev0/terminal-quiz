@@ -55,6 +55,10 @@ description = "Run coverage"
 run = "bun run test:ui"
 description = "Run tests with UI"
 
+[tasks."eval:clues"]
+run = "bun run eval:clues"
+description = "Real-model clue prompt eval (manual; spends Workers AI calls only with --yes)"
+
 [tasks."test:e2e"]
 run = "bun run test:e2e"
 description = "Run Playwright E2E tests"
