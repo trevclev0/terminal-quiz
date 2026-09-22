@@ -4,6 +4,8 @@ import { sanitizeGuessForPrompt } from "@worker-utils/sanitizeGuessForPrompt";
 import type { Context } from "hono";
 import { env } from "hono/adapter";
 
+export const CLUE_MODEL = "@cf/meta/llama-4-scout-17b-16e-instruct";
+
 // Maximum length for the AI-generated clue to prevent
 // overly verbose responses.
 const MAX_CLUE_LENGTH = 200;
@@ -38,6 +40,102 @@ export type ClueResult = {
   latencyMs: number;
 };
 
+export type ClueMessage = { role: "system" | "user"; content: string };
+
+/**
+ * Builds the clue prompt: system rules, then the gate context, the player's
+ * guess, and the instructions in a single user message.
+ */
+export function buildClueMessages(
+  gateQuestion: string,
+  correctAnswer: string,
+  currentGuess: string,
+  previousClues: string[],
+): ClueMessage[] {
+  const safeGuess = sanitizeGuessForPrompt(currentGuess);
+  let userPrompt = `Gate Question: "${gateQuestion}"
+Correct Answer (never reveal): "${correctAnswer}"
+Player's current incorrect guess: "${safeGuess}"
+Clue attempt: ${previousClues.length + 1} of ${MAX_CLUES_PER_GATE}`.trim();
+
+  if (previousClues.length > 0) {
+    userPrompt += `\nPrevious clues already given (do not repeat these):
+${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
+  }
+
+  // Add a reminder not to reveal the answer directly.
+  userPrompt += `\nGenerate the next clue, strictly better/more specific than the previous ones, without revealing the answer.`;
+
+  return [
+    { role: "system", content: SYSTEM_PROMPT },
+    { role: "user", content: userPrompt },
+  ];
+}
+
+/**
+ * Generates a clue with the given Workers AI binding. Split from
+ * `generateClue` so tooling outside a request can run exactly the
+ * production prompt, request options, parsing, and leak filter.
+ */
+export async function generateClueWithAi(
+  ai: Ai,
+  gateQuestion: string,
+  correctAnswer: string,
+  currentGuess: string,
+  previousClues: string[],
+): Promise<ClueResult> {
+  const start = performance.now();
+  const elapsed = () => performance.now() - start;
+
+  try {
+    const output = (await ai.run(CLUE_MODEL, {
+      messages: buildClueMessages(
+        gateQuestion,
+        correctAnswer,
+        currentGuess,
+        previousClues,
+      ),
+      // Ensure the AI doesn't get too creative and sticks to the point.
+      temperature: 0.7,
+      max_tokens: 100, // Limit AI response to encourage conciseness
+    })) as AiTextGenerationOutput;
+
+    // Extract the AI's response content.
+    const clueText = output.response?.trim();
+
+    if (!clueText) {
+      console.warn("AI returned an empty response for clue generation.");
+      return { clueText: null, reason: "empty", latencyMs: elapsed() };
+    }
+
+    // Basic check to ensure the AI didn't directly reveal the answer.
+    // This is a safeguard, as the system prompt should ideally prevent it.
+    const escapedAnswer = escapeRegExp(correctAnswer);
+    const startBoundary = /^\w/.test(correctAnswer) ? "\\b" : "";
+    const endBoundary = /\w$/.test(correctAnswer) ? "\\b" : "";
+    const answerRegex = new RegExp(
+      `${startBoundary}${escapedAnswer}${endBoundary}`,
+      "i",
+    );
+    if (answerRegex.test(clueText)) {
+      console.warn("AI generated a clue containing the answer. Filtering.");
+      return { clueText: null, reason: "answer_leak", latencyMs: elapsed() };
+    }
+
+    // Trim to maximum length to prevent overly long clues.
+    return {
+      clueText: clueText.substring(0, MAX_CLUE_LENGTH),
+      reason: "success",
+      latencyMs: elapsed(),
+    };
+  } catch (error) {
+    console.error("Error generating clue with AI service:", error);
+    // Return a structured failure — the AI call may still have billed, so the
+    // reservation in aiBudget is intentionally kept by the caller.
+    return { clueText: null, reason: "error", latencyMs: elapsed() };
+  }
+}
+
 /**
  * Generates a clue using Cloudflare Workers AI.
  * @param c Hono Context to access the AI binding.
@@ -54,82 +152,18 @@ export async function generateClue(
   currentGuess: string,
   previousClues: string[],
 ): Promise<ClueResult> {
-  const start = performance.now();
   const { AI } = env<{ AI: Ai }>(c);
 
   if (!AI) {
     console.error("AI binding not available.");
     return { clueText: null, reason: "no_binding", latencyMs: 0 };
   }
-  const safeGuess = sanitizeGuessForPrompt(currentGuess);
-  let userPrompt = `Gate Question: "${gateQuestion}"
-Correct Answer (never reveal): "${correctAnswer}"
-Player's current incorrect guess: "${safeGuess}"
-Clue attempt: ${previousClues.length + 1} of ${MAX_CLUES_PER_GATE}`.trim();
 
-  if (previousClues.length > 0) {
-    userPrompt += `\nPrevious clues already given (do not repeat these):
-${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
-  }
-
-  // Add a reminder not to reveal the answer directly.
-  userPrompt += `\nGenerate the next clue, strictly better/more specific than the previous ones, without revealing the answer.`;
-
-  try {
-    const response = (await AI.run("@cf/meta/llama-4-scout-17b-16e-instruct", {
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userPrompt },
-      ],
-      // Ensure the AI doesn't get too creative and sticks to the point.
-      temperature: 0.7,
-      max_tokens: 100, // Limit AI response to encourage conciseness
-    })) as AiTextGenerationOutput;
-
-    // Extract the AI's response content.
-    const clueText = response.response?.trim();
-
-    if (!clueText) {
-      console.warn("AI returned an empty response for clue generation.");
-      return {
-        clueText: null,
-        reason: "empty",
-        latencyMs: performance.now() - start,
-      };
-    }
-
-    // Basic check to ensure the AI didn't directly reveal the answer.
-    // This is a safeguard, as the system prompt should ideally prevent it.
-    const escapedAnswer = escapeRegExp(correctAnswer);
-    const startBoundary = /^\w/.test(correctAnswer) ? "\\b" : "";
-    const endBoundary = /\w$/.test(correctAnswer) ? "\\b" : "";
-    const answerRegex = new RegExp(
-      `${startBoundary}${escapedAnswer}${endBoundary}`,
-      "i",
-    );
-    if (answerRegex.test(clueText)) {
-      console.warn("AI generated a clue containing the answer. Filtering.");
-      return {
-        clueText: null,
-        reason: "answer_leak",
-        latencyMs: performance.now() - start,
-      };
-    }
-
-    // Trim to maximum length to prevent overly long clues.
-    return {
-      clueText: clueText.substring(0, MAX_CLUE_LENGTH),
-      reason: "success",
-      latencyMs: performance.now() - start,
-    };
-  } catch (error) {
-    console.error("Error generating clue with AI service:", error);
-    // Return a structured failure — the AI call may still have billed, so the
-    // reservation in aiBudget is intentionally kept by the caller.
-    return {
-      clueText: null,
-      reason: "error",
-      latencyMs: performance.now() - start,
-    };
-  }
+  return generateClueWithAi(
+    AI,
+    gateQuestion,
+    correctAnswer,
+    currentGuess,
+    previousClues,
+  );
 }
