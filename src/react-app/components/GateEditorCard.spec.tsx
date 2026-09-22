@@ -76,6 +76,41 @@ describe("GateEditorCard", () => {
     expect(screen.getByRole("button", { name: "Save Gate" })).toBeDisabled();
   });
 
+  it("flags only the blank field as invalid", () => {
+    setup({ draft: { ...draft, question: "   " } });
+
+    expect(screen.getByDisplayValue("Gate One")).toHaveAttribute(
+      "aria-invalid",
+      "false",
+    );
+    expect(screen.getByLabelText(/Question/)).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+  });
+
+  it("disables save when a threshold is outside the server's bounds", () => {
+    setup({ draft: { ...draft, acceptanceThreshold: 1.5 } });
+
+    expect(screen.getByRole("button", { name: "Save Gate" })).toBeDisabled();
+  });
+
+  it("clamps threshold input to the shared bounds", () => {
+    const { onDraftChange } = setup({
+      draft: { ...draft, guidanceEnabled: true },
+    });
+
+    fireEvent.change(screen.getByDisplayValue("0.875"), {
+      target: { value: "7" },
+    });
+    fireEvent.change(screen.getByDisplayValue("3"), {
+      target: { value: "0" },
+    });
+
+    expect(onDraftChange).toHaveBeenCalledWith({ acceptanceThreshold: 1 });
+    expect(onDraftChange).toHaveBeenCalledWith({ guidanceThreshold: 1 });
+  });
+
   it("disables guidance threshold while guidance is disabled", () => {
     setup({ draft: { ...draft, guidanceEnabled: false } });
 

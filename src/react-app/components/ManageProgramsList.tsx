@@ -2,6 +2,7 @@ import { useCreateProgramMutation } from "@api/mutations/useCreateProgramMutatio
 import { useDeleteProgramMutation } from "@api/mutations/useDeleteProgramMutation";
 import { useMyProgramsQuery } from "@api/queries/useMyProgramsQuery";
 import { useCopyToClipboard } from "@hooks/useCopyToClipboard";
+import { programNameSchema } from "@shared/validation";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { type SubmitEvent, useState } from "react";
 import ConfirmDialog from "./ConfirmDialog";
@@ -26,10 +27,11 @@ export default function ManageProgramsList() {
 
   const handleCreate = async (e: SubmitEvent) => {
     e.preventDefault();
-    if (!newName.trim()) return;
+    const name = programNameSchema.safeParse(newName);
+    if (!name.success) return;
     try {
       const result = await createMutation.mutateAsync({
-        name: newName.trim(),
+        name: name.data,
         visibility: newVisibility,
       });
       setNewName("");
@@ -87,7 +89,10 @@ export default function ManageProgramsList() {
         </span>
         <button
           type="submit"
-          disabled={createMutation.isPending || !newName.trim()}
+          disabled={
+            createMutation.isPending ||
+            !programNameSchema.safeParse(newName).success
+          }
           className={styles.button}
         >
           {createMutation.isPending ? "Creating..." : "Create Program"}

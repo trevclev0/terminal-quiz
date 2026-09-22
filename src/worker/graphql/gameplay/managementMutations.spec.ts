@@ -234,6 +234,25 @@ describe("updateProgram", () => {
       ),
     ).rejects.toThrow("name is required.");
   });
+
+  it("renaming leaves visibility untouched", async () => {
+    mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
+    const set = vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([OWNED_PROGRAM]),
+      }),
+    });
+    mockDb.update.mockReturnValue({ set });
+
+    await resolveField(
+      updateProgram,
+      null,
+      { id: "prog-1", name: "  Renamed  " },
+      mockContext,
+    );
+
+    expect(set).toHaveBeenCalledWith({ name: "Renamed" });
+  });
 });
 
 describe("deleteProgram", () => {
@@ -473,6 +492,62 @@ describe("createGate", () => {
       ),
     ).rejects.toThrow("guidanceThreshold must be an integer between 1 and 3.");
   });
+
+  it("throws when acceptanceThreshold is outside 0–1, before touching D1", async () => {
+    for (const acceptanceThreshold of [-0.1, 1.5]) {
+      await expect(
+        resolveField(
+          createGate,
+          null,
+          {
+            programId: "prog-1",
+            label: "Gate",
+            question: "Q?",
+            correctAnswer: "A",
+            successMessage: "OK",
+            sequenceOrder: 1,
+            acceptanceThreshold,
+          },
+          mockContext,
+        ),
+      ).rejects.toThrow("acceptanceThreshold must be between 0 and 1.");
+    }
+    expect(mockDb.query.programs.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("inserts trimmed text and treats null thresholds as column defaults", async () => {
+    mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
+    mockDb.query.gates.findFirst.mockResolvedValue(undefined);
+    const values = vi.fn().mockReturnValue({
+      returning: vi.fn().mockResolvedValue([{ id: "gate-1" }]),
+    });
+    mockDb.insert.mockReturnValue({ values });
+
+    await resolveField(
+      createGate,
+      null,
+      {
+        programId: "prog-1",
+        label: "  Gate  ",
+        question: "Q?",
+        correctAnswer: " A ",
+        successMessage: "OK",
+        sequenceOrder: 1,
+        acceptanceThreshold: null as unknown as number,
+        guidanceThreshold: null as unknown as number,
+      },
+      mockContext,
+    );
+
+    expect(values).toHaveBeenCalledWith(
+      expect.objectContaining({
+        label: "Gate",
+        correctAnswer: "A",
+        acceptanceThreshold: undefined,
+        guidanceThreshold: undefined,
+      }),
+    );
+  });
 });
 
 describe("updateGate", () => {
@@ -624,6 +699,29 @@ describe("updateGate", () => {
         mockContext,
       ),
     ).rejects.toThrow("guidanceThreshold must be an integer between 1 and 3.");
+  });
+
+  it("throws when acceptanceThreshold is outside 0–1, before touching D1", async () => {
+    await expect(
+      resolveField(
+        updateGate,
+        null,
+        { id: "gate-1", acceptanceThreshold: 2 },
+        mockContext,
+      ),
+    ).rejects.toThrow("acceptanceThreshold must be between 0 and 1.");
+    expect(mockDb.query.gates.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("rejects an explicit null label with the field's message", async () => {
+    await expect(
+      resolveField(
+        updateGate,
+        null,
+        { id: "gate-1", label: null as unknown as string },
+        mockContext,
+      ),
+    ).rejects.toThrow("label is required.");
   });
 });
 
