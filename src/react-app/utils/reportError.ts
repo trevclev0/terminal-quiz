@@ -62,7 +62,10 @@ export function reportError({
       MAX_FIELD_LENGTH,
     ),
     stack: sanitizeErrorText(stackText, MAX_STACK_LENGTH),
-    path: sanitizeErrorText(path ?? window.location.pathname, MAX_FIELD_LENGTH),
+    // Same reasoning as `message` above: a path is never meaningfully
+    // empty, so an empty string should fall through to the real pathname
+    // rather than be posted as-is.
+    path: sanitizeErrorText(path || window.location.pathname, MAX_FIELD_LENGTH),
     userAgent: sanitizeErrorText(navigator.userAgent, MAX_USER_AGENT_LENGTH),
   };
 
