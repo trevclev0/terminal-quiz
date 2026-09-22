@@ -107,8 +107,10 @@ abuse control — a direct caller ignores it.
 - **Two fixed-window caps**, both env-configurable:
   - per client per clock hour — `ERROR_BEACON_IP_HOURLY_LIMIT`, default 30;
   - across all clients per UTC day — `ERROR_BEACON_DAILY_BUDGET`, default
-    1000. This is the hard ceiling on the route's daily Analytics Engine
-    writes, however many clients take part.
+    1000. While D1 is reachable this is the ceiling on the route's daily
+    Analytics Engine writes, however many clients take part. It is not
+    absolute: during a D1 outage the limiter fails open (below), and beacons
+    accepted then are not counted.
 - **Atomic claims.** Each cap is a single upsert that increments only while
   the bucket is under its limit and returns a row only when it did, so
   concurrent beacons cannot overshoot. The daily claim runs only after the
@@ -124,12 +126,14 @@ abuse control — a direct caller ignores it.
   a key derived (HKDF) from `BETTER_AUTH_SECRET` — never the address itself.
   An unkeyed digest would not do: an IPv4 address falls to enumerating 2^32
   candidates.
-- **Retention.** A row is deleted by the first claim made more than an hour
-  (`PRUNE_GRACE_MS`) after its window ends, so a client bucket normally lives
-  about two hours. The grace is load-bearing: a beacon that read the clock
-  just before a boundary may claim after it, and if the ended window's row
-  were already gone the claim would recreate it at count 1 and slip past a
-  spent limit.
+- **Retention.** A row becomes eligible for deletion an hour
+  (`PRUNE_GRACE_MS`) after its window ends — about two hours after a client
+  bucket's window opens — and is deleted by the first claim made after
+  that. There is no scheduled cleanup, so with no beacon traffic an eligible
+  row waits for the next claim. The grace is load-bearing: a beacon that
+  read the clock just before a boundary may claim after it, and if the ended
+  window's row were already gone the claim would recreate it at count 1 and
+  slip past a spent limit.
 - **Cost.** One D1 batch per beacon, plus one upsert for the daily claim once
   the client claim succeeds. A beacon its client cap rejects writes no
   counter row.
@@ -183,10 +187,11 @@ Analytics Engine's 90 days. Logs carry `sessionId`.
   fingerprinting.
 - Data stays inside the Cloudflare account. Retention: Analytics Engine 90
   days; Workers Logs 3–7 days (plan-dependent).
-- The error-beacon limiter persists no IP address — only a keyed hash, deleted
-  about two hours after its clock-hour window opens (see *Volume limiter*). D1
-  Time Travel can still restore a deleted row for up to 30 days, which is why
-  the hash is keyed rather than a plain digest.
+- The error-beacon limiter persists no IP address — only a keyed hash. A row
+  becomes eligible for deletion about two hours after its clock-hour window
+  opens and is deleted by the next beacon claim after that (see *Volume
+  limiter*). D1 Time Travel can still restore a deleted row for up to 30
+  days, which is why the hash is keyed rather than a plain digest.
 
 ## Reference queries
 
