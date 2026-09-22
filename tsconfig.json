@@ -1,17 +1,8 @@
 {
+  // `compilerOptions` are inert for `tsc -b` (no files); the `extends` exists
+  // so Bun picks up the path aliases when running scripts directly.
+  "extends": "./tsconfig.base.json",
   "files": [],
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@shared/*": ["./src/shared/*"],
-      "@worker-routes/*": ["./src/worker/routes/*"],
-      "@worker-middleware/*": ["./src/worker/middleware/*"],
-      "@worker-services/*": ["./src/worker/services/*"],
-      "@worker-utils/*": ["./src/worker/utils/*"],
-      "@worker-graphql/*": ["./src/worker/graphql/*"],
-      "@worker-test-utils/*": ["./src/worker/test-utils/*"]
-    }
-  },
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" },
