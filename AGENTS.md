@@ -155,7 +155,8 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 │       ├── index.ts                # Hono entry, mounts /api/auth/* + /api/graphql
 │       ├── middleware/             # db (Drizzle setup), logger, session (reads x-session-id),
 │       │                          # auth (Better Auth session resolution)
-│       ├── routes/                 # graphql.ts — builds and serves the GraphQL schema
+│       ├── routes/                 # graphql.ts — builds and serves the GraphQL schema,
+│       │                          # errorReporting.ts — POST /api/error client error beacon
 │       ├── graphql/gameplay/       # query resolvers (authQueries.ts, programQueries.ts,
 │       │                          #   sessionQueries.ts), mutations (submitGuessMutation.ts,
 │       │                          #   requestClueMutation.ts, resetSessionMutation.ts,
@@ -165,7 +166,8 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 │       │                          #   activeSession.ts, clueEligibility.ts, guessValidation.ts),
 │       │                          # plus *.integration.spec.ts files (real D1 via cloudflare:test)
 │       ├── services/                # aiService.ts — Workers AI clue generation,
-│       │                           # auth.ts — Better Auth lifecycle (create, get, clear, validate)
+│       │                           # auth.ts — Better Auth lifecycle (create, get, clear, validate),
+│       │                           # errorBeaconLimit.ts — /api/error volume limiter
 │       ├── utils/                   # isGuessCloseEnough.ts, errorHandler.ts
 │       └── test-utils/              # mockEnv.ts (unit-test mocks), setupDb.ts + gqlRequest.ts (integration helpers)
 ├── biome.json
@@ -264,7 +266,7 @@ V8 coverage (`vitest.config.ts`) is unit-test only, since `@cloudflare/vitest-po
 
 ## Database & Migrations
 
-Schema lives in `src/shared/schema.ts` (Drizzle + single source of truth for DB and TS types). Seven tables:
+Schema lives in `src/shared/schema.ts` (Drizzle + single source of truth for DB and TS types). Eight tables:
 
 - `programs` — top-level quiz sets
 - `gates` — riddles within a program, ordered by `sequence_order` (unique per program)
@@ -273,6 +275,7 @@ Schema lives in `src/shared/schema.ts` (Drizzle + single source of truth for DB 
 - `gate_clues` — AI-generated clues, scoped to a `session_progress_id` + `gate_id`, unique per `(session_progress_id, gate_id, attempt_count_at_request)`
 - `clue_rate_limits` — rolling per-session request window; one reservation row per (session, gate, attempt) so concurrent same-attempt requests cannot all reach AI
 - `ai_usage` — global daily AI spend counter, keyed by UTC day (`usage_date` TEXT PK, `request_count`); backs the `AI_DAILY_CLUE_BUDGET` guardrail
+- `error_beacon_limits` — fixed-window counters bounding the public `POST /api/error` beacon: one row per (bucket, window), where `ip:<hmac>` buckets count a client's accepted beacons per clock hour (`ERROR_BEACON_IP_HOURLY_LIMIT`, default 30) and the `global` bucket counts all accepted beacons per UTC day (`ERROR_BEACON_DAILY_BUDGET`, default 1000). Stores a keyed hash of the client IP, never the IP; rows are pruned once their window ends
 
 There is **no** `game_state` table — it was dropped in migration `0009_whole_quasar` along with several now-unused columns on `gates`/`programs` (the game moved from a single shared "solved" state to fully session-scoped progression).
 
