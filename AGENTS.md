@@ -8,7 +8,7 @@ Live deployment: `https://quiz.clevertrevor.dev`
 
 There is a **single, server-authoritative gameplay flow**: a session ID is minted server-side into an HttpOnly cookie (`anon_gameplay_session`, `Path=/api`) by `sessionMiddleware`; gameplay mutations also carry a constant `x-session-id` same-origin tripwire header enforced by `requireSessionHeader`. The server tracks per-session progression (current gate, completed gates, attempt count) in the `session_progress` / `session_completed_gates` tables. All gameplay mutations — `submitGuess`, `requestClue`, `resetSession` — are resolved server-side and validated against that session's row. There is no client-only or REST-based flow.
 
-**User authentication** (Better Auth, OAuth-only: Google + GitHub) is layered on top for content authorship only — gameplay stays anonymous. Auth middleware sets `user` in Hono context; route guards (`requireUser` in `-requireUser.ts`) protect management routes. Two identity systems coexist: the `anon_gameplay_session` cookie for anonymous gameplay, Better Auth session cookie for authorship. Management mutations (`createProgram`, `updateProgram`, `deleteProgram`, `createGate`, `updateGate`, `deleteGate`, `reorderGates`) are auth-guarded via `requireUser`; the six existing-program mutations (all except `createProgram`) re-verify ownership via `authorizeProgramMutation()`, which checks `program.authorId === userId`, while `createProgram` uses `requireUser` + `assertVisibility`.
+**User authentication** (Better Auth, OAuth-only: Google + GitHub) is layered on top for content authorship only — gameplay stays anonymous. Auth middleware sets `user` in Hono context; route guards (`requireUser` in `-requireUser.ts`) protect management routes. Two identity systems coexist: the `anon_gameplay_session` cookie for anonymous gameplay, Better Auth session cookie for authorship. Management mutations (`createProgram`, `updateProgram`, `deleteProgram`, `createGate`, `updateGate`, `deleteGate`, `reorderGates`) are auth-guarded via `requireUser`; the six existing-program mutations (all except `createProgram`) re-verify ownership via `authorizeProgramMutation()`, which checks `program.authorId === userId`, while `createProgram` uses `requireUser` + the shared `createProgramInputSchema`.
 
 ---
 
@@ -147,7 +147,9 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 │   ├── shared/
 │   │   ├── schema.ts          # Drizzle schema — single source of truth for DB + types
 │   │   ├── authSchema.ts      # Better Auth tables (user, account, session, verification)
-│   │   ├── types.ts           # Program, Gate, and related types (inferred from schema)
+│   │   ├── types.ts           # Program, Gate, and related types (inferred from schema),
+│   │   │                     #   plus zod-free domain limits (MAX_CLUES_PER_GATE, MAX_GUESS_LENGTH)
+│   │   ├── validation.ts      # zod/mini input rules shared by resolvers + authoring UI
 │   │   ├── graphqlOperations.ts # Codegen input: hand-written GraphQL operation strings
 │   │   ├── generated/         # graphql-codegen output (typed *Document constants, schema types)
 │   │   └── gqlQueries.ts      # Runtime API: re-exports generated *Document constants
@@ -163,7 +165,7 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 │       │                          #   programMutations.ts, gateMutations.ts,
 │       │                          #   reorderGatesMutation.ts), shared (types.ts,
 │       │                          #   authorizeProgram.ts, managementHelpers.ts,
-│       │                          #   activeSession.ts, clueEligibility.ts, guessValidation.ts),
+│       │                          #   activeSession.ts, clueEligibility.ts),
 │       │                          # plus *.integration.spec.ts files (real D1 via cloudflare:test)
 │       ├── services/                # aiService.ts — Workers AI clue generation,
 │       │                           # auth.ts — Better Auth lifecycle (create, get, clear, validate),
@@ -310,12 +312,20 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - **Authentication**: Better Auth, OAuth-only (Google + GitHub), self-hosted on the same Worker. Mounted at `/api/auth/*`. No passwords in MVP. Auth tables (`user`, `account`, `session`, `verification`) live in `src/shared/authSchema.ts` — separate Drizzle instance, never exposed via GraphQL.
 - **Auth middleware** (`src/worker/middleware/auth.ts`): resolves Better Auth session cookie, sets `user` in Hono context. Parallel to `sessionMiddleware` (anonymous gameplay identity) — two identity systems, decoupled.
 - **Route guard** (`src/react-app/routes/programs/-requireUser.ts`): `requireUser(queryClient, returnTo)` — fetches `me` query, throws TanStack Router `redirect` to `/login?return_to=...` if unauthenticated. Used by `/programs/manage` and `/programs/manage/$programId` routes.
-- **Server-side authorization** (`src/worker/graphql/gameplay/authorizeProgram.ts`): `authorizeProgramMutation(db, programId, userId)` — fetches program, verifies `authorId === userId`, throws on null/mismatch. Used by 6 of 7 management mutations — all except `createProgram`, which has no existing program to authorize and instead uses `requireUser` + `assertVisibility`.
+- **Server-side authorization** (`src/worker/graphql/gameplay/authorizeProgram.ts`): `authorizeProgramMutation(db, programId, userId)` — fetches program, verifies `authorId === userId`, throws on null/mismatch. Used by 6 of 7 management mutations — all except `createProgram`, which has no existing program to authorize and instead uses `requireUser` + the shared `createProgramInputSchema`.
 - **Management mutations** (in `src/worker/graphql/gameplay/programMutations.ts`,
-  `gateMutations.ts`, `reorderGatesMutation.ts`, shared auth/validation helpers in
+  `gateMutations.ts`, `reorderGatesMutation.ts`, shared auth helpers in
   `managementHelpers.ts`): `createProgram`, `updateProgram`, `deleteProgram`,
   `createGate`, `updateGate`, `deleteGate`, `reorderGates`. All auth-guarded,
   input-validated.
+- **Input validation** (`src/shared/validation.ts`): zod schemas are the single
+  definition of every mutation input rule (required text, acceptance/guidance
+  threshold bounds, sequence order, visibility, guess length). Resolvers parse
+  with `parseOrThrow` before touching D1, and the thrown message is the GraphQL
+  error. The authoring UI uses the same schemas to clamp inputs and disable Save
+  while a draft is invalid, so client and server agree on what is valid. The
+  gameplay UI imports only zod-free limits from `types.ts`, keeping zod out of
+  the gameplay bundle.
 - **Program visibility**: `public` (listed for everyone) or `unlisted` (not listed, playable by direct link). Managed via `visibility` column on `programs` table. Copy-link affordance in management UI.
 - **`program(id)` query**: returns a program by ID without auth check — unlisted programs are playable via direct link (security-through-obscurity, same model as unlisted YouTube videos). No ACL; add one via backlogged join table if needed later.
 - **Login redirect safety** (`src/react-app/routes/login.tsx`): `validateReturnTo()` parses URL, rejects cross-origin, protocol-relative, and backslash-based variants. `isAllowedPath()` checks against allowlist. Falls back to `/programs/select` on invalid input.
@@ -351,6 +361,7 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - Do not weaken `authorizeProgramMutation()` — every management mutation operating on an existing program/gate must re-verify `authorId` server-side (all except `createProgram`), never trust client-supplied program/gate IDs without ownership check
 - Do not introduce REST endpoints for authoring — management mutations are GraphQL only, same as gameplay
 - Do not allow open redirects in `/login` — `validateReturnTo()` must reject cross-origin, protocol-relative, and backslash-based return_to values
+- Do not hand-roll input validation in resolvers or authoring forms — add or reuse a schema in `src/shared/validation.ts` so the client and server share one rule
 - Do not define GraphQL query/mutation strings inline in frontend files — hand-written operation strings belong in `src/shared/graphqlOperations.ts` (codegen input), and hooks/api files and integration tests import the typed documents via `src/shared/gqlQueries.ts`.
 - Do not use inline `style={}` props on React elements — all styling must go in a co-located `ComponentName.module.css` file with CSS Module class names. Applies to all new components and any changes to existing component markup. Primitives shared across components are the one exception to co-location: they live in `base.module.css` / `select.module.css` and are pulled in with `composes:` (see CONVENTIONS.md).
 - Do not write refactor or feature plans into `docs/` — the plan for in-flight work belongs in its GitHub issue, where it closes itself against the PRs. `docs/` is for decisions and reference material that outlive the work (see `docs/file-length-refactor.md`, kept as a record of a completed effort).

@@ -34,7 +34,7 @@
 
 - Hono for all API routes. Keep route handlers thin — business logic belongs in service/resolver functions.
 - GraphQL is the only gameplay API. Do not add REST endpoints for gameplay.
-- Validate all inputs at the Hono/resolver layer before touching D1.
+- Validate all inputs at the Hono/resolver layer before touching D1. GraphQL mutation inputs are parsed with the shared zod schemas in `src/shared/validation.ts` (`parseOrThrow`); authoring forms reuse the same schemas for client-side feedback rather than re-implementing the rule.
 - Any resolver that mutates session-scoped state must re-check that the request's session owns the row it's mutating (see `submitGuess`'s `currentGateId` check) before applying the change.
 
 ## Auth & Authoring
