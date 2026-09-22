@@ -1,4 +1,4 @@
-import type { Ai, AiTextGenerationOutput } from "@cloudflare/workers-types";
+import type { Ai } from "@cloudflare/workers-types";
 import { MAX_CLUES_PER_GATE } from "@shared/types";
 import { sanitizeGuessForPrompt } from "@worker-utils/sanitizeGuessForPrompt";
 import type { Context } from "hono";
@@ -31,12 +31,34 @@ You are a helpful hint-giver for a text-based riddle game.
 `.trim();
 
 /**
+ * Structured output (#273): the model is asked for a `{ clue: string }`
+ * object rather than free text, so the clue arrives in a parseable envelope
+ * with no preamble or wrapping quotes to scrape off. Workers AI documents
+ * JSON mode as best-effort — a model may still answer in plain text — so
+ * `extractClueText` keeps plain text working as a fallback.
+ */
+export const CLUE_RESPONSE_FORMAT = {
+  type: "json_schema",
+  json_schema: {
+    type: "object",
+    properties: { clue: { type: "string" } },
+    required: ["clue"],
+  },
+} as const;
+
+/**
  * Result of a clue generation attempt. Reasons are surfaced in the
  * `clue_requested` analytics event (see docs/analytics.md).
  */
 export type ClueResult = {
   clueText: string | null;
-  reason: "success" | "no_binding" | "empty" | "answer_leak" | "error";
+  reason:
+    | "success"
+    | "no_binding"
+    | "empty"
+    | "malformed"
+    | "answer_leak"
+    | "error";
   latencyMs: number;
 };
 
@@ -84,10 +106,49 @@ ${previousClues.map((clue, i) => `${i + 1}. "${clue}"`).join("\n")}`;
   ];
 }
 
+type ExtractedClue =
+  | { kind: "clue"; text: string }
+  | { kind: "empty" }
+  | { kind: "malformed" };
+
+function clueFromEnvelope(envelope: unknown): ExtractedClue {
+  if (typeof envelope !== "object" || envelope === null) {
+    return { kind: "malformed" };
+  }
+  const { clue } = envelope as { clue?: unknown };
+  if (typeof clue !== "string") return { kind: "malformed" };
+  const text = clue.trim();
+  return text ? { kind: "clue", text } : { kind: "empty" };
+}
+
+/**
+ * Pulls the clue out of the model's `response` field. JSON mode hands back
+ * an already-parsed `{ clue }` object; a response that is still a JSON
+ * string is parsed first. A response that starts like JSON but isn't a
+ * `{ clue: string }` object is malformed — never shown to a player as a
+ * clue. Any other string is a model that answered in plain text despite
+ * the schema, and is used as the clue (the pre-structured-output path).
+ */
+export function extractClueText(response: unknown): ExtractedClue {
+  if (typeof response === "string") {
+    const text = response.trim();
+    if (!text) return { kind: "empty" };
+    if (!text.startsWith("{")) return { kind: "clue", text };
+    try {
+      return clueFromEnvelope(JSON.parse(text));
+    } catch {
+      return { kind: "malformed" };
+    }
+  }
+  if (response === undefined || response === null) return { kind: "empty" };
+  return clueFromEnvelope(response);
+}
+
 /**
  * Generates a clue with the given Workers AI binding. Split from
- * `generateClue` so tooling outside a request can run exactly the
- * production prompt, request options, parsing, and leak filter.
+ * `generateClue` so tooling outside a request (the real-model eval harness,
+ * scripts/eval-clues.ts) runs exactly the production prompt, request
+ * options, parsing, and leak filter.
  */
 export async function generateClueWithAi(
   ai: Ai,
@@ -107,18 +168,25 @@ export async function generateClueWithAi(
         currentGuess,
         previousClues,
       ),
+      response_format: CLUE_RESPONSE_FORMAT,
       // Ensure the AI doesn't get too creative and sticks to the point.
       temperature: 0.7,
       max_tokens: 100, // Limit AI response to encourage conciseness
-    })) as AiTextGenerationOutput;
+    })) as { response?: unknown };
 
-    // Extract the AI's response content.
-    const clueText = output.response?.trim();
+    const extracted = extractClueText(output.response);
 
-    if (!clueText) {
+    if (extracted.kind === "empty") {
       console.warn("AI returned an empty response for clue generation.");
       return { clueText: null, reason: "empty", latencyMs: elapsed() };
     }
+
+    if (extracted.kind === "malformed") {
+      console.warn("AI returned a clue envelope without a string clue.");
+      return { clueText: null, reason: "malformed", latencyMs: elapsed() };
+    }
+
+    const clueText = extracted.text;
 
     // Basic check to ensure the AI didn't directly reveal the answer.
     // This is a safeguard, as the system prompt should ideally prevent it.
