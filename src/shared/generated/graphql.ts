@@ -963,6 +963,244 @@ export type CompletedGate = {
   successMessage: Scalars['String']['output'];
 };
 
+export type ErrorBeaconLimitsBucketKeyFilters = {
+  OR?: InputMaybe<Array<ErrorBeaconLimitsBucketKeyfiltersOr>>;
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<undefined> */
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<undefined> */
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type ErrorBeaconLimitsBucketKeyfiltersOr = {
+  eq?: InputMaybe<Scalars['String']['input']>;
+  gt?: InputMaybe<Scalars['String']['input']>;
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<undefined> */
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['String']['input']>;
+  lte?: InputMaybe<Scalars['String']['input']>;
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<undefined> */
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type ErrorBeaconLimitsExpiresAtFilters = {
+  OR?: InputMaybe<Array<ErrorBeaconLimitsExpiresAtfiltersOr>>;
+  /** Date */
+  eq?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  gt?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<Date> */
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  lt?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  lte?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<Date> */
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type ErrorBeaconLimitsExpiresAtfiltersOr = {
+  /** Date */
+  eq?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  gt?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<Date> */
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  lt?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  lte?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<Date> */
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type ErrorBeaconLimitsFilters = {
+  OR?: InputMaybe<Array<ErrorBeaconLimitsFiltersOr>>;
+  bucketKey?: InputMaybe<ErrorBeaconLimitsBucketKeyFilters>;
+  expiresAt?: InputMaybe<ErrorBeaconLimitsExpiresAtFilters>;
+  requestCount?: InputMaybe<ErrorBeaconLimitsRequestCountFilters>;
+  windowStart?: InputMaybe<ErrorBeaconLimitsWindowStartFilters>;
+};
+
+export type ErrorBeaconLimitsFiltersOr = {
+  bucketKey?: InputMaybe<ErrorBeaconLimitsBucketKeyFilters>;
+  expiresAt?: InputMaybe<ErrorBeaconLimitsExpiresAtFilters>;
+  requestCount?: InputMaybe<ErrorBeaconLimitsRequestCountFilters>;
+  windowStart?: InputMaybe<ErrorBeaconLimitsWindowStartFilters>;
+};
+
+export type ErrorBeaconLimitsInsertInput = {
+  bucketKey: Scalars['String']['input'];
+  /** Date */
+  expiresAt: Scalars['String']['input'];
+  requestCount?: InputMaybe<Scalars['Int']['input']>;
+  /** Date */
+  windowStart: Scalars['String']['input'];
+};
+
+export type ErrorBeaconLimitsItem = {
+  bucketKey: Scalars['String']['output'];
+  /** Date */
+  expiresAt: Scalars['String']['output'];
+  requestCount: Scalars['Int']['output'];
+  /** Date */
+  windowStart: Scalars['String']['output'];
+};
+
+export type ErrorBeaconLimitsOrderBy = {
+  bucketKey?: InputMaybe<InnerOrder>;
+  expiresAt?: InputMaybe<InnerOrder>;
+  requestCount?: InputMaybe<InnerOrder>;
+  windowStart?: InputMaybe<InnerOrder>;
+};
+
+export type ErrorBeaconLimitsRequestCountFilters = {
+  OR?: InputMaybe<Array<ErrorBeaconLimitsRequestCountfiltersOr>>;
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<undefined> */
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<undefined> */
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type ErrorBeaconLimitsRequestCountfiltersOr = {
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<undefined> */
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<undefined> */
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type ErrorBeaconLimitsSelectItem = {
+  bucketKey: Scalars['String']['output'];
+  /** Date */
+  expiresAt: Scalars['String']['output'];
+  requestCount: Scalars['Int']['output'];
+  /** Date */
+  windowStart: Scalars['String']['output'];
+};
+
+export type ErrorBeaconLimitsUpdateInput = {
+  bucketKey?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  expiresAt?: InputMaybe<Scalars['String']['input']>;
+  requestCount?: InputMaybe<Scalars['Int']['input']>;
+  /** Date */
+  windowStart?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type ErrorBeaconLimitsWindowStartFilters = {
+  OR?: InputMaybe<Array<ErrorBeaconLimitsWindowStartfiltersOr>>;
+  /** Date */
+  eq?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  gt?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<Date> */
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  lt?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  lte?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<Date> */
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type ErrorBeaconLimitsWindowStartfiltersOr = {
+  /** Date */
+  eq?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  gt?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<Date> */
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  lt?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  lte?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<Date> */
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type GateCluesAttemptCountAtRequestFilters = {
   OR?: InputMaybe<Array<GateCluesAttemptCountAtRequestfiltersOr>>;
   eq?: InputMaybe<Scalars['Int']['input']>;

@@ -31,6 +31,11 @@ export type Env = {
     // is 10,000 neurons/day, ~200 llama-class calls). Defaults in code when
     // unset. Global across all programs/sessions.
     AI_DAILY_CLUE_BUDGET?: string;
+    // Optional caps on the public POST /api/error beacon: accepted beacons
+    // per client IP per clock hour, and across all clients per UTC day.
+    // Defaults in code when unset (see services/errorBeaconLimit.ts).
+    ERROR_BEACON_IP_HOURLY_LIMIT?: string;
+    ERROR_BEACON_DAILY_BUDGET?: string;
   };
 };
 

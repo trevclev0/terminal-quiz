@@ -3,6 +3,7 @@ import {
   check,
   index,
   integer,
+  primaryKey,
   real,
   sqliteTable,
   text,
@@ -185,6 +186,28 @@ export const aiUsage = sqliteTable("ai_usage", {
   usageDate: text("usage_date").primaryKey(),
   requestCount: integer("request_count").notNull().default(0),
 });
+
+// Fixed-window counters bounding Analytics Engine writes from the public
+// POST /api/error beacon (#254). One row per (bucket, window): `ip:<hmac>`
+// buckets count one client's beacons per clock hour, the `global` bucket
+// counts every accepted beacon per UTC day. request_count only ever counts
+// accepted beacons — a rejected claim leaves the row untouched. Rows are
+// transient: each carries its window's end in expires_at and is pruned once
+// that passes, so no client identifier outlives its window.
+export const errorBeaconLimits = sqliteTable(
+  "error_beacon_limits",
+  {
+    bucketKey: text("bucket_key").notNull(),
+    windowStart: integer("window_start", { mode: "timestamp_ms" }).notNull(),
+    requestCount: integer("request_count").notNull().default(0),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.bucketKey, t.windowStart] }),
+    // Serves the expiry prune (WHERE expires_at <= now)
+    index("error_beacon_limits_expires_at_idx").on(t.expiresAt),
+  ],
+);
 
 export const programsRelations = relations(programs, ({ many }) => ({
   gates: many(gates),
