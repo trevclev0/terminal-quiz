@@ -121,17 +121,23 @@ function clueFromEnvelope(envelope: unknown): ExtractedClue {
   return text ? { kind: "clue", text } : { kind: "empty" };
 }
 
+// A model that ignores the schema often wraps its answer — JSON or not — in
+// a markdown code fence (```json … ```). Group 1 is the fenced body.
+const CODE_FENCE = /^```[a-z]*\s*([\s\S]*?)\s*```$/i;
+
 /**
  * Pulls the clue out of the model's `response` field. JSON mode hands back
  * an already-parsed `{ clue }` object; a response that is still a JSON
- * string is parsed first. A response that starts like JSON but isn't a
- * `{ clue: string }` object is malformed — never shown to a player as a
- * clue. Any other string is a model that answered in plain text despite
- * the schema, and is used as the clue (the pre-structured-output path).
+ * string is parsed first, after unwrapping any markdown code fence. A
+ * response that starts like JSON but isn't a `{ clue: string }` object is
+ * malformed — never shown to a player as a clue. Any other string is a
+ * model that answered in plain text despite the schema, and is used as the
+ * clue (the pre-structured-output path).
  */
 export function extractClueText(response: unknown): ExtractedClue {
   if (typeof response === "string") {
-    const text = response.trim();
+    const trimmed = response.trim();
+    const text = (CODE_FENCE.exec(trimmed)?.[1] ?? trimmed).trim();
     if (!text) return { kind: "empty" };
     if (!text.startsWith("{")) return { kind: "clue", text };
     try {

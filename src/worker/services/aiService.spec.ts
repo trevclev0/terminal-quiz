@@ -264,6 +264,26 @@ describe("extractClueText", () => {
     });
   });
 
+  it("unwraps a markdown code fence around the envelope", () => {
+    for (const response of [
+      '```json\n{"clue":"hint"}\n```',
+      '```\n{"clue": "hint"}\n```',
+      '```json {"clue":"hint"} ```',
+    ]) {
+      expect(extractClueText(response)).toEqual({ kind: "clue", text: "hint" });
+    }
+  });
+
+  it("unwraps a fenced plain-text clue and rejects fenced broken JSON", () => {
+    expect(extractClueText("```\nplain hint\n```")).toEqual({
+      kind: "clue",
+      text: "plain hint",
+    });
+    expect(extractClueText('```json\n{"clue": "cut off\n```')).toEqual({
+      kind: "malformed",
+    });
+  });
+
   it("falls back to plain text when the model ignores the schema", () => {
     expect(extractClueText("  plain hint ")).toEqual({
       kind: "clue",
