@@ -1,7 +1,7 @@
 {
   "name": "terminal-quiz",
   "private": true,
-  "version": "2.90.1",
+  "version": "2.92.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,6 +17,7 @@
     "test:e2e": "bun run seed:e2e:local && playwright test",
     "schema:generate": "bun run scripts/dump-schema.ts",
     "gql:generate": "graphql-codegen --config codegen.yml",
+    "eval:clues": "bun run scripts/eval-clues.ts",
     "seed:generate": "bun run scripts/seed.ts && bun run scripts/seed-e2e.ts",
     "seed:e2e:local": "bun run seed:generate && wrangler d1 execute terminal-quest --local --file=scripts/generated/seed-e2e.sql",
     "seed:e2e:preview": "bun run seed:generate && wrangler d1 execute terminal-quest-preview --remote --env preview --file=scripts/generated/seed-e2e.sql",
@@ -84,7 +85,6 @@
   },
   "dependencies": {
     "@hono/graphql-server": "^0.7.0",
-    "@hono/zod-validator": "^0.9.1",
     "@tanstack/react-query": "^5.103.1",
     "@tanstack/react-router": "^1.170.38",
     "@tanstack/react-router-devtools": "^1.167.2",

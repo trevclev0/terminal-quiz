@@ -450,6 +450,28 @@ type ClueRateLimitsItem {
   requestedAt: String!
 }
 
+type ErrorBeaconLimitsSelectItem {
+  bucketKey: String!
+
+  """Date"""
+  windowStart: String!
+  requestCount: Int!
+
+  """Date"""
+  expiresAt: String!
+}
+
+type ErrorBeaconLimitsItem {
+  bucketKey: String!
+
+  """Date"""
+  windowStart: String!
+  requestCount: Int!
+
+  """Date"""
+  expiresAt: String!
+}
+
 type GateCluesSelectItem {
   id: String!
   sessionProgressId: String!
@@ -2636,6 +2658,266 @@ input ClueRateLimitsOrderBy {
   gateId: InnerOrder
   attemptCountAtRequest: InnerOrder
   requestedAt: InnerOrder
+}
+
+input ErrorBeaconLimitsInsertInput {
+  bucketKey: String!
+
+  """Date"""
+  windowStart: String!
+  requestCount: Int
+
+  """Date"""
+  expiresAt: String!
+}
+
+input ErrorBeaconLimitsUpdateInput {
+  bucketKey: String
+
+  """Date"""
+  windowStart: String
+  requestCount: Int
+
+  """Date"""
+  expiresAt: String
+}
+
+input ErrorBeaconLimitsFilters {
+  bucketKey: ErrorBeaconLimitsBucketKeyFilters
+  windowStart: ErrorBeaconLimitsWindowStartFilters
+  requestCount: ErrorBeaconLimitsRequestCountFilters
+  expiresAt: ErrorBeaconLimitsExpiresAtFilters
+  OR: [ErrorBeaconLimitsFiltersOr!]
+}
+
+input ErrorBeaconLimitsBucketKeyFilters {
+  eq: String
+  ne: String
+  lt: String
+  lte: String
+  gt: String
+  gte: String
+  like: String
+  notLike: String
+  ilike: String
+  notIlike: String
+
+  """Array<undefined>"""
+  inArray: [String!]
+
+  """Array<undefined>"""
+  notInArray: [String!]
+  isNull: Boolean
+  isNotNull: Boolean
+  OR: [ErrorBeaconLimitsBucketKeyfiltersOr!]
+}
+
+input ErrorBeaconLimitsBucketKeyfiltersOr {
+  eq: String
+  ne: String
+  lt: String
+  lte: String
+  gt: String
+  gte: String
+  like: String
+  notLike: String
+  ilike: String
+  notIlike: String
+
+  """Array<undefined>"""
+  inArray: [String!]
+
+  """Array<undefined>"""
+  notInArray: [String!]
+  isNull: Boolean
+  isNotNull: Boolean
+}
+
+input ErrorBeaconLimitsWindowStartFilters {
+  """Date"""
+  eq: String
+
+  """Date"""
+  ne: String
+
+  """Date"""
+  lt: String
+
+  """Date"""
+  lte: String
+
+  """Date"""
+  gt: String
+
+  """Date"""
+  gte: String
+  like: String
+  notLike: String
+  ilike: String
+  notIlike: String
+
+  """Array<Date>"""
+  inArray: [String!]
+
+  """Array<Date>"""
+  notInArray: [String!]
+  isNull: Boolean
+  isNotNull: Boolean
+  OR: [ErrorBeaconLimitsWindowStartfiltersOr!]
+}
+
+input ErrorBeaconLimitsWindowStartfiltersOr {
+  """Date"""
+  eq: String
+
+  """Date"""
+  ne: String
+
+  """Date"""
+  lt: String
+
+  """Date"""
+  lte: String
+
+  """Date"""
+  gt: String
+
+  """Date"""
+  gte: String
+  like: String
+  notLike: String
+  ilike: String
+  notIlike: String
+
+  """Array<Date>"""
+  inArray: [String!]
+
+  """Array<Date>"""
+  notInArray: [String!]
+  isNull: Boolean
+  isNotNull: Boolean
+}
+
+input ErrorBeaconLimitsRequestCountFilters {
+  eq: Int
+  ne: Int
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  like: String
+  notLike: String
+  ilike: String
+  notIlike: String
+
+  """Array<undefined>"""
+  inArray: [Int!]
+
+  """Array<undefined>"""
+  notInArray: [Int!]
+  isNull: Boolean
+  isNotNull: Boolean
+  OR: [ErrorBeaconLimitsRequestCountfiltersOr!]
+}
+
+input ErrorBeaconLimitsRequestCountfiltersOr {
+  eq: Int
+  ne: Int
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  like: String
+  notLike: String
+  ilike: String
+  notIlike: String
+
+  """Array<undefined>"""
+  inArray: [Int!]
+
+  """Array<undefined>"""
+  notInArray: [Int!]
+  isNull: Boolean
+  isNotNull: Boolean
+}
+
+input ErrorBeaconLimitsExpiresAtFilters {
+  """Date"""
+  eq: String
+
+  """Date"""
+  ne: String
+
+  """Date"""
+  lt: String
+
+  """Date"""
+  lte: String
+
+  """Date"""
+  gt: String
+
+  """Date"""
+  gte: String
+  like: String
+  notLike: String
+  ilike: String
+  notIlike: String
+
+  """Array<Date>"""
+  inArray: [String!]
+
+  """Array<Date>"""
+  notInArray: [String!]
+  isNull: Boolean
+  isNotNull: Boolean
+  OR: [ErrorBeaconLimitsExpiresAtfiltersOr!]
+}
+
+input ErrorBeaconLimitsExpiresAtfiltersOr {
+  """Date"""
+  eq: String
+
+  """Date"""
+  ne: String
+
+  """Date"""
+  lt: String
+
+  """Date"""
+  lte: String
+
+  """Date"""
+  gt: String
+
+  """Date"""
+  gte: String
+  like: String
+  notLike: String
+  ilike: String
+  notIlike: String
+
+  """Array<Date>"""
+  inArray: [String!]
+
+  """Array<Date>"""
+  notInArray: [String!]
+  isNull: Boolean
+  isNotNull: Boolean
+}
+
+input ErrorBeaconLimitsFiltersOr {
+  bucketKey: ErrorBeaconLimitsBucketKeyFilters
+  windowStart: ErrorBeaconLimitsWindowStartFilters
+  requestCount: ErrorBeaconLimitsRequestCountFilters
+  expiresAt: ErrorBeaconLimitsExpiresAtFilters
+}
+
+input ErrorBeaconLimitsOrderBy {
+  bucketKey: InnerOrder
+  windowStart: InnerOrder
+  requestCount: InnerOrder
+  expiresAt: InnerOrder
 }
 
 input GateCluesInsertInput {

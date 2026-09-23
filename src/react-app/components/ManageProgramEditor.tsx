@@ -9,6 +9,7 @@ import { useGateDrafts } from "@hooks/useGateDrafts";
 import { useGateErrorState } from "@hooks/useGateErrorState";
 import { useNewGateForm } from "@hooks/useNewGateForm";
 import { useProgramSettings } from "@hooks/useProgramSettings";
+import { gateTextSchema } from "@shared/validation";
 import { type SubmitEvent, useState } from "react";
 import AddGateForm from "./AddGateForm";
 import ConfirmDialog from "./ConfirmDialog";
@@ -103,17 +104,11 @@ export default function ManageProgramEditor({
 
   const handleAddGate = (e: SubmitEvent) => {
     e.preventDefault();
-    if (!newGate.label.trim()) return;
+    const text = gateTextSchema.safeParse(newGate);
+    if (!text.success) return;
     const maxOrder = Math.max(0, ...(gates?.map((g) => g.sequenceOrder) ?? []));
     createGate.mutate(
-      {
-        programId,
-        label: newGate.label.trim(),
-        question: newGate.question.trim(),
-        correctAnswer: newGate.correctAnswer.trim(),
-        successMessage: newGate.successMessage.trim(),
-        sequenceOrder: maxOrder + 1,
-      },
+      { programId, ...text.data, sequenceOrder: maxOrder + 1 },
       { onSuccess: resetNewGate },
     );
   };

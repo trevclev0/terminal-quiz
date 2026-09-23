@@ -102,6 +102,9 @@ export default defineConfig({
         "src/worker/routes/graphql.ts",
         "src/worker/routes/schema.ts",
         "scripts/dump-schema.ts",
+        // Manual real-model harness; never run by tests (each case is a
+        // billed Workers AI call — see docs/clue-prompt-eval.md).
+        "scripts/eval-clues.ts",
         "**/test-utils/**",
       ],
       reporter: ["text", "json-summary", "json"],

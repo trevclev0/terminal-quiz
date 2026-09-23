@@ -1,4 +1,5 @@
 import { gates, sessionCompletedGates, sessionProgress } from "@shared/schema";
+import { guessSchema, parseOrThrow } from "@shared/validation";
 import isGuessCloseEnough from "@worker-utils/isGuessCloseEnough";
 import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { GraphQLNonNull, GraphQLString } from "graphql";
@@ -8,7 +9,6 @@ import {
   computeCanRequestClue,
   getExistingCluesForGate,
 } from "./clueEligibility";
-import { MAX_GUESS_LENGTH } from "./guessValidation";
 import { type AppGraphQLContext, SubmitGuessPayloadType } from "./types";
 
 // The terminal's own response line, not authored content. The gate's
@@ -30,12 +30,10 @@ export const submitGuess = {
     args: { programId: string; gateId: string; guess: string },
     context: AppGraphQLContext,
   ) => {
-    if (
-      args.guess.trim().length === 0 ||
-      args.guess.length > MAX_GUESS_LENGTH
-    ) {
-      throw new Error("Invalid guess length.");
-    }
+    const guess = parseOrThrow(
+      guessSchema("Invalid guess length."),
+      args.guess,
+    );
 
     const db = context.get("db");
     const sessionId = context.get("sessionId");
@@ -55,7 +53,7 @@ export const submitGuess = {
 
     if (
       !isGuessCloseEnough(
-        args.guess,
+        guess,
         activeGate.correctAnswer,
         activeGate.acceptanceThreshold,
       )

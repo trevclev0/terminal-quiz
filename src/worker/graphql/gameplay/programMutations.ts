@@ -1,12 +1,13 @@
 import { programs } from "@shared/schema";
+import {
+  createProgramInputSchema,
+  parseOrThrow,
+  updateProgramInputSchema,
+} from "@shared/validation";
 import { eq } from "drizzle-orm";
 import { GraphQLBoolean, GraphQLNonNull, GraphQLString } from "graphql";
 import { authorizeProgramMutation } from "./authorizeProgram";
-import {
-  assertRequiredText,
-  assertVisibility,
-  requireUser,
-} from "./managementHelpers";
+import { definedFields, requireUser } from "./managementHelpers";
 import { type AppGraphQLContext, ProgramManagementType } from "./types";
 
 export const createProgram = {
@@ -21,9 +22,11 @@ export const createProgram = {
     context: AppGraphQLContext,
   ) => {
     const userId = requireUser(context.get("user"));
-    const visibility = args.visibility ?? "public";
-    assertVisibility(visibility);
-    const name = assertRequiredText(args.name, "name");
+    const { name, visibility } = parseOrThrow(createProgramInputSchema, {
+      name: args.name,
+      // An explicit GraphQL null means "default", same as omitting it.
+      visibility: args.visibility ?? undefined,
+    });
 
     const db = context.get("db");
     const [result] = await db
@@ -48,27 +51,21 @@ export const updateProgram = {
     context: AppGraphQLContext,
   ) => {
     const userId = requireUser(context.get("user"));
-    const db = context.get("db");
-
-    await authorizeProgramMutation(db, args.id, userId);
-
-    const updateData: Partial<typeof programs.$inferInsert> = {};
-    if (args.name !== undefined) {
-      updateData.name = assertRequiredText(args.name, "name");
-    }
-    if (args.visibility !== undefined) {
-      assertVisibility(args.visibility);
-      updateData.visibility = args.visibility;
-    }
-
+    const { id, ...fields } = args;
+    const updateData = definedFields(
+      parseOrThrow(updateProgramInputSchema, fields),
+    );
     if (Object.keys(updateData).length === 0) {
       throw new Error("No fields to update.");
     }
 
+    const db = context.get("db");
+    await authorizeProgramMutation(db, id, userId);
+
     const [result] = await db
       .update(programs)
       .set(updateData)
-      .where(eq(programs.id, args.id))
+      .where(eq(programs.id, id))
       .returning();
 
     return result;

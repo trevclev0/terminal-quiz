@@ -1,3 +1,12 @@
+import {
+  clampAcceptanceThreshold,
+  clampGuidanceThreshold,
+  gateFieldsSchema,
+  MAX_ACCEPTANCE_THRESHOLD,
+  MAX_GUIDANCE_THRESHOLD,
+  MIN_ACCEPTANCE_THRESHOLD,
+  MIN_GUIDANCE_THRESHOLD,
+} from "@shared/validation";
 import FormField from "./FormField";
 import styles from "./GateEditorCard.module.css";
 import MutationError from "./MutationError";
@@ -20,13 +29,6 @@ type GateEditorCardProps = {
   deleteError?: string | null;
 };
 
-const REQUIRED_FIELDS: Array<{ key: keyof GateForm; label: string }> = [
-  { key: "label", label: "Label" },
-  { key: "question", label: "Question" },
-  { key: "correctAnswer", label: "Correct Answer" },
-  { key: "successMessage", label: "Success Message" },
-];
-
 export default function GateEditorCard({
   gate,
   draft,
@@ -43,8 +45,11 @@ export default function GateEditorCard({
   updateError,
   deleteError,
 }: GateEditorCardProps) {
-  const isMissingRequired = REQUIRED_FIELDS.some(
-    (field) => String(draft[field.key]).trim() === "",
+  // The same schema updateGate parses with, so Save is enabled exactly when
+  // the server would accept the draft.
+  const validation = gateFieldsSchema.safeParse(draft);
+  const invalidFields = new Set(
+    validation.success ? [] : validation.error.issues.map((i) => i.path[0]),
   );
 
   const acceptancePercent = `${(draft.acceptanceThreshold * 100)
@@ -84,7 +89,7 @@ export default function GateEditorCard({
             onChange={(e) => onDraftChange({ label: e.target.value })}
             className={styles.input}
             required
-            aria-invalid={draft.label.trim() === ""}
+            aria-invalid={invalidFields.has("label")}
           />
         </FormField>
         <FormField label="Question" required>
@@ -94,7 +99,7 @@ export default function GateEditorCard({
             className={styles.textarea}
             rows={3}
             required
-            aria-invalid={draft.question.trim() === ""}
+            aria-invalid={invalidFields.has("question")}
           />
         </FormField>
         <FormField label="Correct Answer" required>
@@ -104,7 +109,7 @@ export default function GateEditorCard({
             onChange={(e) => onDraftChange({ correctAnswer: e.target.value })}
             className={styles.input}
             required
-            aria-invalid={draft.correctAnswer.trim() === ""}
+            aria-invalid={invalidFields.has("correctAnswer")}
           />
         </FormField>
         <FormField label="Success Message" required>
@@ -114,7 +119,7 @@ export default function GateEditorCard({
             className={styles.textarea}
             rows={2}
             required
-            aria-invalid={draft.successMessage.trim() === ""}
+            aria-invalid={invalidFields.has("successMessage")}
           />
         </FormField>
       </div>
@@ -128,14 +133,14 @@ export default function GateEditorCard({
             <input
               type="number"
               step="0.001"
-              min="0"
-              max="1"
+              min={MIN_ACCEPTANCE_THRESHOLD}
+              max={MAX_ACCEPTANCE_THRESHOLD}
               value={draft.acceptanceThreshold}
               onChange={(e) => {
                 const value = e.target.valueAsNumber;
                 if (Number.isNaN(value)) return;
                 onDraftChange({
-                  acceptanceThreshold: Math.min(1, Math.max(0, value)),
+                  acceptanceThreshold: clampAcceptanceThreshold(value),
                 });
               }}
               className={styles.inputSmall}
@@ -156,17 +161,15 @@ export default function GateEditorCard({
           <FormField label="Guidance Threshold">
             <input
               type="number"
-              min="1"
-              max="3"
+              min={MIN_GUIDANCE_THRESHOLD}
+              max={MAX_GUIDANCE_THRESHOLD}
               step="1"
               value={draft.guidanceThreshold}
               onChange={(e) => {
                 const value = e.target.valueAsNumber;
                 if (Number.isNaN(value)) return;
                 onDraftChange({
-                  guidanceThreshold: Math.round(
-                    Math.min(3, Math.max(1, value)),
-                  ),
+                  guidanceThreshold: clampGuidanceThreshold(value),
                 });
               }}
               className={styles.inputSmall}
@@ -183,7 +186,7 @@ export default function GateEditorCard({
         <button
           type="button"
           onClick={() => onSave(gate.id)}
-          disabled={savingGateId !== null || isMissingRequired}
+          disabled={savingGateId !== null || !validation.success}
           className={styles.button}
         >
           {savingGateId === gate.id ? "Saving..." : "Save Gate"}

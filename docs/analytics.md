@@ -64,7 +64,7 @@ high-cardinality; use it as a drill-down field, not a grouping dimension.
 | `gate_attempt`     | `submitGuess`, incorrect path      | `incorrect`                                                 |
 | `gate_completed`   | `submitGuess`, correct path        | `correct`                                                   |
 | `program_completed`| `submitGuess`, correct path with status `completed` | `complete`                                      |
-| `clue_requested`   | `requestClue`                      | `not_eligible` \| `budget_exhausted` \| `rate_limited` \| `success` \| `duplicate` \| `ai_failed:{no_binding\|empty\|answer_leak\|error}` |
+| `clue_requested`   | `requestClue`                      | `not_eligible` \| `budget_exhausted` \| `rate_limited` \| `success` \| `duplicate` \| `ai_failed:{no_binding\|empty\|malformed\|answer_leak\|error}` |
 | `session_reset`    | `resetSession`, only when a session row actually exists | `reset` |
 | `client_error`     | `POST /api/error` beacon           | `boundary` \| `route` \| `boot`                             |
 
@@ -88,10 +88,55 @@ absent, so a first-visit pre-boot beacon is attributed in one round trip. The
 client sends a `Blob` typed `application/json`; the route parses it as JSON.
 
 The route validates the JSON body (size + schema) and caps field lengths
-server-side, writing a `client_error` data point via `trackEvent`,
-returning `{ ok: true }`. Client-side throttling is not an abuse control — a
-direct caller is not throttled; there is no server-side volume limiter yet. No
+server-side, claims a slot from the volume limiter below, then writes a
+`client_error` data point via `trackEvent` and returns `{ ok: true }`. No
 queueing, no retries.
+
+### Volume limiter
+
+The route is public and unauthenticated by necessity, so the server bounds
+how many data points it can write (`src/worker/services/errorBeaconLimit.ts`,
+table `error_beacon_limits`). Client-side throttling is a courtesy, not an
+abuse control — a direct caller ignores it.
+
+- **Keyed on the client IP, not the session.** The route mints a fresh
+  session cookie for every cookie-less request, so a per-session cap would
+  hand a flood a new budget on every request. `CF-Connecting-IP` is bucketed
+  whole for IPv4 and by /64 prefix for IPv6 (one subscriber routinely holds
+  an entire /64).
+- **Two fixed-window caps**, both env-configurable:
+  - per client per clock hour — `ERROR_BEACON_IP_HOURLY_LIMIT`, default 30;
+  - across all clients per UTC day — `ERROR_BEACON_DAILY_BUDGET`, default
+    1000. While D1 is reachable this is the ceiling on the route's daily
+    Analytics Engine writes, however many clients take part. It is not
+    absolute: during a D1 outage the limiter fails open (below), and beacons
+    accepted then are not counted.
+- **Atomic claims.** Each cap is a single upsert that increments only while
+  the bucket is under its limit and returns a row only when it did, so
+  concurrent beacons cannot overshoot. The daily claim runs only after the
+  client claim succeeds, so a client over its own limit cannot drain the
+  shared budget and starve everyone else's reports.
+- **Over limit:** `429 { ok: false }` with `Retry-After` (seconds to the end
+  of the window) and no data point written. Validation runs first, so
+  malformed requests never touch D1 or a budget.
+- **Fails open.** If D1 is unavailable the beacon is accepted and the failure
+  logged: the beacon exists to report errors while the stack is degraded,
+  and failing open degrades to the pre-limiter behavior.
+- **Privacy.** Client buckets are stored as `ip:<hmac>` — HMAC-SHA-256 under
+  a key derived (HKDF) from `BETTER_AUTH_SECRET` — never the address itself.
+  An unkeyed digest would not do: an IPv4 address falls to enumerating 2^32
+  candidates.
+- **Retention.** A row becomes eligible for deletion an hour
+  (`PRUNE_GRACE_MS`) after its window ends — about two hours after a client
+  bucket's window opens — and is deleted by the first claim made after
+  that. There is no scheduled cleanup, so with no beacon traffic an eligible
+  row waits for the next claim. The grace is load-bearing: a beacon that
+  read the clock just before a boundary may claim after it, and if the ended
+  window's row were already gone the claim would recreate it at count 1 and
+  slip past a spent limit.
+- **Cost.** One D1 batch per beacon, plus one upsert for the daily claim once
+  the client claim succeeds. A beacon its client cap rejects writes no
+  counter row.
 
 ## Client capture (`reportError` util)
 
@@ -142,6 +187,11 @@ Analytics Engine's 90 days. Logs carry `sessionId`.
   fingerprinting.
 - Data stays inside the Cloudflare account. Retention: Analytics Engine 90
   days; Workers Logs 3–7 days (plan-dependent).
+- The error-beacon limiter persists no IP address — only a keyed hash. A row
+  becomes eligible for deletion about two hours after its clock-hour window
+  opens and is deleted by the next beacon claim after that (see *Volume
+  limiter*). D1 Time Travel can still restore a deleted row for up to 30
+  days, which is why the hash is keyed rather than a plain digest.
 
 ## Reference queries
 

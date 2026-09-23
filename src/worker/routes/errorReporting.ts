@@ -1,6 +1,7 @@
 import { sanitizeErrorText } from "@shared/sanitizeError";
 import { trackEvent } from "@worker-graphql/gameplay/analytics";
 import type { AppVariables } from "@worker-middleware/db";
+import { checkErrorBeaconLimit } from "@worker-services/errorBeaconLimit";
 import { Hono } from "hono";
 
 const MAX_BODY_BYTES = 2048;
@@ -19,8 +20,10 @@ const MAX_FIELD_LENGTH = 200;
  * See docs/analytics.md "API boundary".
  *
  * Unauthenticated, so it validates the body size and schema, caps field
- * lengths, and sanitizes error text server-side. Client-side throttling is
- * not an abuse control — a direct caller is not throttled.
+ * lengths, and sanitizes error text server-side. Volume is bounded
+ * server-side by `checkErrorBeaconLimit` (per-client hourly + global daily
+ * caps, 429 with no write when exceeded); the client-side throttle is a
+ * courtesy, not an abuse control.
  */
 export const errorReportingRouter = new Hono<AppVariables>().post(
   "/",
@@ -53,6 +56,13 @@ export const errorReportingRouter = new Hono<AppVariables>().post(
     const source = fields.source;
     if (source !== "boot" && source !== "route" && source !== "boundary") {
       return c.json({ ok: false }, 400);
+    }
+
+    // After validation, so malformed requests never touch D1 or a budget.
+    const limit = await checkErrorBeaconLimit(c);
+    if (!limit.allowed) {
+      c.header("Retry-After", String(limit.retryAfterSeconds));
+      return c.json({ ok: false }, 429);
     }
 
     const detail = JSON.stringify({

@@ -1,4 +1,5 @@
 import { useCopyToClipboard } from "@hooks/useCopyToClipboard";
+import { programNameSchema } from "@shared/validation";
 import FormField from "./FormField";
 import MutationError from "./MutationError";
 import styles from "./ProgramSettingsForm.module.css";
@@ -28,6 +29,7 @@ export default function ProgramSettingsForm({
   updateError,
 }: ProgramSettingsFormProps) {
   const { copy, status } = useCopyToClipboard();
+  const isNameInvalid = !programNameSchema.safeParse(programName).success;
 
   return (
     <>
@@ -39,7 +41,7 @@ export default function ProgramSettingsForm({
             onChange={(e) => onProgramNameChange(e.target.value)}
             className={styles.input}
             required
-            aria-invalid={programName.trim() === ""}
+            aria-invalid={isNameInvalid}
           />
         </FormField>
         <FormField label="Visibility">
@@ -57,7 +59,7 @@ export default function ProgramSettingsForm({
         <button
           type="button"
           onClick={onSave}
-          disabled={isSaving || programName.trim() === ""}
+          disabled={isSaving || isNameInvalid}
           className={styles.button}
         >
           {isSaving ? "Saving..." : "Save"}

@@ -1,3 +1,4 @@
+import { gateTextSchema } from "@shared/validation";
 import type { SubmitEvent } from "react";
 import styles from "./AddGateForm.module.css";
 import FormField from "./FormField";
@@ -69,13 +70,7 @@ export default function AddGateForm({
       </FormField>
       <button
         type="submit"
-        disabled={
-          isPending ||
-          !newGate.label.trim() ||
-          !newGate.question.trim() ||
-          !newGate.correctAnswer.trim() ||
-          !newGate.successMessage.trim()
-        }
+        disabled={isPending || !gateTextSchema.safeParse(newGate).success}
         className={styles.button}
       >
         {isPending ? "Adding..." : "Add Gate"}

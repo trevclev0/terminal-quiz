@@ -8,7 +8,7 @@ Live deployment: `https://quiz.clevertrevor.dev`
 
 There is a **single, server-authoritative gameplay flow**: a session ID is minted server-side into an HttpOnly cookie (`anon_gameplay_session`, `Path=/api`) by `sessionMiddleware`; gameplay mutations also carry a constant `x-session-id` same-origin tripwire header enforced by `requireSessionHeader`. The server tracks per-session progression (current gate, completed gates, attempt count) in the `session_progress` / `session_completed_gates` tables. All gameplay mutations — `submitGuess`, `requestClue`, `resetSession` — are resolved server-side and validated against that session's row. There is no client-only or REST-based flow.
 
-**User authentication** (Better Auth, OAuth-only: Google + GitHub) is layered on top for content authorship only — gameplay stays anonymous. Auth middleware sets `user` in Hono context; route guards (`requireUser` in `-requireUser.ts`) protect management routes. Two identity systems coexist: the `anon_gameplay_session` cookie for anonymous gameplay, Better Auth session cookie for authorship. Management mutations (`createProgram`, `updateProgram`, `deleteProgram`, `createGate`, `updateGate`, `deleteGate`, `reorderGates`) are auth-guarded via `requireUser`; the six existing-program mutations (all except `createProgram`) re-verify ownership via `authorizeProgramMutation()`, which checks `program.authorId === userId`, while `createProgram` uses `requireUser` + `assertVisibility`.
+**User authentication** (Better Auth, OAuth-only: Google + GitHub) is layered on top for content authorship only — gameplay stays anonymous. Auth middleware sets `user` in Hono context; route guards (`requireUser` in `-requireUser.ts`) protect management routes. Two identity systems coexist: the `anon_gameplay_session` cookie for anonymous gameplay, Better Auth session cookie for authorship. Management mutations (`createProgram`, `updateProgram`, `deleteProgram`, `createGate`, `updateGate`, `deleteGate`, `reorderGates`) are auth-guarded via `requireUser`; the six existing-program mutations (all except `createProgram`) re-verify ownership via `authorizeProgramMutation()`, which checks `program.authorId === userId`, while `createProgram` uses `requireUser` + the shared `createProgramInputSchema`.
 
 ---
 
@@ -100,6 +100,9 @@ bun run seed:e2e:preview # seed:generate, then wrangler d1 execute --file=script
 
 bun run commit           # git-cz, interactive commit prompt (preferred over `git commit`)
 bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
+
+bun run eval:clues       # manual real-model clue prompt eval — plan only; add --yes to spend
+                         #   one Workers AI call per case (docs/clue-prompt-eval.md). Never in CI.
 ```
 
 > Every command above also has a matching `mise run <task>` alias defined in `mise.toml` (e.g. `mise run test:run`, `mise run check:code`, `mise run test:e2e`).
@@ -117,7 +120,8 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 ├── migrations/                  # Drizzle SQL migrations + meta/ snapshots
 ├── public/                      # Static assets
 ├── scripts/                     # seedGenerator.ts + typed seedData.ts/seedE2eData.ts (checked in,
-│                                #   compiled by seed.ts/seed-e2e.ts into git-ignored generated/*.sql)
+│                                #   compiled by seed.ts/seed-e2e.ts into git-ignored generated/*.sql),
+│                                #   eval-clues.ts (manual real-model clue prompt eval)
 ├── src/
 │   ├── react-app/
 │   │   ├── api/
@@ -147,7 +151,9 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 │   ├── shared/
 │   │   ├── schema.ts          # Drizzle schema — single source of truth for DB + types
 │   │   ├── authSchema.ts      # Better Auth tables (user, account, session, verification)
-│   │   ├── types.ts           # Program, Gate, and related types (inferred from schema)
+│   │   ├── types.ts           # Program, Gate, and related types (inferred from schema),
+│   │   │                     #   plus zod-free domain limits (MAX_CLUES_PER_GATE, MAX_GUESS_LENGTH)
+│   │   ├── validation.ts      # zod/mini input rules shared by resolvers + authoring UI
 │   │   ├── graphqlOperations.ts # Codegen input: hand-written GraphQL operation strings
 │   │   ├── generated/         # graphql-codegen output (typed *Document constants, schema types)
 │   │   └── gqlQueries.ts      # Runtime API: re-exports generated *Document constants
@@ -155,17 +161,19 @@ bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
 │       ├── index.ts                # Hono entry, mounts /api/auth/* + /api/graphql
 │       ├── middleware/             # db (Drizzle setup), logger, session (reads x-session-id),
 │       │                          # auth (Better Auth session resolution)
-│       ├── routes/                 # graphql.ts — builds and serves the GraphQL schema
+│       ├── routes/                 # graphql.ts — builds and serves the GraphQL schema,
+│       │                          # errorReporting.ts — POST /api/error client error beacon
 │       ├── graphql/gameplay/       # query resolvers (authQueries.ts, programQueries.ts,
 │       │                          #   sessionQueries.ts), mutations (submitGuessMutation.ts,
 │       │                          #   requestClueMutation.ts, resetSessionMutation.ts,
 │       │                          #   programMutations.ts, gateMutations.ts,
 │       │                          #   reorderGatesMutation.ts), shared (types.ts,
 │       │                          #   authorizeProgram.ts, managementHelpers.ts,
-│       │                          #   activeSession.ts, clueEligibility.ts, guessValidation.ts),
+│       │                          #   activeSession.ts, clueEligibility.ts),
 │       │                          # plus *.integration.spec.ts files (real D1 via cloudflare:test)
 │       ├── services/                # aiService.ts — Workers AI clue generation,
-│       │                           # auth.ts — Better Auth lifecycle (create, get, clear, validate)
+│       │                           # auth.ts — Better Auth lifecycle (create, get, clear, validate),
+│       │                           # errorBeaconLimit.ts — /api/error volume limiter
 │       ├── utils/                   # isGuessCloseEnough.ts, errorHandler.ts
 │       └── test-utils/              # mockEnv.ts (unit-test mocks), setupDb.ts + gqlRequest.ts (integration helpers)
 ├── biome.json
@@ -235,7 +243,7 @@ Branches follow `<git-commit-type>/<issue-id>-<kebab-case-brief-description>` (e
 There are **three** tiers of tests:
 
 1. **Unit / component tests** — co-located as `*.spec.ts` / `*.spec.tsx`, run by Vitest (`vite.config.ts`) with `happy-dom`. Shared helpers live in `src/react-app/test-utils/`; worker-side unit tests use plain Vitest with hand-built mock DB/Hono context objects (no real D1) via `src/worker/test-utils/mockEnv.ts` (`createMockEnv()`, `createMockHonoContext()`, `createMockGraphQLContext()`).
-2. **Backend integration tests** — co-located as `*.integration.spec.ts` under `src/worker/graphql/gameplay/`, run via a separate config (`vitest.config.integration.ts`) using `@cloudflare/vitest-pool-workers`. These exercise the real Hono stack and a real (in-memory) D1 instance, applying actual migrations + seed SQL compiled directly from `scripts/seedE2eData.ts` (imported into the Node-side config, no file round-trip) per test file (`src/worker/test-utils/setupDb.ts`). Requests go through `src/worker/test-utils/gqlRequest.ts`, which calls the real worker `fetch()` entry point.
+2. **Backend integration tests** — co-located as `*.integration.spec.ts` under `src/worker/` (mostly `graphql/gameplay/`; route-level specs such as `routes/errorReporting.integration.spec.ts` sit next to their route), run via a separate config (`vitest.config.integration.ts`) using `@cloudflare/vitest-pool-workers`. These exercise the real Hono stack and a real (in-memory) D1 instance, applying actual migrations + seed SQL compiled directly from `scripts/seedE2eData.ts` (imported into the Node-side config, no file round-trip) per test file (`src/worker/test-utils/setupDb.ts`). Requests go through `src/worker/test-utils/gqlRequest.ts`, which calls the real worker `fetch()` entry point.
 3. **E2E tests** — Playwright specs in `e2e/` (`smoke`, `gameplay`, `wrong-answer`, `clue`, `reset-flow`, `authoring`), driven by page objects in `e2e/pages/`. Locally these seed the dev D1 with `scripts/generated/seed-e2e.sql` (compiled from `scripts/seedE2eData.ts` via `bun run seed:e2e:local`) and run against `mise dev`; in CI they run against the live preview deployment URL for a PR (see Environments & Deployment below).
 
 ```bash
@@ -264,7 +272,7 @@ V8 coverage (`vitest.config.ts`) is unit-test only, since `@cloudflare/vitest-po
 
 ## Database & Migrations
 
-Schema lives in `src/shared/schema.ts` (Drizzle + single source of truth for DB and TS types). Seven tables:
+Schema lives in `src/shared/schema.ts` (Drizzle + single source of truth for DB and TS types). Eight tables:
 
 - `programs` — top-level quiz sets
 - `gates` — riddles within a program, ordered by `sequence_order` (unique per program)
@@ -273,6 +281,7 @@ Schema lives in `src/shared/schema.ts` (Drizzle + single source of truth for DB 
 - `gate_clues` — AI-generated clues, scoped to a `session_progress_id` + `gate_id`, unique per `(session_progress_id, gate_id, attempt_count_at_request)`
 - `clue_rate_limits` — rolling per-session request window; one reservation row per (session, gate, attempt) so concurrent same-attempt requests cannot all reach AI
 - `ai_usage` — global daily AI spend counter, keyed by UTC day (`usage_date` TEXT PK, `request_count`); backs the `AI_DAILY_CLUE_BUDGET` guardrail
+- `error_beacon_limits` — fixed-window counters bounding the public `POST /api/error` beacon: one row per (bucket, window), where `ip:<hmac>` buckets count a client's accepted beacons per clock hour (`ERROR_BEACON_IP_HOURLY_LIMIT`, default 30) and the `global` bucket counts all accepted beacons per UTC day (`ERROR_BEACON_DAILY_BUDGET`, default 1000). Stores a keyed hash of the client IP, never the IP; a row is deleted by the first claim made more than an hour after its window ends (the grace stops an in-flight beacon from recreating a spent window)
 
 There is **no** `game_state` table — it was dropped in migration `0009_whole_quasar` along with several now-unused columns on `gates`/`programs` (the game moved from a single shared "solved" state to fully session-scoped progression).
 
@@ -307,12 +316,20 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - **Authentication**: Better Auth, OAuth-only (Google + GitHub), self-hosted on the same Worker. Mounted at `/api/auth/*`. No passwords in MVP. Auth tables (`user`, `account`, `session`, `verification`) live in `src/shared/authSchema.ts` — separate Drizzle instance, never exposed via GraphQL.
 - **Auth middleware** (`src/worker/middleware/auth.ts`): resolves Better Auth session cookie, sets `user` in Hono context. Parallel to `sessionMiddleware` (anonymous gameplay identity) — two identity systems, decoupled.
 - **Route guard** (`src/react-app/routes/programs/-requireUser.ts`): `requireUser(queryClient, returnTo)` — fetches `me` query, throws TanStack Router `redirect` to `/login?return_to=...` if unauthenticated. Used by `/programs/manage` and `/programs/manage/$programId` routes.
-- **Server-side authorization** (`src/worker/graphql/gameplay/authorizeProgram.ts`): `authorizeProgramMutation(db, programId, userId)` — fetches program, verifies `authorId === userId`, throws on null/mismatch. Used by 6 of 7 management mutations — all except `createProgram`, which has no existing program to authorize and instead uses `requireUser` + `assertVisibility`.
+- **Server-side authorization** (`src/worker/graphql/gameplay/authorizeProgram.ts`): `authorizeProgramMutation(db, programId, userId)` — fetches program, verifies `authorId === userId`, throws on null/mismatch. Used by 6 of 7 management mutations — all except `createProgram`, which has no existing program to authorize and instead uses `requireUser` + the shared `createProgramInputSchema`.
 - **Management mutations** (in `src/worker/graphql/gameplay/programMutations.ts`,
-  `gateMutations.ts`, `reorderGatesMutation.ts`, shared auth/validation helpers in
+  `gateMutations.ts`, `reorderGatesMutation.ts`, shared auth helpers in
   `managementHelpers.ts`): `createProgram`, `updateProgram`, `deleteProgram`,
   `createGate`, `updateGate`, `deleteGate`, `reorderGates`. All auth-guarded,
   input-validated.
+- **Input validation** (`src/shared/validation.ts`): zod schemas are the single
+  definition of every mutation input rule (required text, acceptance/guidance
+  threshold bounds, sequence order, visibility, guess length). Resolvers parse
+  with `parseOrThrow` before touching D1, and the thrown message is the GraphQL
+  error. The authoring UI uses the same schemas to clamp inputs and disable Save
+  while a draft is invalid, so client and server agree on what is valid. The
+  gameplay UI imports only zod-free limits from `types.ts`, keeping zod out of
+  the gameplay bundle.
 - **Program visibility**: `public` (listed for everyone) or `unlisted` (not listed, playable by direct link). Managed via `visibility` column on `programs` table. Copy-link affordance in management UI.
 - **`program(id)` query**: returns a program by ID without auth check — unlisted programs are playable via direct link (security-through-obscurity, same model as unlisted YouTube videos). No ACL; add one via backlogged join table if needed later.
 - **Login redirect safety** (`src/react-app/routes/login.tsx`): `validateReturnTo()` parses URL, rejects cross-origin, protocol-relative, and backslash-based variants. `isAllowedPath()` checks against allowlist. Falls back to `/programs/select` on invalid input.
@@ -328,7 +345,7 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - **Guess acceptance** — Levenshtein similarity ≥ a per-gate `acceptanceThreshold` (default 0.875) via `leven`, checked server-side in `src/worker/utils/isGuessCloseEnough.ts`
 - **Session ID** — minted server-side into the HttpOnly `anon_gameplay_session` cookie (`Path=/api`, `Secure` outside development) by `sessionMiddleware`; never client-generated or sent as a header. Mutations additionally require the constant `x-session-id` same-origin tripwire header (enforced by `requireSessionHeader`)
 - **`submitGuess`** — the authoritative gameplay mutation. It re-validates that the session's `session_progress.currentGateId` matches the submitted `gateId` before checking the guess, rejecting mismatches as a "desync" error. This is what prevents a session from submitting guesses for gates it hasn't reached (IDOR protection) — do not weaken this check
-- **Clue system** — `requestClue` generates an AI hint via Cloudflare Workers AI once `attemptCount` meets a gate's `guidanceThreshold`; eligibility rules (attempt threshold, per-gate cap of `MAX_CLUES_PER_GATE = 3`, no duplicate clue per attempt count) live in `src/worker/graphql/gameplay/clueEligibility.ts` and must stay in sync with any clue-flow changes. A global daily budget guardrail (`AI_DAILY_CLUE_BUDGET`, default 150, tracked in `ai_usage` via `src/worker/graphql/gameplay/aiBudget.ts`) rejects new generations with `isAiBudgetExhausted: true` once the UTC day's successful-generation count reaches the cap — checked before the rate-limit claim, incremented only after a clue is stored
+- **Clue system** — `requestClue` generates an AI hint via Cloudflare Workers AI once `attemptCount` meets a gate's `guidanceThreshold`; eligibility rules (attempt threshold, per-gate cap of `MAX_CLUES_PER_GATE = 3`, no duplicate clue per attempt count) live in `src/worker/graphql/gameplay/clueEligibility.ts` and must stay in sync with any clue-flow changes. A global daily budget guardrail (`AI_DAILY_CLUE_BUDGET`, default 150, tracked in `ai_usage` via `src/worker/graphql/gameplay/aiBudget.ts`) rejects new generations with `isAiBudgetExhausted: true` once the UTC day's successful-generation count reaches the cap — checked before the rate-limit claim, incremented only after a clue is stored. `aiService` asks the model for a `{ clue }` JSON envelope (`CLUE_RESPONSE_FORMAT`, plain text still parsed as a fallback) and passes the player's guess as its own labeled, untrusted `user` message; the `answer_leak` regex stays the backstop
 - **`resetSession`** — clears a session's progress (and its `session_completed_gates` / `gate_clues` rows) on a program, used by both "Play again" and "Select new program" (after a `ConfirmDialog` confirmation) at the end of a program
 
 ---
@@ -347,7 +364,9 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 - Do not expose Better Auth tables through the auto-GraphQL schema — keep `authSchema.ts` on its own Drizzle instance, never passed to `buildSchema()`
 - Do not weaken `authorizeProgramMutation()` — every management mutation operating on an existing program/gate must re-verify `authorId` server-side (all except `createProgram`), never trust client-supplied program/gate IDs without ownership check
 - Do not introduce REST endpoints for authoring — management mutations are GraphQL only, same as gameplay
+- Do not wire `scripts/eval-clues.ts`, or any new real-model call, into tests or CI — every call spends the daily neuron allocation real players' clues draw on. Unit and integration tiers mock the AI; the one existing exception is the E2E `@full clue flow` spec, which requests one real clue per preview run
 - Do not allow open redirects in `/login` — `validateReturnTo()` must reject cross-origin, protocol-relative, and backslash-based return_to values
+- Do not hand-roll input validation in resolvers or authoring forms — add or reuse a schema in `src/shared/validation.ts` so the client and server share one rule
 - Do not define GraphQL query/mutation strings inline in frontend files — hand-written operation strings belong in `src/shared/graphqlOperations.ts` (codegen input), and hooks/api files and integration tests import the typed documents via `src/shared/gqlQueries.ts`.
 - Do not use inline `style={}` props on React elements — all styling must go in a co-located `ComponentName.module.css` file with CSS Module class names. Applies to all new components and any changes to existing component markup. Primitives shared across components are the one exception to co-location: they live in `base.module.css` / `select.module.css` and are pulled in with `composes:` (see CONVENTIONS.md).
 - Do not write refactor or feature plans into `docs/` — the plan for in-flight work belongs in its GitHub issue, where it closes itself against the PRs. `docs/` is for decisions and reference material that outlive the work (see `docs/file-length-refactor.md`, kept as a record of a completed effort).
