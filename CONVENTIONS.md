@@ -61,7 +61,50 @@
 - No barrel files (`index.ts` re-exports) unless already established in that directory.
 - Double quotes for JS/TS strings
 - 2-space indentation, LF line endings, UTF-8, final newline (`.editorconfig`)
-- Max line length: 80 characters
+- Max line length: 80 characters, enforced by the Biome formatter
+  (`formatter.lineWidth` in `biome.json`) on a best-effort basis. The formatter
+  breaks what it can — JSX props, call arguments, object literals — but leaves
+  atomic tokens such as long string literals and import paths alone, and Biome
+  has no lint rule for line width, so a clean `check:code` does not mean every
+  line fits. Lines the formatter cannot break are tolerated. Prefer hoisting a
+  long message into a named constant or helper over leaving an over-length
+  literal inline:
+
+  ```tsx
+  const deleteProgramMessage = (name: string) =>
+    `Delete "${name}" and all its gates? This cannot be undone.`;
+  ```
+
+- Comments and docstrings follow three tiers:
+  1. **Always document the non-obvious "why"** — invariants, ordering
+     constraints, security reasoning, workarounds, anything where the next
+     reader's first instinct would be wrong. The standard to match:
+     `src/worker/test-utils/testConstants.ts` (why the tripwire header value is
+     a constant and not identity), `src/react-app/components/base.module.css`
+     (why `.control` declares no padding or sizing), and
+     `src/react-app/components/RouteErrorFallback.tsx` (why it narrows the
+     thrown value instead of assuming an `Error`).
+  2. **Usually document the shared API surface** — exported component props,
+     shared hooks, helpers consumed across modules. `MutationError`'s per-prop
+     docs are the model:
+
+     ```tsx
+     type MutationErrorProps = {
+       /** Verb for the failed action — "save" renders "Failed to save: ...". */
+       action: string;
+       /** Renders nothing when absent, so call sites need no surrounding guard. */
+       error?: string | null;
+     };
+     ```
+
+  3. **Never restate the signature.** `/** Deletes a gate. */` above
+     `deleteGate(gateId: string)` is noise; if the name and types already say
+     it, say nothing.
+
+  New code follows the tiers; existing code gets docs when it is already being
+  touched for another reason — no retroactive docstring passes. Coverage
+  percentage is not the goal: a file with no docstrings and one good "why"
+  comment can be correctly documented.
 - Markdown fenced code blocks must declare a language (e.g. `` ```text ``,
   `` ```bash ``, `` ```tsx ``). No bare `` ``` `` fences.
 - TypeScript strict mode plus `noUnusedLocals`, `noUnusedParameters`, etc. — do not disable these
