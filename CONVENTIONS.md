@@ -61,7 +61,20 @@
 - No barrel files (`index.ts` re-exports) unless already established in that directory.
 - Double quotes for JS/TS strings
 - 2-space indentation, LF line endings, UTF-8, final newline (`.editorconfig`)
-- Max line length: 80 characters
+- Max line length: 80 characters, enforced by the Biome formatter
+  (`formatter.lineWidth` in `biome.json`) on a best-effort basis. The formatter
+  breaks what it can — JSX props, call arguments, object literals — but leaves
+  atomic tokens such as long string literals and import paths alone, and Biome
+  has no lint rule for line width, so a clean `check:code` does not mean every
+  line fits. Lines the formatter cannot break are tolerated. Prefer hoisting a
+  long message into a named constant or helper over leaving an over-length
+  literal inline:
+
+  ```tsx
+  const deleteProgramMessage = (name: string) =>
+    `Delete "${name}" and all its gates? This cannot be undone.`;
+  ```
+
 - Markdown fenced code blocks must declare a language (e.g. `` ```text ``,
   `` ```bash ``, `` ```tsx ``). No bare `` ``` `` fences.
 - TypeScript strict mode plus `noUnusedLocals`, `noUnusedParameters`, etc. — do not disable these
