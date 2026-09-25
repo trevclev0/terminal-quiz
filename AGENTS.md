@@ -196,6 +196,7 @@ This project uses **Biome** (not ESLint or Prettier), run automatically via `lin
 - 2-space indentation, LF line endings, UTF-8, final newline (`.editorconfig`)
 - Max line length: 80 characters — enforced by the Biome formatter (`formatter.lineWidth`) on a best-effort basis only. Biome has no line-width lint rule, and the formatter leaves unbreakable tokens (long string literals, import paths) alone, so a clean `check:code` does not prove every line fits. Hoist a long message into a named constant or helper rather than leaving an over-length literal inline
 - TypeScript strict mode plus `noUnusedLocals`, `noUnusedParameters`, etc. — do not disable these
+- Comments follow three tiers: **always** explain the non-obvious "why" (invariants, ordering, security reasoning, workarounds); **usually** document shared API surface (exported props, shared hooks, cross-module helpers); **never** restate what the name and types already say (`/** Deletes a gate. */` is noise). Apply to code you write or are already changing — do not add docstrings to untouched code, and do not chase a coverage percentage. Examples and details in `CONVENTIONS.md` → Code style
 
 See `CONVENTIONS.md` for additional architectural and style rules (e.g. no `useEffect` for data fetching, Hono handlers stay thin, early returns preferred).
 
