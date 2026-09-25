@@ -14,6 +14,13 @@ reviews:
     enabled: true
     auto_incremental_review: false
     drafts: false
+  pre_merge_checks:
+    # The docstring policy is tiered (CONVENTIONS.md → Code style), not a
+    # coverage percentage, so the built-in coverage check (default 80%) is off.
+    # Reviews still apply the policy: knowledge_base.code_guidelines below
+    # feeds CONVENTIONS.md to every review. Quoted — bare `off` is a YAML bool.
+    docstrings:
+      mode: "off"
   # Generated / build-artifact paths never warrant AI review.
   path_filters:
     - "!migrations/**"
