@@ -194,7 +194,7 @@ This project uses **Biome** (not ESLint or Prettier), run automatically via `lin
 
 - Double quotes for JS/TS strings
 - 2-space indentation, LF line endings, UTF-8, final newline (`.editorconfig`)
-- Max line length: 80 characters
+- Max line length: 80 characters — enforced by the Biome formatter (`formatter.lineWidth`) on a best-effort basis only. Biome has no line-width lint rule, and the formatter leaves unbreakable tokens (long string literals, import paths) alone, so a clean `check:code` does not prove every line fits. Hoist a long message into a named constant or helper rather than leaving an over-length literal inline
 - TypeScript strict mode plus `noUnusedLocals`, `noUnusedParameters`, etc. — do not disable these
 
 See `CONVENTIONS.md` for additional architectural and style rules (e.g. no `useEffect` for data fetching, Hono handlers stay thin, early returns preferred).
