@@ -1,9 +1,12 @@
 # AI Clue Rate Limiting
 
-**Status:** Phase A (backend) and Phase B (frontend cooldown UX) **implemented
-and merged** to `main` (releases 2.75.0 / 2.76.0). Follow-up **#221
-(per-attempt reservation) landed** (migration 0016). Phase C deferred.
-**Origin:** `docs/feature-ideas.md` §3.1 ("Rate Limiting on `requestClue`")
+**Status:** Implemented. Backend + frontend cooldown UX shipped in #219
+(releases 2.75.0 / 2.76.0); the per-attempt reservation followed in #221
+(migration 0016). Deferred "Phase C" options are tracked in #316.
+
+This is the decision record for the per-session limiter and the global daily
+AI budget layered on top of it. The step-by-step build plan lives in the
+issues above and in git history.
 
 ## Goal
 
@@ -12,13 +15,13 @@ quota by enforcing a session-wide temporal rate limit: **rolling 3 AI clue
 requests per 60 seconds**, enforced atomically *before* the AI call, with the
 rate-limited state surfaced to the client so the UI can show a cooldown.
 
-## Why the feature-ideas sketch needs correction
+## Why the claim runs before `generateClue`
 
-`feature-ideas.md` §3.1 proposes: "D1 transaction — `INSERT INTO gate_clues`
-with a `SELECT CASE WHEN EXISTS ...` guard that rejects if a clue was created
-within the last 10s."
+The original idea was an insert-time guard on `gate_clues`: a D1
+transaction with a `SELECT CASE WHEN EXISTS ...` check that rejects if a
+clue was created in the last 10s.
 
-That sketch does not work as written. In the current resolver
+That does not work. In the current resolver
 (`requestClueMutation.ts`), the AI call (`generateClue`) happens *before* the
 `gate_clues` insert, and the insert needs `clueText` which only exists after
 the AI call. A guard evaluated at insert time therefore runs **after** the
@@ -32,7 +35,7 @@ calls), then all but one fail the `unique_clue_per_attempt` insert. The atomic
 claim caps that burst at `CLUE_RATE_LIMIT_MAX_REQUESTS` AI calls per window.
 
 The claim serializes **per window AND per attempt** (#221, landed as a
-follow-up to Phase A): the guard's `NOT EXISTS` arm reserves a slot per
+follow-up to the initial backend): the guard's `NOT EXISTS` arm reserves a slot per
 (session, gate, attempt), so within one window only one request at a given
 (gate, attempt) wins a slot. Three concurrent requests at the same
 `(gate, attemptCount)` therefore run `generateClue` at most once — the rest
@@ -60,8 +63,8 @@ next — naturally far apart.
 
 Session-wide only. The per-gate semantic cap (`MAX_CLUES_PER_GATE = 3`,
 1-clue-per-attempt, `guidanceThreshold`) is unchanged and layered underneath
-the rate limit. IP/account-level limiting and env-var tuning are deferred to
-Phase C.
+the rate limit. IP/account-level limiting and env-var tuning are deferred
+(#316).
 
 ## Non-goals
 
@@ -239,108 +242,31 @@ limiting. The native complements worth keeping: Workers AI account limits
 (hard ceiling, already free) and, optionally, AI Gateway as a future
 account-wide cap/observability layer.
 
----
+## Related layer: global daily AI budget
 
-## Phase A — Backend (implemented)
+The limiter bounds a *single session*. It cannot bound *sessions ×
+players*, which is the dimension that actually exhausts the shared Workers
+AI allocation. The free tier's daily Neuron pool works out to roughly 200
+clue generations per day; past it, clues fail app-wide until 00:00 UTC. So a
+second, global guardrail sits in front of this one (#227;
+`src/worker/graphql/gameplay/aiBudget.ts`, `ai_usage` table,
+`AI_DAILY_CLUE_BUDGET`):
 
-1. **Spike:** verified the `.select()`-builder conditional-insert claim on D1
-   — `clueRateLimit.integration.spec.ts` (under-cap claim, at-cap reject,
-   expired rows ignored, `retryAfterMs` math, prune).
-2. **Schema:** `clue_rate_limits` added to `src/shared/schema.ts`;
-   migration `0015_broken_supernaut.sql` generated.
-3. **Helper:** `src/worker/graphql/gameplay/clueRateLimit.ts` exporting
-   `CLUE_RATE_LIMIT_WINDOW_MS`, `CLUE_RATE_LIMIT_MAX_REQUESTS`,
-   `computeRetryAfterMs`, and
-   `claimClueRateLimit(db, sessionProgressId, gateId, attemptCountAtRequest)`
-   returning `{ claimed: boolean; retryAfterMs: number | null }`. Handles the
-   batch (claim + prune) and the rejection-path advisory read.
-4. **Resolver:** claim wired into `requestClueMutation.ts` between
-   `computeCanRequestClue` and `generateClue`. Rejected → rate-limited shape,
-   no AI call. All existing return paths gain `isRateLimited: false`.
-5. **Contract:** `RequestClueResultType` + `REQUEST_CLUE_MUTATION` extended.
-6. **Tests:**
-   - `clueRateLimit.spec.ts` (unit): constants + `computeRetryAfterMs` math.
-   - `clueRateLimit.integration.spec.ts`: direct claim behavior on D1 —
-     under-cap claim, at-cap reject, expired rows ignored, exact
-     window-boundary release (ms precision), `retryAfterMs` math, prune.
-   - `requestClue.integration.spec.ts` (extended): pre-seeded in-window cap →
-     rejected with `isRateLimited: true` + correct `retryAfterMs`,
-     `generateClue` **not** called; expired rows → allowed; per-gate clue cap
-     distinct from rate limiting. Existing tests keep passing (additive).
+| Decision | Choice | Why |
+|---|---|---|
+| Scope | One app-wide daily counter, not per author or program | The failure mode is a shared daily pool. Per-author accounting adds tables for marginal value at this scale. |
+| Default | ~150/day, env-configurable | Comfortably under the free-tier equivalent; tune from observed usage. |
+| Accounting | Atomically **reserve** one unit (upsert + `RETURNING`) **before** the rate-limit claim; release it only when the AI was provably never called (over-budget race loser, rate-limit rejection) | D1 is single-writer, so concurrent requests get strictly increasing counts and can't all slip past the cap. An over-budget request burns no rate-limit slot and makes no AI call. A failed or unstored generation keeps its reservation because it may still have billed. The counter tracks *launched* generations, not stored clues. |
+| On exhaustion | `clueText: null` + `isAiBudgetExhausted: true`; the client says "try again tomorrow", with no cooldown timer | A raw 429, or the generic "try again" message, would mislead: retrying cannot help until the UTC day rolls over. |
+| Purpose | Availability protection on Free; bill protection on Paid | The free tier hard-caps spend, so today it keeps clues working for everyone rather than saving money. |
 
-**Files changed:** `src/shared/schema.ts`, `migrations/0015_broken_supernaut.sql`,
-`src/worker/graphql/gameplay/clueRateLimit.ts`, `clueRateLimit.spec.ts`,
-`clueRateLimit.integration.spec.ts`, `requestClueMutation.ts`, `types.ts`,
-`src/shared/gqlQueries.ts`, `requestClue.integration.spec.ts`,
-`docs/clue-rate-limiting.md`.
+`guidanceThreshold` does **not** drive AI cost. Per-session spend is
+already capped by `MAX_CLUES_PER_GATE` and this limiter; the threshold only
+shifts *when* clues unlock. That is why authors keep the knob. It is bounded
+to `1..MAX_CLUES_PER_GATE` (3) so it stays coherent with the
+"1st/2nd/3rd Clue" UI, and it sits under an "Advanced" disclosure in the
+editor (#226).
 
----
-
-## Phase B — Frontend (planned, depends on Phase A contract)
-
-1. `useRequestClueMutation.ts`: add `isRateLimited` / `retryAfterMs` to
-   `RequestClueResponse`.
-2. `useProgramPlay.ts`: on a rate-limited response, set a
-   `clueCooldownUntil` state (`Date.now() + retryAfterMs`) and clear it on
-   gate change; surface a "Clue cooldown — try again in Ns" message via the
-   existing message/`role="status"` mechanism. Do not flip `canRequestClue`
-   off — keep the button rendered but disabled during cooldown so the player
-   sees the countdown.
-3. `ActiveGate.tsx`: pass an `isClueCooldown` flag / `cooldownSeconds` prop;
-   disable the clue button during cooldown and show the countdown. Follow the
-   existing `isMutationPending` disable pattern. A lightweight
-   `setInterval`-driven countdown — no new dependency.
-4. **Tests:** `ActiveGate.spec.tsx`, `ProgramPlay.spec.tsx`,
-   `ProgramPlay.integration.spec.tsx`, `useProgramPlay.spec.ts` for the
-   cooldown render + button-disable states.
-
-**Files:** `useRequestClueMutation.ts`, `useProgramPlay.ts` (+spec),
-`ActiveGate.tsx` (+spec), `ActiveGate.module.css` (cooldown styling),
-`ProgramPlay.spec.tsx`, `ProgramPlay.integration.spec.tsx`.
-
----
-
-## Phase C — Deferred (not built now; reference only)
-
-- **Config:** promote `CLUE_RATE_LIMIT_WINDOW_MS` and
-  `CLUE_RATE_LIMIT_MAX_REQUESTS` to env vars in `wrangler.jsonc` + `Env` type
-  + `mockEnv.ts`.
-- **Observability:** log rate-limit rejections (session id, `retryAfterMs`) so
-  the window value can be validated in production.
-- **IP/account dimension:** only meaningful defense against session-farming.
-  Would add a Cloudflare Rate Limiting binding (paid plan) or a D1 table keyed
-  by IP hash, with false-positive risk on shared NATs. Decide only after
-  production rejection metrics show session-level limits are insufficient.
-- **AI Gateway:** account-wide cap + observability layer (see alternatives
-  table).
-
----
-
-## PR sequencing
-
-| PR | Phase | Depends on | Scope |
-|---|---|---|---|
-| 1 | A | — | Backend: migration, helper, resolver, contract, tests |
-| 2 | B | PR 1 | Frontend: cooldown UX, contract consumption, tests |
-
-Phase C is explicitly deferred and not sequenced.
-
-Follow-up **#221** (per-attempt reservation, migration `0016_*.sql`) landed
-after Phase B as its own fix branch off `main`; it closes the concurrent
-same-attempt `generateClue` burst described in "Why the feature-ideas sketch
-needs correction". **#222** (flaky router-loader unit tests under `mise
-ci:local`) is unrelated infra hygiene, since resolved as
-`fix/222-router-loader` (loader waits hardened with `LOADER_TIMEOUT_MS`).
-
-## Verification checklist
-
-```bash
-bun run check:code
-bun run build
-bun run test --run
-bun run test:integration
-bun run test:e2e
-```
-
-Migration steps for deployed environments when Phase A merges:
-`bun run migrate:preview` then `bun run migrate:prod`.
+The client therefore has three distinct clue-failure paths: AI failure
+(retry now), rate-limited (cooldown countdown), and budget exhausted (try
+tomorrow).

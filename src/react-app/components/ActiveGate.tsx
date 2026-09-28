@@ -32,7 +32,8 @@ type ActiveGateProps = {
 // gating with an `enabled` flag instead would paint the full text for a
 // frame while `enabled` is false (the hook resolves `enabled: false` to
 // instant full text), then wipe and retype once enabled — a visible flash.
-// See docs/typewriter-text.md §2b (same pattern as the boot banner).
+// See docs/typewriter-text.md "Mount when active" (same pattern as the
+// boot banner).
 function TypedQuestion({
   text,
   onComplete,

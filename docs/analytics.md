@@ -9,11 +9,10 @@ fingerprinting. Anonymous gameplay identity is a server-issued HttpOnly cookie
 client-generated, never sent as a header. Pseudonymous by default — events are
 keyed on that server-issued `sessionId`, never the Better Auth user.
 
-> This document describes the target state of the analytics stack.
-> Implementation lands incrementally across the analytics change stack
-> (PRs #249–#253): the binding first, then gameplay events, AI observability,
-> structured logging, and the client error beacon. A section may describe
-> behavior that arrives in a later PR of the stack.
+> **Status:** Implemented. The binding, gameplay events, AI observability,
+> structured logging and the client error beacon landed in PRs #249–#253
+> (tracked in #241–#246). The CSP + Cloudflare Web Analytics follow-up landed
+> in #259, and the beacon volume limiter in #303.
 
 ## Sink: Cloudflare Analytics Engine
 
@@ -181,7 +180,7 @@ Analytics Engine's 90 days. Logs carry `sessionId`.
   `sessionMiddleware` into the `anon_gameplay_session` cookie), never the
   Better Auth user. A persistent pseudonymous identifier can still be personal
   data (GDPR Art 4(5), CCPA "unique identifiers") — reusing `sessionId` for
-  leaderboards (see `docs/feature-ideas.md` §4.1) or exposing these events
+  leaderboards (the "Daily program + leaderboard" idea in #316) or exposing these events
   externally requires a separate privacy review.
 - First-party: no third-party requests, no third-party cookies, no
   fingerprinting.

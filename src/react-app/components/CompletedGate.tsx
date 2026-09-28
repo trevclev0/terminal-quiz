@@ -14,7 +14,7 @@ type CompletedGateProps = {
 // hook with `enabled` instead would paint the full message for a frame (the
 // hook resolves `enabled: false` to instant full text), then wipe and retype
 // once cleared. Same pattern as ActiveGate's TypedQuestion and the boot
-// banner — see docs/typewriter-text.md §2b.
+// banner — see docs/typewriter-text.md "Mount when active".
 function TypedSuccessMessage({
   text,
   onComplete,
