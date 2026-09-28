@@ -15,8 +15,8 @@ plan that produced this lives in git history and the issues above.
 |---|---|---|
 | Gate question | `ActiveGate` → `TypedQuestion` | Typed |
 | Latest clue | `ActiveGate` | Typed (#213) |
-| `successMessage` of the last solved gate | `CompletedGate` → `TypedSuccessMessage` | Typed |
-| "The End" heading | `ProgramEnding` | Typed, slow; end buttons mount after it finishes (#215) |
+| `successMessage` of the latest solved gate | `CompletedGate` → `TypedSuccessMessage` | Typed only while a next gate follows; when the program ends, the final gate's message renders static |
+| "The End" heading | `ProgramEnding` → `TypedHeading` | Typed slowly once boot completes; the end buttons mount after it finishes (#215) |
 | CRT boot banner (`VT220 OK`) | `CrtOverlay` → `BootBanner` | Typed |
 | Guess response ("Access Granted." / "Access Denied." / errors) | `ActiveGate` | **Never.** It sits on the `role="status"` live region; animating it would fight `aria-live` announcements |
 | "Verifying..." pending state | `ActiveGate` | **Spinner, not typewriter** (#311) |
@@ -33,13 +33,17 @@ plan that produced this lives in git history and the issues above.
    buttons are usable while text types. E2E flows depend on this. The one
    deliberate exception is the "The End" buttons, which appear after the
    heading types (#215).
-3. **Never two typewriters at once.** Surfaces type in sequence: boot
-   banner → first question (`BootContext.bootComplete`, #214);
-   `successMessage` → next question (`ProgramPlay` derives
-   `canTypeQuestion` from a `releasedGateId` set by the last
-   `CompletedGate`'s `onComplete`); last `successMessage` → "The End".
-   Only the *last* completed gate types its message. Earlier ones render
-   static, so scrolling back never re-types.
+3. **Never two typewriters at once.** The boot banner comes first:
+   `BootContext.bootComplete` (#214) holds back the *head* of the gameplay
+   chain. That's the first question on a fresh start, the latest
+   `successMessage` on a mid-program reload, or "The End" on a finished
+   program. After that, a solved gate's `successMessage` types, then the next
+   question (`ProgramPlay` derives `canTypeQuestion` from a `releasedGateId`
+   set by that `CompletedGate`'s `onComplete`). Only the latest completed gate
+   types, and only when another gate follows (`isLast` requires a
+   `currentGate`). Earlier gates, and the final gate once the program ends,
+   render static, so nothing re-types on scroll, and "The End" never races a
+   `successMessage`.
 4. **The hook stays content-agnostic.** String in, string out. No
    gate-, CRT- or settings-specific logic inside `useTypewriter`; `speed` and
    `startDelay` are per-call props, not globals. A future global toggle must
@@ -68,7 +72,7 @@ Each typed surface renders two nodes:
 
 - an `aria-hidden` node carrying the animated `displayedText`, and
 - a visually-hidden (`.sr-only`, global in `index.css`) sibling carrying the
-  **full text at all times**, placed first in DOM order.
+  **full text at all times**.
 
 This beats overriding `aria-label` on a single updating node, which depends on
 uneven AT support for live `aria-label` changes. Screen readers get the
@@ -79,12 +83,16 @@ sequence under reduced motion.
 
 ## Testing lessons
 
-- **Scope text assertions to the sr-only node** via `data-testid`
-  (`gate-question`, `boot-banner-line1`/`-line2`, same convention as
-  `clue-text`). Once typing finishes, both nodes hold the same text and
-  RTL's exact-match `getByText` throws "Found multiple elements". The sr-only
-  node also always holds full text, so these queries need no timer
-  advancement or timeout bumps.
+- **Target typed text by `data-testid`, not `getByText`.** Once typing
+  finishes, both nodes hold the same text, and RTL's exact-match `getByText`
+  throws "Found multiple elements". Know which node an ID sits on:
+  - `gate-question` is on the **sr-only** node. It always holds the full
+    question, so assertions against it need no timer advancement or
+    timeout bumps.
+  - `clue-text`, `success-message`, `the-end-heading` and
+    `boot-banner-line1` / `-line2` are on the **animated `aria-hidden`**
+    node. Use them to assert typing progress (`toHaveTextContent` under fake
+    timers). Assert the final text only after typing completes.
 - **`useTypewriter` is a default export**, so a `vi.mock` factory must key it
   as `default:`. A named key doesn't intercept the import, the real
   timer-driven hook runs, and fake-timer specs break.
