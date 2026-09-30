@@ -1,4 +1,8 @@
-import type { Ai, D1Database } from "@cloudflare/workers-types";
+import type {
+  Ai,
+  D1Database,
+  ScheduledController,
+} from "@cloudflare/workers-types";
 import { authMiddleware } from "@worker-middleware/auth";
 import { type AppVariables, setupDb } from "@worker-middleware/db";
 import {
@@ -10,6 +14,7 @@ import { sessionMiddleware } from "@worker-middleware/session";
 import { errorReportingRouter } from "@worker-routes/errorReporting";
 import graphQlRouter from "@worker-routes/graphql";
 import { getAuth } from "@worker-services/auth";
+import { runSessionCleanup } from "@worker-services/sessionCleanup";
 import { formatErrorResponse, logError } from "@worker-utils/errorHandler";
 import { Hono } from "hono";
 
@@ -36,6 +41,10 @@ export type Env = {
     // Defaults in code when unset (see services/errorBeaconLimit.ts).
     ERROR_BEACON_IP_HOURLY_LIMIT?: string;
     ERROR_BEACON_DAILY_BUDGET?: string;
+    // Optional days without a guess or reset before the hourly cron deletes
+    // an anonymous session's progress. Defaults in code when unset (see
+    // services/sessionCleanup.ts).
+    SESSION_RETENTION_DAYS?: string;
   };
 };
 
@@ -66,4 +75,12 @@ const routes = app.basePath("/api").route("/", api);
 
 export type AppType = typeof routes;
 
-export default app;
+export default {
+  fetch: app.fetch,
+  // Hourly cron (triggers.crons in wrangler.jsonc): prune stale anonymous
+  // sessions (#315). Awaited rather than passed to waitUntil, so a failed
+  // run marks the invocation failed.
+  async scheduled(controller: ScheduledController, env: Env["Bindings"]) {
+    await runSessionCleanup(env, controller.scheduledTime);
+  },
+};

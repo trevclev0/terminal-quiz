@@ -1,0 +1,1 @@
+CREATE INDEX `session_progress_updated_at_idx` ON `session_progress` (`updated_at`);
