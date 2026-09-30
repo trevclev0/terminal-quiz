@@ -158,7 +158,8 @@ bun run eval:clues       # manual real-model clue prompt eval — plan only; add
 │   │   ├── generated/         # graphql-codegen output (typed *Document constants, schema types)
 │   │   └── gqlQueries.ts      # Runtime API: re-exports generated *Document constants
 │   └── worker/
-│       ├── index.ts                # Hono entry, mounts /api/auth/* + /api/graphql
+│       ├── index.ts                # Worker entry: Hono fetch (mounts /api/auth/* + /api/graphql)
+│       │                          #   + scheduled (session cleanup cron)
 │       ├── middleware/             # db (Drizzle setup), logger, session (reads x-session-id),
 │       │                          # auth (Better Auth session resolution)
 │       ├── routes/                 # graphql.ts — builds and serves the GraphQL schema,
@@ -173,7 +174,8 @@ bun run eval:clues       # manual real-model clue prompt eval — plan only; add
 │       │                          # plus *.integration.spec.ts files (real D1 via cloudflare:test)
 │       ├── services/                # aiService.ts — Workers AI clue generation,
 │       │                           # auth.ts — Better Auth lifecycle (create, get, clear, validate),
-│       │                           # errorBeaconLimit.ts — /api/error volume limiter
+│       │                           # errorBeaconLimit.ts — /api/error volume limiter,
+│       │                           # sessionCleanup.ts — daily cron pruning stale sessions
 │       ├── utils/                   # isGuessCloseEnough.ts, errorHandler.ts
 │       └── test-utils/              # mockEnv.ts (unit-test mocks), setupDb.ts + gqlRequest.ts (integration helpers)
 ├── biome.json
@@ -277,7 +279,7 @@ Schema lives in `src/shared/schema.ts` (Drizzle + single source of truth for DB 
 
 - `programs` — top-level quiz sets
 - `gates` — riddles within a program, ordered by `sequence_order` (unique per program)
-- `session_progress` — per-session progression (`current_gate_id`, `attempt_count`, `status`), unique on `(session_id, program_id)`
+- `session_progress` — per-session progression (`current_gate_id`, `attempt_count`, `status`), unique on `(session_id, program_id)`. A daily cron (`triggers.crons` in `wrangler.jsonc`, production only — `env.preview` clears it) deletes rows with no guess or reset for `SESSION_RETENTION_DAYS` (default 30) in bounded batches, cascading their child rows (`src/worker/services/sessionCleanup.ts`)
 - `session_completed_gates` — join table recording which gates a session has completed (`session_progress_id` + `gate_id`), unique on `(session_progress_id, gate_id)`. Replaced the earlier `completed_gate_ids` JSON column on `session_progress` (migration `0010_funny_santa_claus`)
 - `gate_clues` — AI-generated clues, scoped to a `session_progress_id` + `gate_id`, unique per `(session_progress_id, gate_id, attempt_count_at_request)`
 - `clue_rate_limits` — rolling per-session request window; one reservation row per (session, gate, attempt) so concurrent same-attempt requests cannot all reach AI

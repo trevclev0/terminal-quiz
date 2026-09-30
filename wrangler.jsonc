@@ -52,6 +52,12 @@
     "ENVIRONMENT": "production",
     "AI_DAILY_CLUE_BUDGET": "150"
   },
+  // Daily at 04:17 UTC: delete anonymous sessions with no activity for
+  // SESSION_RETENTION_DAYS (default 30), see services/sessionCleanup.ts.
+  // Off-peak and off the hour, when cron traffic bunches up.
+  "triggers": {
+    "crons": ["17 4 * * *"]
+  },
   "env": {
     "preview": {
       "workers_dev": true,
@@ -71,6 +77,13 @@
       ],
       "ai": {
         "binding": "AI"
+      },
+      // No session cleanup cron in preview: every PR deploys its own preview
+      // Worker, so each would schedule a run against the one shared preview
+      // D1, which E2E reseeds anyway. triggers is inheritable, so it must be
+      // cleared explicitly.
+      "triggers": {
+        "crons": []
       },
       "vars": {
         "ENVIRONMENT": "preview",
