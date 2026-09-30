@@ -22,20 +22,36 @@ export function GateProgress({ completed, total }: GateProgressProps) {
   const filled = Math.floor((done / total) * BAR_CELLS);
   const bar = "#".repeat(filled) + ".".repeat(BAR_CELLS - filled);
 
+  const summary = `${done} of ${total} gates completed`;
+
   // progressbar children are presentational, so screen readers announce
   // aria-valuetext instead of reading the bar out character by character.
+  // A progressbar isn't announced when its value changes, though, and on a
+  // correct guess ActiveGate (and its role="status" line) unmounts straight
+  // away. The polite live region is what tells a screen-reader user the
+  // gate counted; it stays silent on first render, so page load is quiet.
   return (
-    <div
-      className={styles.progress}
-      role="progressbar"
-      aria-label="Program progress"
-      aria-valuemin={0}
-      aria-valuemax={total}
-      aria-valuenow={done}
-      aria-valuetext={`${done} of ${total} gates completed`}
-      data-testid="gate-progress"
-    >
-      <span className={styles.label}>PROGRESS: </span>[{bar}] {done}/{total}
-    </div>
+    <>
+      <div
+        className={styles.progress}
+        role="progressbar"
+        aria-label="Program progress"
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-valuenow={done}
+        aria-valuetext={summary}
+        data-testid="gate-progress"
+      >
+        <span className={styles.label}>PROGRESS: </span>[{bar}] {done}/{total}
+      </div>
+      <span
+        className="sr-only"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="gate-progress-announcement"
+      >
+        {summary}
+      </span>
+    </>
   );
 }
