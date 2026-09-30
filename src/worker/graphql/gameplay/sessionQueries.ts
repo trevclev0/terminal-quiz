@@ -75,9 +75,12 @@ export const getProgramProgression = {
     }
 
     // Security: only gates from sessionCompletedGates are fetched with correctAnswer.
-    const completedEntries = await db.query.sessionCompletedGates.findMany({
-      where: eq(sessionCompletedGates.sessionProgressId, progress.id),
-    });
+    const [completedEntries, totalGates] = await Promise.all([
+      db.query.sessionCompletedGates.findMany({
+        where: eq(sessionCompletedGates.sessionProgressId, progress.id),
+      }),
+      db.$count(gates, eq(gates.programId, args.programId)),
+    ]);
 
     const completedGates =
       completedEntries.length === 0
@@ -108,6 +111,7 @@ export const getProgramProgression = {
     return {
       currentGate,
       completedGates,
+      totalGates,
       status: progress.status,
     };
   },

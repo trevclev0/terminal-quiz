@@ -25,6 +25,7 @@ const initialProgression: ProgramProgression = mockProgression();
 const completedProgression: ProgramProgression = mockProgression({
   currentGate: null,
   completedGates: [mockCompletedGate()],
+  totalGates: 1,
   status: "completed",
 });
 

@@ -67,6 +67,7 @@ describe("Program Play Route Integration", () => {
             getProgramProgression: mockProgression({
               currentGate: null,
               completedGates: [mockCompletedGate()],
+              totalGates: 1,
               status: "completed",
             }),
           },
