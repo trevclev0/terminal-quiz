@@ -11,6 +11,10 @@ GITHUB_CLIENT_SECRET=<YOUR_GITHUB_CLIENT_SECRET>
 # Optional daily AI clue budget (UTC). Defaults to 150 in code when unset.
 # AI_DAILY_CLUE_BUDGET=150
 
+# Serve a canned clue instead of calling Workers AI, e.g. while running the
+# E2E suite locally. Ignored when ENVIRONMENT is "production".
+# AI_CLUE_STUB=true
+
 # Auth test bypass — only enable in CI/preview environments with a dedicated
 # test secret, not for general preview/staging deployments.
 # AUTH_TEST_BYPASS_ENABLED=true

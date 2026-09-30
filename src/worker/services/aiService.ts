@@ -246,7 +246,33 @@ export async function generateClueWithAi(
 }
 
 /**
- * Generates a clue using Cloudflare Workers AI.
+ * Canned clue served in place of a real generation when the clue stub is on
+ * (#307). Preview E2E runs on every PR push; the stub lets it exercise the
+ * whole clue flow (eligibility, budget, rate limit, insert, render) without
+ * spending Workers AI neurons that real players' clues draw on.
+ */
+export const STUB_CLUE_TEXT =
+  "[stub] Clue generation is stubbed in this environment.";
+
+type ClueStubVars = { ENVIRONMENT?: string; AI_CLUE_STUB?: string };
+
+/**
+ * Fails closed, like the auth test bypass: the stub needs an explicit
+ * `AI_CLUE_STUB=true` AND a named, non-production `ENVIRONMENT`. An unset
+ * `ENVIRONMENT` never counts as non-production, so a production deploy that
+ * somehow picked up the flag still calls the real model.
+ */
+export function isClueStubEnabled(vars: ClueStubVars): boolean {
+  return (
+    Boolean(vars.ENVIRONMENT) &&
+    vars.ENVIRONMENT !== "production" &&
+    vars.AI_CLUE_STUB === "true"
+  );
+}
+
+/**
+ * Generates a clue using Cloudflare Workers AI, or returns
+ * `STUB_CLUE_TEXT` when the clue stub is enabled.
  * @param c Hono Context to access the AI binding.
  * @param gateQuestion The question of the gate.
  * @param correctAnswer The correct answer to the gate (for AI context, not for revelation).
@@ -261,8 +287,13 @@ export async function generateClue(
   currentGuess: string,
   previousClues: string[],
 ): Promise<ClueResult> {
-  const { AI } = env<{ AI: Ai }>(c);
+  const bindings = env<{ AI: Ai } & ClueStubVars>(c);
 
+  if (isClueStubEnabled(bindings)) {
+    return { clueText: STUB_CLUE_TEXT, reason: "success", latencyMs: 0 };
+  }
+
+  const { AI } = bindings;
   if (!AI) {
     console.error("AI binding not available.");
     return { clueText: null, reason: "no_binding", latencyMs: 0 };

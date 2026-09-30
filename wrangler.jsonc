@@ -77,7 +77,11 @@
         "BETTER_AUTH_SECRET": "preview-placeholder-not-for-production",
         "BETTER_AUTH_URL": "https://quiz.clevertrevor.dev",
         "AUTH_TEST_BYPASS_ENABLED": "true",
-        "AI_DAILY_CLUE_BUDGET": "150"
+        "AI_DAILY_CLUE_BUDGET": "150",
+        // Preview E2E runs on every PR push; serve a canned clue instead of
+        // spending Workers AI neurons (#307). Never set at the top level:
+        // generateClue ignores it when ENVIRONMENT is "production".
+        "AI_CLUE_STUB": "true"
       }
     }
   }
