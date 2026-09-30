@@ -1,4 +1,5 @@
 import type { Ai } from "@cloudflare/workers-types";
+import { STUB_CLUE_TEXT } from "@shared/clueStub";
 import { MAX_CLUES_PER_GATE } from "@shared/types";
 import { sanitizeGuessForPrompt } from "@worker-utils/sanitizeGuessForPrompt";
 import type { Context } from "hono";
@@ -245,18 +246,13 @@ export async function generateClueWithAi(
   }
 }
 
-/**
- * Canned clue served in place of a real generation when the clue stub is on
- * (#307). Preview E2E runs on every PR push; the stub lets it exercise the
- * whole clue flow (eligibility, budget, rate limit, insert, render) without
- * spending Workers AI neurons that real players' clues draw on.
- */
-export const STUB_CLUE_TEXT =
-  "[stub] Clue generation is stubbed in this environment.";
-
 type ClueStubVars = { ENVIRONMENT?: string; AI_CLUE_STUB?: string };
 
 /**
+ * Preview E2E runs on every PR push; the clue stub (#307) lets it exercise
+ * the whole clue flow (eligibility, budget, rate limit, insert, render)
+ * without spending Workers AI neurons that real players' clues draw on.
+ *
  * Fails closed, like the auth test bypass: the stub needs an explicit
  * `AI_CLUE_STUB=true` AND a named, non-production `ENVIRONMENT`. An unset
  * `ENVIRONMENT` never counts as non-production, so a production deploy that

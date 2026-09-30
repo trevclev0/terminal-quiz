@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { STUB_CLUE_TEXT } from "../src/shared/clueStub";
 import { GamePage } from "./pages/gamePage";
 import { SelectProgramPage } from "./pages/selectProgramPage";
 
@@ -29,11 +30,20 @@ test.describe("@full clue flow", () => {
     expect(denial2).toContain("ACCESS DENIED");
     await expect(gamePage.getClueButtonLocator()).toBeVisible();
 
-    // Request clue and verify clue text appears. Preview serves a canned
-    // clue (AI_CLUE_STUB, #307), so this checks the wiring, not the model;
-    // the model itself is measured by `bun run eval:clues`.
     await gamePage.getClueButtonLocator().click();
-    const clueText = await gamePage.waitForClueText();
-    expect(clueText?.length).toBeGreaterThan(0);
+
+    // CI runs against the preview Worker, which serves a canned clue
+    // (AI_CLUE_STUB, #307). Matching it exactly fails the build if preview
+    // E2E ever goes back to spending real Workers AI calls. A local dev
+    // server may call the real model, so there any clue text passes. The
+    // model itself is measured by `bun run eval:clues`.
+    if (process.env.CI) {
+      await expect(gamePage.getClueTextLocator()).toHaveText(STUB_CLUE_TEXT, {
+        timeout: 15000,
+      });
+    } else {
+      const clueText = await gamePage.waitForClueText();
+      expect(clueText?.length).toBeGreaterThan(0);
+    }
   });
 });
