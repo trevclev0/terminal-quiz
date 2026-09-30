@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import GateProgress from "./GateProgress";
+import { GateProgress } from "./GateProgress";
 
 describe("GateProgress", () => {
   it("renders the bar with the completed count against the total", () => {
