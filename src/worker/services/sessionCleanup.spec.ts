@@ -13,6 +13,8 @@ describe("getSessionRetentionDays", () => {
     ["abc", DEFAULT_SESSION_RETENTION_DAYS],
     ["0", DEFAULT_SESSION_RETENTION_DAYS],
     ["-5", DEFAULT_SESSION_RETENTION_DAYS],
+    ["7days", DEFAULT_SESSION_RETENTION_DAYS],
+    ["1.5", DEFAULT_SESSION_RETENTION_DAYS],
     ["7", 7],
     ["90", 90],
   ])("%j → %d", (raw, expected) => {

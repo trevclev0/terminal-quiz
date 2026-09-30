@@ -17,8 +17,11 @@ export const SESSION_CLEANUP_MAX_BATCHES = 10;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+// Number, not parseInt: parseInt would read a malformed "7days" as 7 or
+// "1.5" as 1, and a typo here deletes players' progress early. Anything but
+// a whole positive number falls back to the default.
 export function getSessionRetentionDays(raw: string | undefined): number {
-  const parsed = raw === undefined ? Number.NaN : Number.parseInt(raw, 10);
+  const parsed = Number(raw);
   return Number.isInteger(parsed) && parsed > 0
     ? parsed
     : DEFAULT_SESSION_RETENTION_DAYS;
