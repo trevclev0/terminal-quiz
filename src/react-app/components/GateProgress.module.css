@@ -1,0 +1,14 @@
+.progress {
+  text-align: center;
+  color: var(--light-grey);
+  margin-bottom: 20px;
+}
+
+/* The label drops on narrow screens so the bar and count fit on one line.
+   On the very narrowest, the count wraps under the bar rather than
+   overflowing. */
+@media (max-width: 600px) {
+  .label {
+    display: none;
+  }
+}

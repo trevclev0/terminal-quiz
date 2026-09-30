@@ -16,6 +16,7 @@ describe("programProgressionQueryOptions", () => {
     const progression = {
       currentGate: { id: "gate-1", label: "Gate 1", question: "What is 2+2?" },
       completedGates: [],
+      totalGates: 3,
       status: "in_progress",
     };
     mockFetch.mockResolvedValueOnce({
@@ -54,6 +55,7 @@ describe("programProgressionQueryOptions", () => {
             getProgramProgression: {
               currentGate: null,
               completedGates: [],
+              totalGates: 3,
               status: "in_progress",
             },
           },
@@ -121,6 +123,7 @@ describe("programProgressionQueryOptions", () => {
           successMessage: "Correct!",
         },
       ],
+      totalGates: 1,
       status: "completed",
     };
     mockFetch.mockResolvedValueOnce({
