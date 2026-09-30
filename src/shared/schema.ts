@@ -91,6 +91,9 @@ export const sessionProgress = sqliteTable(
   },
   (t) => [
     unique("unique_session_progress").on(t.sessionId, t.programId),
+    // Serves the stale-session cleanup cron's cutoff scan
+    // (WHERE updated_at < cutoff), which would otherwise read every row.
+    index("session_progress_updated_at_idx").on(t.updatedAt),
     check(
       "session_status_check",
       sql`${t.status} IN ('in_progress', 'completed')`,
