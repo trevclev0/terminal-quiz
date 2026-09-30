@@ -41,7 +41,7 @@ export type Env = {
     // Defaults in code when unset (see services/errorBeaconLimit.ts).
     ERROR_BEACON_IP_HOURLY_LIMIT?: string;
     ERROR_BEACON_DAILY_BUDGET?: string;
-    // Optional days without a guess or reset before the daily cron deletes
+    // Optional days without a guess or reset before the hourly cron deletes
     // an anonymous session's progress. Defaults in code when unset (see
     // services/sessionCleanup.ts).
     SESSION_RETENTION_DAYS?: string;
@@ -77,7 +77,7 @@ export type AppType = typeof routes;
 
 export default {
   fetch: app.fetch,
-  // Daily cron (triggers.crons in wrangler.jsonc): prune stale anonymous
+  // Hourly cron (triggers.crons in wrangler.jsonc): prune stale anonymous
   // sessions (#315). Awaited rather than passed to waitUntil, so a failed
   // run marks the invocation failed.
   async scheduled(controller: ScheduledController, env: Env["Bindings"]) {

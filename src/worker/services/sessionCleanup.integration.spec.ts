@@ -133,7 +133,7 @@ describe("stale session cleanup", () => {
     const fresh = await insertSession(1);
 
     await worker.scheduled(
-      createScheduledController({ scheduledTime: NOW, cron: "17 4 * * *" }),
+      createScheduledController({ scheduledTime: NOW, cron: "17 * * * *" }),
       env,
     );
 

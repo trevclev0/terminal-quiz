@@ -7,9 +7,11 @@ import { type DrizzleD1Database, drizzle } from "drizzle-orm/d1";
 export const DEFAULT_SESSION_RETENTION_DAYS = 30;
 
 // Bounded so one run stays well inside D1's per-invocation query limit (50
-// on the Workers Free plan) and doesn't spend the daily rows-written budget
-// gameplay needs: each session also cascades its completed-gate, clue and
-// rate-limit rows. A large backlog drains over several daily runs.
+// on the Workers Free plan) and never spends a burst of the rows-written
+// budget gameplay needs: each session also cascades its completed-gate,
+// clue and rate-limit rows. The cron runs hourly, so the ceiling is 48,000
+// sessions a day, well above any plausible rate of new stale sessions; a
+// backlog (such as the first run's) drains over the following hours.
 export const SESSION_CLEANUP_BATCH_SIZE = 200;
 export const SESSION_CLEANUP_MAX_BATCHES = 10;
 
