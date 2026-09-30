@@ -2,10 +2,11 @@
   text-align: center;
   color: var(--light-grey);
   margin-bottom: 20px;
-  /* Keep the bar on one line; the label drops on narrow screens instead. */
-  white-space: pre;
 }
 
+/* The label drops on narrow screens so the bar and count fit on one line.
+   On the very narrowest, the count wraps under the bar rather than
+   overflowing. */
 @media (max-width: 600px) {
   .label {
     display: none;
