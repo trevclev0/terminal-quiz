@@ -12,7 +12,7 @@ type GateProgressProps = {
  * rather than block characters: the VT220 font has no block-drawing glyphs,
  * so `█` / `░` would fall back to Courier.
  */
-export default function GateProgress({ completed, total }: GateProgressProps) {
+export function GateProgress({ completed, total }: GateProgressProps) {
   if (total <= 0) return null;
 
   // Defensive clamp: the total is counted live, so an author deleting gates
