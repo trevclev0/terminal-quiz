@@ -4902,6 +4902,7 @@ type GateManagement {
 type ProgressionPayload {
   currentGate: ActiveGate
   completedGates: [CompletedGate!]!
+  totalGates: Int!
   status: String!
 }
 

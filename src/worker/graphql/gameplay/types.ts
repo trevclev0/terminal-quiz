@@ -94,6 +94,9 @@ const ProgressionPayloadType = new GraphQLObjectType({
         new GraphQLList(new GraphQLNonNull(CompletedGateType)),
       ),
     },
+    // Gates in the program, for the progress bar (#310). Counted live, so
+    // gates an author adds or deletes mid-play show up on the next fetch.
+    totalGates: { type: new GraphQLNonNull(GraphQLInt) },
     status: { type: new GraphQLNonNull(GraphQLString) },
   },
 });

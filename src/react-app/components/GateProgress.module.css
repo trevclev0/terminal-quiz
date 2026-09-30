@@ -1,0 +1,13 @@
+.progress {
+  text-align: center;
+  color: var(--light-grey);
+  margin-bottom: 20px;
+  /* Keep the bar on one line; the label drops on narrow screens instead. */
+  white-space: pre;
+}
+
+@media (max-width: 600px) {
+  .label {
+    display: none;
+  }
+}

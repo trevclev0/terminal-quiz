@@ -79,6 +79,7 @@ export const GET_PROGRAM_PROGRESSION_QUERY_OPERATION =
         correctAnswer
         successMessage
       }
+      totalGates
       status
     }
   }

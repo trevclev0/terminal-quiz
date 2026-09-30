@@ -3,6 +3,7 @@ import { useProgramQuery } from "@api/queries/useProgramQuery";
 import ActiveGate from "@components/ActiveGate";
 import CompletedGate from "@components/CompletedGate";
 import ConfirmDialog from "@components/ConfirmDialog";
+import GateProgress from "@components/GateProgress";
 import LoadingScreen from "@components/LoadingScreen";
 import ProgramEnding from "@components/ProgramEnding";
 import { useBoot } from "@contexts/BootContext";
@@ -134,6 +135,12 @@ function ProgramPlay() {
   return (
     <>
       <h1 className={styles.title}>{programName}</h1>
+      {progression && (
+        <GateProgress
+          completed={completedGates.length}
+          total={progression.totalGates}
+        />
+      )}
       {completedGates.map((gate, index) => (
         <CompletedGate
           key={gate.id}

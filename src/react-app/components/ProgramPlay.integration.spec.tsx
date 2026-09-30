@@ -136,9 +136,20 @@ describe("ProgramPlay Integration", () => {
       );
     });
 
+    expect(screen.getByTestId("gate-progress")).toHaveTextContent(
+      "[..........] 0/3",
+    );
+
     const input = screen.getByLabelText("Gate 1 password input");
     await user.type(input, "4");
     await user.keyboard("{Enter}");
+
+    // The refetched progression advances the bar.
+    await waitFor(() => {
+      expect(screen.getByTestId("gate-progress")).toHaveTextContent(
+        "[###.......] 1/3",
+      );
+    });
 
     // The gate's successMessage is revealed by CompletedGate, not by the
     // response line. Syncing on it here rather than on the response line,
@@ -275,6 +286,7 @@ describe("ProgramPlay Integration", () => {
           correctAnswer: "4",
         }),
       ],
+      totalGates: 1,
       status: "completed",
     });
 
@@ -286,6 +298,9 @@ describe("ProgramPlay Integration", () => {
     await screen.findByTestId("the-end-heading");
     await screen.findByText("Play program again");
     expect(screen.getByText("Select new program")).toBeInTheDocument();
+    expect(screen.getByTestId("gate-progress")).toHaveTextContent(
+      "[##########] 1/1",
+    );
 
     await user.click(screen.getByText("Play program again"));
 

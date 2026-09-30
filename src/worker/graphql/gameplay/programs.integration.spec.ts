@@ -248,6 +248,7 @@ describe("program queries", () => {
       getProgramProgression: {
         currentGate: { id: string; label: string; question: string } | null;
         completedGates: unknown[];
+        totalGates: number;
         status: string;
       };
     };
@@ -255,6 +256,8 @@ describe("program queries", () => {
     expect(data.getProgramProgression.currentGate?.id).toBe(E2E_GATE_1_ID);
     expect(data.getProgramProgression.currentGate?.label).toBe("Gate 1");
     expect(data.getProgramProgression.completedGates).toHaveLength(0);
+    // The E2E seed program has three gates.
+    expect(data.getProgramProgression.totalGates).toBe(3);
     expect(data.getProgramProgression.status).toBe("in_progress");
   });
 
@@ -292,6 +295,7 @@ describe("program queries", () => {
           correctAnswer: string;
           successMessage: string;
         }[];
+        totalGates: number;
         status: string;
       };
     };
@@ -306,6 +310,8 @@ describe("program queries", () => {
     );
     expect(completedIds).toContain(E2E_GATE_1_ID);
     expect(completedIds).toContain(E2E_GATE_2_ID);
+    // The total counts every gate in the program, not just those reached.
+    expect(data.getProgramProgression.totalGates).toBe(3);
 
     // Completed gates include correctAnswer and successMessage
     const gate1Completed = data.getProgramProgression.completedGates.find(
