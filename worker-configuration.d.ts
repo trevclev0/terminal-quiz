@@ -6,6 +6,7 @@ interface __BaseEnv_Env {
 	ANALYTICS: AnalyticsEngineDataset;
 	AI: Ai;
 	AI_DAILY_CLUE_BUDGET: "150";
+	AI_CLUE_STUB?: "true";
 	CLOUDFLARE_API_TOKEN: string;
 	ENVIRONMENT: string;
 	AUTH_TEST_BYPASS_ENABLED: string;
@@ -26,6 +27,7 @@ declare namespace Cloudflare {
 		ANALYTICS: AnalyticsEngineDataset;
 		AI: Ai;
 		AI_DAILY_CLUE_BUDGET: "150";
+		AI_CLUE_STUB: "true";
 		CLOUDFLARE_API_TOKEN: string;
 		ENVIRONMENT: string;
 		AUTH_TEST_BYPASS_ENABLED: string;
@@ -44,7 +46,7 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "AI_DAILY_CLUE_BUDGET" | "CLOUDFLARE_API_TOKEN" | "ENVIRONMENT" | "AUTH_TEST_BYPASS_ENABLED" | "AUTH_TEST_BYPASS_SECRET" | "BETTER_AUTH_URL" | "BETTER_AUTH_SECRET" | "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET" | "GITHUB_CLIENT_ID" | "GITHUB_CLIENT_SECRET">> {}
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "AI_DAILY_CLUE_BUDGET" | "AI_CLUE_STUB" | "CLOUDFLARE_API_TOKEN" | "ENVIRONMENT" | "AUTH_TEST_BYPASS_ENABLED" | "AUTH_TEST_BYPASS_SECRET" | "BETTER_AUTH_URL" | "BETTER_AUTH_SECRET" | "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET" | "GITHUB_CLIENT_ID" | "GITHUB_CLIENT_SECRET">> {}
 }
 
 // Begin runtime types
