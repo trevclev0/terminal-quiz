@@ -134,6 +134,13 @@
       "when": 1790052982878,
       "tag": "0018_powerful_vulcan",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1790739092276,
+      "tag": "0019_previous_stardust",
+      "breakpoints": true
     }
   ]
 }

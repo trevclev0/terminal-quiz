@@ -52,11 +52,12 @@
     "ENVIRONMENT": "production",
     "AI_DAILY_CLUE_BUDGET": "150"
   },
-  // Daily at 04:17 UTC: delete anonymous sessions with no activity for
+  // Hourly at :17: delete anonymous sessions with no activity for
   // SESSION_RETENTION_DAYS (default 30), see services/sessionCleanup.ts.
-  // Off-peak and off the hour, when cron traffic bunches up.
+  // Each run is capped, so hourly (not daily) keeps deletion ahead of the
+  // rate new stale sessions appear. Off the hour, when cron traffic bunches.
   "triggers": {
-    "crons": ["17 4 * * *"]
+    "crons": ["17 * * * *"]
   },
   "env": {
     "preview": {
