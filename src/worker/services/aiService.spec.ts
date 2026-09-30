@@ -1,3 +1,4 @@
+import { STUB_CLUE_TEXT } from "@shared/clueStub";
 import { createMockHonoContext } from "@worker-test-utils/mockEnv";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -7,7 +8,6 @@ import {
   extractClueText,
   generateClue,
   isClueStubEnabled,
-  STUB_CLUE_TEXT,
 } from "./aiService";
 
 vi.mock("hono/adapter", () => ({
