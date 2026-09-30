@@ -5,6 +5,7 @@ import type { ChangeEvent, RefObject, SubmitEvent } from "react";
 import { useCallback, useState } from "react";
 import styles from "./ActiveGate.module.css";
 import gateStyles from "./Gate.module.css";
+import { Spinner } from "./Spinner";
 
 type ActiveGateProps = {
   id: string;
@@ -176,6 +177,7 @@ to submit`;
                     : "response"
               }
             >
+              {pendingMessage && <Spinner />}
               {displayMessage}
             </p>
           )}

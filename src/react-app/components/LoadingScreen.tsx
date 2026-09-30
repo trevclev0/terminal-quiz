@@ -1,4 +1,5 @@
 import styles from "./LoadingScreen.module.css";
+import { Spinner } from "./Spinner";
 
 type LoadingScreenProps = {
   message?: string;
@@ -7,5 +8,10 @@ type LoadingScreenProps = {
 export default function LoadingScreen({
   message = "Loading...",
 }: LoadingScreenProps) {
-  return <h2 className={styles.loadingScreen}>{message}</h2>;
+  return (
+    <h2 className={styles.loadingScreen}>
+      <Spinner />
+      {message}
+    </h2>
+  );
 }

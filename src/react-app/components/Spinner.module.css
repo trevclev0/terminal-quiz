@@ -1,0 +1,31 @@
+/* A 1ch window onto a strip of the four frames, stepped sideways one
+   character per frame. The terminal font is monospaced, so 1ch is exactly
+   one glyph. Moving a strip works in every browser, unlike keyframing
+   `content` directly. */
+.spinner {
+  display: inline-block;
+  width: 1ch;
+  overflow: hidden;
+  vertical-align: bottom;
+  margin-right: 1ch;
+}
+
+.spinner::before {
+  content: "|/-\\";
+  display: inline-block;
+  white-space: pre;
+  animation: spin 0.6s steps(4) infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: translateX(-4ch);
+  }
+}
+
+/* A static glyph still marks the line as busy without the motion. */
+@media (prefers-reduced-motion: reduce) {
+  .spinner::before {
+    animation: none;
+  }
+}

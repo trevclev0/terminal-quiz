@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import type { ActiveGate as ActiveGateType } from "@api/queries/useProgramProgressionQuery";
@@ -147,6 +147,26 @@ describe("ActiveGate", () => {
   it("input is disabled when isPending is true", () => {
     renderActiveGate({ isPending: true });
     expect(screen.getByRole("textbox")).toBeDisabled();
+  });
+
+  it("shows a spinner beside Verifying... while a guess is pending", () => {
+    renderActiveGate({ isPending: true });
+
+    const status = screen.getByRole("status");
+    // The spinner is drawn by CSS, so the status text stays exactly
+    // "Verifying..." (the E2E page object waits on that string).
+    expect(status).toHaveTextContent(/^Verifying\.\.\.$/);
+    expect(within(status).getByTestId("spinner")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+  });
+
+  it("shows no spinner once the guess has resolved", () => {
+    renderActiveGate({ message: "ACCESS DENIED.", guessSucceeded: false });
+
+    expect(screen.getByRole("status")).toHaveTextContent("ACCESS DENIED.");
+    expect(screen.queryByTestId("spinner")).not.toBeInTheDocument();
   });
 
   it("input is disabled when requestClueMutation is pending", () => {
