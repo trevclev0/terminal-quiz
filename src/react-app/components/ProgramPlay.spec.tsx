@@ -138,6 +138,7 @@ const mockProgression = {
     question: "What is 2+2?",
   },
   completedGates: [],
+  totalGates: 3,
   status: "in_progress",
 };
 
@@ -201,6 +202,7 @@ describe("ProgramPlay Component", () => {
           successMessage: "Correct!",
         },
       ],
+      totalGates: 1,
       status: "completed",
     };
 
@@ -271,6 +273,7 @@ describe("ProgramPlay Component", () => {
           successMessage: "Correct!",
         },
       ],
+      totalGates: 2,
       status: "in_progress",
     };
 
@@ -294,6 +297,34 @@ describe("ProgramPlay Component", () => {
     });
   });
 
+  it("renders the progress bar from the completed gates and program total", async () => {
+    const { queryClient, wrapper } = createQueryWrapper();
+
+    queryClient.setQueryData(["programs"], mockPrograms);
+    queryClient.setQueryData(["programs", "progression", "test-program-id"], {
+      ...mockProgression,
+      completedGates: [
+        {
+          id: "gate-0",
+          label: "Gate 0",
+          question: "What is 1+1?",
+          correctAnswer: "2",
+          successMessage: "Correct!",
+        },
+      ],
+      totalGates: 4,
+    });
+
+    render(<ProgramPlay />, { wrapper });
+
+    expect(
+      await screen.findByRole("progressbar", { name: "Program progress" }),
+    ).toHaveAttribute("aria-valuenow", "1");
+    expect(screen.getByTestId("gate-progress")).toHaveTextContent(
+      "[##........] 1/4",
+    );
+  });
+
   it("gates the next question until the last success message finishes typing", async () => {
     const progressionWithCompleted = {
       currentGate: {
@@ -310,6 +341,7 @@ describe("ProgramPlay Component", () => {
           successMessage: "Correct!",
         },
       ],
+      totalGates: 2,
       status: "in_progress",
     };
 
@@ -387,6 +419,7 @@ describe("ProgramPlay Component", () => {
           successMessage: "Correct!",
         },
       ],
+      totalGates: 2,
       status: "in_progress",
     };
 
@@ -424,6 +457,9 @@ describe("ProgramPlay Component", () => {
     await renderCompletedProgram();
     expect(screen.getByText("Select new program")).toBeInTheDocument();
     expect(screen.getByText("Play program again")).toBeEnabled();
+    expect(screen.getByTestId("gate-progress")).toHaveTextContent(
+      "[##########] 1/1",
+    );
   });
 
   it("displays program name from cache", async () => {

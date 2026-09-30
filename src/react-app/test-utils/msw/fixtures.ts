@@ -60,6 +60,7 @@ export const mockProgression = (
 ): ProgramProgression => ({
   currentGate: mockActiveGate(),
   completedGates: [],
+  totalGates: 3,
   status: "in_progress",
   ...overrides,
 });

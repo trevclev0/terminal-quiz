@@ -29,6 +29,7 @@ function createMockDb() {
       sessionCompletedGates: { findMany: vi.fn() },
     },
     select: vi.fn().mockReturnValue({ from: mockFrom }),
+    $count: vi.fn().mockResolvedValue(3),
     mockOrderBy,
     mockWhere,
     mockFrom,
@@ -124,6 +125,7 @@ describe("getProgramProgression", () => {
     expect(result.completedGates).toHaveLength(1);
     expect(result.completedGates[0].id).toBe("gate-1");
     expect(result.currentGate?.id).toBe("gate-2");
+    expect(result.totalGates).toBe(3);
     expect(result.status).toBe("in_progress");
   });
 
