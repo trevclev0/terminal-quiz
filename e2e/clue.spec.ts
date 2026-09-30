@@ -29,7 +29,9 @@ test.describe("@full clue flow", () => {
     expect(denial2).toContain("ACCESS DENIED");
     await expect(gamePage.getClueButtonLocator()).toBeVisible();
 
-    // Request clue and verify AI-generated text appears
+    // Request clue and verify clue text appears. Preview serves a canned
+    // clue (AI_CLUE_STUB, #307), so this checks the wiring, not the model;
+    // the model itself is measured by `bun run eval:clues`.
     await gamePage.getClueButtonLocator().click();
     const clueText = await gamePage.waitForClueText();
     expect(clueText?.length).toBeGreaterThan(0);
