@@ -330,8 +330,14 @@ Preview Workers are torn down automatically on PR close via `.github/workflows/p
 |---|---|
 | `CLOUDFLARE_API_TOKEN` | Cloudflare API token with Workers, D1, and Workers AI permissions |
 | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
-| `ADMIN_PAT` | GitHub Personal Access Token (used by the release workflow to push back to `main`) |
+| `RELEASE_APP_PRIVATE_KEY` | Private key of the GitHub App the release workflow mints its token from (used to push the release commit back to `main`) |
 | `AUTH_TEST_BYPASS_SECRET` | Shared secret for the E2E test auth bypass (also passed to preview deploys via `--var`) |
+
+**Required repository variables:**
+
+| Variable | Description |
+|---|---|
+| `RELEASE_APP_CLIENT_ID` | Client ID of that release GitHub App |
 
 ### Manual deployment
 
