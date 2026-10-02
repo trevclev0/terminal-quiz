@@ -332,7 +332,6 @@ Preview Workers are torn down automatically on PR close via `.github/workflows/p
 | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
 | `ADMIN_PAT` | GitHub Personal Access Token (used by the release workflow to push back to `main`) |
 | `AUTH_TEST_BYPASS_SECRET` | Shared secret for the E2E test auth bypass (also passed to preview deploys via `--var`) |
-| `CODECOV_TOKEN` | Codecov upload token for coverage reporting |
 
 ### Manual deployment
 
