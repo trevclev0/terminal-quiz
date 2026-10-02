@@ -1,3 +1,4 @@
+import { STUB_CLUE_TEXT } from "@shared/clueStub";
 import { createMockHonoContext } from "@worker-test-utils/mockEnv";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -6,6 +7,7 @@ import {
   CLUE_RESPONSE_FORMAT,
   extractClueText,
   generateClue,
+  isClueStubEnabled,
 } from "./aiService";
 
 vi.mock("hono/adapter", () => ({
@@ -247,6 +249,64 @@ describe("aiService", () => {
 
     expect(result).toMatchObject({ clueText: null, reason: "malformed" });
   });
+
+  it("serves the stub clue without calling AI when the stub is enabled", async () => {
+    const { c, aiRunMock } = createMockHonoContext({
+      ENVIRONMENT: "preview",
+      AI_CLUE_STUB: "true",
+    });
+
+    const result = await generateClue(
+      c,
+      baseArgs.gateQuestion,
+      baseArgs.correctAnswer,
+      baseArgs.currentGuess,
+      [],
+    );
+
+    expect(result).toEqual({
+      clueText: STUB_CLUE_TEXT,
+      reason: "success",
+      latencyMs: 0,
+    });
+    expect(aiRunMock).not.toHaveBeenCalled();
+  });
+
+  it("calls the real model in production even if the stub flag is set", async () => {
+    const { c, aiRunMock } = createMockHonoContext({
+      ENVIRONMENT: "production",
+      AI_CLUE_STUB: "true",
+    });
+    aiRunMock.mockResolvedValue({ response: { clue: "real clue" } });
+
+    const result = await generateClue(
+      c,
+      baseArgs.gateQuestion,
+      baseArgs.correctAnswer,
+      baseArgs.currentGuess,
+      [],
+    );
+
+    expect(result.clueText).toBe("real clue");
+    expect(aiRunMock).toHaveBeenCalledOnce();
+  });
+});
+
+describe("isClueStubEnabled", () => {
+  it.each([
+    { ENVIRONMENT: "preview", AI_CLUE_STUB: "true", expected: true },
+    { ENVIRONMENT: "development", AI_CLUE_STUB: "true", expected: true },
+    { ENVIRONMENT: "production", AI_CLUE_STUB: "true", expected: false },
+    { ENVIRONMENT: undefined, AI_CLUE_STUB: "true", expected: false },
+    { ENVIRONMENT: "", AI_CLUE_STUB: "true", expected: false },
+    { ENVIRONMENT: "preview", AI_CLUE_STUB: undefined, expected: false },
+    { ENVIRONMENT: "preview", AI_CLUE_STUB: "1", expected: false },
+  ])(
+    "ENVIRONMENT=$ENVIRONMENT AI_CLUE_STUB=$AI_CLUE_STUB → $expected",
+    ({ expected, ...vars }) => {
+      expect(isClueStubEnabled(vars)).toBe(expected);
+    },
+  );
 });
 
 describe("extractClueText", () => {

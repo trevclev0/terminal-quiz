@@ -233,6 +233,14 @@ export class GamePage {
   }
 
   /**
+   * The latest clue's animated node. Pair with `toHaveText`, which retries
+   * until the typewriter finishes; a one-shot read can catch it mid-type.
+   */
+  getClueTextLocator() {
+    return this.page.locator("[data-testid='clue-text']").first();
+  }
+
+  /**
    * Check if the clue button is currently visible.
    */
   async isClueButtonVisible(): Promise<boolean> {

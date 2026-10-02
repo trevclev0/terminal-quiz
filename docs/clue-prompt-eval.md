@@ -9,7 +9,8 @@ each one fared.
 
 It exists because no automated test can verify model behavior: every test
 tier mocks the AI call (`aiService.spec.ts` mocks `AI.run`; the
-`requestClue` integration specs mock `generateClue` wholesale). This harness
+`requestClue` integration specs mock `generateClue` wholesale; preview E2E
+gets a canned clue from `AI_CLUE_STUB`, #307). This harness
 is the only place the real model's resistance to prompt injection gets
 measured. See #269.
 

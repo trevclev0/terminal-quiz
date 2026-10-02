@@ -31,6 +31,10 @@ export type Env = {
     // is 10,000 neurons/day, ~200 llama-class calls). Defaults in code when
     // unset. Global across all programs/sessions.
     AI_DAILY_CLUE_BUDGET?: string;
+    // "true" serves a canned clue instead of calling Workers AI, so preview
+    // E2E spends no neurons. Ignored when ENVIRONMENT is unset or
+    // "production" (see isClueStubEnabled in services/aiService.ts).
+    AI_CLUE_STUB?: string;
     // Optional caps on the public POST /api/error beacon: accepted beacons
     // per client IP per clock hour, and across all clients per UTC day.
     // Defaults in code when unset (see services/errorBeaconLimit.ts).
