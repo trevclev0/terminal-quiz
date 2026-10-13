@@ -1,5 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { computeCanRequestClue } from "./clueEligibility";
+import { describe, expect, it, vi } from "vitest";
+import {
+  computeCanRequestClue,
+  getExistingCluesForGate,
+} from "./clueEligibility";
 
 const defaultParams = {
   isCorrectGuess: false,
@@ -49,6 +52,17 @@ describe("computeCanRequestClue", () => {
     expect(result).toBe(false);
   });
 
+  it("ignores the last-clue check when no clue exists yet", () => {
+    // null must not be coerced to 0 and compared against attemptCount.
+    const result = computeCanRequestClue({
+      ...defaultParams,
+      attemptCount: 0,
+      guidanceThreshold: 0,
+      mostRecentClueAttemptCount: null,
+    });
+    expect(result).toBe(true);
+  });
+
   it("returns true when eligible", () => {
     const result = computeCanRequestClue({
       ...defaultParams,
@@ -56,5 +70,24 @@ describe("computeCanRequestClue", () => {
       mostRecentClueAttemptCount: 3,
     });
     expect(result).toBe(true);
+  });
+});
+
+describe("getExistingCluesForGate", () => {
+  it("queries the session's clues for the gate, newest first", async () => {
+    const clues = [{ id: "clue-1" }];
+    const findMany = vi.fn().mockResolvedValue(clues);
+    const db = { query: { gateClues: { findMany } } };
+
+    const result = await getExistingCluesForGate(
+      db as unknown as Parameters<typeof getExistingCluesForGate>[0],
+      "progress-1",
+      "gate-1",
+    );
+
+    expect(result).toBe(clues);
+    const [args] = findMany.mock.calls[0];
+    expect(args.where).toBeDefined();
+    expect(args.orderBy).toHaveLength(1);
   });
 });
