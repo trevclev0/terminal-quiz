@@ -1,3 +1,4 @@
+import { SQLiteSyncDialect } from "drizzle-orm/sqlite-core";
 import { describe, expect, it, vi } from "vitest";
 import {
   computeCanRequestClue,
@@ -87,7 +88,14 @@ describe("getExistingCluesForGate", () => {
 
     expect(result).toBe(clues);
     const [args] = findMany.mock.calls[0];
-    expect(args.where).toBeDefined();
+    const dialect = new SQLiteSyncDialect();
+    expect(dialect.sqlToQuery(args.where)).toMatchObject({
+      sql: '("gate_clues"."session_progress_id" = ? and "gate_clues"."gate_id" = ?)',
+      params: ["progress-1", "gate-1"],
+    });
     expect(args.orderBy).toHaveLength(1);
+    expect(dialect.sqlToQuery(args.orderBy[0]).sql).toBe(
+      '"gate_clues"."created_at" desc',
+    );
   });
 });

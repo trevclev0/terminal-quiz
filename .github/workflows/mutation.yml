@@ -23,10 +23,11 @@ jobs:
         uses: ./.github/actions/setup-env
 
       # Incremental cache: Stryker reuses results for mutants whose code and
-      # covering tests are unchanged. Always saved (even on a failed run)
-      # so a score drop still leaves a warm cache for the next run.
+      # covering tests are unchanged. Restore and save are separate steps so
+      # the save runs even when the score gate fails the job (the combined
+      # actions/cache only saves after a successful job).
       - name: Restore Stryker incremental cache
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           path: reports/stryker-incremental.json
           key: stryker-${{ github.sha }}
@@ -43,3 +44,10 @@ jobs:
           name: mutation-report
           path: reports/mutation/
           if-no-files-found: ignore
+
+      - name: Save Stryker incremental cache
+        if: always()
+        uses: actions/cache/save@v6
+        with:
+          path: reports/stryker-incremental.json
+          key: stryker-${{ github.sha }}
