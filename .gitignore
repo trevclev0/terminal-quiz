@@ -37,3 +37,7 @@ scripts/generated/
 **/playwright-report/
 **/test-results/
 **/.cache/
+
+# Stryker mutation testing
+.stryker-tmp/
+reports/

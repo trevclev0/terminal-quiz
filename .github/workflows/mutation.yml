@@ -1,0 +1,45 @@
+name: Mutation Testing
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-env
+
+      # Incremental cache: Stryker reuses results for mutants whose code and
+      # covering tests are unchanged. Always saved (even on a failed run)
+      # so a score drop still leaves a warm cache for the next run.
+      - name: Restore Stryker incremental cache
+        uses: actions/cache@v6
+        with:
+          path: reports/stryker-incremental.json
+          key: stryker-${{ github.sha }}
+          restore-keys: |
+            stryker-
+
+      - name: Run mutation tests
+        run: mise run mutate
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mutation-report
+          path: reports/mutation/
+          if-no-files-found: ignore

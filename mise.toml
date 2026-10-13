@@ -47,6 +47,10 @@ description = "Run unit tests single run"
 run = "bun run test:integration"
 description = "Run integration tests (pool-workers + real D1)"
 
+[tasks.mutate]
+run = "bun run mutate"
+description = "Run Stryker mutation tests (scoped to pure logic; slow)"
+
 [tasks.coverage]
 run = "bun run coverage"
 description = "Run coverage"
