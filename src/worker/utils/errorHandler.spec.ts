@@ -112,6 +112,23 @@ describe("errorHandler", () => {
       });
       expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
+    it("treats any /api/graphql-prefixed path as GraphQL", () => {
+      const response = formatErrorResponse(
+        new Error("x"),
+        "/api/graphql/batch",
+      );
+
+      expect(response).toEqual({
+        errors: [{ message: "Internal Server Error" }],
+      });
+    });
+
+    it("does not treat a path merely ending in /api/graphql as GraphQL", () => {
+      const response = formatErrorResponse(new Error("x"), "/v2/api/graphql");
+
+      expect(response).toMatchObject({ code: "INTERNAL_SERVER_ERROR" });
+    });
+
     it("provides a default message for GraphQL paths if error has no message", () => {
       const error = new Error();
       const response = formatErrorResponse(error, "/api/graphql");

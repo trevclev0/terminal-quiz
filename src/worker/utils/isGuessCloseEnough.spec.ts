@@ -14,6 +14,17 @@ describe("isGuessCloseEnough", () => {
     it("returns false when guess is empty but answer is not", () => {
       expect(isGuessCloseEnough("", "hello")).toBe(false);
     });
+
+    it("returns false when answer is empty but guess is not", () => {
+      expect(isGuessCloseEnough("hello", "")).toBe(false);
+    });
+
+    it("measures similarity against the longer string", () => {
+      // 1 edit over 8 chars = 0.875 (accepted); over the shorter 7 it
+      // would be ~0.857 (rejected).
+      expect(isGuessCloseEnough("abcdefg", "abcdefgh")).toBe(true);
+      expect(isGuessCloseEnough("abcdefgh", "abcdefg")).toBe(true);
+    });
   });
 
   describe("explicit threshold", () => {

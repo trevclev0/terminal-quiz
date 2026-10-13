@@ -147,6 +147,15 @@ describe("gate input", () => {
 describe("guessSchema", () => {
   const schema = guessSchema("Invalid guess length.");
 
+  it("uses the caller's message for non-string input", () => {
+    // Built per-test, not from the describe-level `schema`: that one is
+    // constructed at collection time, before Stryker activates a mutant.
+    const fresh = guessSchema("Invalid guess length.");
+    for (const value of [42, null, undefined]) {
+      expect(firstMessage(fresh, value)).toBe("Invalid guess length.");
+    }
+  });
+
   it("parses to the trimmed guess", () => {
     expect(schema.parse("  red  ")).toBe("red");
   });
@@ -180,6 +189,14 @@ describe("clamp helpers", () => {
 describe("parseOrThrow", () => {
   it("returns parsed output", () => {
     expect(parseOrThrow(visibilitySchema, "unlisted")).toBe("unlisted");
+  });
+
+  it("falls back to a generic message when a failure carries no issues", () => {
+    const schema = {
+      safeParse: () => ({ success: false, error: { issues: [] } }),
+    } as unknown as Parameters<typeof parseOrThrow>[0];
+
+    expect(() => parseOrThrow(schema, {})).toThrow("Invalid input.");
   });
 
   it("throws the first issue's message", () => {
