@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "vitest",
+  "vitest": { "configFile": "vite.config.ts" },
+  "plugins": ["@stryker-mutator/vitest-runner"],
+  "tsconfigFile": "tsconfig.stryker-skip.json",
+  "coverageAnalysis": "perTest",
+  "mutate": [
+    "src/worker/utils/**/*.ts",
+    "src/shared/validation.ts",
+    "src/worker/graphql/gameplay/clueEligibility.ts",
+    "!**/*.spec.ts",
+    "!**/test-utils/**"
+  ],
+  "ignoreStatic": true,
+  "incremental": true,
+  "incrementalFile": "reports/stryker-incremental.json",
+  "thresholds": { "high": 90, "low": 85, "break": 85 },
+  "reporters": ["clear-text", "progress", "html"],
+  "htmlReporter": { "fileName": "reports/mutation/index.html" },
+  "tempDirName": ".stryker-tmp",
+  "cleanTempDir": true
+}
