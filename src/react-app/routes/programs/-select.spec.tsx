@@ -4,9 +4,10 @@ import {
   mockPrograms,
   renderWithRouter,
 } from "@test-utils";
+import { gqlApi } from "@test-utils/msw/graphqlApi";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { delay, graphql, HttpResponse } from "msw";
+import { delay, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import {
   afterAll,
@@ -22,13 +23,13 @@ import { validateSelectSearch } from "./select";
 const server = setupServer(...handlers);
 
 describe("Select Route Integration", () => {
-  beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+  beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
   afterEach(() => server.resetHandlers());
   afterAll(() => server.close());
 
   it("loads data via the router loader and updates the URL on selection", async () => {
     server.use(
-      graphql.query("GetPrograms", async () => {
+      gqlApi.query("GetPrograms", async () => {
         // Automatically pause 150ms to simulate a real network call
         await delay(150);
         return HttpResponse.json({
@@ -59,7 +60,7 @@ describe("Select Route Integration", () => {
 
   it("renders a warning when the loader returns empty programs", async () => {
     server.use(
-      graphql.query("GetPrograms", () => {
+      gqlApi.query("GetPrograms", () => {
         return HttpResponse.json({
           data: { programs: [] },
         });
@@ -77,7 +78,7 @@ describe("Select Route Integration", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
 
     server.use(
-      graphql.query("GetPrograms", () =>
+      gqlApi.query("GetPrograms", () =>
         HttpResponse.json({
           errors: [{ message: "Failed to fetch programs" }],
         }),

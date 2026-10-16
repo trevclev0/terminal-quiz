@@ -7,9 +7,10 @@ import {
   mockMyPrograms,
   renderWithRouter,
 } from "@test-utils";
+import { gqlApi } from "@test-utils/msw/graphqlApi";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { graphql, HttpResponse } from "msw";
+import { HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import {
   afterAll,
@@ -27,11 +28,11 @@ vi.mock("@components/LoginPage", () => ({
 }));
 
 const server = setupServer(
-  graphql.query("Me", () => HttpResponse.json({ data: { me: mockMe() } })),
-  graphql.query("MyPrograms", () =>
+  gqlApi.query("Me", () => HttpResponse.json({ data: { me: mockMe() } })),
+  gqlApi.query("MyPrograms", () =>
     HttpResponse.json({ data: { myPrograms: mockMyPrograms() } }),
   ),
-  graphql.query("ProgramGates", () =>
+  gqlApi.query("ProgramGates", () =>
     HttpResponse.json({
       data: {
         programGates: [mockGateManagement()],
@@ -42,7 +43,7 @@ const server = setupServer(
 );
 
 describe("Manage Routes Integration", () => {
-  beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+  beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
   beforeEach(() => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -111,7 +112,7 @@ describe("Manage Routes Integration", () => {
 
   it("shows empty state when program has no gates", async () => {
     server.use(
-      graphql.query("ProgramGates", () =>
+      gqlApi.query("ProgramGates", () =>
         HttpResponse.json({ data: { programGates: [] } }),
       ),
     );
@@ -128,7 +129,7 @@ describe("Manage Routes Integration", () => {
 
   it("redirects to login when not authenticated", async () => {
     server.use(
-      graphql.query("Me", () => HttpResponse.json({ data: { me: null } })),
+      gqlApi.query("Me", () => HttpResponse.json({ data: { me: null } })),
     );
 
     const router = createTestRouter("/programs/manage");
@@ -149,7 +150,7 @@ describe("Manage Routes Integration", () => {
 
   it("redirects to login with correct return_to for editor route", async () => {
     server.use(
-      graphql.query("Me", () => HttpResponse.json({ data: { me: null } })),
+      gqlApi.query("Me", () => HttpResponse.json({ data: { me: null } })),
     );
 
     const router = createTestRouter("/programs/manage/program-1");
@@ -170,7 +171,7 @@ describe("Manage Routes Integration", () => {
 
   it("shows error state when myPrograms query fails", async () => {
     server.use(
-      graphql.query("MyPrograms", () =>
+      gqlApi.query("MyPrograms", () =>
         HttpResponse.json(
           { errors: [{ message: "Server error" }] },
           { status: 500 },
