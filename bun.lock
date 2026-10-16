@@ -52,7 +52,7 @@
         "commitlint-config-gitmoji": "^2.3.1",
         "cz-git": "^1.14.0",
         "czg": "^1.14.0",
-        "dotenv": "^17.4.2",
+        "dotenv": "^18.0.5",
         "drizzle-kit": "^0.31.11",
         "globals": "^17.13.0",
         "happy-dom": "^20.14.6",
@@ -922,7 +922,7 @@
 
     "dot-prop": ["dot-prop@5.3.0", "", { "dependencies": { "is-obj": "^2.0.0" } }, "sha512-QM8q3zDe58hqUqjraQOmzZ1LIH9SWQJTlEKCH4kJ2oQvLZk7RbQXvtDM2XEq3fwkV9CCvvH4LA0AV+ogFsBM2Q=="],
 
-    "dotenv": ["dotenv@17.4.2", "", {}, "sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw=="],
+    "dotenv": ["dotenv@18.0.8", "", { "bin": { "dotenv": "dist/index.cjs" } }, "sha512-2KDeoFoK/zRtcnbunCDlLG5VWVMcyqeQc6iK65o231nfNAcuGrKoqUQfJFUtBI+QlShk5HKIHxwebBtUl3rEfA=="],
 
     "drizzle-graphql": ["drizzle-graphql@0.8.5", "", { "dependencies": { "graphql-parse-resolve-info": "^4.13.0" }, "peerDependencies": { "drizzle-orm": ">=0.30.9", "graphql": ">=16.3.0" } }, "sha512-MAqBwmj/kSZWIUQdYCsYtoZWxxVRcXWkhsqt0b6fY1XC171WHBK/jZiVWepO04tDsdaDuTvzlufDHJqNl3VVWQ=="],
 
