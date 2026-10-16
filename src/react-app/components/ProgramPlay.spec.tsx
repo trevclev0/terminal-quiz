@@ -1,5 +1,6 @@
 import { BootProvider, useBoot } from "@contexts/BootContext";
 import type { UseMutationResult } from "@tanstack/react-query";
+import { gqlApi } from "@test-utils/msw/graphqlApi";
 import { handlers } from "@test-utils/msw/handlers";
 import { createQueryWrapper } from "@test-utils/queryTestUtils";
 import { stubReducedMotion } from "@test-utils/reducedMotion";
@@ -11,7 +12,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { graphql, HttpResponse } from "msw";
+import { HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import type { ReactNode } from "react";
 import {
@@ -143,17 +144,17 @@ const mockProgression = {
 };
 
 const server = setupServer(
-  graphql.query("GetPrograms", () =>
+  gqlApi.query("GetPrograms", () =>
     HttpResponse.json({ data: { programs: mockPrograms } }),
   ),
-  graphql.query("GetProgramProgression", () =>
+  gqlApi.query("GetProgramProgression", () =>
     HttpResponse.json({ data: { getProgramProgression: mockProgression } }),
   ),
   ...handlers,
 );
 
 describe("ProgramPlay Component", () => {
-  beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+  beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
   afterEach(() => server.resetHandlers());
   afterAll(() => server.close());
 

@@ -1,4 +1,5 @@
 import { mockCompletedGate, mockProgression } from "@test-utils";
+import { gqlApi } from "@test-utils/msw/graphqlApi";
 import {
   createTestRouter,
   renderWithRouter,
@@ -6,7 +7,7 @@ import {
 import { stubReducedMotion } from "@test-utils/reducedMotion";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { graphql, HttpResponse, http } from "msw";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import {
   afterAll,
@@ -35,15 +36,15 @@ const getSessionHandler = http.get("/api/auth/get-session", () =>
 
 const server = setupServer(
   getSessionHandler,
-  graphql.query("Program", () =>
+  gqlApi.query("Program", () =>
     HttpResponse.json({
       data: { program: { id: "1", name: "Program 1" } },
     }),
   ),
-  graphql.query("GetProgramProgression", () =>
+  gqlApi.query("GetProgramProgression", () =>
     HttpResponse.json({ data: { getProgramProgression: progressionData } }),
   ),
-  graphql.mutation("SubmitGuess", ({ variables }) => {
+  gqlApi.mutation("SubmitGuess", ({ variables }) => {
     if (variables.guess === "4") {
       progressionData = completedProgression;
       return HttpResponse.json({
@@ -68,11 +69,11 @@ const server = setupServer(
       },
     });
   }),
-  graphql.mutation("ResetSession", () => {
+  gqlApi.mutation("ResetSession", () => {
     progressionData = initialProgression;
     return HttpResponse.json({ data: { resetSession: true } });
   }),
-  graphql.query("GetPrograms", () =>
+  gqlApi.query("GetPrograms", () =>
     HttpResponse.json({
       data: {
         programs: [
@@ -82,10 +83,10 @@ const server = setupServer(
       },
     }),
   ),
-  graphql.query("GetInProgressProgram", () =>
+  gqlApi.query("GetInProgressProgram", () =>
     HttpResponse.json({ data: { getInProgressProgram: null } }),
   ),
-  graphql.mutation("RequestClue", () =>
+  gqlApi.mutation("RequestClue", () =>
     HttpResponse.json({
       data: {
         requestClue: {
@@ -104,7 +105,7 @@ describe("Cross-Route Flow", () => {
   // boot animation, so skip straight past it.
   beforeEach(() => stubReducedMotion());
 
-  beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+  beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
   afterEach(() => {
     server.resetHandlers();
     progressionData = mockProgression();

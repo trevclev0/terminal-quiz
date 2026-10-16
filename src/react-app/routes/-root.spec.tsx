@@ -1,6 +1,7 @@
 import { createTestRouter, handlers, renderWithRouter } from "@test-utils";
+import { gqlApi } from "@test-utils/msw/graphqlApi";
 import { screen } from "@testing-library/react";
-import { graphql, HttpResponse } from "msw";
+import { HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import {
   afterAll,
@@ -14,7 +15,7 @@ import {
 
 const server = setupServer(...handlers);
 
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
@@ -35,7 +36,7 @@ describe("Root Route", () => {
 
   it("should redirect to /programs/:programId when in-progress program exists", async () => {
     server.use(
-      graphql.query("GetInProgressProgram", () => {
+      gqlApi.query("GetInProgressProgram", () => {
         return HttpResponse.json({
           data: { getInProgressProgram: "test-program-id" },
         });
@@ -56,7 +57,7 @@ describe("Root Route", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
 
     server.use(
-      graphql.query("GetInProgressProgram", () =>
+      gqlApi.query("GetInProgressProgram", () =>
         HttpResponse.json({
           errors: [{ message: "Query failed" }],
         }),

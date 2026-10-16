@@ -3,11 +3,12 @@ import {
   mockCompletedGate,
   mockProgression,
 } from "@test-utils/msw/fixtures";
+import { gqlApi } from "@test-utils/msw/graphqlApi";
 import { createQueryWrapper } from "@test-utils/queryTestUtils";
 import { stubReducedMotion } from "@test-utils/reducedMotion";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { graphql, HttpResponse } from "msw";
+import { HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import {
   afterAll,
@@ -37,15 +38,15 @@ vi.mock("@routes/programs/$programId", () => ({
 let progressionData: ProgramProgression = mockProgression();
 
 const server = setupServer(
-  graphql.query("Program", () =>
+  gqlApi.query("Program", () =>
     HttpResponse.json({
       data: { program: { id: "test-program-id", name: "Test Program" } },
     }),
   ),
-  graphql.query("GetProgramProgression", () =>
+  gqlApi.query("GetProgramProgression", () =>
     HttpResponse.json({ data: { getProgramProgression: progressionData } }),
   ),
-  graphql.mutation("SubmitGuess", ({ variables }) => {
+  gqlApi.mutation("SubmitGuess", ({ variables }) => {
     if (variables.guess === "4") {
       progressionData = mockProgression({
         currentGate: mockActiveGate({
@@ -84,19 +85,19 @@ const server = setupServer(
       },
     });
   }),
-  graphql.mutation("ResetSession", () => {
+  gqlApi.mutation("ResetSession", () => {
     progressionData = mockProgression();
     return HttpResponse.json({ data: { resetSession: true } });
   }),
-  graphql.query("GetPrograms", () =>
+  gqlApi.query("GetPrograms", () =>
     HttpResponse.json({
       data: { programs: [{ id: "test-program-id", name: "Test Program" }] },
     }),
   ),
-  graphql.query("GetInProgressProgram", () =>
+  gqlApi.query("GetInProgressProgram", () =>
     HttpResponse.json({ data: { getInProgressProgram: null } }),
   ),
-  graphql.mutation("RequestClue", () =>
+  gqlApi.mutation("RequestClue", () =>
     HttpResponse.json({
       data: {
         requestClue: {
@@ -115,7 +116,7 @@ describe("ProgramPlay Integration", () => {
   // inside a default findBy timeout.
   beforeEach(() => stubReducedMotion());
 
-  beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+  beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
   afterEach(() => {
     server.resetHandlers();
     progressionData = mockProgression();
@@ -233,7 +234,7 @@ describe("ProgramPlay Integration", () => {
 
   it("disables clue button with countdown when request is rate limited", async () => {
     server.use(
-      graphql.mutation("RequestClue", () =>
+      gqlApi.mutation("RequestClue", () =>
         HttpResponse.json({
           data: {
             requestClue: {

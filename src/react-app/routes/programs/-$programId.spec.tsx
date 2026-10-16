@@ -7,9 +7,10 @@ import {
   mockProgression,
   renderWithRouter,
 } from "@test-utils";
+import { gqlApi } from "@test-utils/msw/graphqlApi";
 import { stubReducedMotion } from "@test-utils/reducedMotion";
 import { screen, waitFor } from "@testing-library/react";
-import { graphql, HttpResponse } from "msw";
+import { HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import {
   afterAll,
@@ -23,10 +24,10 @@ import {
 } from "vitest";
 
 const server = setupServer(
-  graphql.query("GetPrograms", () =>
+  gqlApi.query("GetPrograms", () =>
     HttpResponse.json({ data: { programs: [mockProgram()] } }),
   ),
-  graphql.query("Program", () =>
+  gqlApi.query("Program", () =>
     HttpResponse.json({ data: { program: mockProgram() } }),
   ),
   ...handlers,
@@ -38,7 +39,7 @@ describe("Program Play Route Integration", () => {
   // boot animation, so skip straight past it.
   beforeEach(() => stubReducedMotion());
 
-  beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+  beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
   afterEach(() => server.resetHandlers());
   afterAll(() => server.close());
 
@@ -61,7 +62,7 @@ describe("Program Play Route Integration", () => {
 
   it("renders the end state when program is completed", async () => {
     server.use(
-      graphql.query("GetProgramProgression", async () => {
+      gqlApi.query("GetProgramProgression", async () => {
         return HttpResponse.json({
           data: {
             getProgramProgression: mockProgression({
@@ -94,7 +95,7 @@ describe("Program Play Route Integration", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
 
     server.use(
-      graphql.query("GetProgramProgression", () =>
+      gqlApi.query("GetProgramProgression", () =>
         HttpResponse.json({
           errors: [{ message: "Progression fetch failed" }],
         }),
