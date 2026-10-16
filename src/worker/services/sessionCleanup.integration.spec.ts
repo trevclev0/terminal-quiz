@@ -134,7 +134,10 @@ describe("stale session cleanup", () => {
 
     await worker.scheduled(
       createScheduledController({ scheduledTime: NOW, cron: "17 * * * *" }),
-      env,
+      // The pool's env is typed by the generated runtime types, the handler's
+      // by @cloudflare/workers-types; their Ai shapes drift apart whenever
+      // the package is bumped. Same bindings at runtime.
+      env as unknown as Parameters<typeof worker.scheduled>[1],
     );
 
     expect(await remainingSessionIds()).toEqual([fresh]);
