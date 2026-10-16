@@ -9,6 +9,14 @@ updates:
       timezone: "UTC"
     open-pull-requests-limit: 10
     labels: ["dependencies"]
+    # @cloudflare/vitest-pool-workers peers on vitest ^4.1, and every
+    # integration spec fails to start under Vitest 5. Drop these ignores once
+    # the pool declares Vitest 5 support.
+    ignore:
+      - dependency-name: "vitest"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@vitest/*"
+        update-types: ["version-update:semver-major"]
     groups:
       npm-and-yarn-minor-patch:
         patterns: ["*"]
