@@ -239,6 +239,29 @@ Branches follow `<git-commit-type>/<issue-id>-<kebab-case-brief-description>` (e
   addressed and pushed**: `gh pr comment <n> --body "@coderabbitai full review"` (or click
   **Trigger review** in CodeRabbit's summary comment). Do not trigger it on PR open — Greptile
   reviews first, CodeRabbit reviews the amended diff. Config: `.coderabbit.yaml`.
+- **Dependency-only PRs** (Dependabot or a hand-made bump): Greptile and CI only. Don't spend a
+  CodeRabbit review on them; the included quota is about one review an hour.
+
+---
+
+## Superpowers Skills
+
+The Superpowers plugin (brainstorming → worktree → plan → TDD → review → finish) works here, but
+this repo's rules win where its defaults differ:
+
+- **Specs and plans go in the GitHub issue**, not `docs/superpowers/specs|plans/`. Post the
+  approved design and the plan as issue comments; `docs/` stays for decisions that outlive the
+  work (see What to Avoid).
+- **Commits** use the gitmoji + conventional format (`bun run commit`), and branches follow the
+  naming rule under Commit Conventions.
+- **Worktrees** go in a sibling directory such as `~/code/terminal-quiz-worktrees/<branch>`, not
+  inside the repo (Biome, Vitest and Stryker would scan the copy) and not under `/tmp` (mise
+  can't resolve the user-level `node` there, so the Husky hooks fail). In a fresh worktree run
+  `bun install`, copy `.env` and `.dev.vars`, and run `migrate:local` / `seed:local` if you need
+  data: the local D1 lives in each worktree's `.wrangler/`.
+- **Reviews:** the local review skills don't replace the PR bots; Greptile then CodeRabbit still
+  apply (AI Review on PRs above).
+- **Tests mock the AI.** TDD and verification steps never call Workers AI (see What to Avoid).
 
 ---
 
