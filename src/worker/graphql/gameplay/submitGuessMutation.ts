@@ -145,7 +145,15 @@ export const submitGuess = {
           totalGuesses: sql`${sessionProgress.totalGuesses} + 1`,
           ...(newStatus === "completed" ? { completedAt: new Date() } : {}),
         })
-        .where(eq(sessionProgress.id, progress.id)),
+        // A concurrent duplicate guess read the same active gate; once the
+        // first advance moves currentGateId it matches no row, so it can't
+        // double-count totalGuesses or push completedAt later.
+        .where(
+          and(
+            eq(sessionProgress.id, progress.id),
+            eq(sessionProgress.currentGateId, activeGate.id),
+          ),
+        ),
     ]);
 
     // Only the request that actually persisted the completion row emits the
