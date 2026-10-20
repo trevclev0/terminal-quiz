@@ -22,7 +22,7 @@
   grid-area: 1 / 1;
   margin: 0;
   font-family: inherit;
-  white-space: pre;
+  white-space: pre-wrap;
 }
 
 .statsSizer {
