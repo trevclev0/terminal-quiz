@@ -63,6 +63,9 @@ export const submitGuess = {
         .update(sessionProgress)
         .set({
           attemptCount: sql`${sessionProgress.attemptCount} + 1`,
+          // NULL + 1 stays NULL in SQLite, so a run that predates tracking
+          // stays untracked instead of reporting a partial count.
+          totalGuesses: sql`${sessionProgress.totalGuesses} + 1`,
         })
         .where(eq(sessionProgress.id, progress.id));
 
@@ -139,6 +142,7 @@ export const submitGuess = {
           currentGateId: nextGate ? nextGate.id : null,
           status: newStatus,
           attemptCount: 0,
+          totalGuesses: sql`${sessionProgress.totalGuesses} + 1`,
           ...(newStatus === "completed" ? { completedAt: new Date() } : {}),
         })
         .where(eq(sessionProgress.id, progress.id)),

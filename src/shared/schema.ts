@@ -78,9 +78,12 @@ export const sessionProgress = sqliteTable(
       onDelete: "set null",
     }),
     status: text("status").notNull().default("in_progress"),
-    startedAt: integer("started_at", { mode: "timestamp" })
-      .notNull()
-      .$defaultFn(() => new Date()),
+    // Nullable: resetSession clears it and the next progression fetch
+    // re-stamps it, so a replay's clock starts when the player returns to the
+    // first gate, not at the reset click.
+    startedAt: integer("started_at", { mode: "timestamp" }).$defaultFn(
+      () => new Date(),
+    ),
     updatedAt: integer("updated_at", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date())
@@ -88,6 +91,11 @@ export const sessionProgress = sqliteTable(
     completedAt: integer("completed_at", { mode: "timestamp" }),
     // Counter for incorrect guesses for the current gate
     attemptCount: integer("attempt_count").notNull().default(0),
+    // Guesses (right and wrong) across the whole run. Nullable with no SQL
+    // default on purpose: rows that predate tracking stay NULL, and
+    // `NULL + 1` is NULL, so their run is never shown with a misleadingly
+    // low count. New rows get 0 from the app-side default.
+    totalGuesses: integer("total_guesses").$defaultFn(() => 0),
   },
   (t) => [
     unique("unique_session_progress").on(t.sessionId, t.programId),

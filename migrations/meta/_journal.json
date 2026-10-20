@@ -141,6 +141,20 @@
       "when": 1790739092276,
       "tag": "0019_previous_stardust",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1792510643721,
+      "tag": "0020_strange_doctor_doom",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1792510648695,
+      "tag": "0021_odd_oracle",
+      "breakpoints": true
     }
   ]
 }

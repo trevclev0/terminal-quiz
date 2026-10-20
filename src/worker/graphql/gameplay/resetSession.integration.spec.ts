@@ -11,6 +11,7 @@ import {
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 
@@ -224,5 +225,86 @@ describe("resetSession mutation", () => {
     };
     expect(data.getProgramProgression.currentGate?.id).toBe(E2E_GATE_1_ID);
     expect(data.getProgramProgression.status).toBe("in_progress");
+  });
+
+  it("zeroes total_guesses and clears started_at", async () => {
+    const sessionId = makeSessionId("zero-run-stats");
+    await db.insert(sessionProgress).values({
+      sessionId,
+      programId: E2E_PROGRAM_ID,
+      currentGateId: null,
+      status: "completed",
+      completedAt: new Date(),
+      totalGuesses: 5,
+      startedAt: new Date(Date.now() - 60 * 60 * 1000),
+    });
+
+    await gqlRequest(RESET_SESSION_MUTATION, {
+      sessionId,
+      variables: { programId: E2E_PROGRAM_ID },
+    });
+
+    const [row] = await db
+      .select()
+      .from(sessionProgress)
+      .where(eq(sessionProgress.sessionId, sessionId));
+    expect(row?.totalGuesses).toBe(0);
+    expect(row?.startedAt).toBeNull();
+  });
+
+  it("progression fetch stamps started_at after reset", async () => {
+    const sessionId = makeSessionId("stamp-after-reset");
+    await db.insert(sessionProgress).values({
+      sessionId,
+      programId: E2E_PROGRAM_ID,
+      currentGateId: null,
+      status: "completed",
+      completedAt: new Date(),
+      totalGuesses: 5,
+      startedAt: new Date(Date.now() - 60 * 60 * 1000),
+    });
+    await gqlRequest(RESET_SESSION_MUTATION, {
+      sessionId,
+      variables: { programId: E2E_PROGRAM_ID },
+    });
+
+    const progResponse = await gqlRequest(GET_PROGRAM_PROGRESSION_QUERY, {
+      sessionId,
+      variables: { programId: E2E_PROGRAM_ID },
+    });
+    expect(progResponse.body.errors).toBeUndefined();
+
+    const [row] = await db
+      .select()
+      .from(sessionProgress)
+      .where(eq(sessionProgress.sessionId, sessionId));
+    expect(row?.startedAt).not.toBeNull();
+    expect(
+      Math.abs(Date.now() - (row?.startedAt?.getTime() ?? 0)),
+    ).toBeLessThan(5000);
+  });
+
+  it("progression fetch does not stamp a completed run", async () => {
+    const sessionId = makeSessionId("no-stamp-completed");
+    await db.insert(sessionProgress).values({
+      sessionId,
+      programId: E2E_PROGRAM_ID,
+      currentGateId: null,
+      status: "completed",
+      completedAt: new Date(),
+      startedAt: null,
+    });
+
+    const progResponse = await gqlRequest(GET_PROGRAM_PROGRESSION_QUERY, {
+      sessionId,
+      variables: { programId: E2E_PROGRAM_ID },
+    });
+    expect(progResponse.body.errors).toBeUndefined();
+
+    const [row] = await db
+      .select()
+      .from(sessionProgress)
+      .where(eq(sessionProgress.sessionId, sessionId));
+    expect(row?.startedAt).toBeNull();
   });
 });

@@ -60,6 +60,10 @@ export const resetSession = {
             attemptCount: 0,
             status: "in_progress",
             completedAt: null,
+            // The next progression fetch re-stamps startedAt, so a replay's
+            // clock starts when the player returns, not at the reset click.
+            totalGuesses: 0,
+            startedAt: null,
           })
           .where(eq(sessionProgress.id, progress.id)),
       ]);
