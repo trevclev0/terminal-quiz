@@ -182,6 +182,7 @@ function ProgramPlay() {
           canType={bootComplete}
           resetError={resetError}
           isResetting={resetSessionMutation.isPending}
+          stats={progression?.stats ?? null}
           onSelectNewProgram={handleSelectNewProgram}
           onPlayAgain={handlePlayAgain}
         />

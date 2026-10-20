@@ -4,6 +4,32 @@
   align-items: center;
 }
 
+.stats {
+  width: fit-content;
+  max-width: 100%;
+  margin: 1rem auto;
+  color: var(--light-grey);
+  text-align: left;
+}
+
+/* Both copies share one grid cell: the sizer reserves the final height and
+   the typed copy overlays it. */
+.statsTyped {
+  display: grid;
+}
+
+.statsTyped > pre {
+  grid-area: 1 / 1;
+  margin: 0;
+  font-family: inherit;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.statsSizer {
+  visibility: hidden;
+}
+
 .resetError {
   composes: errorText from "./base.module.css";
 }

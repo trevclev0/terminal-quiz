@@ -1,4 +1,6 @@
 import useTypewriter from "@hooks/useTypewriter";
+import type { GetProgramProgressionQuery } from "@shared/generated/graphql";
+import formatElapsed from "@utils/formatElapsed";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./ProgramEnding.module.css";
 
@@ -7,10 +9,23 @@ export const THE_END_TEXT = "The End";
 // end of a program, not a line to get through.
 export const THE_END_TYPE_SPEED = 120;
 
+// Faster than the heading: the readout is reference data, not the moment.
+export const STATS_TYPE_SPEED = 25;
+// Minimum dots between a label and its value, so the longest row still reads
+// as a leader rather than a bare gap.
+const MIN_LEADER_DOTS = 3;
+
+// Null until the run is complete, and each field is null when the run
+// predates tracking (see the server's stats resolver).
+export type RunStats = NonNullable<
+  GetProgramProgressionQuery["getProgramProgression"]
+>["stats"];
+
 type ProgramEndingProps = {
   canType: boolean;
   resetError: string | null;
   isResetting: boolean;
+  stats: RunStats | null;
   onSelectNewProgram: () => void;
   onPlayAgain: () => void;
 };
@@ -38,12 +53,74 @@ function TypedHeading({ onComplete }: { onComplete: () => void }) {
   return <EndingHeading displayedText={displayedText} />;
 }
 
+type StatRow = { label: string; value: string };
+
+// An untracked figure is left out rather than shown as "0" or "-", which
+// would read as a real result.
+function statRows(stats: NonNullable<RunStats>): StatRow[] {
+  const rows: StatRow[] = [];
+  if (stats.totalGuesses !== null) {
+    rows.push({ label: "guesses", value: String(stats.totalGuesses) });
+  }
+  rows.push({ label: "hints used", value: String(stats.cluesUsed) });
+  if (stats.elapsedSeconds !== null) {
+    rows.push({ label: "time", value: formatElapsed(stats.elapsedSeconds) });
+  }
+  return rows;
+}
+
+// The dots are real characters, padded so every row is the same width in the
+// monospace face. That lets the typewriter reveal the leaders along with the
+// text, which a CSS-drawn leader could not.
+function leaderText(rows: StatRow[]): string {
+  const width =
+    Math.max(...rows.map(({ label, value }) => label.length + value.length)) +
+    MIN_LEADER_DOTS;
+  return rows
+    .map(({ label, value }) => {
+      const dots = ".".repeat(width - label.length - value.length);
+      return `> ${label} ${dots} ${value}`;
+    })
+    .join("\n");
+}
+
+// Mounted only after the heading finishes, which already implies typing was
+// cleared to start, so the hook never needs its `enabled` option here.
+function RunStatsReadout({ stats }: { stats: NonNullable<RunStats> }) {
+  const rows = statRows(stats);
+  const text = leaderText(rows);
+  const { displayedText } = useTypewriter(text, { speed: STATS_TYPE_SPEED });
+
+  return (
+    <div className={styles.stats} data-testid="run-stats">
+      <ul className="sr-only">
+        {rows.map(({ label, value }) => (
+          <li key={label}>
+            {label} {value}
+          </li>
+        ))}
+      </ul>
+      <div className={styles.statsTyped}>
+        {/* Invisible full-text copy holding the block at its final height, so
+            the buttons below do not drop a line at a time while typing. */}
+        <pre aria-hidden="true" className={styles.statsSizer}>
+          {text}
+        </pre>
+        <pre aria-hidden="true" data-testid="run-stats-typed">
+          {displayedText}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
 // Rendered only while the program is finished, so unmounting on "play again"
 // resets the reveal without an effect to clear it.
 export default function ProgramEnding({
   canType,
   resetError,
   isResetting,
+  stats,
   onSelectNewProgram,
   onPlayAgain,
 }: ProgramEndingProps) {
@@ -65,6 +142,7 @@ export default function ProgramEnding({
       ) : (
         <EndingHeading displayedText="" />
       )}
+      {headingTyped && stats && <RunStatsReadout stats={stats} />}
       {resetError && <p className={styles.resetError}>{resetError}</p>}
       {headingTyped && (
         <div className={styles.actionButtons}>
