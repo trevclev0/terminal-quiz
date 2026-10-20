@@ -24,6 +24,40 @@ vi.mock("@worker-services/aiService", () => ({
   }),
 }));
 
+// workerd runs two in-flight submits one after the other, so a double-submit
+// race never happens on its own. While `hold` is set, each submit waits after
+// its active-gate read until every submit has read.
+const sessionLoad = vi.hoisted(() => ({
+  hold: null as (() => Promise<void>) | null,
+}));
+
+vi.mock("./activeSession", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./activeSession")>();
+  return {
+    ...actual,
+    loadActiveSession: async (
+      ...args: Parameters<typeof actual.loadActiveSession>
+    ) => {
+      const loaded = await actual.loadActiveSession(...args);
+      await sessionLoad.hold?.();
+      return loaded;
+    },
+  };
+});
+
+function holdSessionLoadsUntil(count: number): void {
+  let arrived = 0;
+  let release = () => {};
+  const released = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  sessionLoad.hold = () => {
+    arrived += 1;
+    if (arrived === count) release();
+    return released;
+  };
+}
+
 import { generateClue } from "@worker-services/aiService";
 
 const db = drizzle(env.DB);
@@ -93,6 +127,7 @@ describe("run stats on getProgramProgression", () => {
   });
 
   beforeEach(async () => {
+    sessionLoad.hold = null;
     invalidateCachedSchema();
     vi.mocked(generateClue).mockReset();
     vi.mocked(generateClue).mockResolvedValue({
@@ -149,6 +184,34 @@ describe("run stats on getProgramProgression", () => {
     const stats = await fetchStats(sessionId);
     expect(stats).toMatchObject({ totalGuesses: 3, cluesUsed: 0 });
     expect(stats?.elapsedSeconds).toBeLessThan(10);
+  });
+
+  it("a double-submitted final guess counts once", async () => {
+    const sessionId = makeSessionId("double-submit");
+    await fetchStats(sessionId);
+    for (const [gateId, answer] of RUN.slice(0, -1)) {
+      await guess(sessionId, gateId, answer);
+    }
+
+    // Both requests pass the active-gate check before either batch commits.
+    const [lastGateId, lastAnswer] = RUN[RUN.length - 1];
+    const submit = () =>
+      gqlRequest(SUBMIT_GUESS_MUTATION, {
+        sessionId,
+        variables: {
+          programId: E2E_PROGRAM_ID,
+          gateId: lastGateId,
+          guess: lastAnswer,
+        },
+      });
+    holdSessionLoadsUntil(2);
+    const responses = await Promise.all([submit(), submit()]);
+    sessionLoad.hold = null;
+    for (const response of responses) {
+      expect(response.body.errors).toBeUndefined();
+    }
+
+    expect((await fetchStats(sessionId))?.totalGuesses).toBe(3);
   });
 
   it("is null while in progress", async () => {
