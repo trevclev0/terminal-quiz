@@ -303,7 +303,7 @@ Schema lives in `src/shared/schema.ts` (Drizzle + single source of truth for DB 
 
 - `programs` — top-level quiz sets
 - `gates` — riddles within a program, ordered by `sequence_order` (unique per program)
-- `session_progress` — per-session progression (`current_gate_id`, `attempt_count`, `status`), unique on `(session_id, program_id)`. An hourly cron (`triggers.crons` in `wrangler.jsonc`, production only — `env.preview` clears it) deletes rows with no guess or reset for `SESSION_RETENTION_DAYS` (default 30) in bounded batches (indexed on `updated_at`), cascading their child rows (`src/worker/services/sessionCleanup.ts`)
+- `session_progress` — per-session progression (`current_gate_id`, `attempt_count`, `status`), unique on `(session_id, program_id)`. Run stats columns: `total_guesses` (NULL means the run predates tracking), `run_started_at` (the run clock: `resetSession` sets it NULL and the next `getProgramProgression` fetch re-stamps it, so time away isn't counted); `started_at` is row creation time only. An hourly cron (`triggers.crons` in `wrangler.jsonc`, production only — `env.preview` clears it) deletes rows with no guess, reset or run-start stamp for `SESSION_RETENTION_DAYS` (default 30) in bounded batches (indexed on `updated_at`), cascading their child rows (`src/worker/services/sessionCleanup.ts`)
 - `session_completed_gates` — join table recording which gates a session has completed (`session_progress_id` + `gate_id`), unique on `(session_progress_id, gate_id)`. Replaced the earlier `completed_gate_ids` JSON column on `session_progress` (migration `0010_funny_santa_claus`)
 - `gate_clues` — AI-generated clues, scoped to a `session_progress_id` + `gate_id`, unique per `(session_progress_id, gate_id, attempt_count_at_request)`
 - `clue_rate_limits` — rolling per-session request window; one reservation row per (session, gate, attempt) so concurrent same-attempt requests cannot all reach AI
@@ -316,6 +316,8 @@ There is **no** `game_state` table — it was dropped in migration `0009_whole_q
 bun run migrate:generate   # after editing schema.ts
 bun run migrate:local / migrate:preview / migrate:prod
 ```
+
+**D1 rebuild-cascade hazard:** a drizzle-kit table-rebuild migration (create `__new_<table>`, copy, `DROP TABLE`, rename) cascade-deletes the table's child rows through `ON DELETE CASCADE`, because `PRAGMA foreign_keys=OFF` has no effect on D1. Confirmed on a local D1 during #314: a `session_progress` rebuild deleted every `session_completed_gates` and `gate_clues` row. Never ship a generated rebuild of a table with cascading children (`session_progress`, `gates`, `programs`); prefer additive nullable columns, and read the generated SQL for `DROP TABLE` before committing.
 
 Two D1 databases: `terminal-quest` (production, applied on push to `main`) and `terminal-quest-preview` (preview, applied on PR).
 
