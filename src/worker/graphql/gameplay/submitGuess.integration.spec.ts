@@ -7,6 +7,7 @@ import { gateClues, sessionProgress } from "@shared/schema";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 
@@ -379,5 +380,56 @@ describe("submitGuess mutation", () => {
     expect(response.body.errors?.[0].message).toBe(
       "Invalid state: Program already completed or not started.",
     );
+  });
+
+  it("increments total_guesses on wrong and correct guesses", async () => {
+    const sessionId = makeSessionId("total-guesses");
+    // A fresh progression fetch creates the row the way a real run does.
+    await gqlRequest(GET_PROGRAM_PROGRESSION_QUERY, {
+      sessionId,
+      variables: { programId: E2E_PROGRAM_ID },
+    });
+
+    for (const guess of ["red", "green", "blue"]) {
+      await gqlRequest(SUBMIT_GUESS_MUTATION, {
+        sessionId,
+        variables: {
+          programId: E2E_PROGRAM_ID,
+          gateId: E2E_GATE_1_ID,
+          guess,
+        },
+      });
+    }
+
+    const [row] = await db
+      .select()
+      .from(sessionProgress)
+      .where(eq(sessionProgress.sessionId, sessionId));
+    expect(row?.totalGuesses).toBe(3);
+  });
+
+  it("leaves total_guesses NULL for an untracked run", async () => {
+    const sessionId = makeSessionId("untracked");
+    await db.insert(sessionProgress).values({
+      sessionId,
+      programId: E2E_PROGRAM_ID,
+      currentGateId: E2E_GATE_1_ID,
+      totalGuesses: null,
+    });
+
+    await gqlRequest(SUBMIT_GUESS_MUTATION, {
+      sessionId,
+      variables: {
+        programId: E2E_PROGRAM_ID,
+        gateId: E2E_GATE_1_ID,
+        guess: "red",
+      },
+    });
+
+    const [row] = await db
+      .select()
+      .from(sessionProgress)
+      .where(eq(sessionProgress.sessionId, sessionId));
+    expect(row?.totalGuesses).toBeNull();
   });
 });

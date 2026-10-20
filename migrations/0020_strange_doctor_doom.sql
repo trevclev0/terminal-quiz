@@ -1,0 +1,1 @@
+ALTER TABLE `session_progress` ADD `total_guesses` integer;
