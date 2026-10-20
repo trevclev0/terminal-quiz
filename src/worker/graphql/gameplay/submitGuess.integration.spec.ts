@@ -415,7 +415,7 @@ describe("submitGuess mutation", () => {
     expect(row?.totalGuesses).toBe(3);
   });
 
-  it("leaves total_guesses NULL after a correct guess on an untracked run", async () => {
+  it("keeps total_guesses NULL on a correct guess, old run", async () => {
     const sessionId = makeSessionId("untracked-correct");
     await db.insert(sessionProgress).values({
       sessionId,

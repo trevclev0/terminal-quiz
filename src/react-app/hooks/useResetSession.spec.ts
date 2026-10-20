@@ -61,6 +61,7 @@ describe("useResetSession", () => {
     expect(invalidateSpy).toHaveBeenCalledTimes(1);
     expect(invalidateSpy).toHaveBeenCalledWith({
       queryKey: ["programs", "progression", "prog-1"],
+      refetchType: "none",
     });
   });
 
