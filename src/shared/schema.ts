@@ -78,12 +78,9 @@ export const sessionProgress = sqliteTable(
       onDelete: "set null",
     }),
     status: text("status").notNull().default("in_progress"),
-    // Nullable: resetSession clears it and the next progression fetch
-    // re-stamps it, so a replay's clock starts when the player returns to the
-    // first gate, not at the reset click.
-    startedAt: integer("started_at", { mode: "timestamp" }).$defaultFn(
-      () => new Date(),
-    ),
+    startedAt: integer("started_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
     updatedAt: integer("updated_at", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date())
@@ -96,6 +93,14 @@ export const sessionProgress = sqliteTable(
     // `NULL + 1` is NULL, so their run is never shown with a misleadingly
     // low count. New rows get 0 from the app-side default.
     totalGuesses: integer("total_guesses").$defaultFn(() => 0),
+    // Start of the current run. Separate from startedAt (row creation, NOT
+    // NULL) because relaxing that column would rebuild this table, and D1's
+    // DROP TABLE cascades into the child rows. Nullable with no SQL default:
+    // resetSession clears it and the next progression fetch re-stamps it, so
+    // a replay's clock starts when the player returns, not at the reset click.
+    runStartedAt: integer("run_started_at", {
+      mode: "timestamp",
+    }).$defaultFn(() => new Date()),
   },
   (t) => [
     unique("unique_session_progress").on(t.sessionId, t.programId),

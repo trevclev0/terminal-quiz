@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "81a8e489-461b-4d78-b80a-d3f0278b353b",
+  "id": "72dc4346-41bf-4788-a2ca-add8e5d071e2",
   "prevId": "05e04b31-da53-43a3-bce6-2bedaf02e645",
   "tables": {
     "ai_usage": {
@@ -540,6 +540,13 @@
         },
         "total_guesses": {
           "name": "total_guesses",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "run_started_at": {
+          "name": "run_started_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,

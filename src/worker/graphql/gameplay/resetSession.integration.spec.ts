@@ -227,7 +227,7 @@ describe("resetSession mutation", () => {
     expect(data.getProgramProgression.status).toBe("in_progress");
   });
 
-  it("zeroes total_guesses and clears started_at", async () => {
+  it("zeroes total_guesses and clears run_started_at", async () => {
     const sessionId = makeSessionId("zero-run-stats");
     await db.insert(sessionProgress).values({
       sessionId,
@@ -236,7 +236,7 @@ describe("resetSession mutation", () => {
       status: "completed",
       completedAt: new Date(),
       totalGuesses: 5,
-      startedAt: new Date(Date.now() - 60 * 60 * 1000),
+      runStartedAt: new Date(Date.now() - 60 * 60 * 1000),
     });
 
     await gqlRequest(RESET_SESSION_MUTATION, {
@@ -249,10 +249,10 @@ describe("resetSession mutation", () => {
       .from(sessionProgress)
       .where(eq(sessionProgress.sessionId, sessionId));
     expect(row?.totalGuesses).toBe(0);
-    expect(row?.startedAt).toBeNull();
+    expect(row?.runStartedAt).toBeNull();
   });
 
-  it("progression fetch stamps started_at after reset", async () => {
+  it("progression fetch stamps run_started_at after reset", async () => {
     const sessionId = makeSessionId("stamp-after-reset");
     await db.insert(sessionProgress).values({
       sessionId,
@@ -261,7 +261,7 @@ describe("resetSession mutation", () => {
       status: "completed",
       completedAt: new Date(),
       totalGuesses: 5,
-      startedAt: new Date(Date.now() - 60 * 60 * 1000),
+      runStartedAt: new Date(Date.now() - 60 * 60 * 1000),
     });
     await gqlRequest(RESET_SESSION_MUTATION, {
       sessionId,
@@ -278,9 +278,9 @@ describe("resetSession mutation", () => {
       .select()
       .from(sessionProgress)
       .where(eq(sessionProgress.sessionId, sessionId));
-    expect(row?.startedAt).not.toBeNull();
+    expect(row?.runStartedAt).not.toBeNull();
     expect(
-      Math.abs(Date.now() - (row?.startedAt?.getTime() ?? 0)),
+      Math.abs(Date.now() - (row?.runStartedAt?.getTime() ?? 0)),
     ).toBeLessThan(5000);
   });
 
@@ -292,7 +292,7 @@ describe("resetSession mutation", () => {
       currentGateId: null,
       status: "completed",
       completedAt: new Date(),
-      startedAt: null,
+      runStartedAt: null,
     });
 
     const progResponse = await gqlRequest(GET_PROGRAM_PROGRESSION_QUERY, {
@@ -305,6 +305,6 @@ describe("resetSession mutation", () => {
       .select()
       .from(sessionProgress)
       .where(eq(sessionProgress.sessionId, sessionId));
-    expect(row?.startedAt).toBeNull();
+    expect(row?.runStartedAt).toBeNull();
   });
 });

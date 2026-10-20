@@ -1029,7 +1029,7 @@ describe("Gameplay Mutations: resetSession", () => {
       status: "in_progress",
       completedAt: null,
       totalGuesses: 0,
-      startedAt: null,
+      runStartedAt: null,
     });
   });
 

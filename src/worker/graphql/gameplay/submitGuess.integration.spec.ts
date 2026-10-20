@@ -390,8 +390,9 @@ describe("submitGuess mutation", () => {
       variables: { programId: E2E_PROGRAM_ID },
     });
 
+    const outcomes: boolean[] = [];
     for (const guess of ["red", "green", "blue"]) {
-      await gqlRequest(SUBMIT_GUESS_MUTATION, {
+      const response = await gqlRequest(SUBMIT_GUESS_MUTATION, {
         sessionId,
         variables: {
           programId: E2E_PROGRAM_ID,
@@ -399,13 +400,47 @@ describe("submitGuess mutation", () => {
           guess,
         },
       });
+      expect(response.body.errors).toBeUndefined();
+      outcomes.push(
+        (response.body.data as SubmitGuessData).submitGuess.success,
+      );
     }
+    // The count only means something if the third guess really was accepted.
+    expect(outcomes).toEqual([false, false, true]);
 
     const [row] = await db
       .select()
       .from(sessionProgress)
       .where(eq(sessionProgress.sessionId, sessionId));
     expect(row?.totalGuesses).toBe(3);
+  });
+
+  it("leaves total_guesses NULL after a correct guess on an untracked run", async () => {
+    const sessionId = makeSessionId("untracked-correct");
+    await db.insert(sessionProgress).values({
+      sessionId,
+      programId: E2E_PROGRAM_ID,
+      currentGateId: E2E_GATE_1_ID,
+      totalGuesses: null,
+    });
+
+    const response = await gqlRequest(SUBMIT_GUESS_MUTATION, {
+      sessionId,
+      variables: {
+        programId: E2E_PROGRAM_ID,
+        gateId: E2E_GATE_1_ID,
+        guess: "blue",
+      },
+    });
+    expect((response.body.data as SubmitGuessData).submitGuess.success).toBe(
+      true,
+    );
+
+    const [row] = await db
+      .select()
+      .from(sessionProgress)
+      .where(eq(sessionProgress.sessionId, sessionId));
+    expect(row?.totalGuesses).toBeNull();
   });
 
   it("leaves total_guesses NULL for an untracked run", async () => {
