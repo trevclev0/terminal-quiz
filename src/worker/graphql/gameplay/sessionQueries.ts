@@ -74,24 +74,23 @@ export const getProgramProgression = {
       });
     }
 
-    // Stamp the run start for rows that have none (new-from-reset replays and
-    // pre-existing rows). Only in_progress: stamping a completed run would put
-    // startedAt after completedAt and make elapsed time negative. The
-    // `started_at IS NULL` guard keeps concurrent fetches from moving a start
-    // another request already stamped.
-    if (progress.status === "in_progress" && progress.startedAt === null) {
+    // Stamp the run start for rows that have none (replays after a reset and
+    // rows that predate tracking). Only in_progress: stamping a completed run
+    // would put runStartedAt after completedAt and make elapsed time negative.
+    // The `run_started_at IS NULL` guard keeps concurrent fetches from moving
+    // a start another request already stamped.
+    if (progress.status === "in_progress" && progress.runStartedAt === null) {
       const stampedAt = new Date();
-      const stamped = await db
+      await db
         .update(sessionProgress)
-        .set({ startedAt: stampedAt })
+        .set({ runStartedAt: stampedAt })
         .where(
           and(
             eq(sessionProgress.id, progress.id),
-            isNull(sessionProgress.startedAt),
+            isNull(sessionProgress.runStartedAt),
           ),
-        )
-        .returning({ startedAt: sessionProgress.startedAt });
-      progress.startedAt = stamped[0]?.startedAt ?? stampedAt;
+        );
+      progress.runStartedAt = stampedAt;
     }
 
     // Security: only gates from sessionCompletedGates are fetched with correctAnswer.
