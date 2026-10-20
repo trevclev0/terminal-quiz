@@ -85,6 +85,17 @@ export const CompletedGateType = new GraphQLObjectType({
   },
 });
 
+// Null totalGuesses / elapsedSeconds mean "unknown" (a run that predates
+// tracking, or one whose clock never started), not zero.
+const RunStatsType = new GraphQLObjectType({
+  name: "RunStats",
+  fields: {
+    totalGuesses: { type: GraphQLInt },
+    cluesUsed: { type: new GraphQLNonNull(GraphQLInt) },
+    elapsedSeconds: { type: GraphQLInt },
+  },
+});
+
 const ProgressionPayloadType = new GraphQLObjectType({
   name: "ProgressionPayload",
   fields: {
@@ -98,6 +109,8 @@ const ProgressionPayloadType = new GraphQLObjectType({
     // gates an author adds or deletes mid-play show up on the next fetch.
     totalGates: { type: new GraphQLNonNull(GraphQLInt) },
     status: { type: new GraphQLNonNull(GraphQLString) },
+    // Only present once the run is completed (#314).
+    stats: { type: RunStatsType },
   },
 });
 

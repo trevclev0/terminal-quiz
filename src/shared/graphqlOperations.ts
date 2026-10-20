@@ -81,6 +81,11 @@ export const GET_PROGRAM_PROGRESSION_QUERY_OPERATION =
       }
       totalGates
       status
+      stats {
+        totalGuesses
+        cluesUsed
+        elapsedSeconds
+      }
     }
   }
 `;

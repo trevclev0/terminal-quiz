@@ -62,6 +62,7 @@ export const mockProgression = (
   completedGates: [],
   totalGates: 3,
   status: "in_progress",
+  stats: null,
   ...overrides,
 });
 
