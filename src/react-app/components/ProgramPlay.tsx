@@ -1,5 +1,6 @@
 import { programProgressionQueryOptions } from "@api/queries/useProgramProgressionQuery";
 import { useProgramQuery } from "@api/queries/useProgramQuery";
+import { PROGRAM_KEYS } from "@api/queryKeys";
 import ActiveGate from "@components/ActiveGate";
 import CompletedGate from "@components/CompletedGate";
 import ConfirmDialog from "@components/ConfirmDialog";
@@ -10,7 +11,7 @@ import { useBoot } from "@contexts/BootContext";
 import useProgramPlay from "@hooks/useProgramPlay";
 import useProgressionScroll from "@hooks/useProgressionScroll";
 import { Route } from "@routes/programs/$programId";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./ProgramPlay.module.css";
@@ -18,10 +19,17 @@ import styles from "./ProgramPlay.module.css";
 function ProgramPlay() {
   const { programId } = Route.useParams();
   const navigate = useNavigate({ from: Route.fullPath });
+  const queryClient = useQueryClient();
 
-  const { data: progression, isLoading } = useQuery(
-    programProgressionQueryOptions(programId),
-  );
+  // Set once a confirmed reset is on its way out of this page. It disables
+  // the progression query so nothing on this still-mounted page can refetch
+  // (and so start the next run's clock) while the progression cache is removed.
+  const [isLeaving, setIsLeaving] = useState(false);
+
+  const { data: progression, isLoading } = useQuery({
+    ...programProgressionQueryOptions(programId),
+    enabled: !isLeaving,
+  });
 
   const { data: program } = useProgramQuery(programId);
 
@@ -86,7 +94,7 @@ function ProgramPlay() {
     }
   }, [currentGate?.id, isPending]);
 
-  if (isLoading) {
+  if (isLoading || isLeaving) {
     return <LoadingScreen message="Loading Program..." />;
   }
 
@@ -103,9 +111,18 @@ function ProgramPlay() {
         return;
       }
       setIsConfirmOpen(false);
-      navigate({ to: "/programs/select" });
+      // No progression refetch before leaving: the server starts the next
+      // run's clock on the first fetch after a reset, and the time away
+      // must not count. Remove (not just invalidate) the cached completed
+      // payload so returning refetches instead of flashing "The End".
+      setIsLeaving(true);
+      await navigate({ to: "/programs/select" });
+      queryClient.removeQueries({
+        queryKey: PROGRAM_KEYS.progression(programId),
+      });
     } catch (error) {
       console.error(error);
+      setIsLeaving(false);
       setResetError("Failed to reset progress. Please try again.");
     }
   };
@@ -125,7 +142,13 @@ function ProgramPlay() {
       const success = await resetSessionMutation.mutateAsync({ programId });
       if (!success) {
         setResetError("Failed to reset progress. Please try again.");
+        return;
       }
+      // The reset only marks progression stale (see useResetSession), so
+      // fetch it now: this fetch starts the new run's clock.
+      await queryClient.invalidateQueries({
+        queryKey: PROGRAM_KEYS.progression(programId),
+      });
     } catch (error) {
       console.error(error);
       setResetError("Failed to reset progress. Please try again.");

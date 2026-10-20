@@ -36,8 +36,9 @@ export type SessionCleanupResult = {
 
 /**
  * Deletes `session_progress` rows with no activity since `cutoff` (#315).
- * `updated_at` moves on every guess and reset, so a session is stale once
- * nobody has played it for the retention window. `ON DELETE CASCADE`
+ * `updated_at` moves on every guess and reset, and once per run when the run
+ * clock is stamped, so a session is stale once nobody has played it for the
+ * retention window. `ON DELETE CASCADE`
  * removes its `session_completed_gates`, `gate_clues` and
  * `clue_rate_limits` rows.
  *

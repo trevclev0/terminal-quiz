@@ -23,9 +23,11 @@ import {
 import type { ProgramProgression } from "../api/queries/useProgramProgressionQuery";
 import ProgramPlay from "./ProgramPlay";
 
+const { mockNavigate } = vi.hoisted(() => ({ mockNavigate: vi.fn() }));
+
 vi.mock(import("@tanstack/react-router"), async (importOriginal) => {
   const actual = await importOriginal();
-  return { ...actual, useNavigate: vi.fn(() => vi.fn()) };
+  return { ...actual, useNavigate: vi.fn(() => mockNavigate) };
 });
 
 vi.mock("@routes/programs/$programId", () => ({
@@ -36,6 +38,7 @@ vi.mock("@routes/programs/$programId", () => ({
 }));
 
 let progressionData: ProgramProgression = mockProgression();
+let progressionRequests = 0;
 
 const server = setupServer(
   gqlApi.query("Program", () =>
@@ -43,9 +46,12 @@ const server = setupServer(
       data: { program: { id: "test-program-id", name: "Test Program" } },
     }),
   ),
-  gqlApi.query("GetProgramProgression", () =>
-    HttpResponse.json({ data: { getProgramProgression: progressionData } }),
-  ),
+  gqlApi.query("GetProgramProgression", () => {
+    progressionRequests += 1;
+    return HttpResponse.json({
+      data: { getProgramProgression: progressionData },
+    });
+  }),
   gqlApi.mutation("SubmitGuess", ({ variables }) => {
     if (variables.guess === "4") {
       progressionData = mockProgression({
@@ -120,6 +126,7 @@ describe("ProgramPlay Integration", () => {
   afterEach(() => {
     server.resetHandlers();
     progressionData = mockProgression();
+    progressionRequests = 0;
   });
   afterAll(() => server.close());
 
@@ -310,5 +317,69 @@ describe("ProgramPlay Integration", () => {
         "What is 2+2?",
       );
     });
+  });
+
+  // The server stamps the next run's clock on the first progression fetch
+  // after a reset, so a refetch before the player leaves would count the
+  // time away from the program.
+  it("does not refetch progression when leaving after reset", async () => {
+    progressionData = mockProgression({
+      currentGate: null,
+      completedGates: [mockCompletedGate({ id: "gate-1" })],
+      totalGates: 1,
+      status: "completed",
+    });
+    const requestsAtNavigate: number[] = [];
+    mockNavigate.mockImplementation(() => {
+      requestsAtNavigate.push(progressionRequests);
+    });
+
+    const { queryClient, wrapper } = createQueryWrapper();
+    const user = userEvent.setup();
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("Select new program");
+    expect(progressionRequests).toBe(1);
+
+    await user.click(screen.getByText("Select new program"));
+    await user.click(screen.getByText("Reset Progress"));
+
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledTimes(1));
+    expect(requestsAtNavigate).toEqual([1]);
+    expect(progressionRequests).toBe(1);
+    // Removed rather than only invalidated, so coming back cannot serve the
+    // cached completed payload (a flash of The End) before refetching.
+    await waitFor(() =>
+      expect(
+        queryClient.getQueryData([
+          "programs",
+          "progression",
+          "test-program-id",
+        ]),
+      ).toBeUndefined(),
+    );
+  });
+
+  it("refetches progression right after play-again reset", async () => {
+    progressionData = mockProgression({
+      currentGate: null,
+      completedGates: [mockCompletedGate({ id: "gate-1" })],
+      totalGates: 1,
+      status: "completed",
+    });
+
+    const { wrapper } = createQueryWrapper();
+    const user = userEvent.setup();
+
+    render(<ProgramPlay />, { wrapper });
+
+    await screen.findByText("Play program again");
+    expect(progressionRequests).toBe(1);
+
+    await user.click(screen.getByText("Play program again"));
+
+    await screen.findByTestId("gate-question");
+    expect(progressionRequests).toBe(2);
   });
 });

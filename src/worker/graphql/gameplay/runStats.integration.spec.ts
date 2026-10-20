@@ -105,7 +105,7 @@ describe("run stats on getProgramProgression", () => {
     await db.delete(aiUsage).where(eq(aiUsage.usageDate, getUsageDateKey()));
   });
 
-  it("reports guesses, clues and time for a completed multi-gate run", async () => {
+  it("reports guesses, clues and time for a finished run", async () => {
     const sessionId = makeSessionId("multi-gate");
     expect(await fetchStats(sessionId)).toBeNull();
     await setRunStartedAt(sessionId, new Date(Date.now() - 125_000));
