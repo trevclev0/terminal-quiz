@@ -1,8 +1,38 @@
-import { gates, sessionCompletedGates, sessionProgress } from "@shared/schema";
+import {
+  gateClues,
+  gates,
+  sessionCompletedGates,
+  sessionProgress,
+} from "@shared/schema";
 import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
 import { GraphQLNonNull, GraphQLString } from "graphql";
 import { trackEvent } from "./analytics";
 import { type AppGraphQLContext, ProgressionPayloadType } from "./types";
+
+type SessionProgressRow = typeof sessionProgress.$inferSelect;
+
+// Guesses and time are null (unknown) rather than zero when the run can't
+// vouch for them: a NULL totalGuesses predates tracking, and a NULL
+// runStartedAt means the clock never started (the run was reset and finished
+// without a progression fetch in between).
+async function computeRunStats(
+  db: AppGraphQLContext["var"]["db"],
+  progress: SessionProgressRow,
+) {
+  const { totalGuesses, runStartedAt, completedAt } = progress;
+  const cluesUsed = await db.$count(
+    gateClues,
+    eq(gateClues.sessionProgressId, progress.id),
+  );
+  const elapsedSeconds =
+    totalGuesses === null || runStartedAt === null || completedAt === null
+      ? null
+      : Math.max(
+          0,
+          Math.round((completedAt.getTime() - runStartedAt.getTime()) / 1000),
+        );
+  return { totalGuesses, cluesUsed, elapsedSeconds };
+}
 
 export const getProgramProgression = {
   type: ProgressionPayloadType,
@@ -132,6 +162,10 @@ export const getProgramProgression = {
       completedGates,
       totalGates,
       status: progress.status,
+      stats:
+        progress.status === "completed"
+          ? await computeRunStats(db, progress)
+          : null,
     };
   },
 };

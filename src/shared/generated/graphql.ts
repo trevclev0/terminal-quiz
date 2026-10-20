@@ -411,10 +411,13 @@ export type ClueRateLimitsSessionProgressRelation = {
   program: Maybe<ClueRateLimitsSessionProgressRelationProgramRelation>;
   programId: Scalars['String']['output'];
   rateLimits: Array<ClueRateLimitsSessionProgressRelationRateLimitsRelation>;
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -547,10 +550,13 @@ export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelat
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -595,10 +601,13 @@ export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationSessionPr
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -677,10 +686,13 @@ export type ClueRateLimitsSessionProgressRelationCurrentGateRelationGateCluesRel
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -820,10 +832,13 @@ export type ClueRateLimitsSessionProgressRelationGateCluesRelationSessionProgres
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -920,10 +935,13 @@ export type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelationGat
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -1602,10 +1620,13 @@ export type GateCluesSessionProgressRelation = {
   program: Maybe<GateCluesSessionProgressRelationProgramRelation>;
   programId: Scalars['String']['output'];
   rateLimits: Array<GateCluesSessionProgressRelationRateLimitsRelation>;
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -1744,10 +1765,13 @@ export type GateCluesSessionProgressRelationCompletedGatesRelationSessionProgres
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -1924,10 +1948,13 @@ export type GateCluesSessionProgressRelationRateLimitsRelationSessionProgressRel
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -2162,10 +2189,13 @@ export type GatesGateCluesRelationSessionProgressRelation = {
   program: Maybe<GatesGateCluesRelationSessionProgressRelationProgramRelation>;
   programId: Scalars['String']['output'];
   rateLimits: Array<GatesGateCluesRelationSessionProgressRelationRateLimitsRelation>;
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -2246,10 +2276,13 @@ export type GatesGateCluesRelationSessionProgressRelationCompletedGatesRelationS
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -2334,10 +2367,13 @@ export type GatesGateCluesRelationSessionProgressRelationRateLimitsRelationSessi
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -3085,10 +3121,13 @@ export type ProgramsGatesRelationGateCluesRelationSessionProgressRelation = {
   program: Maybe<ProgramsGatesRelationGateCluesRelationSessionProgressRelationProgramRelation>;
   programId: Scalars['String']['output'];
   rateLimits: Array<ProgramsGatesRelationGateCluesRelationSessionProgressRelationRateLimitsRelation>;
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -3169,10 +3208,13 @@ export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationComplet
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -3233,10 +3275,13 @@ export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationRateLim
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -3423,6 +3468,7 @@ export type ProgramsVisibilityfiltersOr = {
 export type ProgressionPayload = {
   completedGates: Array<CompletedGate>;
   currentGate: Maybe<ActiveGate>;
+  stats: Maybe<RunStats>;
   status: Scalars['String']['output'];
   totalGates: Scalars['Int']['output'];
 };
@@ -3459,6 +3505,12 @@ export type RequestClueResult = {
   isClueLimitReached: Scalars['Boolean']['output'];
   isRateLimited: Scalars['Boolean']['output'];
   retryAfterMs: Maybe<Scalars['Int']['output']>;
+};
+
+export type RunStats = {
+  cluesUsed: Scalars['Int']['output'];
+  elapsedSeconds: Maybe<Scalars['Int']['output']>;
+  totalGuesses: Maybe<Scalars['Int']['output']>;
 };
 
 export type SessionCompletedGatesCompletedAtFilters = {
@@ -3645,10 +3697,13 @@ export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRel
   program: Maybe<SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationProgramRelation>;
   programId: Scalars['String']['output'];
   rateLimits: Array<SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationRateLimitsRelation>;
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -3775,10 +3830,13 @@ export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRel
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -3949,10 +4007,13 @@ export type SessionCompletedGatesSessionProgressRelation = {
   program: Maybe<SessionCompletedGatesSessionProgressRelationProgramRelation>;
   programId: Scalars['String']['output'];
   rateLimits: Array<SessionCompletedGatesSessionProgressRelationRateLimitsRelation>;
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -4073,10 +4134,13 @@ export type SessionCompletedGatesSessionProgressRelationCurrentGateRelationGateC
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -4216,10 +4280,13 @@ export type SessionCompletedGatesSessionProgressRelationGateCluesRelationSession
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -4316,10 +4383,13 @@ export type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRela
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -4355,10 +4425,13 @@ export type SessionCompletedGatesSessionProgressRelationRateLimitsRelationSessio
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -4555,10 +4628,13 @@ export type SessionProgressCompletedGatesRelationGateRelationGateCluesRelationSe
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -4603,10 +4679,13 @@ export type SessionProgressCompletedGatesRelationSessionProgressRelation = {
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -4724,10 +4803,13 @@ export type SessionProgressCurrentGateRelationGateCluesRelationSessionProgressRe
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -4772,9 +4854,11 @@ export type SessionProgressFilters = {
   currentGateId?: InputMaybe<SessionProgressCurrentGateIdFilters>;
   id?: InputMaybe<SessionProgressIdFilters>;
   programId?: InputMaybe<SessionProgressProgramIdFilters>;
+  runStartedAt?: InputMaybe<SessionProgressRunStartedAtFilters>;
   sessionId?: InputMaybe<SessionProgressSessionIdFilters>;
   startedAt?: InputMaybe<SessionProgressStartedAtFilters>;
   status?: InputMaybe<SessionProgressStatusFilters>;
+  totalGuesses?: InputMaybe<SessionProgressTotalGuessesFilters>;
   updatedAt?: InputMaybe<SessionProgressUpdatedAtFilters>;
 };
 
@@ -4784,9 +4868,11 @@ export type SessionProgressFiltersOr = {
   currentGateId?: InputMaybe<SessionProgressCurrentGateIdFilters>;
   id?: InputMaybe<SessionProgressIdFilters>;
   programId?: InputMaybe<SessionProgressProgramIdFilters>;
+  runStartedAt?: InputMaybe<SessionProgressRunStartedAtFilters>;
   sessionId?: InputMaybe<SessionProgressSessionIdFilters>;
   startedAt?: InputMaybe<SessionProgressStartedAtFilters>;
   status?: InputMaybe<SessionProgressStatusFilters>;
+  totalGuesses?: InputMaybe<SessionProgressTotalGuessesFilters>;
   updatedAt?: InputMaybe<SessionProgressUpdatedAtFilters>;
 };
 
@@ -4892,10 +4978,13 @@ export type SessionProgressGateCluesRelationSessionProgressRelation = {
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -4946,10 +5035,13 @@ export type SessionProgressInsertInput = {
   currentGateId?: InputMaybe<Scalars['String']['input']>;
   id?: InputMaybe<Scalars['String']['input']>;
   programId: Scalars['String']['input'];
+  /** Date */
+  runStartedAt?: InputMaybe<Scalars['String']['input']>;
   sessionId: Scalars['String']['input'];
   /** Date */
   startedAt?: InputMaybe<Scalars['String']['input']>;
   status?: InputMaybe<Scalars['String']['input']>;
+  totalGuesses?: InputMaybe<Scalars['Int']['input']>;
   /** Date */
   updatedAt?: InputMaybe<Scalars['String']['input']>;
 };
@@ -4961,10 +5053,13 @@ export type SessionProgressItem = {
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -4975,9 +5070,11 @@ export type SessionProgressOrderBy = {
   currentGateId?: InputMaybe<InnerOrder>;
   id?: InputMaybe<InnerOrder>;
   programId?: InputMaybe<InnerOrder>;
+  runStartedAt?: InputMaybe<InnerOrder>;
   sessionId?: InputMaybe<InnerOrder>;
   startedAt?: InputMaybe<InnerOrder>;
   status?: InputMaybe<InnerOrder>;
+  totalGuesses?: InputMaybe<InnerOrder>;
   updatedAt?: InputMaybe<InnerOrder>;
 };
 
@@ -5112,10 +5209,13 @@ export type SessionProgressProgramRelationGatesRelationGateCluesRelationSessionP
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -5151,12 +5251,66 @@ export type SessionProgressRateLimitsRelationSessionProgressRelation = {
   currentGateId: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   programId: Scalars['String']['output'];
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
+};
+
+export type SessionProgressRunStartedAtFilters = {
+  OR?: InputMaybe<Array<SessionProgressRunStartedAtfiltersOr>>;
+  /** Date */
+  eq?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  gt?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<Date> */
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  lt?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  lte?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<Date> */
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type SessionProgressRunStartedAtfiltersOr = {
+  /** Date */
+  eq?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  gt?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<Date> */
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  lt?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  lte?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<Date> */
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SessionProgressSelectItem = {
@@ -5171,10 +5325,13 @@ export type SessionProgressSelectItem = {
   program: Maybe<SessionProgressProgramRelation>;
   programId: Scalars['String']['output'];
   rateLimits: Array<SessionProgressRateLimitsRelation>;
+  /** Date */
+  runStartedAt: Maybe<Scalars['String']['output']>;
   sessionId: Scalars['String']['output'];
   /** Date */
   startedAt: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  totalGuesses: Maybe<Scalars['Int']['output']>;
   /** Date */
   updatedAt: Scalars['String']['output'];
 };
@@ -5342,6 +5499,45 @@ export type SessionProgressStatusfiltersOr = {
   notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type SessionProgressTotalGuessesFilters = {
+  OR?: InputMaybe<Array<SessionProgressTotalGuessesfiltersOr>>;
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<undefined> */
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<undefined> */
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type SessionProgressTotalGuessesfiltersOr = {
+  eq?: InputMaybe<Scalars['Int']['input']>;
+  gt?: InputMaybe<Scalars['Int']['input']>;
+  gte?: InputMaybe<Scalars['Int']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<undefined> */
+  inArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  lt?: InputMaybe<Scalars['Int']['input']>;
+  lte?: InputMaybe<Scalars['Int']['input']>;
+  ne?: InputMaybe<Scalars['Int']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<undefined> */
+  notInArray?: InputMaybe<Array<Scalars['Int']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type SessionProgressUpdateInput = {
   attemptCount?: InputMaybe<Scalars['Int']['input']>;
   /** Date */
@@ -5349,10 +5545,13 @@ export type SessionProgressUpdateInput = {
   currentGateId?: InputMaybe<Scalars['String']['input']>;
   id?: InputMaybe<Scalars['String']['input']>;
   programId?: InputMaybe<Scalars['String']['input']>;
+  /** Date */
+  runStartedAt?: InputMaybe<Scalars['String']['input']>;
   sessionId?: InputMaybe<Scalars['String']['input']>;
   /** Date */
   startedAt?: InputMaybe<Scalars['String']['input']>;
   status?: InputMaybe<Scalars['String']['input']>;
+  totalGuesses?: InputMaybe<Scalars['Int']['input']>;
   /** Date */
   updatedAt?: InputMaybe<Scalars['String']['input']>;
 };
@@ -5450,7 +5649,7 @@ export type GetProgramProgressionQueryVariables = Exact<{
 }>;
 
 
-export type GetProgramProgressionQuery = { getProgramProgression: { totalGates: number, status: string, currentGate: { id: string, label: string, question: string } | null, completedGates: Array<{ id: string, label: string, question: string, correctAnswer: string, successMessage: string }> } | null };
+export type GetProgramProgressionQuery = { getProgramProgression: { totalGates: number, status: string, currentGate: { id: string, label: string, question: string } | null, completedGates: Array<{ id: string, label: string, question: string, correctAnswer: string, successMessage: string }>, stats: { totalGuesses: number | null, cluesUsed: number, elapsedSeconds: number | null } | null } | null };
 
 export type GetInProgressProgramQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -5555,7 +5754,7 @@ export const SubmitGuessDocument = {"kind":"Document","definitions":[{"kind":"Op
 export const RequestClueDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RequestClue"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"gateId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"currentGuess"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"requestClue"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}},{"kind":"Argument","name":{"kind":"Name","value":"gateId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"gateId"}}},{"kind":"Argument","name":{"kind":"Name","value":"currentGuess"},"value":{"kind":"Variable","name":{"kind":"Name","value":"currentGuess"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"clueText"}},{"kind":"Field","name":{"kind":"Name","value":"isClueLimitReached"}},{"kind":"Field","name":{"kind":"Name","value":"cluesRemaining"}},{"kind":"Field","name":{"kind":"Name","value":"isRateLimited"}},{"kind":"Field","name":{"kind":"Name","value":"retryAfterMs"}},{"kind":"Field","name":{"kind":"Name","value":"isAiBudgetExhausted"}}]}}]}}]} as unknown as DocumentNode<RequestClueMutation, RequestClueMutationVariables>;
 export const ResetSessionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ResetSession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resetSession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}}]}]}}]} as unknown as DocumentNode<ResetSessionMutation, ResetSessionMutationVariables>;
 export const GetProgramsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetPrograms"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"programs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]} as unknown as DocumentNode<GetProgramsQuery, GetProgramsQueryVariables>;
-export const GetProgramProgressionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetProgramProgression"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getProgramProgression"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currentGate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}}]}},{"kind":"Field","name":{"kind":"Name","value":"completedGates"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}},{"kind":"Field","name":{"kind":"Name","value":"correctAnswer"}},{"kind":"Field","name":{"kind":"Name","value":"successMessage"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalGates"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]}}]} as unknown as DocumentNode<GetProgramProgressionQuery, GetProgramProgressionQueryVariables>;
+export const GetProgramProgressionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetProgramProgression"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getProgramProgression"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currentGate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}}]}},{"kind":"Field","name":{"kind":"Name","value":"completedGates"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}},{"kind":"Field","name":{"kind":"Name","value":"correctAnswer"}},{"kind":"Field","name":{"kind":"Name","value":"successMessage"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalGates"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"stats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalGuesses"}},{"kind":"Field","name":{"kind":"Name","value":"cluesUsed"}},{"kind":"Field","name":{"kind":"Name","value":"elapsedSeconds"}}]}}]}}]}}]} as unknown as DocumentNode<GetProgramProgressionQuery, GetProgramProgressionQueryVariables>;
 export const GetInProgressProgramDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetInProgressProgram"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getInProgressProgram"}}]}}]} as unknown as DocumentNode<GetInProgressProgramQuery, GetInProgressProgramQueryVariables>;
 export const ProgramDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Program"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"program"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]} as unknown as DocumentNode<ProgramQuery, ProgramQueryVariables>;
 export const ProgramGatesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ProgramGates"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"programGates"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"programId"}},{"kind":"Field","name":{"kind":"Name","value":"sequenceOrder"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}},{"kind":"Field","name":{"kind":"Name","value":"correctAnswer"}},{"kind":"Field","name":{"kind":"Name","value":"successMessage"}},{"kind":"Field","name":{"kind":"Name","value":"acceptanceThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"guidanceEnabled"}},{"kind":"Field","name":{"kind":"Name","value":"guidanceThreshold"}}]}}]}}]} as unknown as DocumentNode<ProgramGatesQuery, ProgramGatesQueryVariables>;

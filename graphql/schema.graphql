@@ -37,6 +37,10 @@ type ClueRateLimitsSessionProgressRelation {
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
   program(where: ProgramsFilters): ClueRateLimitsSessionProgressRelationProgramRelation
   currentGate(where: GatesFilters): ClueRateLimitsSessionProgressRelationCurrentGateRelation
   gateClues(where: GateCluesFilters, orderBy: GateCluesOrderBy, offset: Int, limit: Int): [ClueRateLimitsSessionProgressRelationGateCluesRelation!]!
@@ -112,6 +116,10 @@ type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelationGateCluesR
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelationGateCluesRelationGateRelation {
@@ -204,6 +212,10 @@ type ClueRateLimitsSessionProgressRelationCurrentGateRelationGateCluesRelationSe
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type ClueRateLimitsSessionProgressRelationCurrentGateRelationGateCluesRelationGateRelation {
@@ -251,6 +263,10 @@ type ClueRateLimitsSessionProgressRelationGateCluesRelationSessionProgressRelati
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type ClueRateLimitsSessionProgressRelationGateCluesRelationGateRelation {
@@ -336,6 +352,10 @@ type ClueRateLimitsSessionProgressRelationCompletedGatesRelationSessionProgressR
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelation {
@@ -412,6 +432,10 @@ type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelationGate
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelationGateCluesRelationGateRelation {
@@ -501,6 +525,10 @@ type GateCluesSessionProgressRelation {
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
   program(where: ProgramsFilters): GateCluesSessionProgressRelationProgramRelation
   currentGate(where: GatesFilters): GateCluesSessionProgressRelationCurrentGateRelation
   gateClues(where: GateCluesFilters, orderBy: GateCluesOrderBy, offset: Int, limit: Int): [GateCluesSessionProgressRelationGateCluesRelation!]!
@@ -652,6 +680,10 @@ type GateCluesSessionProgressRelationCompletedGatesRelationSessionProgressRelati
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type GateCluesSessionProgressRelationCompletedGatesRelationGateRelation {
@@ -737,6 +769,10 @@ type GateCluesSessionProgressRelationRateLimitsRelationSessionProgressRelation {
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type GateCluesGateRelation {
@@ -880,6 +916,10 @@ type GatesGateCluesRelationSessionProgressRelation {
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
   program(where: ProgramsFilters): GatesGateCluesRelationSessionProgressRelationProgramRelation
   currentGate(where: GatesFilters): GatesGateCluesRelationSessionProgressRelationCurrentGateRelation
   gateClues(where: GateCluesFilters, orderBy: GateCluesOrderBy, offset: Int, limit: Int): [GatesGateCluesRelationSessionProgressRelationGateCluesRelation!]!
@@ -968,6 +1008,10 @@ type GatesGateCluesRelationSessionProgressRelationCompletedGatesRelationSessionP
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type GatesGateCluesRelationSessionProgressRelationCompletedGatesRelationGateRelation {
@@ -1013,6 +1057,10 @@ type GatesGateCluesRelationSessionProgressRelationRateLimitsRelationSessionProgr
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type GatesGateCluesRelationGateRelation {
@@ -1115,6 +1163,10 @@ type ProgramsGatesRelationGateCluesRelationSessionProgressRelation {
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
   program(where: ProgramsFilters): ProgramsGatesRelationGateCluesRelationSessionProgressRelationProgramRelation
   currentGate(where: GatesFilters): ProgramsGatesRelationGateCluesRelationSessionProgressRelationCurrentGateRelation
   gateClues(where: GateCluesFilters, orderBy: GateCluesOrderBy, offset: Int, limit: Int): [ProgramsGatesRelationGateCluesRelationSessionProgressRelationGateCluesRelation!]!
@@ -1186,6 +1238,10 @@ type ProgramsGatesRelationGateCluesRelationSessionProgressRelationCompletedGates
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type ProgramsGatesRelationGateCluesRelationSessionProgressRelationCompletedGatesRelationGateRelation {
@@ -1231,6 +1287,10 @@ type ProgramsGatesRelationGateCluesRelationSessionProgressRelationRateLimitsRela
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type ProgramsGatesRelationGateCluesRelationGateRelation {
@@ -1286,6 +1346,10 @@ type SessionCompletedGatesSessionProgressRelation {
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
   program(where: ProgramsFilters): SessionCompletedGatesSessionProgressRelationProgramRelation
   currentGate(where: GatesFilters): SessionCompletedGatesSessionProgressRelationCurrentGateRelation
   gateClues(where: GateCluesFilters, orderBy: GateCluesOrderBy, offset: Int, limit: Int): [SessionCompletedGatesSessionProgressRelationGateCluesRelation!]!
@@ -1361,6 +1425,10 @@ type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRelationGat
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRelationGateCluesRelationGateRelation {
@@ -1453,6 +1521,10 @@ type SessionCompletedGatesSessionProgressRelationCurrentGateRelationGateCluesRel
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type SessionCompletedGatesSessionProgressRelationCurrentGateRelationGateCluesRelationGateRelation {
@@ -1500,6 +1572,10 @@ type SessionCompletedGatesSessionProgressRelationGateCluesRelationSessionProgres
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type SessionCompletedGatesSessionProgressRelationGateCluesRelationGateRelation {
@@ -1594,6 +1670,10 @@ type SessionCompletedGatesSessionProgressRelationRateLimitsRelationSessionProgre
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type SessionCompletedGatesGateRelation {
@@ -1670,6 +1750,10 @@ type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelation {
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
   program(where: ProgramsFilters): SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationProgramRelation
   currentGate(where: GatesFilters): SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationCurrentGateRelation
   gateClues(where: GateCluesFilters, orderBy: GateCluesOrderBy, offset: Int, limit: Int): [SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationGateCluesRelation!]!
@@ -1767,6 +1851,10 @@ type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationRa
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type SessionCompletedGatesGateRelationGateCluesRelationGateRelation {
@@ -1810,6 +1898,10 @@ type SessionProgressSelectItem {
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
   program(where: ProgramsFilters): SessionProgressProgramRelation
   currentGate(where: GatesFilters): SessionProgressCurrentGateRelation
   gateClues(where: GateCluesFilters, orderBy: GateCluesOrderBy, offset: Int, limit: Int): [SessionProgressGateCluesRelation!]!
@@ -1885,6 +1977,10 @@ type SessionProgressProgramRelationGatesRelationGateCluesRelationSessionProgress
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type SessionProgressProgramRelationGatesRelationGateCluesRelationGateRelation {
@@ -1977,6 +2073,10 @@ type SessionProgressCurrentGateRelationGateCluesRelationSessionProgressRelation 
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type SessionProgressCurrentGateRelationGateCluesRelationGateRelation {
@@ -2024,6 +2124,10 @@ type SessionProgressGateCluesRelationSessionProgressRelation {
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type SessionProgressGateCluesRelationGateRelation {
@@ -2109,6 +2213,10 @@ type SessionProgressCompletedGatesRelationSessionProgressRelation {
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type SessionProgressCompletedGatesRelationGateRelation {
@@ -2185,6 +2293,10 @@ type SessionProgressCompletedGatesRelationGateRelationGateCluesRelationSessionPr
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type SessionProgressCompletedGatesRelationGateRelationGateCluesRelationGateRelation {
@@ -2230,6 +2342,10 @@ type SessionProgressRateLimitsRelationSessionProgressRelation {
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 type SessionProgressItem {
@@ -2248,6 +2364,10 @@ type SessionProgressItem {
   """Date"""
   completedAt: String
   attemptCount: Int!
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 input AiUsageInsertInput {
@@ -4352,6 +4472,10 @@ input SessionProgressInsertInput {
   """Date"""
   completedAt: String
   attemptCount: Int
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 input SessionProgressUpdateInput {
@@ -4370,6 +4494,10 @@ input SessionProgressUpdateInput {
   """Date"""
   completedAt: String
   attemptCount: Int
+  totalGuesses: Int
+
+  """Date"""
+  runStartedAt: String
 }
 
 input SessionProgressFilters {
@@ -4382,6 +4510,8 @@ input SessionProgressFilters {
   updatedAt: SessionProgressUpdatedAtFilters
   completedAt: SessionProgressCompletedAtFilters
   attemptCount: SessionProgressAttemptCountFilters
+  totalGuesses: SessionProgressTotalGuessesFilters
+  runStartedAt: SessionProgressRunStartedAtFilters
   OR: [SessionProgressFiltersOr!]
 }
 
@@ -4838,6 +4968,114 @@ input SessionProgressAttemptCountfiltersOr {
   isNotNull: Boolean
 }
 
+input SessionProgressTotalGuessesFilters {
+  eq: Int
+  ne: Int
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  like: String
+  notLike: String
+  ilike: String
+  notIlike: String
+
+  """Array<undefined>"""
+  inArray: [Int!]
+
+  """Array<undefined>"""
+  notInArray: [Int!]
+  isNull: Boolean
+  isNotNull: Boolean
+  OR: [SessionProgressTotalGuessesfiltersOr!]
+}
+
+input SessionProgressTotalGuessesfiltersOr {
+  eq: Int
+  ne: Int
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  like: String
+  notLike: String
+  ilike: String
+  notIlike: String
+
+  """Array<undefined>"""
+  inArray: [Int!]
+
+  """Array<undefined>"""
+  notInArray: [Int!]
+  isNull: Boolean
+  isNotNull: Boolean
+}
+
+input SessionProgressRunStartedAtFilters {
+  """Date"""
+  eq: String
+
+  """Date"""
+  ne: String
+
+  """Date"""
+  lt: String
+
+  """Date"""
+  lte: String
+
+  """Date"""
+  gt: String
+
+  """Date"""
+  gte: String
+  like: String
+  notLike: String
+  ilike: String
+  notIlike: String
+
+  """Array<Date>"""
+  inArray: [String!]
+
+  """Array<Date>"""
+  notInArray: [String!]
+  isNull: Boolean
+  isNotNull: Boolean
+  OR: [SessionProgressRunStartedAtfiltersOr!]
+}
+
+input SessionProgressRunStartedAtfiltersOr {
+  """Date"""
+  eq: String
+
+  """Date"""
+  ne: String
+
+  """Date"""
+  lt: String
+
+  """Date"""
+  lte: String
+
+  """Date"""
+  gt: String
+
+  """Date"""
+  gte: String
+  like: String
+  notLike: String
+  ilike: String
+  notIlike: String
+
+  """Array<Date>"""
+  inArray: [String!]
+
+  """Array<Date>"""
+  notInArray: [String!]
+  isNull: Boolean
+  isNotNull: Boolean
+}
+
 input SessionProgressFiltersOr {
   id: SessionProgressIdFilters
   sessionId: SessionProgressSessionIdFilters
@@ -4848,6 +5086,8 @@ input SessionProgressFiltersOr {
   updatedAt: SessionProgressUpdatedAtFilters
   completedAt: SessionProgressCompletedAtFilters
   attemptCount: SessionProgressAttemptCountFilters
+  totalGuesses: SessionProgressTotalGuessesFilters
+  runStartedAt: SessionProgressRunStartedAtFilters
 }
 
 input SessionProgressOrderBy {
@@ -4860,6 +5100,8 @@ input SessionProgressOrderBy {
   updatedAt: InnerOrder
   completedAt: InnerOrder
   attemptCount: InnerOrder
+  totalGuesses: InnerOrder
+  runStartedAt: InnerOrder
 }
 
 type Query {
@@ -4904,6 +5146,7 @@ type ProgressionPayload {
   completedGates: [CompletedGate!]!
   totalGates: Int!
   status: String!
+  stats: RunStats
 }
 
 type ActiveGate {
@@ -4918,6 +5161,12 @@ type CompletedGate {
   question: String!
   correctAnswer: String!
   successMessage: String!
+}
+
+type RunStats {
+  totalGuesses: Int
+  cluesUsed: Int!
+  elapsedSeconds: Int
 }
 
 type Mutation {

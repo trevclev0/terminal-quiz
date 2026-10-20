@@ -150,6 +150,9 @@ describe("getProgramProgression", () => {
       ...defaultProgress,
       currentGateId: null,
       status: "completed",
+      totalGuesses: 4,
+      runStartedAt: new Date("2026-01-01T00:00:00Z"),
+      completedAt: new Date("2026-01-01T00:01:05Z"),
     });
     mockDb.query.sessionCompletedGates.findMany.mockResolvedValue([]);
 
@@ -162,6 +165,10 @@ describe("getProgramProgression", () => {
 
     expect(result.currentGate).toBeNull();
     expect(result.status).toBe("completed");
+    expect(result.stats).toMatchObject({
+      totalGuesses: 4,
+      elapsedSeconds: 65,
+    });
   });
 
   it("initializes new session when none exists", async () => {
