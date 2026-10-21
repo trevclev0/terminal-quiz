@@ -11,6 +11,7 @@ import {
   guessSchema,
   guidanceThresholdSchema,
   parseOrThrow,
+  RESERVED_ANSWER_ERROR,
   sequenceOrderSchema,
   updateGateInputSchema,
   updateProgramInputSchema,
@@ -52,6 +53,32 @@ describe("gate text", () => {
         successMessage: undefined,
       }),
     ).toBe("successMessage is required.");
+  });
+
+  it("rejects a correctAnswer that is a game command", () => {
+    expect(
+      firstMessage(gateTextSchema, {
+        ...VALID_GATE_TEXT,
+        correctAnswer: " /Clue ",
+      }),
+    ).toBe(RESERVED_ANSWER_ERROR);
+    expect(
+      firstMessage(gateTextSchema, {
+        ...VALID_GATE_TEXT,
+        correctAnswer: "/help",
+      }),
+    ).toBe(RESERVED_ANSWER_ERROR);
+    expect(
+      updateGateInputSchema.safeParse({ correctAnswer: "/help" }).success,
+    ).toBe(false);
+  });
+
+  it("allows a correctAnswer that merely looks like a command", () => {
+    const parsed = gateTextSchema.parse({
+      ...VALID_GATE_TEXT,
+      correctAnswer: "  /dev/null ",
+    });
+    expect(parsed.correctAnswer).toBe("/dev/null");
   });
 });
 
