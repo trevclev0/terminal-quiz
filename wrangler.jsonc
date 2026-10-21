@@ -81,8 +81,8 @@
       },
       // No session cleanup cron in preview: every PR deploys its own preview
       // Worker, so each would schedule a run against the one shared preview
-      // D1, which E2E reseeds anyway. triggers is inheritable, so it must be
-      // cleared explicitly.
+      // D1. seed:e2e:preview prunes stale preview sessions instead (#345).
+      // triggers is inheritable, so it must be cleared explicitly.
       "triggers": {
         "crons": []
       },
