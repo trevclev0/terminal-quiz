@@ -1,3 +1,4 @@
+import useKeyboardShortcuts from "@hooks/useKeyboardShortcuts";
 import useTypewriter from "@hooks/useTypewriter";
 import type { GetProgramProgressionQuery } from "@shared/generated/graphql";
 import formatElapsed from "@utils/formatElapsed";
@@ -25,6 +26,8 @@ type ProgramEndingProps = {
   canType: boolean;
   resetError: string | null;
   isResetting: boolean;
+  // False while a dialog sits over the page, so R/N cannot act behind it.
+  shortcutsEnabled: boolean;
   stats: RunStats | null;
   onSelectNewProgram: () => void;
   onPlayAgain: () => void;
@@ -120,6 +123,7 @@ export default function ProgramEnding({
   canType,
   resetError,
   isResetting,
+  shortcutsEnabled,
   stats,
   onSelectNewProgram,
   onPlayAgain,
@@ -134,6 +138,14 @@ export default function ProgramEnding({
     if (!headingTyped) return;
     selectNewProgramRef.current?.focus();
   }, [headingTyped]);
+
+  // Gated on the reveal so a key cannot fire an action whose button is not
+  // on screen yet, and on isResetting to match the disabled buttons.
+  const enabled = shortcutsEnabled && headingTyped && !isResetting;
+  useKeyboardShortcuts([
+    { key: "r", onKey: onPlayAgain, enabled },
+    { key: "n", onKey: onSelectNewProgram, enabled },
+  ]);
 
   return (
     <div id="classic-ending" className={styles.ending}>
