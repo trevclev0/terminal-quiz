@@ -1,5 +1,6 @@
 .modal {
   composes: modal from "./base.module.css";
+  inset-block-end: 25vh;
 }
 
 .message {
