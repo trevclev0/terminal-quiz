@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import { useModalDialog } from "../hooks/useModalDialog";
 import styles from "./ConfirmDialog.module.css";
 
 type ConfirmDialogProps = {
@@ -41,37 +42,17 @@ function ConfirmDialog({
   tone = "neutral",
   errorMessage,
 }: ConfirmDialogProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const confirmRef = useRef<HTMLButtonElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const triggerRef = useRef<HTMLElement | null>(null);
 
-  /*
-   * Call sites dismiss this dialog by unmounting it rather than calling
-   * dialog.close(), so the browser never runs its own focus restoration and a
-   * keyboard user is dropped back to the document. Capture the trigger before
-   * the focus effect below moves focus in, and hand it back on unmount.
-   */
-  useEffect(() => {
-    triggerRef.current = document.activeElement as HTMLElement | null;
-    return () => {
-      const trigger = triggerRef.current;
-      if (trigger?.isConnected) trigger.focus();
-    };
-  }, []);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (dialog && !dialog.open) {
-      dialog.showModal();
-    }
-    const initialFocus =
+  const dialogRef = useModalDialog(
+    () =>
       tone === "danger"
         ? (cancelRef.current ?? closeRef.current)
-        : confirmRef.current;
-    initialFocus?.focus();
-  }, [tone]);
+        : confirmRef.current,
+    [tone],
+  );
 
   return (
     <dialog
