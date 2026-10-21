@@ -18,7 +18,6 @@ jobs:
     timeout-minutes: 15
     outputs:
       deployment-url: ${{ steps.deploy.outputs.deployment-url }}
-      playwright-version: ${{ steps.playwright-version.outputs.version }}
     steps:
       - uses: actions/checkout@v7
 
@@ -33,12 +32,6 @@ jobs:
 
       - name: Setup Environment
         uses: ./.github/actions/setup-env
-
-      - name: Get Playwright version
-        id: playwright-version
-        # Only feeds the e2e container image tag; skip on main pushes and fork PRs.
-        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
-        run: echo "version=$(bunx playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
 
       - name: Run build
         run: mise run build
@@ -87,8 +80,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy
     if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && needs.deploy.result == 'success'
-    container:
-      image: mcr.microsoft.com/playwright:v${{ needs.deploy.outputs.playwright-version }}-noble
+    # A plain runner, not the mcr.microsoft.com/playwright container: measured in
+    # #279, pulling and starting the image cost more than the cached browsers and
+    # apt install it was meant to save.
     permissions:
       contents: read
     timeout-minutes: 20
@@ -98,13 +92,12 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-env
 
+      - name: Setup Playwright Browsers
+        uses: ./.github/actions/playwright-browsers
+
       - name: Run E2E Tests
         run: mise run test:e2e:ci
         env:
-          # Playwright container jobs run as root, but GitHub sets HOME=/github/home (owned by
-          # pwuser). Firefox refuses to launch as root when $HOME isn't root-owned.
-          # See: playwright.dev "Set the HOME=/root environment variable in your GitHub Actions workflow".
-          HOME: /root
           BASE_URL: ${{ needs.deploy.outputs.deployment-url }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -116,3 +109,23 @@ jobs:
         with:
           name: playwright-report-${{ github.event.number }}
           path: e2e/playwright-report/
+
+  playwright-cache:
+    # GitHub scopes a PR's caches to that PR, and e2e only runs on PRs, so each
+    # PR's first e2e run would download the browsers. A cache saved on main is
+    # readable from every PR. Not a required check.
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-env
+
+      - name: Setup Playwright Browsers
+        uses: ./.github/actions/playwright-browsers
+        with:
+          install-deps: "false"

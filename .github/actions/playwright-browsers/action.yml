@@ -1,0 +1,37 @@
+name: Playwright Browsers
+description: "Restore cached Playwright browsers (downloading them on a miss) and optionally install their system libraries"
+inputs:
+  install-deps:
+    description: "Also install the browsers' system libraries. Running tests needs them; filling the cache doesn't."
+    default: "true"
+runs:
+  using: "composite"
+  steps:
+    - name: Resolve Playwright version
+      id: version
+      shell: bash
+      # Browser builds are pinned by playwright-core, so the cache follows its
+      # locked version: lockfile churn that doesn't move it keeps the cache.
+      # Fails loudly if the lockfile format changes and the match comes back empty.
+      run: |
+        version=$(grep -oP '"playwright-core": \["playwright-core@\K[^"]+' bun.lock | head -n1)
+        test -n "$version"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Playwright browsers
+      id: cache
+      uses: actions/cache@v6
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ steps.version.outputs.version }}
+
+    # apt packages can't be cached across runs, so this runs every time (~15s).
+    - name: Install Playwright system dependencies
+      if: inputs.install-deps == 'true'
+      shell: bash
+      run: bunx playwright install-deps chromium firefox
+
+    - name: Install Playwright browsers
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: bunx playwright install chromium firefox
