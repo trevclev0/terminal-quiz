@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { stubReducedMotion } from "@test-utils/reducedMotion";
@@ -31,6 +31,7 @@ function endingProps(
     canType: true,
     resetError: null,
     isResetting: false,
+    shortcutsEnabled: true,
     stats: null,
     onSelectNewProgram,
     onPlayAgain,
@@ -163,6 +164,60 @@ describe("ProgramEnding", () => {
 
     expect(onSelectNewProgram).toHaveBeenCalledTimes(1);
     expect(onPlayAgain).toHaveBeenCalledTimes(1);
+  });
+
+  describe("keyboard shortcuts", () => {
+    it("plays again on R and selects a new program on N once the heading is typed", () => {
+      renderEnding();
+      advancePastHeading();
+
+      fireEvent.keyDown(window, { key: "r" });
+      expect(onPlayAgain).toHaveBeenCalledTimes(1);
+
+      fireEvent.keyDown(window, { key: "N" });
+      expect(onSelectNewProgram).toHaveBeenCalledTimes(1);
+    });
+
+    it("ignores R and N before the heading finishes", () => {
+      renderEnding();
+
+      fireEvent.keyDown(window, { key: "r" });
+      fireEvent.keyDown(window, { key: "n" });
+
+      expect(onPlayAgain).not.toHaveBeenCalled();
+      expect(onSelectNewProgram).not.toHaveBeenCalled();
+    });
+
+    it("ignores R and N while a reset is in flight", () => {
+      renderEnding({ isResetting: true });
+      advancePastHeading();
+
+      fireEvent.keyDown(window, { key: "r" });
+      fireEvent.keyDown(window, { key: "n" });
+
+      expect(onPlayAgain).not.toHaveBeenCalled();
+      expect(onSelectNewProgram).not.toHaveBeenCalled();
+    });
+
+    it("ignores R and N when the parent has shortcuts disabled", () => {
+      renderEnding({ shortcutsEnabled: false });
+      advancePastHeading();
+
+      fireEvent.keyDown(window, { key: "r" });
+      fireEvent.keyDown(window, { key: "n" });
+
+      expect(onPlayAgain).not.toHaveBeenCalled();
+      expect(onSelectNewProgram).not.toHaveBeenCalled();
+    });
+
+    it("leaves Ctrl+R to the browser", () => {
+      renderEnding();
+      advancePastHeading();
+
+      fireEvent.keyDown(window, { key: "r", ctrlKey: true });
+
+      expect(onPlayAgain).not.toHaveBeenCalled();
+    });
   });
 
   describe("run stats", () => {

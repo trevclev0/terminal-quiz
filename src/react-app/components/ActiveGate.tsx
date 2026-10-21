@@ -157,7 +157,7 @@ to submit`;
               aria-describedby="gate-question-description"
               ref={inputRef}
               type="text"
-              placeholder="enter password..."
+              placeholder="enter password... (/help)"
               maxLength={MAX_GUESS_LENGTH}
               value={guess}
               onChange={changeHandler}

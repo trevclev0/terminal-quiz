@@ -84,6 +84,14 @@ afterEach(() => {
 });
 
 describe("ActiveGate", () => {
+  it("hints at the /help command in the input placeholder", () => {
+    renderActiveGate();
+    expect(screen.getByLabelText("Gate 1 password input")).toHaveAttribute(
+      "placeholder",
+      "enter password... (/help)",
+    );
+  });
+
   it("renders label", () => {
     renderActiveGate();
     expect(screen.getByText("Gate 1")).toBeInTheDocument();

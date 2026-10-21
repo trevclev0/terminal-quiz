@@ -7,7 +7,9 @@ import ConfirmDialog from "@components/ConfirmDialog";
 import { GateProgress } from "@components/GateProgress";
 import LoadingScreen from "@components/LoadingScreen";
 import ProgramEnding from "@components/ProgramEnding";
+import ShortcutHelpDialog from "@components/ShortcutHelpDialog";
 import { useBoot } from "@contexts/BootContext";
+import useKeyboardShortcuts from "@hooks/useKeyboardShortcuts";
 import useProgramPlay from "@hooks/useProgramPlay";
 import useProgressionScroll from "@hooks/useProgressionScroll";
 import { Route } from "@routes/programs/$programId";
@@ -44,6 +46,9 @@ function ProgramPlay() {
 
   const isTheEnd = currentGate === null;
 
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const openHelp = useCallback(() => setIsHelpOpen(true), []);
+
   const {
     guess,
     message,
@@ -59,7 +64,11 @@ function ProgramPlay() {
     clues,
     requestClueMutation,
     resetSessionMutation,
-  } = useProgramPlay({ programId, currentGateId: currentGate?.id });
+  } = useProgramPlay({
+    programId,
+    currentGateId: currentGate?.id,
+    onHelpCommand: openHelp,
+  });
 
   // Tracks which gate's question has been "released" by its predecessor's
   // successMessage finishing typing. Derived at render time (not reset via
@@ -83,7 +92,20 @@ function ProgramPlay() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
 
+  useKeyboardShortcuts([
+    {
+      key: "?",
+      onKey: () => setIsHelpOpen((open) => !open),
+      enabled: !isConfirmOpen,
+    },
+  ]);
+
   const inputRef = useRef<HTMLInputElement>(null);
+  // Read inside the focus effect without being one of its triggers: closing
+  // a dialog already restores focus itself.
+  const isDialogOpenRef = useRef(false);
+  isDialogOpenRef.current = isConfirmOpen || isHelpOpen;
+  const isCluePending = requestClueMutation.isPending;
 
   const programName = program?.name ?? programId;
 
@@ -91,12 +113,15 @@ function ProgramPlay() {
   const nextGateIndex = isTheEnd ? -1 : completedGates.length;
   useProgressionScroll(nextGateIndex);
 
-  // Auto-focus the active gate's input on mount and when currentGate.id changes
+  // Auto-focus the active gate's input on mount and when currentGate.id
+  // changes. A clue request disables the input, which drops focus, so the
+  // pending flag is a trigger too: focus returns when the request settles.
   useEffect(() => {
-    if (currentGate?.id && !isPending && inputRef.current) {
+    if (isDialogOpenRef.current) return;
+    if (currentGate?.id && !isPending && !isCluePending && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [currentGate?.id, isPending]);
+  }, [currentGate?.id, isPending, isCluePending]);
 
   if (isLoading || isLeaving) {
     return <LoadingScreen message="Loading Program..." />;
@@ -212,6 +237,7 @@ function ProgramPlay() {
           canType={bootComplete}
           resetError={resetError}
           isResetting={resetSessionMutation.isPending || isRestarting}
+          shortcutsEnabled={!isConfirmOpen && !isHelpOpen}
           stats={progression?.stats ?? null}
           onSelectNewProgram={handleSelectNewProgram}
           onPlayAgain={handlePlayAgain}
@@ -228,6 +254,9 @@ function ProgramPlay() {
           onCancel={handleCancelReset}
           errorMessage={resetError}
         />
+      )}
+      {isHelpOpen && (
+        <ShortcutHelpDialog onClose={() => setIsHelpOpen(false)} />
       )}
     </>
   );

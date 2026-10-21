@@ -649,6 +649,127 @@ describe("ProgramPlay Component", () => {
     ).toBeInTheDocument();
   });
 
+  describe("keyboard shortcuts", () => {
+    const helpDialogName = { name: "Keyboard shortcuts" };
+
+    async function renderInProgress() {
+      const { queryClient, wrapper } = createQueryWrapper();
+      queryClient.setQueryData(["programs"], mockPrograms);
+      queryClient.setQueryData(
+        ["programs", "progression", "test-program-id"],
+        mockProgression,
+      );
+      render(<ProgramPlay />, { wrapper });
+      await screen.findByText("Test Program");
+    }
+
+    it("toggles the help dialog on ?", async () => {
+      await renderInProgress();
+      expect(
+        screen.queryByRole("dialog", helpDialogName),
+      ).not.toBeInTheDocument();
+
+      fireEvent.keyDown(window, { key: "?" });
+      expect(screen.getByRole("dialog", helpDialogName)).toBeInTheDocument();
+
+      fireEvent.keyDown(window, { key: "?" });
+      expect(
+        screen.queryByRole("dialog", helpDialogName),
+      ).not.toBeInTheDocument();
+    });
+
+    it("opens the help dialog from the /help command", async () => {
+      await renderInProgress();
+      const { onHelpCommand } = vi.mocked(useProgramPlay).mock.calls[0][0];
+
+      act(() => onHelpCommand?.());
+
+      expect(screen.getByRole("dialog", helpDialogName)).toBeInTheDocument();
+    });
+
+    it("ignores ? while the reset confirmation is open", async () => {
+      await renderCompletedProgram();
+      await userEvent.click(screen.getByText("Select new program"));
+
+      fireEvent.keyDown(window, { key: "?" });
+
+      expect(
+        screen.queryByRole("dialog", helpDialogName),
+      ).not.toBeInTheDocument();
+    });
+
+    it("plays again on R from The End", async () => {
+      await renderCompletedProgram();
+
+      fireEvent.keyDown(window, { key: "r" });
+
+      expect(mockResetSessionMutation.mutateAsync).toHaveBeenCalledWith({
+        programId: "test-program-id",
+      });
+    });
+
+    it("opens the reset confirmation on N from The End", async () => {
+      await renderCompletedProgram();
+
+      fireEvent.keyDown(window, { key: "n" });
+
+      expect(
+        screen.getByText(
+          `Reset your progress on "Test Program" before selecting a new one?`,
+        ),
+      ).toBeInTheDocument();
+    });
+
+    it("ignores R and N on The End while help is open", async () => {
+      await renderCompletedProgram();
+      fireEvent.keyDown(window, { key: "?" });
+      expect(screen.getByRole("dialog", helpDialogName)).toBeInTheDocument();
+
+      fireEvent.keyDown(window, { key: "r" });
+      fireEvent.keyDown(window, { key: "n" });
+
+      expect(mockResetSessionMutation.mutateAsync).not.toHaveBeenCalled();
+      expect(
+        screen.queryByText(
+          `Reset your progress on "Test Program" before selecting a new one?`,
+        ),
+      ).not.toBeInTheDocument();
+    });
+
+    it("refocuses the guess input once a clue request settles", async () => {
+      vi.mocked(ActiveGate).mockImplementation(({ inputRef }) => (
+        <input ref={inputRef} aria-label="guess" />
+      ));
+      const withPending = (isPending: boolean) =>
+        ({
+          ...mockUseProgramPlay,
+          requestClueMutation: {
+            ...mockUseProgramPlay.requestClueMutation,
+            isPending,
+          },
+        }) as unknown as typeof mockUseProgramPlay;
+      vi.mocked(useProgramPlay).mockReturnValue(withPending(true));
+
+      const { queryClient, wrapper } = createQueryWrapper();
+      queryClient.setQueryData(["programs"], mockPrograms);
+      queryClient.setQueryData(
+        ["programs", "progression", "test-program-id"],
+        mockProgression,
+      );
+      const { rerender } = render(<ProgramPlay />, { wrapper });
+      await screen.findByText("Test Program");
+      const input = screen.getByLabelText("guess");
+      // The real input is disabled during a clue request, which drops focus.
+      act(() => input.blur());
+      expect(input).not.toHaveFocus();
+
+      vi.mocked(useProgramPlay).mockReturnValue(withPending(false));
+      rerender(<ProgramPlay />);
+
+      await waitFor(() => expect(input).toHaveFocus());
+    });
+  });
+
   it("passes cooldownSeconds to ActiveGate", async () => {
     vi.mocked(useProgramPlay).mockReturnValue({
       ...mockUseProgramPlay,
