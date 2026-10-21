@@ -1,17 +1,10 @@
-import { useBoot } from "@contexts/BootContext";
+import useBootSequence from "@hooks/useBootSequence";
 import useCrtPreferences from "@hooks/useCrtPreferences";
 import useTypewriter from "@hooks/useTypewriter";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./CrtOverlay.module.css";
 
-const BOOT_STAGES = ["flash", "blackout", "cursor", "banner", "done"] as const;
-type BootStage = (typeof BOOT_STAGES)[number];
-
 export const BANNER_TYPE_SPEED = 40;
-export const BANNER_PAUSE_MS = 500;
-const BANNER_FALLBACK_MS = 4000;
-const BOOT_CURSOR_MS = 800;
-export const BOOT_BANNER_MS = 1850;
 
 function BootBanner({ onComplete }: { onComplete: () => void }) {
   const { displayedText, isComplete } = useTypewriter("VT220 OK", {
@@ -38,60 +31,13 @@ function BootBanner({ onComplete }: { onComplete: () => void }) {
 function CrtOverlay() {
   const { settings, presetLabel, cyclePreset, isFirstVisit } =
     useCrtPreferences();
-  const { markBootComplete, resetBoot } = useBoot();
 
   const isFullPreset = useMemo(() => presetLabel === "full", [presetLabel]);
 
-  const [bootStage, setBootStage] = useState<BootStage>(
-    settings.powerOn ? "flash" : "done",
-  );
+  const { stage, onBannerTyped } = useBootSequence(settings.powerOn);
   const [flickerPulse, setFlickerPulse] = useState(false);
   const [firstVisitDone, setFirstVisitDone] = useState(false);
   const [flashing, setFlashing] = useState(false);
-  const [bannerDone, setBannerDone] = useState(false);
-
-  useEffect(() => {
-    if (!settings.powerOn) {
-      setBootStage("done");
-      return;
-    }
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setBootStage("done");
-      return;
-    }
-    // Only on the path that actually starts a boot — the two skips above
-    // return early and report complete instead.
-    resetBoot();
-    setBannerDone(false);
-    setBootStage("flash");
-    const timers = [
-      setTimeout(() => setBootStage("blackout"), 150),
-      setTimeout(() => setBootStage("cursor"), BOOT_CURSOR_MS),
-      setTimeout(() => setBootStage("banner"), BOOT_BANNER_MS),
-    ];
-    return () => timers.forEach(clearTimeout);
-  }, [settings.powerOn, resetBoot]);
-
-  useEffect(() => {
-    if (bootStage !== "banner") return;
-    const timer = setTimeout(() => setBootStage("done"), BANNER_FALLBACK_MS);
-    return () => clearTimeout(timer);
-  }, [bootStage]);
-
-  useEffect(() => {
-    if (bootStage !== "banner" || !bannerDone) return;
-    const timer = setTimeout(() => setBootStage("done"), BANNER_PAUSE_MS);
-    return () => clearTimeout(timer);
-  }, [bootStage, bannerDone]);
-
-  // One reporting point for every path into `done` — the typing-driven
-  // transition, the fallback timer, and both skips (power-off and
-  // reduced-motion) which seed `bootStage` as "done" before first paint.
-  // Consumers gate typing on this, so missing a path would hang the chain.
-  useEffect(() => {
-    if (bootStage !== "done") return;
-    markBootComplete();
-  }, [bootStage, markBootComplete]);
 
   useEffect(() => {
     if (!settings.flicker) return;
@@ -185,7 +131,7 @@ function CrtOverlay() {
     </button>
   );
 
-  const booting = bootStage !== "done";
+  const booting = stage !== "done";
 
   const effectsActive = settings.scanlines || settings.glow || settings.powerOn;
 
@@ -212,11 +158,13 @@ function CrtOverlay() {
     <div className={classNames} data-testid="crt-overlay">
       {booting && (
         <div className={styles.bootLayer} data-testid="crt-poweron">
-          {bootStage === "flash" && <div className={styles.bootFlash} />}
+          {stage === "flash" && <div className={styles.bootFlash} />}
           <div className={styles.bootContent}>
-            {bootStage === "cursor" && <div className={styles.bootCursor} />}
-            {bootStage === "banner" && (
-              <BootBanner onComplete={() => setBannerDone(true)} />
+            {stage === "cursor" && <div className={styles.bootCursor} />}
+            {/* One slot for both stages, so the banner doesn't remount and
+                retype when typing ends and `hold` begins. */}
+            {(stage === "banner" || stage === "hold") && (
+              <BootBanner onComplete={onBannerTyped} />
             )}
           </div>
         </div>

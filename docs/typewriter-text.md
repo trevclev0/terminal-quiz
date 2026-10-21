@@ -96,13 +96,16 @@ sequence under reduced motion.
 - **`useTypewriter` is a default export**, so a `vi.mock` factory must key it
   as `default:`. A named key doesn't intercept the import, the real
   timer-driven hook runs, and fake-timer specs break.
-- **Advance fake timers in commit-sized steps** across the boot sequence
-  (the `advancePastBoot()` helper in `CrtOverlay.spec.tsx`). `done` depends on
-  React committing `banner` (which mounts `BootBanner` and schedules typing),
-  then committing `bannerDone` (which schedules the pause). A single
-  `advanceTimersByTime` commits only once at the end, so the chain never
-  runs. Don't use `vi.runAllTimers()` either: it also fires the first-visit
-  hint timer.
+- **Test boot transitions against the reducer, not the clock.** The stage
+  graph is the pure `bootReducer` in `utils/bootSequence.ts`, and
+  `bootSequence.spec.ts` covers every transition with no timers. Reach for
+  fake timers only when a component spec needs the rendered result.
+- **When you do, advance one boot stage per `act`** (the `advanceToBanner()`
+  / `advancePastBoot()` helpers in `CrtOverlay.spec.tsx`, stepping through
+  `BOOT_STAGE_TIMEOUT_MS`). Each stage's timer is scheduled only when React
+  commits that stage, and a single `advanceTimersByTime` commits once at the
+  end, so the chain never runs. Don't use `vi.runAllTimers()` either: it
+  also fires the first-visit hint timer.
 - **E2E makes no assertions on typed text**, and typing never blocks
   interaction, so the suite isn't timing-coupled. If typing ever slows the
   suite noticeably, force `prefers-reduced-motion: reduce` in
@@ -112,9 +115,12 @@ sequence under reduced motion.
 
 Only the first line (`VT220 OK`) types. `Terminal Quiz` appears instantly
 once it completes, because typing both lines would roughly double the banner
-window. After typing, a fixed pause precedes `done`. A hard fallback timer
-forces `done` if `onComplete` never fires. The timings are the exported
-constants at the top of `CrtOverlay.tsx`; they're tunable by eye.
+window. After typing, the `hold` stage pauses before `done`, with the banner
+still mounted. A fallback timeout on the `banner` stage forces `done` if
+`onComplete` never fires. Stage durations live in `BOOT_STAGE_TIMEOUT_MS`
+(`utils/bootSequence.ts`) and the typing speed in `CrtOverlay.tsx`. Both are
+tunable by eye. `useBootSequence` turns the reducer into one timer per stage
+and is the only place that reports `done` to `BootContext`.
 
 ## Resolved: does per-component typing read as coherent?
 
