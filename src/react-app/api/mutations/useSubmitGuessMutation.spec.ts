@@ -152,4 +152,51 @@ describe("useSubmitGuessMutation", () => {
       result.current.mutateAsync({ gateId: "gate-1", guess: "my answer" }),
     ).rejects.toThrow("Network error");
   });
+
+  function respondWith(success: boolean) {
+    mockFetch.mockResolvedValueOnce({
+      headers: { get: () => "application/json" },
+      ok: true,
+      text: async () =>
+        JSON.stringify({
+          data: {
+            submitGuess: { success, canRequestClue: false, nextGate: null },
+          },
+        }),
+    } as unknown as Response);
+  }
+
+  // The refetch is what mounts the solved gate, so the solve has to be
+  // recorded first or the gate renders once without its flash (#313).
+  it("reports a correct guess before invalidating progression", async () => {
+    respondWith(true);
+    const onSolved = vi.fn();
+    const { queryClient, wrapper } = createQueryWrapper();
+    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+    const { result } = renderHook(
+      () => useSubmitGuessMutation(mockProgramId, { onSolved }),
+      { wrapper },
+    );
+
+    await result.current.mutateAsync({ gateId: "gate-1", guess: "4" });
+
+    expect(onSolved).toHaveBeenCalledWith("gate-1");
+    expect(onSolved.mock.invocationCallOrder[0]).toBeLessThan(
+      invalidate.mock.invocationCallOrder[0],
+    );
+  });
+
+  it("does not report a wrong guess", async () => {
+    respondWith(false);
+    const onSolved = vi.fn();
+    const { wrapper } = createQueryWrapper();
+    const { result } = renderHook(
+      () => useSubmitGuessMutation(mockProgramId, { onSolved }),
+      { wrapper },
+    );
+
+    await result.current.mutateAsync({ gateId: "gate-1", guess: "5" });
+
+    expect(onSolved).not.toHaveBeenCalled();
+  });
 });

@@ -10,11 +10,12 @@ import ProgramEnding from "@components/ProgramEnding";
 import { ShortcutHelpDialog } from "@components/ShortcutHelpDialog";
 import { useBoot } from "@contexts/BootContext";
 import { useKeyboardShortcuts } from "@hooks/useKeyboardShortcuts";
-import useProgramPlay from "@hooks/useProgramPlay";
+import useProgramPlay, { type Solve } from "@hooks/useProgramPlay";
 import useProgressionScroll from "@hooks/useProgressionScroll";
 import { Route } from "@routes/programs/$programId";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { prefersReducedMotion } from "@utils/prefersReducedMotion";
 import {
   useCallback,
   useEffect,
@@ -70,11 +71,27 @@ function ProgramPlay() {
     clues,
     requestClueMutation,
     resetSessionMutation,
+    lastSolve,
   } = useProgramPlay({
     programId,
     currentGateId: currentGate?.id,
     onHelpCommand: openHelp,
   });
+
+  // The ACCESS GRANTED flash (#313) plays on the gate a live guess just
+  // solved, never on gates that loaded solved. Reduced motion is read once
+  // here so the flash and the hold on The End below agree on it.
+  const [reduceMotion] = useState(prefersReducedMotion);
+  const flashSolve = reduceMotion ? null : lastSolve;
+  // Compared by identity: a replay can solve the same gate id again.
+  const [flashedSolve, setFlashedSolve] = useState<Solve | null>(null);
+  const handleFlashComplete = useCallback(
+    () => setFlashedSolve(flashSolve),
+    [flashSolve],
+  );
+  // On the last gate The End follows straight away, so its typing waits for
+  // the flash the way a next question waits for the success message.
+  const isFlashPending = flashSolve !== null && flashedSolve !== flashSolve;
 
   // Tracks which gate's question has been "released" by its predecessor's
   // successMessage finishing typing. Derived at render time (not reset via
@@ -219,6 +236,8 @@ function ProgramPlay() {
               ? handleSuccessMessageComplete
               : undefined
           }
+          flash={flashSolve?.gateId === gate.id}
+          onFlashComplete={handleFlashComplete}
         />
       ))}
       {currentGate && (
@@ -245,7 +264,7 @@ function ProgramPlay() {
       )}
       {isTheEnd && (
         <ProgramEnding
-          canType={bootComplete}
+          canType={bootComplete && !isFlashPending}
           resetError={resetError}
           isResetting={resetSessionMutation.isPending || isRestarting}
           shortcutsEnabled={!isConfirmOpen && !isHelpOpen}

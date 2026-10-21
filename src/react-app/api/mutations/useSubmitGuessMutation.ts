@@ -24,13 +24,27 @@ const submitGuess = async (
   return result.submitGuess;
 };
 
-export const useSubmitGuessMutation = (programId: string) => {
+type SubmitGuessOptions = {
+  /** Called for a correct guess, before the progression refetch starts. */
+  onSolved?: (gateId: string) => void;
+};
+
+export const useSubmitGuessMutation = (
+  programId: string,
+  { onSolved }: SubmitGuessOptions = {},
+) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (variables: { gateId: string; guess: string }) =>
       submitGuess(programId, variables.gateId, variables.guess),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      // Before the invalidation: the refetch it starts can land before
+      // mutateAsync's caller resumes, and whatever reacts to the solve (the
+      // ACCESS GRANTED flash, #313) must not render a frame behind the data.
+      if (data.success) {
+        onSolved?.(variables.gateId);
+      }
       // Invalidate the program progression query to refetch the latest state
       queryClient.invalidateQueries({
         queryKey: PROGRAM_KEYS.progression(programId),

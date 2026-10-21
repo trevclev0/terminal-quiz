@@ -110,6 +110,7 @@ const mockUseProgramPlay = {
   >,
   handleResetSession: vi.fn(),
   resetSessionMutation: mockResetSessionMutation,
+  lastSolve: null,
 };
 
 vi.mocked(useProgramPlay).mockReturnValue(mockUseProgramPlay);
@@ -647,6 +648,105 @@ describe("ProgramPlay Component", () => {
     expect(
       screen.getByText("Failed to reset progress. Please try again."),
     ).toBeInTheDocument();
+  });
+
+  describe("ACCESS GRANTED flash", () => {
+    const twoSolvedGates = {
+      currentGate: { id: "gate-3", label: "Gate 3", question: "What is 4+4?" },
+      completedGates: [
+        {
+          id: "gate-1",
+          label: "Gate 1",
+          question: "What is 2+2?",
+          correctAnswer: "4",
+          successMessage: "Correct!",
+        },
+        {
+          id: "gate-2",
+          label: "Gate 2",
+          question: "What is 3+3?",
+          correctAnswer: "6",
+          successMessage: "Correct again!",
+        },
+      ],
+      totalGates: 3,
+      status: "in_progress",
+    };
+
+    async function renderWithSolve(
+      progression: unknown,
+      lastSolve: { gateId: string } | null,
+    ) {
+      vi.mocked(useProgramPlay).mockReturnValue({
+        ...mockUseProgramPlay,
+        lastSolve,
+      });
+      const { queryClient, wrapper } = createQueryWrapper();
+      queryClient.setQueryData(["programs"], mockPrograms);
+      queryClient.setQueryData(
+        ["programs", "progression", "test-program-id"],
+        progression,
+      );
+      render(<ProgramPlay />, { wrapper });
+      await screen.findByText("Test Program");
+    }
+
+    const flashFor = (gateId: string) =>
+      vi
+        .mocked(CompletedGate)
+        .mock.calls.filter(([props]) => props.gate.id === gateId)
+        .at(-1)?.[0].flash;
+
+    it("flashes only the gate a live guess just solved", async () => {
+      stubReducedMotion(false);
+      await renderWithSolve(twoSolvedGates, { gateId: "gate-2" });
+
+      expect(flashFor("gate-2")).toBe(true);
+      expect(flashFor("gate-1")).toBe(false);
+    });
+
+    it("does not flash gates that loaded already solved", async () => {
+      stubReducedMotion(false);
+      await renderWithSolve(twoSolvedGates, null);
+
+      expect(flashFor("gate-2")).toBe(false);
+    });
+
+    it("skips the flash under reduced motion", async () => {
+      await renderWithSolve(twoSolvedGates, { gateId: "gate-2" });
+
+      expect(flashFor("gate-2")).toBe(false);
+    });
+
+    // The End types its own heading; starting it during the last gate's
+    // flash would bring back the overlapping animations #214 removed.
+    it("holds The End until the last gate's flash finishes", async () => {
+      stubReducedMotion(false);
+      await renderWithSolve(
+        {
+          currentGate: null,
+          completedGates: twoSolvedGates.completedGates,
+          totalGates: 2,
+          status: "completed",
+        },
+        { gateId: "gate-2" },
+      );
+
+      // Long enough for an unheld heading to have typed its first characters
+      // (THE_END_TYPE_SPEED is 120ms a character).
+      await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+      expect(screen.getByTestId("the-end-heading")).toHaveTextContent(/^$/);
+
+      const lastGateCall = vi
+        .mocked(CompletedGate)
+        .mock.calls.filter(([props]) => props.gate.id === "gate-2")
+        .at(-1);
+      act(() => lastGateCall?.[0].onFlashComplete?.());
+
+      expect(
+        await screen.findByText("Select new program", {}, { timeout: 3000 }),
+      ).toBeInTheDocument();
+    });
   });
 
   describe("keyboard shortcuts", () => {

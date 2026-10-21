@@ -28,12 +28,20 @@ export const CLUE_COMMAND_MESSAGES = {
 // even though typing the command replaced the box's contents.
 type RememberedGuess = { guess: string; canRequestClue: boolean };
 
+// A gate solved by a guess on this mount, as opposed to one that loaded
+// already solved. A fresh object per solve, so "Play again" solving the same
+// gate id again still reads as a new solve to anything comparing by identity.
+export type Solve = { gateId: string };
+
 function useProgramPlay({
   programId,
   currentGateId,
   onHelpCommand,
 }: UseProgramPlayProps) {
-  const submitGuessMutation = useSubmitGuessMutation(programId);
+  const [lastSolve, setLastSolve] = useState<Solve | null>(null);
+  const submitGuessMutation = useSubmitGuessMutation(programId, {
+    onSolved: (gateId) => setLastSolve({ gateId }),
+  });
   const requestClueMutation = useRequestClueMutation(programId);
   const resetSessionMutation = useResetSession();
 
@@ -236,6 +244,7 @@ function useProgramPlay({
     cooldownSeconds,
     requestClueMutation,
     resetSessionMutation,
+    lastSolve,
   };
 }
 
