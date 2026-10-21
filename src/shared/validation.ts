@@ -1,4 +1,5 @@
 import * as z from "zod/mini";
+import { GAME_COMMANDS, parseGameCommand } from "./gameCommands";
 import { MAX_CLUES_PER_GATE, MAX_GUESS_LENGTH } from "./types";
 
 /**
@@ -29,6 +30,7 @@ export type Visibility = (typeof VISIBILITIES)[number];
 const ACCEPTANCE_THRESHOLD_ERROR = `acceptanceThreshold must be between ${MIN_ACCEPTANCE_THRESHOLD} and ${MAX_ACCEPTANCE_THRESHOLD}.`;
 const GUIDANCE_THRESHOLD_ERROR = `guidanceThreshold must be an integer between ${MIN_GUIDANCE_THRESHOLD} and ${MAX_GUIDANCE_THRESHOLD}.`;
 const SEQUENCE_ORDER_ERROR = "sequenceOrder must be a positive integer.";
+export const RESERVED_ANSWER_ERROR = `correctAnswer can't be ${GAME_COMMANDS.map((command) => `"${command}"`).join(" or ")} — those are game commands.`;
 
 /** Non-blank after trimming; parses to the trimmed value. */
 function requiredText(field: string) {
@@ -78,7 +80,14 @@ export const updateProgramInputSchema = z.object({
 export const gateTextSchema = z.object({
   label: requiredText("label"),
   question: requiredText("question"),
-  correctAnswer: requiredText("correctAnswer"),
+  // The refine runs after requiredText's trim, so " /Clue " is caught and
+  // the parsed output stays trimmed.
+  correctAnswer: requiredText("correctAnswer").check(
+    z.refine(
+      (value) => parseGameCommand(value) === null,
+      RESERVED_ANSWER_ERROR,
+    ),
+  ),
   successMessage: requiredText("successMessage"),
 });
 

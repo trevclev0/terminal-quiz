@@ -8,6 +8,7 @@
   "mutate": [
     "src/worker/utils/**/*.ts",
     "src/shared/validation.ts",
+    "src/shared/gameCommands.ts",
     "src/worker/graphql/gameplay/clueEligibility.ts",
     "src/react-app/utils/bootSequence.ts",
     "!**/*.spec.ts",

@@ -5,6 +5,7 @@ import {
   UPDATE_PROGRAM_MUTATION,
 } from "@shared/gqlQueries";
 import { gates, programs } from "@shared/schema";
+import { RESERVED_ANSWER_ERROR } from "@shared/validation";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
@@ -101,6 +102,18 @@ describe("management mutations validate with the shared schemas", () => {
       .from(gates)
       .where(eq(gates.programId, programId));
     expect(stored).toHaveLength(1);
+  });
+
+  it("rejects a reserved correctAnswer on updateGate and leaves the gate unchanged", async () => {
+    const { gateId } = await insertOwnedProgram("public");
+
+    const response = await gqlRequest(UPDATE_GATE_MUTATION, {
+      ...AUTH,
+      variables: { id: gateId, correctAnswer: "/clue" },
+    });
+
+    expect(firstError(response)).toBe(RESERVED_ANSWER_ERROR);
+    expect((await readGate(gateId)).correctAnswer).toBe("answer");
   });
 
   it("stores trimmed text from updateGate", async () => {
