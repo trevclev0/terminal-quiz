@@ -1,3 +1,4 @@
+import { prefersReducedMotion } from "@utils/prefersReducedMotion";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type TypewriterOptions = {
@@ -12,11 +13,6 @@ export type TypewriterResult = {
   isComplete: boolean;
   skip: () => void;
 };
-
-function prefersReducedMotion(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
 
 function useTypewriter(
   text: string,

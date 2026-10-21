@@ -5,11 +5,8 @@ import {
   bootReducer,
   initialBootStage,
 } from "@utils/bootSequence";
+import { prefersReducedMotion } from "@utils/prefersReducedMotion";
 import { useCallback, useEffect, useReducer } from "react";
-
-function prefersReducedMotion() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
 
 /**
  * Runs the CRT power-on sequence and reports its end to `BootContext`.
