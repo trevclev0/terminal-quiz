@@ -1,12 +1,13 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createQueryWrapper } from "../test-utils/queryTestUtils";
-import useProgramPlay from "./useProgramPlay";
+import useProgramPlay, { CLUE_COMMAND_MESSAGES } from "./useProgramPlay";
 
 // Mock the mutations
 const mockMutateAsync = vi.fn();
 const mockMutate = vi.fn();
 let mockSubmitIsPending = false;
+let mockClueIsPending = false;
 
 vi.mock("@api/mutations/useSubmitGuessMutation", () => ({
   useSubmitGuessMutation: vi.fn(() => ({
@@ -20,7 +21,9 @@ vi.mock("@api/mutations/useSubmitGuessMutation", () => ({
 vi.mock("@api/mutations/useRequestClueMutation", () => ({
   useRequestClueMutation: vi.fn(() => ({
     mutate: mockMutate,
-    isPending: false,
+    get isPending() {
+      return mockClueIsPending;
+    },
   })),
 }));
 
@@ -42,6 +45,7 @@ describe("useProgramPlay", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSubmitIsPending = false;
+    mockClueIsPending = false;
   });
 
   it("starts with an empty guess", () => {
@@ -719,5 +723,275 @@ describe("useProgramPlay", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  describe("game commands", () => {
+    const submitEvent = () =>
+      ({
+        preventDefault: vi.fn(),
+      }) as unknown as React.SubmitEvent<HTMLFormElement>;
+
+    const type = (
+      result: { current: ReturnType<typeof useProgramPlay> },
+      value: string,
+    ) => {
+      act(() => {
+        result.current.changeHandler({
+          target: { value },
+        } as React.ChangeEvent<HTMLInputElement>);
+      });
+    };
+
+    const submit = async (result: {
+      current: ReturnType<typeof useProgramPlay>;
+    }) => {
+      await act(async () => {
+        await result.current.handleSubmit(submitEvent());
+      });
+    };
+
+    const wrongGuess = async (
+      result: { current: ReturnType<typeof useProgramPlay> },
+      canRequestClue: boolean,
+      guess = "nope",
+    ) => {
+      mockMutateAsync.mockResolvedValueOnce({
+        success: false,
+        message: "Wrong!",
+        canRequestClue,
+      });
+      type(result, guess);
+      await submit(result);
+    };
+
+    const clueResponse = (overrides = {}) => ({
+      clueText: null,
+      isClueLimitReached: false,
+      isRateLimited: false,
+      retryAfterMs: null,
+      ...overrides,
+    });
+
+    it("intercepts /help without submitting", async () => {
+      const onHelpCommand = vi.fn();
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId, onHelpCommand }),
+        { wrapper },
+      );
+      type(result, " /HELP ");
+
+      await submit(result);
+
+      expect(onHelpCommand).toHaveBeenCalledTimes(1);
+      expect(mockMutateAsync).not.toHaveBeenCalled();
+      expect(result.current.guess).toBe("");
+    });
+
+    it("leaves the message unchanged on /help", async () => {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      await wrongGuess(result, false);
+      expect(result.current.message).toBe("Wrong!");
+
+      type(result, "/help");
+      await submit(result);
+
+      expect(result.current.message).toBe("Wrong!");
+      expect(result.current.guessSucceeded).toBe(false);
+    });
+
+    it("/clue requests a clue with the last wrong guess", async () => {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      await wrongGuess(result, true);
+
+      type(result, "/clue");
+      await submit(result);
+
+      expect(mockMutate).toHaveBeenCalledWith(
+        { gateId: currentGateId, currentGuess: "nope" },
+        expect.any(Object),
+      );
+      expect(mockMutateAsync).toHaveBeenCalledTimes(1);
+      expect(mockShake).toHaveBeenCalledTimes(1);
+      expect(result.current.guess).toBe("");
+    });
+
+    it("/clue with no wrong guess yet shows noGuess and makes no request", async () => {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      type(result, "/clue");
+
+      await submit(result);
+
+      expect(result.current.message).toBe(CLUE_COMMAND_MESSAGES.noGuess);
+      expect(result.current.guessSucceeded).toBeNull();
+      expect(mockMutate).not.toHaveBeenCalled();
+      expect(mockMutateAsync).not.toHaveBeenCalled();
+      expect(result.current.guess).toBe("");
+    });
+
+    it("/clue below threshold shows notYet", async () => {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      await wrongGuess(result, false);
+
+      type(result, "/clue");
+      await submit(result);
+
+      expect(result.current.message).toBe(CLUE_COMMAND_MESSAGES.notYet);
+      expect(result.current.guessSucceeded).toBeNull();
+      expect(mockMutate).not.toHaveBeenCalled();
+    });
+
+    it("/clue after a received clue shows notYet until the next wrong guess", async () => {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      await wrongGuess(result, true);
+      mockMutate.mockImplementationOnce((_variables, options) => {
+        options.onSuccess(clueResponse({ clueText: "A clue" }));
+      });
+
+      type(result, "/clue");
+      await submit(result);
+      expect(result.current.clues).toEqual(["A clue"]);
+
+      type(result, "/clue");
+      await submit(result);
+      expect(result.current.message).toBe(CLUE_COMMAND_MESSAGES.notYet);
+      expect(mockMutate).toHaveBeenCalledTimes(1);
+
+      await wrongGuess(result, true, "still no");
+      type(result, "/clue");
+      await submit(result);
+      expect(mockMutate).toHaveBeenCalledTimes(2);
+      expect(mockMutate).toHaveBeenLastCalledWith(
+        { gateId: currentGateId, currentGuess: "still no" },
+        expect.any(Object),
+      );
+    });
+
+    it("/clue at the clue limit shows limit", async () => {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      await wrongGuess(result, true);
+      mockMutate.mockImplementationOnce((_variables, options) => {
+        options.onSuccess(clueResponse({ isClueLimitReached: true }));
+      });
+      act(() => {
+        result.current.handleRequestClue();
+      });
+      expect(result.current.isClueLimitReached).toBe(true);
+
+      type(result, "/clue");
+      await submit(result);
+
+      expect(result.current.message).toBe(CLUE_COMMAND_MESSAGES.limit);
+      expect(mockMutate).toHaveBeenCalledTimes(1);
+    });
+
+    it("/clue during cooldown shows the cooldown copy", async () => {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      await wrongGuess(result, true);
+      mockMutate.mockImplementationOnce((_variables, options) => {
+        options.onSuccess(
+          clueResponse({ isRateLimited: true, retryAfterMs: 5000 }),
+        );
+      });
+      act(() => {
+        result.current.handleRequestClue();
+      });
+
+      type(result, "/clue");
+      await submit(result);
+
+      expect(result.current.message).toBe("Clue cooldown — try again in 5s");
+      expect(result.current.guessSucceeded).toBeNull();
+      expect(mockMutate).toHaveBeenCalledTimes(1);
+    });
+
+    it("/clue while a clue request is pending does nothing", async () => {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      await wrongGuess(result, true);
+      mockClueIsPending = true;
+
+      type(result, "/clue");
+      await submit(result);
+
+      expect(mockMutate).not.toHaveBeenCalled();
+      expect(result.current.message).toBe("Wrong!");
+      expect(result.current.guess).toBe("");
+    });
+
+    it("a correct guess clears the remembered guess", async () => {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      await wrongGuess(result, true);
+      mockMutateAsync.mockResolvedValueOnce({
+        success: true,
+        message: "Correct!",
+      });
+      type(result, "right");
+      await submit(result);
+
+      type(result, "/clue");
+      await submit(result);
+
+      expect(result.current.message).toBe(CLUE_COMMAND_MESSAGES.noGuess);
+      expect(mockMutate).not.toHaveBeenCalled();
+    });
+
+    it("a gate change clears the remembered guess", async () => {
+      const { result, rerender } = renderHook(
+        ({ currentGateId }) => useProgramPlay({ programId, currentGateId }),
+        { wrapper, initialProps: { currentGateId: "gate-1" } },
+      );
+      await wrongGuess(result, true);
+
+      rerender({ currentGateId: "gate-2" });
+      type(result, "/clue");
+      await submit(result);
+
+      expect(result.current.message).toBe(CLUE_COMMAND_MESSAGES.noGuess);
+      expect(mockMutate).not.toHaveBeenCalled();
+    });
+
+    it("keeps the link sending the live guess", async () => {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      await wrongGuess(result, true);
+      type(result, "something else");
+
+      act(() => {
+        result.current.handleRequestClue();
+      });
+
+      expect(mockMutate).toHaveBeenCalledWith(
+        { gateId: currentGateId, currentGuess: "something else" },
+        expect.any(Object),
+      );
+    });
   });
 });
