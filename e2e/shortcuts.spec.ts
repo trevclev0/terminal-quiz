@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { STUB_CLUE_TEXT } from "../src/shared/clueStub";
+import { CLUE_STUB_ACTIVE, CLUE_STUB_SKIP_MESSAGE } from "./helpers";
 import type { GamePage } from "./pages/gamePage";
 import { SelectProgramPage } from "./pages/selectProgramPage";
 
@@ -30,6 +31,7 @@ test.describe("@full keyboard shortcuts", () => {
   test("/clue requests a clue without counting as a guess", async ({
     page,
   }) => {
+    test.skip(!CLUE_STUB_ACTIVE, CLUE_STUB_SKIP_MESSAGE);
     await gamePage.submitAnswerAndWaitForDenial("nope");
     await gamePage.submitAnswerAndWaitForDenial("wrong");
     await expect(gamePage.getClueButtonLocator()).toBeVisible();
@@ -44,17 +46,10 @@ test.describe("@full keyboard shortcuts", () => {
 
     await gamePage.typeCommand("/clue");
 
-    // CI runs against the preview Worker, which serves a canned clue
-    // (AI_CLUE_STUB); a local dev server may call the real model, so
-    // there any non-empty clue passes. Mirrors clue.spec.ts.
-    if (process.env.CI) {
-      await expect(gamePage.getClueTextLocator()).toHaveText(STUB_CLUE_TEXT, {
-        timeout: 15000,
-      });
-    } else {
-      const clueText = await gamePage.waitForClueText();
-      expect(clueText?.length).toBeGreaterThan(0);
-    }
+    // Exact canned text, as in clue.spec.ts: never a real model call.
+    await expect(gamePage.getClueTextLocator()).toHaveText(STUB_CLUE_TEXT, {
+      timeout: 15000,
+    });
 
     // The status line keeps the earlier denial, so prove the command was not
     // submitted as a guess by the absence of a submitGuess request instead.
