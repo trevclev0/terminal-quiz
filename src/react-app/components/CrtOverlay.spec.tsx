@@ -1,12 +1,10 @@
 import { BootProvider, useBoot } from "@contexts/BootContext";
 import { stubReducedMotion } from "@test-utils/reducedMotion";
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import { BANNER_PAUSE_MS, BOOT_STAGE_TIMEOUT_MS } from "@utils/bootSequence";
+import { useLayoutEffect } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import CrtOverlay, {
-  BANNER_PAUSE_MS,
-  BANNER_TYPE_SPEED,
-  BOOT_BANNER_MS,
-} from "./CrtOverlay";
+import CrtOverlay, { BANNER_TYPE_SPEED } from "./CrtOverlay";
 import styles from "./CrtOverlay.module.css";
 
 const BANNER_TEXT = "VT220 OK";
@@ -51,17 +49,21 @@ const FULL_SETTINGS = {
   powerOn: true,
 };
 
-// Boot is now typing-driven: `done` depends on React committing the
-// `banner` stage (mounting BootBanner and scheduling the typing interval),
-// then committing `bannerDone` (scheduling the pause timer). A single
-// `advanceTimersByTime` call commits once at the end, so the sequence must
-// be advanced in steps that each end on a commit boundary. Durations are
-// derived from the component's exported timing constants so retuning the
-// boot feel doesn't silently desync this helper.
+// Each boot stage's timer is scheduled when React commits that stage, and a
+// single `advanceTimersByTime` commits only once at the end. So the sequence
+// is advanced one stage per `act`, with durations taken from the boot
+// machine's timeout table so retuning the boot feel can't desync these
+// helpers. The stage transitions themselves are covered without timers in
+// `utils/bootSequence.spec.ts`.
+function advanceToBanner() {
+  for (const stage of ["flash", "blackout", "cursor"] as const) {
+    act(() => vi.advanceTimersByTime(BOOT_STAGE_TIMEOUT_MS[stage] ?? 0));
+  }
+}
+
 function advancePastBoot() {
-  // Banner stage commits, typing interval scheduled.
-  act(() => vi.advanceTimersByTime(BOOT_BANNER_MS));
-  // Typing done + onComplete, pause timer scheduled.
+  advanceToBanner();
+  // Typing done + onComplete, `hold` commits and schedules the pause.
   act(() => vi.advanceTimersByTime(BANNER_TYPING_MS));
   // Pause elapses, `done` commits.
   act(() => vi.advanceTimersByTime(BANNER_PAUSE_MS));
@@ -133,7 +135,7 @@ describe("CrtOverlay", () => {
     render(<CrtOverlay />);
     expect(screen.getByTestId("crt-poweron")).toBeInTheDocument();
 
-    act(() => vi.advanceTimersByTime(BOOT_BANNER_MS));
+    advanceToBanner();
     expect(screen.getByTestId("crt-poweron")).toBeInTheDocument();
 
     act(() => vi.advanceTimersByTime(BANNER_TYPING_MS));
@@ -152,7 +154,7 @@ describe("CrtOverlay", () => {
     render(<CrtOverlay />);
     expect(screen.getByTestId("crt-poweron")).toBeInTheDocument();
 
-    act(() => vi.advanceTimersByTime(BOOT_BANNER_MS));
+    advanceToBanner();
 
     expect(screen.getByTestId("boot-banner-line1")).toHaveTextContent("");
 
@@ -329,7 +331,7 @@ describe("CrtOverlay boot reporting", () => {
 
     expect(screen.getByTestId("boot-flag")).toHaveTextContent("booting");
 
-    act(() => vi.advanceTimersByTime(BOOT_BANNER_MS));
+    advanceToBanner();
     expect(screen.getByTestId("boot-flag")).toHaveTextContent("booting");
 
     act(() => vi.advanceTimersByTime(BANNER_TYPING_MS));
@@ -360,6 +362,33 @@ describe("CrtOverlay boot reporting", () => {
     renderWithBoot();
 
     expect(screen.getByTestId("boot-flag")).toHaveTextContent("done");
+  });
+
+  // A layout effect runs inside the first commit, before any passive effect
+  // could move the stage to `done`, so it sees exactly what got painted.
+  it("never paints the boot layer under reduced motion", () => {
+    localStorage.setItem(
+      "terminal_quiz_crt_settings",
+      JSON.stringify(FULL_SETTINGS),
+    );
+    stubReducedMotion(true);
+    let bootLayerOnFirstCommit: boolean | undefined;
+    function FirstCommitProbe() {
+      useLayoutEffect(() => {
+        bootLayerOnFirstCommit ??=
+          document.querySelector('[data-testid="crt-poweron"]') !== null;
+      }, []);
+      return null;
+    }
+
+    render(
+      <>
+        <CrtOverlay />
+        <FirstCommitProbe />
+      </>,
+    );
+
+    expect(bootLayerOnFirstCommit).toBe(false);
   });
 
   it("reports when every CRT effect is switched off", () => {
