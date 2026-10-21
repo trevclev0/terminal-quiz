@@ -45,9 +45,16 @@
   margin-top: 0.5rem;
 }
 
-/* Terminal-styled native modal `<dialog>`; backdrop included. */
+/*
+ * Terminal-styled native modal `<dialog>`; backdrop included. Caps its height
+ * and scrolls internally so a tall dialog never pushes its dismiss control
+ * off-screen on a small viewport. Position is left to the UA default
+ * (centred); a consumer that wants it elsewhere adds its own offset.
+ */
 .modal {
-  inset-block-end: 25vh;
+  /* Content-box: 3rem padding + 2px border are added on top of this. */
+  max-height: calc(100dvh - 5rem - 2px);
+  overflow-y: auto;
   background-color: var(--black);
   border: 1px solid var(--green);
   padding: 1.5rem;

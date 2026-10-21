@@ -1,5 +1,8 @@
 .modal {
   composes: modal from "./base.module.css";
+  font-size: 0.8em;
+  /* Keeps 90% width plus padding inside a phone viewport, so [x] stays visible. */
+  box-sizing: border-box;
 }
 
 .closeButton {
@@ -8,8 +11,12 @@
 
 .heading {
   margin: 0 0 0.5rem 0;
-  font-size: 1rem;
+  font-size: 1em;
   font-weight: bold;
+}
+
+.heading:first-of-type {
+  padding-inline-end: 2.5rem;
 }
 
 .heading:not(:first-of-type) {
@@ -17,14 +24,16 @@
 }
 
 .list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 1rem;
   margin: 0;
+  line-height: 1.5;
 }
 
+/* Rows only group a dt/dd pair semantically; the dl grid lays them out. */
 .row {
-  display: grid;
-  grid-template-columns: 9rem 1fr;
-  gap: 1rem;
-  line-height: 1.5;
+  display: contents;
 }
 
 .row dt,
@@ -40,4 +49,15 @@
 
 .row dd {
   color: var(--light-grey);
+}
+
+@media (max-width: 600px) {
+  .list {
+    grid-template-columns: 1fr;
+  }
+
+  .row dd {
+    padding-inline-start: 2ch;
+    margin-bottom: 0.5rem;
+  }
 }
