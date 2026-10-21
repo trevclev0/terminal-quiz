@@ -222,6 +222,27 @@ export class GamePage {
     return this.page.locator("[class*='shake']").first().isVisible();
   }
 
+  // ─── Keyboard shortcut helpers ─────────────────────────────────────
+
+  /**
+   * Type a slash command (`/clue`, `/help`) into the active gate's answer
+   * box and press Enter.
+   */
+  async typeCommand(command: string): Promise<void> {
+    await this.submitAnswer(command);
+  }
+
+  getHelpDialogLocator() {
+    return this.page.getByRole("dialog", { name: "Keyboard shortcuts" });
+  }
+
+  /**
+   * The active gate's answer box, for focus and cleared-value assertions.
+   */
+  getActiveInputLocator() {
+    return this.page.getByPlaceholder("enter password... (/help)");
+  }
+
   // ─── Clue button helpers ───────────────────────────────────────────
 
   /**
