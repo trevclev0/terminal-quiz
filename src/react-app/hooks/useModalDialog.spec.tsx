@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { useRef, useState } from "react";
-import { describe, expect, it } from "vitest";
+import { StrictMode, useRef, useState } from "react";
+import { describe, expect, it, vi } from "vitest";
 import { useModalDialog } from "./useModalDialog";
 
 function Harness() {
@@ -65,6 +65,38 @@ describe("useModalDialog", () => {
     rerender(<Host open />);
     expect(screen.getByText("first")).toHaveFocus();
     rerender(<Host open={false} />);
+    expect(trigger).toHaveFocus();
+  });
+
+  it("returns focus to the original trigger under StrictMode", () => {
+    // happy-dom does not make the page inert behind a modal, so emulate it:
+    // focus() on anything outside an open dialog is ignored, as in a browser.
+    const realFocus = HTMLElement.prototype.focus;
+    vi.spyOn(HTMLElement.prototype, "focus").mockImplementation(function (
+      this: HTMLElement,
+      ...args
+    ) {
+      const open = document.querySelector("dialog[open]");
+      if (open && !open.contains(this)) return;
+      realFocus.apply(this, args);
+    });
+    const { rerender } = render(
+      <StrictMode>
+        <Host open={false} />
+      </StrictMode>,
+    );
+    const trigger = screen.getByText("trigger");
+    trigger.focus();
+    rerender(
+      <StrictMode>
+        <Host open />
+      </StrictMode>,
+    );
+    rerender(
+      <StrictMode>
+        <Host open={false} />
+      </StrictMode>,
+    );
     expect(trigger).toHaveFocus();
   });
 });

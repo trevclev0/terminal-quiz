@@ -20,9 +20,14 @@ export function useModalDialog(
    * dialog.close(), so the browser never runs its own focus restoration and a
    * keyboard user is dropped back to the document. Capture the trigger before
    * the focus effect below moves focus in, and hand it back on unmount.
+   *
+   * Capture only once per instance: StrictMode re-runs this effect after the
+   * dialog has taken focus, and a second capture would record the dialog's own
+   * control (its simulated cleanup cannot refocus the trigger while the page
+   * behind the modal is inert).
    */
   useEffect(() => {
-    triggerRef.current = document.activeElement as HTMLElement | null;
+    triggerRef.current ??= document.activeElement as HTMLElement | null;
     return () => {
       const trigger = triggerRef.current;
       if (trigger?.isConnected) trigger.focus();
