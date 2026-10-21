@@ -61,3 +61,15 @@ export async function deleteProgramViaApi(
     );
   }
 }
+
+/**
+ * True when the server under test serves the canned clue (AI_CLUE_STUB):
+ * CI targets the preview Worker, which sets it. Locally it must be set in
+ * .dev.vars and mirrored in the Playwright run's env, so a clue request can
+ * never spend a real Workers AI call.
+ */
+export const CLUE_STUB_ACTIVE =
+  !!process.env.CI || process.env.AI_CLUE_STUB === "true";
+
+export const CLUE_STUB_SKIP_MESSAGE =
+  'Set AI_CLUE_STUB="true" in .dev.vars and run with AI_CLUE_STUB=true so no real model call is spent';

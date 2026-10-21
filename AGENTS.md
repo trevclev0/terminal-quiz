@@ -75,6 +75,7 @@ bun run coverage        # single run with V8 coverage (unit tests only — see n
 bun run test:ui         # browser-based Vitest UI
 bun run mutate          # Stryker mutation tests on pure logic (~30s); HTML report in reports/mutation/
 bun run test:e2e        # seed local D1 with E2E fixtures, then run Playwright against localhost
+                         #   (clue specs skip unless AI_CLUE_STUB="true" is in .dev.vars and in the run env)
 
 bun run lint            # biome lint .
 bun run format          # biome format --write .
