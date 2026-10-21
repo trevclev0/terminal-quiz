@@ -96,7 +96,9 @@ function ProgramPlay() {
     {
       key: "?",
       onKey: () => setIsHelpOpen((open) => !open),
-      enabled: !isConfirmOpen,
+      // The loading screen has no gate to explain, and a dialog opened over
+      // it would pop up as soon as loading finishes.
+      enabled: !isConfirmOpen && !isLoading && !isLeaving,
     },
   ]);
 

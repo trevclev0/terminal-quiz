@@ -117,7 +117,7 @@ bun run eval:clues       # manual real-model clue prompt eval — plan only; add
 ├── docs/                         # Decisions and reference material only — architecture notes, rejected
 │                                #   proposals, completed-refactor records. Plans for in-flight work live
 │                                #   in GitHub issues, not here.
-├── e2e/                          # Playwright E2E specs + page objects (gameplay, clue, reset-flow, wrong-answer, smoke, authoring)
+├── e2e/                          # Playwright E2E specs + page objects (gameplay, clue, reset-flow, wrong-answer, smoke, authoring, shortcuts)
 ├── migrations/                  # Drizzle SQL migrations + meta/ snapshots
 ├── public/                      # Static assets
 ├── scripts/                     # seedGenerator.ts + typed seedData.ts/seedE2eData.ts (checked in,
@@ -138,12 +138,13 @@ bun run eval:clues       # manual real-model clue prompt eval — plan only; add
 │   │   ├── components/       # ActiveGate, CompletedGate, ErrorBoundary, ProgramPlay,
 │   │   │                     # ProgramEnding, ProgramSelector, RouteErrorFallback,
 │   │   │                     # ConfirmDialog, ManageProgramsList, ManageProgramEditor,
-│   │   │                     # NavBar, LoginPage, CrtOverlay
+│   │   │                     # NavBar, LoginPage, CrtOverlay, ShortcutHelpDialog
 │   │   ├── contexts/          # BootContext — bootComplete flag reported by
 │   │   │                     # CrtOverlay, gating the typed gameplay surfaces
 │   │   ├── hooks/             # useProgramPlay, usePrograms, useProgressionScroll,
 │   │   │                     # useResetSession, useShake, useTypewriter,
-│   │   │                     # useCrtPreferences
+│   │   │                     # useCrtPreferences, useKeyboardShortcuts,
+│   │   │                     # useModalDialog
 │   │   ├── routes/            # TanStack file-based routes: __root, index, login,
 │   │   │                     # programs/select, programs/$programId,
 │   │   │                     # programs/manage, programs/manage/$programId
@@ -271,7 +272,7 @@ There are **three** tiers of tests:
 
 1. **Unit / component tests** — co-located as `*.spec.ts` / `*.spec.tsx`, run by Vitest (`vite.config.ts`) with `happy-dom`. Shared helpers live in `src/react-app/test-utils/`; worker-side unit tests use plain Vitest with hand-built mock DB/Hono context objects (no real D1) via `src/worker/test-utils/mockEnv.ts` (`createMockEnv()`, `createMockHonoContext()`, `createMockGraphQLContext()`).
 2. **Backend integration tests** — co-located as `*.integration.spec.ts` under `src/worker/` (mostly `graphql/gameplay/`; route-level specs such as `routes/errorReporting.integration.spec.ts` sit next to their route), run via a separate config (`vitest.config.integration.ts`) using `@cloudflare/vitest-pool-workers`. These exercise the real Hono stack and a real (in-memory) D1 instance, applying actual migrations + seed SQL compiled directly from `scripts/seedE2eData.ts` (imported into the Node-side config, no file round-trip) per test file (`src/worker/test-utils/setupDb.ts`). Requests go through `src/worker/test-utils/gqlRequest.ts`, which calls the real worker `fetch()` entry point.
-3. **E2E tests** — Playwright specs in `e2e/` (`smoke`, `gameplay`, `wrong-answer`, `clue`, `reset-flow`, `authoring`), driven by page objects in `e2e/pages/`. Locally these seed the dev D1 with `scripts/generated/seed-e2e.sql` (compiled from `scripts/seedE2eData.ts` via `bun run seed:e2e:local`) and run against `mise dev`; in CI they run against the live preview deployment URL for a PR (see Environments & Deployment below).
+3. **E2E tests** — Playwright specs in `e2e/` (`smoke`, `gameplay`, `wrong-answer`, `clue`, `reset-flow`, `authoring`, `shortcuts`), driven by page objects in `e2e/pages/`. Locally these seed the dev D1 with `scripts/generated/seed-e2e.sql` (compiled from `scripts/seedE2eData.ts` via `bun run seed:e2e:local`) and run against `mise dev`; in CI they run against the live preview deployment URL for a PR (see Environments & Deployment below).
 
 ```bash
 bun run test --run        # unit/component tests, single run

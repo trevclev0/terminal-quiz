@@ -19,7 +19,7 @@ type UseProgramPlayProps = {
 
 export const CLUE_COMMAND_MESSAGES = {
   noGuess: "Make a guess first, then type /clue.",
-  notYet: "No clue available yet. Keep guessing.",
+  notYet: "No clue available right now.",
   limit: "No clues left for this gate.",
   cooldown: (seconds: number) => `Clue cooldown — try again in ${seconds}s`,
 };
@@ -52,7 +52,8 @@ function useProgramPlay({
   const currentGateIdRef = useRef(currentGateId);
   const { isShaking, shake, clearShake } = useShake();
 
-  // Clear response message, shake, clues, and canRequestClue when currentGate.id changes
+  // Clear response message, shake, clues, canRequestClue, and the remembered
+  // wrong guess when currentGate.id changes
   // biome-ignore lint/correctness/useExhaustiveDependencies: clearShake is stable from useShake, only re-run when currentGateId changes
   useEffect(() => {
     currentGateIdRef.current = currentGateId;
