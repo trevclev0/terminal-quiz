@@ -1,13 +1,15 @@
-import { sql } from "drizzle-orm";
+import { lt, sql } from "drizzle-orm";
 import { user } from "../src/shared/authSchema";
-import { gates, programs } from "../src/shared/schema";
+import { gates, programs, sessionProgress } from "../src/shared/schema";
 import { TEST_USER_ID } from "../src/worker/test-utils/testConstants";
-import { insertSql, upsertConflict } from "./seedGenerator";
+import { deleteWhereSql, insertSql, upsertConflict } from "./seedGenerator";
 
 // E2E fixture data — safe for concurrent runs (upserts, no destructive
 // deletes). Consumed by:
 //   - `bun run seed:e2e:local` / `seed:e2e:preview` (via scripts/seed-e2e.ts)
 //   - `vitest.config.integration.ts` (imported directly, no file round-trip)
+// The preview-only session prune below is the one delete, and it only
+// touches sessions idle for a day, never a concurrent run's.
 //
 // The test user id (auth bypass fixture) must stay in sync with
 // TEST_USER_ID in src/worker/test-utils/testConstants.ts.
@@ -87,4 +89,35 @@ export function generateE2eSeedSql(): string {
   ];
 
   return statements.join("\n");
+}
+
+const PREVIEW_SESSION_MAX_IDLE_MS = 24 * 60 * 60 * 1000;
+// Bounded like the production cron's batches: each session cascades its
+// completed-gate, clue and rate-limit rows, so an unbounded first run over
+// the backlog could spend a large share of the daily rows-written budget.
+const PREVIEW_SESSION_PRUNE_LIMIT = 2000;
+
+/**
+ * Deletes preview sessions idle for over a day. Preview has no cleanup cron
+ * (see wrangler.jsonc), and every E2E run adds sessions; left alone they
+ * made each program delete's FK scans cost more every day (#345). The
+ * cutoff is fixed at generation time, which `seed:e2e:preview` runs
+ * immediately before executing the file.
+ */
+export function generatePreviewSessionPruneSql(now: Date): string {
+  const cutoff = new Date(now.getTime() - PREVIEW_SESSION_MAX_IDLE_MS);
+  // Stock SQLite has no DELETE ... LIMIT, so a limited subquery picks the
+  // batch (same shape as pruneStaleSessions).
+  const batch = sql.join(
+    [
+      sql`select ${sessionProgress.id} from ${sessionProgress}`,
+      sql`where ${lt(sessionProgress.updatedAt, cutoff)}`,
+      sql`limit ${sql.raw(String(PREVIEW_SESSION_PRUNE_LIMIT))}`,
+    ],
+    sql` `,
+  );
+  return deleteWhereSql(
+    sessionProgress,
+    sql`${sessionProgress.id} in (${batch})`,
+  );
 }

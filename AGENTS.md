@@ -98,7 +98,8 @@ bun run seed:local       # seed:generate, then wrangler d1 execute --file=script
 bun run seed:preview     # seed:generate, then wrangler d1 execute --file=scripts/generated/seed.sql (preview D1)
 bun run seed:prod        # seed:generate, then wrangler d1 execute --file=scripts/generated/seed.sql (production D1)
 bun run seed:e2e:local   # seed:generate, then wrangler d1 execute --file=scripts/generated/seed-e2e.sql (local D1)
-bun run seed:e2e:preview # seed:generate, then wrangler d1 execute --file=scripts/generated/seed-e2e.sql (preview D1)
+bun run seed:e2e:preview # seed:generate, then wrangler d1 execute --file=scripts/generated/seed-e2e-preview.sql
+                         #   (preview D1: the E2E seed plus a bounded prune of sessions idle for a day)
 
 bun run commit           # git-cz, interactive commit prompt (preferred over `git commit`)
 bun run cf-typegen       # wrangler types, regenerates worker-configuration.d.ts
@@ -334,7 +335,7 @@ Local development (`mise dev`, `migrate:local`, `seed:local`) runs against a loc
 | Production | Push to `main` | _(default)_ | `terminal-quest` |
 | Preview | Pull request | `preview` | `terminal-quest-preview` |
 
-Fully automated via `.github/workflows/deploy.yml`; preview builds run with `CLOUDFLARE_ENV=preview` so the Vite plugin flattens the `env.preview` section into the built `dist/quiz_app/wrangler.json`, then `wrangler deploy --env preview` deploys it. The `deploy` job builds, migrates, and deploys, then marks the GitHub Deployment success/error by the deploy result alone. For non-fork PRs, a separate `e2e` job runs after deploy on a plain runner (browsers cached by `.github/actions/playwright-browsers`, keyed on the locked `playwright-core` version; a `playwright-cache` job on pushes to `main` fills that cache so each PR's first run hits it), seeds the preview D1 with `scripts/generated/seed-e2e.sql` (compiled via `seed:e2e:preview`), and runs the Playwright E2E suite (`mise run test:e2e:ci`) against the live preview URL. The `e2e` job is a branch-protection-required status check: a failing run blocks the merge, but does not mark the GitHub Deployment as failed. `.github/workflows/preview-cleanup.yml` deletes the preview Worker on PR close.
+Fully automated via `.github/workflows/deploy.yml`; preview builds run with `CLOUDFLARE_ENV=preview` so the Vite plugin flattens the `env.preview` section into the built `dist/quiz_app/wrangler.json`, then `wrangler deploy --env preview` deploys it. The `deploy` job builds, migrates, and deploys, then marks the GitHub Deployment success/error by the deploy result alone. For non-fork PRs, a separate `e2e` job runs after deploy on a plain runner (browsers cached by `.github/actions/playwright-browsers`, keyed on the locked `playwright-core` version; a `playwright-cache` job on pushes to `main` fills that cache so each PR's first run hits it), seeds the preview D1 with `scripts/generated/seed-e2e-preview.sql` (compiled via `seed:e2e:preview`; it also prunes preview sessions idle for a day, since preview has no cleanup cron), and runs the Playwright E2E suite (`mise run test:e2e:ci`) against the live preview URL. The `e2e` job is a branch-protection-required status check: a failing run blocks the merge, but does not mark the GitHub Deployment as failed. `.github/workflows/preview-cleanup.yml` deletes the preview Worker on PR close.
 
 Secrets required in GitHub Actions: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `AUTH_TEST_BYPASS_SECRET`, `RELEASE_APP_PRIVATE_KEY`. The release workflow also reads the `RELEASE_APP_CLIENT_ID` repository variable; together they mint the GitHub App token semantic-release uses to push back to `main`.
 
