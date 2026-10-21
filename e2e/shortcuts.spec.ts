@@ -35,9 +35,11 @@ test.describe("@full keyboard shortcuts", () => {
     await expect(gamePage.getClueButtonLocator()).toBeVisible();
 
     const guessRequests: string[] = [];
+    const clueRequests: string[] = [];
     page.on("request", (request) => {
       const body = request.postData() ?? "";
       if (body.includes("submitGuess")) guessRequests.push(body);
+      if (body.includes("requestClue")) clueRequests.push(body);
     });
 
     await gamePage.typeCommand("/clue");
@@ -57,6 +59,9 @@ test.describe("@full keyboard shortcuts", () => {
     // The status line keeps the earlier denial, so prove the command was not
     // submitted as a guess by the absence of a submitGuess request instead.
     await expect(gamePage.getActiveInputLocator()).toHaveValue("");
+    // Positive control: the listener does see GraphQL traffic, so an empty
+    // guess list is not vacuous.
+    expect(clueRequests.length).toBeGreaterThan(0);
     expect(guessRequests).toHaveLength(0);
   });
 
@@ -76,14 +81,15 @@ test.describe("@full keyboard shortcuts", () => {
       page.locator('button[title="Select new program"]'),
     ).toBeVisible();
 
+    const resetDialog = page.locator(
+      'dialog[aria-label="Reset Progress Confirmation"]',
+    );
     await page.keyboard.press("n");
-    expect(await gamePage.isConfirmModalVisible()).toBe(true);
+    await expect(resetDialog).toBeVisible();
 
     await page.keyboard.press("Escape");
-    await expect(
-      page.locator('dialog[aria-label="Reset Progress Confirmation"]'),
-    ).toBeHidden();
-    expect(await gamePage.isGameComplete()).toBe(true);
+    await expect(resetDialog).toBeHidden();
+    await expect(page.getByRole("heading", { name: "The End" })).toBeVisible();
 
     await page.keyboard.press("r");
     await gamePage.waitForActiveGateLabel("Gate 1");
