@@ -1,4 +1,4 @@
-import useBootSequence from "@hooks/useBootSequence";
+import { useBootSequence } from "@hooks/useBootSequence";
 import useCrtPreferences from "@hooks/useCrtPreferences";
 import useTypewriter from "@hooks/useTypewriter";
 import { useCallback, useEffect, useMemo, useState } from "react";

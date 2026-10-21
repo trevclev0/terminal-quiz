@@ -15,7 +15,7 @@ function prefersReducedMotion() {
  * Runs the CRT power-on sequence and reports its end to `BootContext`.
  * `onBannerTyped` is the banner typewriter's `onComplete`.
  */
-export default function useBootSequence(powerOn: boolean): {
+export function useBootSequence(powerOn: boolean): {
   stage: BootStage;
   onBannerTyped: () => void;
 } {
