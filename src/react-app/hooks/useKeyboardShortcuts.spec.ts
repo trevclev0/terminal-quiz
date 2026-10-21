@@ -1,5 +1,6 @@
-import useKeyboardShortcuts, {
+import {
   isTypingTarget,
+  useKeyboardShortcuts,
 } from "@hooks/useKeyboardShortcuts";
 import { fireEvent, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";

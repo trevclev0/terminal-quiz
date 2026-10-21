@@ -1,4 +1,4 @@
-import useKeyboardShortcuts from "@hooks/useKeyboardShortcuts";
+import { useKeyboardShortcuts } from "@hooks/useKeyboardShortcuts";
 import useTypewriter from "@hooks/useTypewriter";
 import type { GetProgramProgressionQuery } from "@shared/generated/graphql";
 import formatElapsed from "@utils/formatElapsed";
