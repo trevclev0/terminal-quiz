@@ -107,6 +107,12 @@ export const sessionProgress = sqliteTable(
     // Serves the stale-session cleanup cron's cutoff scan
     // (WHERE updated_at < cutoff), which would otherwise read every row.
     index("session_progress_updated_at_idx").on(t.updatedAt),
+    // FK lookups for program and gate deletes (ON DELETE CASCADE / SET
+    // NULL). Without them every deleted program or gate reads the whole
+    // table (#345); unique_session_progress leads with session_id, so it
+    // can't serve program_id.
+    index("session_progress_program_id_idx").on(t.programId),
+    index("session_progress_current_gate_id_idx").on(t.currentGateId),
     check(
       "session_status_check",
       sql`${t.status} IN ('in_progress', 'completed')`,
@@ -132,6 +138,9 @@ export const sessionCompletedGates = sqliteTable(
   },
   (t) => [
     unique("unique_session_gate_completion").on(t.sessionProgressId, t.gateId),
+    // The unique index leads with session_progress_id, so a gate delete's
+    // cascade lookup on gate_id would otherwise scan the table (#345).
+    index("session_completed_gates_gate_id_idx").on(t.gateId),
   ],
 );
 
