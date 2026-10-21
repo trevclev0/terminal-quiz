@@ -382,4 +382,41 @@ describe("ProgramPlay Integration", () => {
     await screen.findByTestId("gate-question");
     expect(progressionRequests).toBe(2);
   });
+
+  it("keeps the buttons disabled until the new run loads", async () => {
+    progressionData = mockProgression({
+      currentGate: null,
+      completedGates: [mockCompletedGate({ id: "gate-1" })],
+      totalGates: 1,
+      status: "completed",
+    });
+    let releaseRefetch = () => {};
+    const refetchHeld = new Promise<void>((resolve) => {
+      releaseRefetch = resolve;
+    });
+    server.use(
+      gqlApi.query("GetProgramProgression", async () => {
+        progressionRequests += 1;
+        if (progressionRequests > 1) await refetchHeld;
+        return HttpResponse.json({
+          data: { getProgramProgression: progressionData },
+        });
+      }),
+    );
+
+    const { wrapper } = createQueryWrapper();
+    const user = userEvent.setup();
+
+    render(<ProgramPlay />, { wrapper });
+
+    await user.click(await screen.findByText("Play program again"));
+
+    // The reset has resolved; only the refetch is still in flight.
+    await waitFor(() => expect(progressionRequests).toBe(2));
+    expect(screen.getByText("Restarting...")).toBeDisabled();
+    expect(screen.getByText("Select new program")).toBeDisabled();
+
+    releaseRefetch();
+    await screen.findByTestId("gate-question");
+  });
 });

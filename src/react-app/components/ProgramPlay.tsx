@@ -25,6 +25,10 @@ function ProgramPlay() {
   // the progression query so nothing on this still-mounted page can refetch
   // (and so start the next run's clock) while the progression cache is removed.
   const [isLeaving, setIsLeaving] = useState(false);
+  // "Play again" spans the reset and the refetch that follows it; the
+  // mutation's isPending covers only the reset, so the buttons would
+  // re-enable for a round trip before the new run loads.
+  const [isRestarting, setIsRestarting] = useState(false);
 
   const { data: progression, isLoading } = useQuery({
     ...programProgressionQueryOptions(programId),
@@ -138,6 +142,7 @@ function ProgramPlay() {
 
   const handlePlayAgain = async () => {
     setResetError(null);
+    setIsRestarting(true);
     try {
       const success = await resetSessionMutation.mutateAsync({ programId });
       if (!success) {
@@ -152,6 +157,8 @@ function ProgramPlay() {
     } catch (error) {
       console.error(error);
       setResetError("Failed to reset progress. Please try again.");
+    } finally {
+      setIsRestarting(false);
     }
   };
 
@@ -204,7 +211,7 @@ function ProgramPlay() {
         <ProgramEnding
           canType={bootComplete}
           resetError={resetError}
-          isResetting={resetSessionMutation.isPending}
+          isResetting={resetSessionMutation.isPending || isRestarting}
           stats={progression?.stats ?? null}
           onSelectNewProgram={handleSelectNewProgram}
           onPlayAgain={handlePlayAgain}
