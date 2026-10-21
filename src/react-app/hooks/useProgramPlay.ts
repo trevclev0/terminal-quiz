@@ -2,6 +2,7 @@ import { useRequestClueMutation } from "@api/mutations/useRequestClueMutation";
 import { useSubmitGuessMutation } from "@api/mutations/useSubmitGuessMutation";
 import { useResetSession } from "@hooks/useResetSession";
 import useShake from "@hooks/useShake";
+import { parseGameCommand } from "@shared/gameCommands";
 import {
   type ChangeEvent,
   type SubmitEvent,
@@ -13,9 +14,25 @@ import {
 type UseProgramPlayProps = {
   programId: string;
   currentGateId: string | null | undefined;
+  onHelpCommand?: () => void;
 };
 
-function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
+export const CLUE_COMMAND_MESSAGES = {
+  noGuess: "Make a guess first, then type /clue.",
+  notYet: "No clue available yet. Keep guessing.",
+  limit: "No clues left for this gate.",
+  cooldown: (seconds: number) => `Clue cooldown — try again in ${seconds}s`,
+};
+
+// The last wrong guess, kept apart from the input box so `/clue` can send it
+// even though typing the command replaced the box's contents.
+type RememberedGuess = { guess: string; canRequestClue: boolean };
+
+function useProgramPlay({
+  programId,
+  currentGateId,
+  onHelpCommand,
+}: UseProgramPlayProps) {
   const submitGuessMutation = useSubmitGuessMutation(programId);
   const requestClueMutation = useRequestClueMutation(programId);
   const resetSessionMutation = useResetSession();
@@ -29,6 +46,8 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
   const [clueCooldownUntil, setClueCooldownUntil] = useState<number | null>(
     null,
   );
+  const [rememberedGuess, setRememberedGuess] =
+    useState<RememberedGuess | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const currentGateIdRef = useRef(currentGateId);
   const { isShaking, shake, clearShake } = useShake();
@@ -43,6 +62,7 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
     setClues([]);
     setCanRequestClue(false);
     setIsClueLimitReached(false);
+    setRememberedGuess(null);
     // NOTE: clueCooldownUntil intentionally persists across gates — the
     // backend rate limit is session-wide, so moving gates must not re-enable
     // a clue request the server would reject.
@@ -79,6 +99,18 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    const command = parseGameCommand(guess);
+    if (command === "/help") {
+      setGuess("");
+      onHelpCommand?.();
+      return;
+    }
+    if (command === "/clue") {
+      setGuess("");
+      handleClueCommand();
+      return;
+    }
+
     if (submitGuessMutation.isPending) {
       return;
     }
@@ -101,11 +133,16 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
         setMessage(result.message ?? null);
         setGuessSucceeded(true);
         setGuess("");
+        setRememberedGuess(null);
       } else {
         setMessage(result.message ?? "Access Denied.");
         setGuessSucceeded(false);
         shake();
         setCanRequestClue(result.canRequestClue);
+        setRememberedGuess({
+          guess: guess.trim(),
+          canRequestClue: result.canRequestClue,
+        });
       }
     } catch {
       setMessage("Error submitting guess");
@@ -113,11 +150,11 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
     }
   };
 
-  const handleRequestClue = () => {
+  const requestClue = (currentGuess: string) => {
     const requestGateId = currentGateId;
     if (!requestGateId || isClueCooldown) return;
     requestClueMutation.mutate(
-      { gateId: requestGateId, currentGuess: guess },
+      { gateId: requestGateId, currentGuess },
       {
         onSuccess: (data) => {
           // Ignore responses from a request started on a now-inactive gate.
@@ -127,6 +164,11 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
           if (data.clueText) {
             setClues((prev) => [...prev, data.clueText as string]);
             setCanRequestClue(false);
+            // A clue spends the eligibility the wrong guess earned; the
+            // next wrong guess renews it.
+            setRememberedGuess((prev) =>
+              prev ? { ...prev, canRequestClue: false } : prev,
+            );
           } else if (data.isAiBudgetExhausted) {
             setMessage(
               "AI hint budget exhausted for today — try again tomorrow.",
@@ -156,6 +198,26 @@ function useProgramPlay({ programId, currentGateId }: UseProgramPlayProps) {
       },
     );
   };
+
+  const handleRequestClue = () => requestClue(guess);
+
+  function handleClueCommand() {
+    const showMessage = (text: string) => {
+      setMessage(text);
+      setGuessSucceeded(null);
+    };
+    if (!rememberedGuess) {
+      showMessage(CLUE_COMMAND_MESSAGES.noGuess);
+    } else if (isClueLimitReached) {
+      showMessage(CLUE_COMMAND_MESSAGES.limit);
+    } else if (isClueCooldown) {
+      showMessage(CLUE_COMMAND_MESSAGES.cooldown(cooldownSeconds));
+    } else if (!rememberedGuess.canRequestClue) {
+      showMessage(CLUE_COMMAND_MESSAGES.notYet);
+    } else if (!requestClueMutation.isPending) {
+      requestClue(rememberedGuess.guess);
+    }
+  }
 
   return {
     guess,
