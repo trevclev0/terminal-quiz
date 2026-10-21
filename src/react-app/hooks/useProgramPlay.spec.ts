@@ -9,13 +9,22 @@ const mockMutate = vi.fn();
 let mockSubmitIsPending = false;
 let mockClueIsPending = false;
 
+// The hook's onSolved, captured so a test's mutateAsync can report a solve
+// the way the real mutation's onSuccess does.
+let mockOnSolved: ((gateId: string) => void) | undefined;
+
 vi.mock("@api/mutations/useSubmitGuessMutation", () => ({
-  useSubmitGuessMutation: vi.fn(() => ({
-    mutateAsync: mockMutateAsync,
-    get isPending() {
-      return mockSubmitIsPending;
+  useSubmitGuessMutation: vi.fn(
+    (_programId: string, options?: { onSolved?: (id: string) => void }) => {
+      mockOnSolved = options?.onSolved;
+      return {
+        mutateAsync: mockMutateAsync,
+        get isPending() {
+          return mockSubmitIsPending;
+        },
+      };
     },
-  })),
+  ),
 }));
 
 vi.mock("@api/mutations/useRequestClueMutation", () => ({
@@ -181,6 +190,50 @@ describe("useProgramPlay", () => {
     });
 
     expect(mockShake).not.toHaveBeenCalled();
+  });
+
+  it("records the solved gate, as a new solve each time", async () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+    mockMutateAsync.mockImplementation(async ({ gateId }) => {
+      mockOnSolved?.(gateId);
+      return { success: true, message: "Correct!" };
+    });
+    const submit = () =>
+      act(async () => {
+        await result.current.handleSubmit({
+          preventDefault: vi.fn(),
+        } as unknown as React.SubmitEvent<HTMLFormElement>);
+      });
+
+    expect(result.current.lastSolve).toBeNull();
+
+    await submit();
+    const firstSolve = result.current.lastSolve;
+    expect(firstSolve).toEqual({ gateId: "gate-1" });
+
+    // Play again can solve the same gate id twice; identity tells them apart.
+    await submit();
+    expect(result.current.lastSolve).toEqual({ gateId: "gate-1" });
+    expect(result.current.lastSolve).not.toBe(firstSolve);
+  });
+
+  it("records no solve for a wrong guess", async () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+    mockMutateAsync.mockResolvedValue({ success: false, message: "Wrong!" });
+
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
+    });
+
+    expect(result.current.lastSolve).toBeNull();
   });
 
   it('sets message to "Access Denied."', async () => {

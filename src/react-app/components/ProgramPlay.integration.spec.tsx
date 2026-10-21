@@ -181,6 +181,39 @@ describe("ProgramPlay Integration", () => {
     });
   });
 
+  // Motion on, so the real flash and typewriter run: the flash holds the
+  // success line, then the message types over it (#313).
+  it("flashes ACCESS GRANTED, then types the success message", async () => {
+    stubReducedMotion(false);
+    // The mocked solve completes "gate-1", so start on that gate: the flash
+    // is keyed to the id of the gate the guess was submitted for.
+    progressionData = mockProgression({
+      currentGate: mockActiveGate({ id: "gate-1" }),
+    });
+    const { wrapper } = createQueryWrapper();
+    const user = userEvent.setup();
+
+    render(<ProgramPlay />, { wrapper });
+
+    const input = await screen.findByLabelText("Gate 1 password input");
+    await user.type(input, "4");
+    await user.keyboard("{Enter}");
+
+    expect(await screen.findByTestId("success-message")).toHaveTextContent(
+      "ACCESS GRANTED",
+    );
+
+    await waitFor(
+      () => {
+        expect(screen.getByTestId("success-message")).toHaveTextContent(
+          "Correct! Two plus two is four.",
+        );
+      },
+      { timeout: 4000 },
+    );
+    expect(screen.queryByText("ACCESS GRANTED")).not.toBeInTheDocument();
+  });
+
   it("shows error message and clue button on wrong guess", async () => {
     const { wrapper } = createQueryWrapper();
     const user = userEvent.setup();

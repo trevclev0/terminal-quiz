@@ -1,8 +1,8 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { act, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import type { CompletedGate as CompletedGateType } from "@api/queries/useProgramProgressionQuery";
-import CompletedGate from "./CompletedGate";
+import CompletedGate, { ACCESS_GRANTED_FLASH_MS } from "./CompletedGate";
 
 // Mirrors the real hook's contract closely enough for these tests: text is
 // revealed for whichever mount receives it, and completion is reported once
@@ -177,5 +177,94 @@ describe("CompletedGate boot gating", () => {
     );
 
     expect(container.querySelector(".sr-only")).toHaveTextContent("Correct!");
+  });
+});
+
+describe("CompletedGate ACCESS GRANTED flash", () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  it("flashes before the success message types over it", () => {
+    const onComplete = vi.fn();
+    const onFlashComplete = vi.fn();
+
+    render(
+      <CompletedGate
+        id="gate-0"
+        gate={mockCompletedGate}
+        isLast
+        canType
+        flash
+        onComplete={onComplete}
+        onFlashComplete={onFlashComplete}
+      />,
+    );
+
+    const line = screen.getByTestId("success-message");
+    expect(line).toHaveTextContent("ACCESS GRANTED");
+    // Completion releases the next question, so it must wait for the flash.
+    expect(onComplete).not.toHaveBeenCalled();
+
+    act(() => vi.advanceTimersByTime(ACCESS_GRANTED_FLASH_MS));
+
+    expect(screen.getByTestId("success-message")).toHaveTextContent("Correct!");
+    expect(onFlashComplete).toHaveBeenCalledTimes(1);
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  // The program's last gate: The End follows, and the message is static.
+  it("shows a non-typing gate's message statically after the flash", () => {
+    render(<CompletedGate id="gate-0" gate={mockCompletedGate} flash />);
+
+    expect(screen.getByTestId("success-message")).toHaveTextContent(
+      "ACCESS GRANTED",
+    );
+
+    act(() => vi.advanceTimersByTime(ACCESS_GRANTED_FLASH_MS));
+
+    expect(screen.getByTestId("success-message")).toHaveTextContent("Correct!");
+  });
+
+  it("keeps the flash out of the accessibility tree", () => {
+    const { container } = render(
+      <CompletedGate id="gate-0" gate={mockCompletedGate} isLast flash />,
+    );
+
+    expect(screen.getByTestId("success-message")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+    expect(container.querySelector(".sr-only")).toHaveTextContent("Correct!");
+  });
+
+  it("finishes the flash even when re-rendered with a new callback", () => {
+    const onFlashComplete = vi.fn();
+    const { rerender } = render(
+      <CompletedGate
+        id="gate-0"
+        gate={mockCompletedGate}
+        flash
+        onFlashComplete={() => onFlashComplete()}
+      />,
+    );
+
+    act(() => vi.advanceTimersByTime(ACCESS_GRANTED_FLASH_MS / 2));
+    rerender(
+      <CompletedGate
+        id="gate-0"
+        gate={mockCompletedGate}
+        flash
+        onFlashComplete={() => onFlashComplete()}
+      />,
+    );
+    act(() => vi.advanceTimersByTime(ACCESS_GRANTED_FLASH_MS / 2));
+
+    expect(onFlashComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not flash unless asked", () => {
+    render(<CompletedGate id="gate-0" gate={mockCompletedGate} isLast />);
+
+    expect(screen.queryByText("ACCESS GRANTED")).not.toBeInTheDocument();
   });
 });

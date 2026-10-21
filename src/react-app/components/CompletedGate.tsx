@@ -1,6 +1,12 @@
 import type { CompletedGate as CompletedGateType } from "@api/queries/useProgramProgressionQuery";
 import useTypewriter from "@hooks/useTypewriter";
+import { useEffect, useRef, useState } from "react";
 import styles from "./Gate.module.css";
+
+// Must match the accessGranted animation's duration in Gate.module.css. A
+// timer, not animationend, ends the flash: the typing chain behind it would
+// stall for good if the animation were ever dropped or never ran.
+export const ACCESS_GRANTED_FLASH_MS = 900;
 
 type CompletedGateProps = {
   id: string;
@@ -8,6 +14,13 @@ type CompletedGateProps = {
   isLast?: boolean;
   canType?: boolean;
   onComplete?: () => void;
+  /**
+   * Plays the ACCESS GRANTED flash in the success-message line before the
+   * message shows (#313). For a gate just solved by a live guess only; the
+   * caller leaves it off under reduced motion.
+   */
+  flash?: boolean;
+  onFlashComplete?: () => void;
 };
 
 // Mounted only once this gate's successMessage is cleared to type. Gating the
@@ -37,11 +50,32 @@ export default function CompletedGate({
   isLast = false,
   canType = true,
   onComplete,
+  flash = false,
+  onFlashComplete,
 }: CompletedGateProps) {
+  // Derived rather than seeded from `flash` on mount, so the flash still
+  // plays if the prop arrives a render after the gate does.
+  const [flashDone, setFlashDone] = useState(false);
+  const isFlashing = flash && !flashDone;
+  // Read through a ref so a parent re-render (a clue cooldown ticks every
+  // 250ms) handing over a new callback can't restart the timer.
+  const onFlashCompleteRef = useRef(onFlashComplete);
+  onFlashCompleteRef.current = onFlashComplete;
+
+  useEffect(() => {
+    if (!isFlashing) return;
+    const timer = setTimeout(() => {
+      setFlashDone(true);
+      onFlashCompleteRef.current?.();
+    }, ACCESS_GRANTED_FLASH_MS);
+    return () => clearTimeout(timer);
+  }, [isFlashing]);
+
   // Only the last completed gate types — earlier ones are solved context and
   // stay static. `canType` holds that last one back while the CRT boot
-  // sequence is still running, so the two never type over each other.
-  const shouldType = isLast && canType;
+  // sequence is still running, so the two never type over each other, and
+  // the flash holds it back the same way: the message types over the flash.
+  const shouldType = isLast && canType && !isFlashing;
 
   return (
     <div id={id} className={styles.gate}>
@@ -63,7 +97,15 @@ export default function CompletedGate({
               readOnly
             />
           </div>
-          {shouldType ? (
+          {isFlashing ? (
+            <p
+              className="clue"
+              aria-hidden="true"
+              data-testid="success-message"
+            >
+              <span className={styles.accessGranted}>ACCESS GRANTED</span>
+            </p>
+          ) : shouldType ? (
             <TypedSuccessMessage
               text={gate.successMessage}
               onComplete={onComplete}

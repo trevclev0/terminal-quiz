@@ -29,3 +29,27 @@
   width: 4ch;
   display: inline-block;
 }
+
+/* VT220 reverse video with the blink attribute: hard on/off steps, not a
+   fade. Two blinks, then hold, inside 0.9s (ACCESS_GRANTED_FLASH_MS in
+   CompletedGate.tsx), which stays under three flashes a second. */
+.accessGranted {
+  padding: 0 0.25rem;
+  animation: accessGranted 0.9s steps(1, end) forwards;
+}
+
+@keyframes accessGranted {
+  0%,
+  44%,
+  78%,
+  100% {
+    background-color: var(--green);
+    color: var(--black);
+  }
+
+  22%,
+  66% {
+    background-color: transparent;
+    color: var(--green);
+  }
+}
