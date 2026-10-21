@@ -1,0 +1,43 @@
+.modal {
+  composes: modal from "./base.module.css";
+}
+
+.closeButton {
+  composes: modalClose from "./base.module.css";
+}
+
+.heading {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.heading:not(:first-of-type) {
+  margin-top: 1.25rem;
+}
+
+.list {
+  margin: 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 1rem;
+  line-height: 1.5;
+}
+
+.row dt,
+.row dd {
+  margin: 0;
+}
+
+.row code,
+.row kbd {
+  font-family: inherit;
+  color: var(--green);
+}
+
+.row dd {
+  color: var(--light-grey);
+}

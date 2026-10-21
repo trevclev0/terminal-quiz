@@ -44,3 +44,39 @@
   font-size: 0.85em;
   margin-top: 0.5rem;
 }
+
+/* Terminal-styled native modal `<dialog>`; backdrop included. */
+.modal {
+  inset-block-end: 25vh;
+  background-color: var(--black);
+  border: 1px solid var(--green);
+  padding: 1.5rem;
+  color: var(--green);
+  box-shadow: 0 0 10px var(--green);
+  max-width: 30rem;
+  width: 90%;
+}
+
+.modal::backdrop {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* The `[x]` dismiss control pinned to a modal's top-right corner. */
+.modalClose {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 1.5rem;
+  border: none;
+  padding: 0.25rem 0;
+  width: auto;
+}
+
+.modalClose:hover {
+  font-weight: bold;
+}
+
+.modalClose:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
