@@ -23,7 +23,7 @@ const KEYS = [
   { key: "Ctrl+Shift+,", description: "cycle CRT preset" },
 ];
 
-function ShortcutHelpDialog({ onClose }: ShortcutHelpDialogProps) {
+export function ShortcutHelpDialog({ onClose }: ShortcutHelpDialogProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useModalDialog(() => closeRef.current);
 
@@ -71,5 +71,3 @@ function ShortcutHelpDialog({ onClose }: ShortcutHelpDialogProps) {
     </dialog>
   );
 }
-
-export default ShortcutHelpDialog;

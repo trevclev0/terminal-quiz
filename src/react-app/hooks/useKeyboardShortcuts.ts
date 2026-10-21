@@ -25,9 +25,7 @@ export function isTypingTarget(target: EventTarget | null): boolean {
   );
 }
 
-export default function useKeyboardShortcuts(
-  shortcuts: KeyboardShortcut[],
-): void {
+export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]): void {
   // Read through a ref so callers can pass inline arrays without the
   // listener re-subscribing on every render.
   const shortcutsRef = useRef(shortcuts);
