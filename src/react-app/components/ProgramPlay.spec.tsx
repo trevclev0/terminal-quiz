@@ -678,6 +678,26 @@ describe("ProgramPlay Component", () => {
       ).not.toBeInTheDocument();
     });
 
+    it("ignores ? while loading, so no dialog pops up afterwards", async () => {
+      const { queryClient, wrapper } = createQueryWrapper();
+      queryClient.setQueryData(["programs"], mockPrograms);
+      render(<ProgramPlay />, { wrapper });
+      expect(screen.getByText("Loading Program...")).toBeInTheDocument();
+
+      fireEvent.keyDown(window, { key: "?" });
+      act(() => {
+        queryClient.setQueryData(
+          ["programs", "progression", "test-program-id"],
+          mockProgression,
+        );
+      });
+      await screen.findByText("Test Program");
+
+      expect(
+        screen.queryByRole("dialog", helpDialogName),
+      ).not.toBeInTheDocument();
+    });
+
     it("opens the help dialog from the /help command", async () => {
       await renderInProgress();
       const { onHelpCommand } = vi.mocked(useProgramPlay).mock.calls[0][0];
