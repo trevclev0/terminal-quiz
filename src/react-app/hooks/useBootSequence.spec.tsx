@@ -3,7 +3,7 @@ import { stubReducedMotion } from "@test-utils/reducedMotion";
 import { act, renderHook } from "@testing-library/react";
 import { BOOT_STAGE_TIMEOUT_MS, type BootStage } from "@utils/bootSequence";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import useBootSequence from "./useBootSequence";
+import { useBootSequence } from "./useBootSequence";
 
 beforeEach(() => {
   vi.useFakeTimers();
