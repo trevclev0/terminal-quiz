@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 export type KeyboardShortcut = {
   /** Compared to `event.key.toLowerCase()`, e.g. "?", "r", "n". */
@@ -27,9 +27,12 @@ export function isTypingTarget(target: EventTarget | null): boolean {
 
 export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]): void {
   // Read through a ref so callers can pass inline arrays without the
-  // listener re-subscribing on every render.
+  // listener re-subscribing on every render. Synced in a layout effect, not
+  // during render, so a discarded render can't leave an uncommitted value.
   const shortcutsRef = useRef(shortcuts);
-  shortcutsRef.current = shortcuts;
+  useLayoutEffect(() => {
+    shortcutsRef.current = shortcuts;
+  });
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {

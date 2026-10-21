@@ -15,7 +15,13 @@ import useProgressionScroll from "@hooks/useProgressionScroll";
 import { Route } from "@routes/programs/$programId";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import styles from "./ProgramPlay.module.css";
 
 function ProgramPlay() {
@@ -104,9 +110,12 @@ function ProgramPlay() {
 
   const inputRef = useRef<HTMLInputElement>(null);
   // Read inside the focus effect without being one of its triggers: closing
-  // a dialog already restores focus itself.
+  // a dialog already restores focus itself. Synced in a layout effect (not
+  // render) so it is committed before the passive focus effect below reads it.
   const isDialogOpenRef = useRef(false);
-  isDialogOpenRef.current = isConfirmOpen || isHelpOpen;
+  useLayoutEffect(() => {
+    isDialogOpenRef.current = isConfirmOpen || isHelpOpen;
+  });
   const isCluePending = requestClueMutation.isPending;
 
   const programName = program?.name ?? programId;
