@@ -40,4 +40,5 @@ scripts/generated/
 
 # Stryker mutation testing
 .stryker-tmp/
+.stryker-tmp-resolvers/
 reports/

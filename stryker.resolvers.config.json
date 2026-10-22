@@ -1,0 +1,36 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "vitest",
+  "vitest": {
+    "configFile": "vite.config.ts"
+  },
+  "plugins": ["@stryker-mutator/vitest-runner"],
+  "tsconfigFile": "tsconfig.stryker-skip.json",
+  "coverageAnalysis": "perTest",
+  "mutate": [
+    "src/worker/graphql/gameplay/submitGuessMutation.ts",
+    "src/worker/graphql/gameplay/activeSession.ts",
+    "src/worker/graphql/gameplay/authorizeProgram.ts",
+    "src/worker/graphql/gameplay/managementHelpers.ts",
+    "src/worker/graphql/gameplay/requestClueMutation.ts",
+    "src/worker/graphql/gameplay/aiBudget.ts",
+    "src/worker/graphql/gameplay/clueRateLimit.ts",
+    "!**/*.spec.ts",
+    "!**/*.spec.tsx",
+    "!**/test-utils/**"
+  ],
+  "ignoreStatic": true,
+  "incremental": true,
+  "incrementalFile": "reports/stryker-resolvers-incremental.json",
+  "thresholds": {
+    "high": 95,
+    "low": 90,
+    "break": null
+  },
+  "reporters": ["clear-text", "progress", "html"],
+  "htmlReporter": {
+    "fileName": "reports/mutation-resolvers/index.html"
+  },
+  "tempDirName": ".stryker-tmp-resolvers",
+  "cleanTempDir": true
+}

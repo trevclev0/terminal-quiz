@@ -14,6 +14,7 @@
     "test:integration": "vitest run --config vitest.config.integration.ts",
     "coverage": "vitest run --coverage",
     "mutate": "stryker run",
+    "mutate:resolvers": "stryker run stryker.resolvers.config.json",
     "test:ui": "vitest --ui",
     "test:e2e": "bun run seed:e2e:local && playwright test",
     "schema:generate": "bun run scripts/dump-schema.ts",
