@@ -8,7 +8,11 @@ export default defineConfig({
   plugins: [
     tanstackRouter({
       target: "react",
-      autoCodeSplitting: true,
+      // Off under Vitest: a split route loads its component's modules inside
+      // the test that first navigates there, so Stryker credits their
+      // module-level mutants to that one test instead of treating them as
+      // static, and they survive (#326).
+      autoCodeSplitting: !process.env.VITEST,
       routesDirectory: "./src/react-app/routes",
       generatedRouteTree: "./src/react-app/routeTree.gen.ts",
       quoteStyle: "double",
