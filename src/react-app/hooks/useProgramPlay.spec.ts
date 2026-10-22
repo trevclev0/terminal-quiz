@@ -133,6 +133,7 @@ describe("useProgramPlay", () => {
     });
 
     expect(result.current.message).toBe("Correct!");
+    expect(result.current.guessSucceeded).toBe(true);
   });
 
   it("sets message to null when success message is null", async () => {
@@ -420,6 +421,7 @@ describe("useProgramPlay", () => {
     });
 
     expect(result.current.message).toBe("Error submitting guess");
+    expect(result.current.guessSucceeded).toBe(false);
   });
 
   it("calls requestClueMutation.mutate with gateId and guess", () => {
@@ -463,6 +465,7 @@ describe("useProgramPlay", () => {
     });
 
     expect(result.current.clues).toEqual(["Here is a clue"]);
+    expect(result.current.canRequestClue).toBe(false);
   });
 
   it("sets error message and does not append clue if clueText is null", () => {
@@ -778,6 +781,285 @@ describe("useProgramPlay", () => {
     }
   });
 
+  it("reports the initial state on the very first render", () => {
+    const renders: ReturnType<typeof useProgramPlay>[] = [];
+    renderHook(
+      () => {
+        const value = useProgramPlay({ programId, currentGateId });
+        renders.push(value);
+        return value;
+      },
+      { wrapper },
+    );
+
+    expect(renders[0].canRequestClue).toBe(false);
+    expect(renders[0].clues).toEqual([]);
+    expect(renders[0].isClueLimitReached).toBe(false);
+  });
+
+  it("stops offering a clue once the player edits the guess", async () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+    mockMutateAsync.mockResolvedValue({
+      success: false,
+      message: "Wrong!",
+      canRequestClue: true,
+    });
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
+    });
+    expect(result.current.canRequestClue).toBe(true);
+
+    act(() => {
+      result.current.changeHandler({
+        target: { value: "edited" },
+      } as React.ChangeEvent<HTMLInputElement>);
+    });
+
+    expect(result.current.canRequestClue).toBe(false);
+  });
+
+  it("clears the previous result while a new guess is pending", async () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+    const submitEvent = () =>
+      ({
+        preventDefault: vi.fn(),
+      }) as unknown as React.SubmitEvent<HTMLFormElement>;
+    mockMutateAsync.mockResolvedValueOnce({
+      success: false,
+      message: "Wrong!",
+      canRequestClue: false,
+    });
+    await act(async () => {
+      await result.current.handleSubmit(submitEvent());
+    });
+    expect(result.current.message).toBe("Wrong!");
+    expect(result.current.guessSucceeded).toBe(false);
+
+    let resolveSecond: (value: unknown) => void = () => {};
+    mockMutateAsync.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveSecond = resolve;
+      }),
+    );
+    let pending: Promise<void> = Promise.resolve();
+    act(() => {
+      pending = result.current.handleSubmit(submitEvent());
+    });
+
+    expect(result.current.message).toBeNull();
+    expect(result.current.guessSucceeded).toBeNull();
+
+    await act(async () => {
+      resolveSecond({ success: true, message: "Correct!" });
+      await pending;
+    });
+  });
+
+  it("clears the previous result when currentGateId changes", async () => {
+    const { result, rerender } = renderHook(
+      ({ currentGateId }) => useProgramPlay({ programId, currentGateId }),
+      { wrapper, initialProps: { currentGateId: "gate-1" } },
+    );
+    mockMutateAsync.mockResolvedValue({
+      success: false,
+      message: "Wrong!",
+      canRequestClue: false,
+    });
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
+    });
+    expect(result.current.message).toBe("Wrong!");
+
+    rerender({ currentGateId: "gate-2" });
+
+    expect(result.current.message).toBeNull();
+    expect(result.current.guessSucceeded).toBeNull();
+  });
+
+  it("starts the cooldown from the response time, not the mount time", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 0, 1, 12, 0, 0));
+    try {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      mockMutate.mockImplementation((_variables, options) => {
+        options.onSuccess({
+          clueText: null,
+          isClueLimitReached: false,
+          isRateLimited: true,
+          retryAfterMs: 30000,
+        });
+      });
+
+      // Time passes while no cooldown (and so no ticking) is active.
+      act(() => {
+        vi.advanceTimersByTime(60000);
+      });
+      act(() => {
+        result.current.handleRequestClue();
+      });
+
+      expect(result.current.cooldownSeconds).toBe(30);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("treats a zero retryAfterMs as no cooldown", () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+    mockMutate.mockImplementation((_variables, options) => {
+      options.onSuccess({
+        clueText: null,
+        isClueLimitReached: false,
+        isRateLimited: true,
+        retryAfterMs: 0,
+      });
+    });
+
+    act(() => {
+      result.current.handleRequestClue();
+    });
+
+    expect(result.current.clueCooldownUntil).toBeNull();
+    expect(result.current.message).toBe(
+      "You've requested too many clues. Please try again later.",
+    );
+  });
+
+  it("ignores a stale clue error when the gate changes mid-request", () => {
+    mockMutate.mockImplementation(() => {});
+    const { result, rerender } = renderHook(
+      ({ currentGateId }) => useProgramPlay({ programId, currentGateId }),
+      { wrapper, initialProps: { currentGateId: "gate-1" } },
+    );
+
+    act(() => {
+      result.current.handleRequestClue();
+    });
+    rerender({ currentGateId: "gate-2" });
+    act(() => {
+      mockMutate.mock.calls[0][1].onError(new Error("Network error"));
+    });
+
+    expect(result.current.message).toBeNull();
+  });
+
+  it("counts the cooldown down second by second", () => {
+    vi.useFakeTimers();
+    try {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      mockMutate.mockImplementation((_variables, options) => {
+        options.onSuccess({
+          clueText: null,
+          isClueLimitReached: false,
+          isRateLimited: true,
+          retryAfterMs: 30000,
+        });
+      });
+      act(() => {
+        result.current.handleRequestClue();
+      });
+      expect(result.current.cooldownSeconds).toBe(30);
+
+      act(() => {
+        vi.advanceTimersByTime(10000);
+      });
+
+      expect(result.current.cooldownSeconds).toBe(20);
+      expect(result.current.clueCooldownUntil).not.toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("clears the cooldown exactly when it expires", () => {
+    vi.useFakeTimers();
+    try {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      mockMutate.mockImplementation((_variables, options) => {
+        options.onSuccess({
+          clueText: null,
+          isClueLimitReached: false,
+          isRateLimited: true,
+          retryAfterMs: 1000,
+        });
+      });
+      act(() => {
+        result.current.handleRequestClue();
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(750);
+      });
+      expect(result.current.clueCooldownUntil).not.toBeNull();
+
+      act(() => {
+        vi.advanceTimersByTime(250);
+      });
+      expect(result.current.clueCooldownUntil).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("leaves no countdown timer running when idle, expired or unmounted", () => {
+    vi.useFakeTimers();
+    try {
+      const { result, unmount } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      expect(vi.getTimerCount()).toBe(0);
+
+      mockMutate.mockImplementation((_variables, options) => {
+        options.onSuccess({
+          clueText: null,
+          isClueLimitReached: false,
+          isRateLimited: true,
+          retryAfterMs: 1000,
+        });
+      });
+      act(() => {
+        result.current.handleRequestClue();
+      });
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(result.current.clueCooldownUntil).toBeNull();
+      expect(vi.getTimerCount()).toBe(0);
+
+      act(() => {
+        result.current.handleRequestClue();
+      });
+      expect(result.current.clueCooldownUntil).not.toBeNull();
+      unmount();
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   describe("game commands", () => {
     const submitEvent = () =>
       ({
@@ -872,6 +1154,22 @@ describe("useProgramPlay", () => {
       expect(mockMutateAsync).toHaveBeenCalledTimes(1);
       expect(mockShake).toHaveBeenCalledTimes(1);
       expect(result.current.guess).toBe("");
+    });
+
+    it("/clue sends the remembered guess trimmed", async () => {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      await wrongGuess(result, true, "  padded  ");
+
+      type(result, "/clue");
+      await submit(result);
+
+      expect(mockMutate).toHaveBeenCalledWith(
+        { gateId: currentGateId, currentGuess: "padded" },
+        expect.any(Object),
+      );
     });
 
     it("/clue with no wrong guess yet shows noGuess and makes no request", async () => {

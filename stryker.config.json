@@ -1,7 +1,9 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
   "testRunner": "vitest",
-  "vitest": { "configFile": "vite.config.ts" },
+  "vitest": {
+    "configFile": "vite.config.ts"
+  },
   "plugins": ["@stryker-mutator/vitest-runner"],
   "tsconfigFile": "tsconfig.stryker-skip.json",
   "coverageAnalysis": "perTest",
@@ -11,15 +13,29 @@
     "src/shared/gameCommands.ts",
     "src/worker/graphql/gameplay/clueEligibility.ts",
     "src/react-app/utils/bootSequence.ts",
+    "src/react-app/hooks/useProgramPlay.ts",
+    "src/react-app/hooks/useResetSession.ts",
+    "src/react-app/hooks/usePrograms.ts",
+    "src/react-app/hooks/useProgramSettings.ts",
+    "src/react-app/hooks/useGateDrafts.ts",
+    "src/react-app/hooks/useNewGateForm.ts",
+    "src/react-app/hooks/useGateErrorState.ts",
     "!**/*.spec.ts",
+    "!**/*.spec.tsx",
     "!**/test-utils/**"
   ],
   "ignoreStatic": true,
   "incremental": true,
   "incrementalFile": "reports/stryker-incremental.json",
-  "thresholds": { "high": 95, "low": 90, "break": 90 },
+  "thresholds": {
+    "high": 95,
+    "low": 90,
+    "break": 90
+  },
   "reporters": ["clear-text", "progress", "html"],
-  "htmlReporter": { "fileName": "reports/mutation/index.html" },
+  "htmlReporter": {
+    "fileName": "reports/mutation/index.html"
+  },
   "tempDirName": ".stryker-tmp",
   "cleanTempDir": true
 }
