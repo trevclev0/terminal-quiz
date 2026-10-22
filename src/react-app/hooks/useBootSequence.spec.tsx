@@ -58,6 +58,7 @@ describe("useBootSequence", () => {
     advanceStage("hold");
     expect(result.current.stage).toBe("done");
     expect(result.current.bootComplete).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it("falls back to done when the banner never finishes typing", () => {
@@ -77,6 +78,7 @@ describe("useBootSequence", () => {
 
     expect(result.current.stage).toBe("done");
     expect(result.current.bootComplete).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it("skips straight to done under reduced motion", () => {

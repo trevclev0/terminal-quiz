@@ -40,6 +40,7 @@ function useTypewriter(
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
+  // Stryker disable ArrayDeclaration: constant [] deps never change, so any constant array keeps the callback stable
   const clearTypingTimers = useCallback(() => {
     if (delayTimerRef.current) {
       clearTimeout(delayTimerRef.current);
@@ -50,6 +51,7 @@ function useTypewriter(
       intervalRef.current = null;
     }
   }, []);
+  // Stryker restore ArrayDeclaration
 
   const finish = useCallback(() => {
     setDisplayedText(text);
@@ -66,6 +68,7 @@ function useTypewriter(
       firedRef.current = false;
     }
 
+    // Stryker disable next-line CallExpression: redundant guard, since the previous run's cleanup has already cleared both timers
     clearTypingTimers();
 
     if (!enabled || prefersReducedMotion() || text === "") {

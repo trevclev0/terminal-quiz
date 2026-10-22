@@ -56,6 +56,40 @@ describe("shake()", () => {
 // clearShake()
 // ---------------------------------------------------------------------------
 
+describe("timers", () => {
+  it("schedules nothing while idle", () => {
+    renderHook(() => useShake());
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("leaves no timer behind once the shake has ended", () => {
+    const { result } = renderHook(() => useShake());
+    act(() => result.current.shake());
+    act(() => vi.advanceTimersByTime(400));
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("clears its pending timer on unmount", () => {
+    const { result, unmount } = renderHook(() => useShake());
+    act(() => result.current.shake());
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("gives a shake started after an early clear its full 400ms", () => {
+    const { result } = renderHook(() => useShake());
+    act(() => result.current.shake());
+    act(() => result.current.clearShake());
+    act(() => vi.advanceTimersByTime(200));
+    act(() => result.current.shake());
+    // The first shake's deadline (t=400) passes without ending the second.
+    act(() => vi.advanceTimersByTime(250));
+    expect(result.current.isShaking).toBe(true);
+    act(() => vi.advanceTimersByTime(150));
+    expect(result.current.isShaking).toBe(false);
+  });
+});
+
 describe("clearShake()", () => {
   it("sets isShaking to false immediately", () => {
     const { result } = renderHook(() => useShake());
