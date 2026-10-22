@@ -75,6 +75,20 @@ describe("useCrtPreferences", () => {
     expect(result.current.settings.chromaticAberration).toBe(false);
   });
 
+  it("treats every missing stored field as off", () => {
+    localStorage.setItem("terminal_quiz_crt_settings", "{}");
+    const { result } = renderHook(() => useCrtPreferences());
+    expect(result.current.settings).toEqual({
+      scanlines: false,
+      glow: false,
+      textGlow: false,
+      chromaticAberration: false,
+      flicker: false,
+      powerOn: false,
+    });
+    expect(result.current.presetLabel).toBe("off");
+  });
+
   it("restores persisted settings", () => {
     localStorage.setItem(
       "terminal_quiz_crt_settings",
@@ -188,5 +202,77 @@ describe("useCrtPreferences", () => {
     });
     const { result } = renderHook(() => useCrtPreferences());
     expect(result.current.settings).toEqual(FULL_SETTINGS);
+  });
+
+  it.each([
+    ["glow"],
+    ["textGlow"],
+    ["chromaticAberration"],
+    ["flicker"],
+    ["powerOn"],
+  ] as const)("labels an off preset with only %s on as custom", (field) => {
+    const { result } = renderHook(() => useCrtPreferences());
+    act(() => {
+      result.current.setSettings({
+        scanlines: false,
+        glow: false,
+        textGlow: false,
+        chromaticAberration: false,
+        flicker: false,
+        powerOn: false,
+        [field]: true,
+      });
+    });
+    expect(result.current.presetLabel).toBe("custom");
+  });
+
+  it("swallows the hotkey so the browser does not act on it", () => {
+    renderHook(() => useCrtPreferences());
+    const event = new KeyboardEvent("keydown", {
+      code: "Comma",
+      ctrlKey: true,
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => {
+      window.dispatchEvent(event);
+    });
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it.each([
+    ["ctrl alone", { code: "Comma", ctrlKey: true }],
+    ["shift alone", { code: "Comma", shiftKey: true }],
+    [
+      "ctrl+shift on another key",
+      { code: "Period", ctrlKey: true, shiftKey: true },
+    ],
+  ])("ignores %s", (_name, init) => {
+    const { result } = renderHook(() => useCrtPreferences());
+    const event = new KeyboardEvent("keydown", {
+      ...init,
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => {
+      window.dispatchEvent(event);
+    });
+    expect(result.current.presetLabel).toBe("full");
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it("stops handling the hotkey once unmounted", () => {
+    const { unmount } = renderHook(() => useCrtPreferences());
+    unmount();
+    const event = new KeyboardEvent("keydown", {
+      code: "Comma",
+      ctrlKey: true,
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    window.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
   });
 });

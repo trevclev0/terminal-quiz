@@ -18,6 +18,10 @@
     "src/react-app/hooks/useGateDrafts.ts",
     "src/react-app/hooks/useNewGateForm.ts",
     "src/react-app/hooks/useGateErrorState.ts",
+    "src/react-app/hooks/useKeyboardShortcuts.ts",
+    "src/react-app/hooks/useModalDialog.ts",
+    "src/react-app/hooks/useCopyToClipboard.ts",
+    "src/react-app/hooks/useCrtPreferences.ts",
     "!**/*.spec.ts",
     "!**/*.spec.tsx",
     "!**/test-utils/**"

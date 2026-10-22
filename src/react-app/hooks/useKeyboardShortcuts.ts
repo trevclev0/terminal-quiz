@@ -34,6 +34,7 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]): void {
     shortcutsRef.current = shortcuts;
   });
 
+  // Stryker disable ArrayDeclaration: the effect's constant [] deps never change, so any constant array is equivalent
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       // Ignoring these (and never calling preventDefault) keeps browser
@@ -55,4 +56,5 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]): void {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+  // Stryker restore ArrayDeclaration
 }

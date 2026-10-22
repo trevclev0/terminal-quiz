@@ -100,6 +100,7 @@ export default function useCrtPreferences() {
 
   const presetLabel = presetIndex >= 0 ? PRESET_LABELS[presetIndex] : "custom";
 
+  // Stryker disable ArrayDeclaration: constant [] deps never change, so any constant array keeps the callback stable
   const cyclePreset = useCallback(() => {
     setSettingsState((prev) => {
       const idx = PRESETS.findIndex((p) => settingsMatch(p, prev));
@@ -111,7 +112,9 @@ export default function useCrtPreferences() {
   const setSettings = useCallback((s: CrtSettings) => {
     setSettingsState(s);
   }, []);
+  // Stryker restore ArrayDeclaration
 
+  // Stryker disable ArrayDeclaration: cyclePreset is stable, so dropping it from the deps never re-subscribes
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.code === "Comma") {
@@ -122,6 +125,7 @@ export default function useCrtPreferences() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [cyclePreset]);
+  // Stryker restore ArrayDeclaration
 
   const [isFirstVisit] = useState(() => readSettings() === null);
 

@@ -36,6 +36,7 @@ export function useCopyToClipboard(resetMs = 2000) {
   }, [result, resetMs]);
 
   const copy = async (text: string, key?: string) => {
+    // Stryker disable next-line UpdateOperator: ids are only compared for equality, so counting down is as unique as counting up
     const requestId = ++latestRequestRef.current;
 
     let status: CopyResult["status"];
