@@ -14,7 +14,6 @@
     "src/react-app/hooks/useProgramPlay.ts",
     "src/react-app/hooks/useResetSession.ts",
     "src/react-app/hooks/usePrograms.ts",
-    "src/react-app/hooks/useProgramSettings.ts",
     "src/react-app/hooks/useGateDrafts.ts",
     "src/react-app/hooks/useNewGateForm.ts",
     "src/react-app/hooks/useGateErrorState.ts",
