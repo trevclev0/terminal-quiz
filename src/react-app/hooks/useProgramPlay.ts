@@ -97,8 +97,6 @@ function useProgramPlay({
   }, [clueCooldownUntil]);
 
   const cooldownSeconds =
-    // Stryker disable next-line ConditionalExpression: with a null deadline
-    // the arithmetic below goes negative and clamps to 0 anyway.
     clueCooldownUntil === null
       ? 0
       : Math.max(0, Math.ceil((clueCooldownUntil - now) / 1000));
@@ -190,8 +188,6 @@ function useProgramPlay({
             );
           } else if (data.isRateLimited) {
             const retryAfterMs = data.retryAfterMs;
-            // Stryker disable next-line ConditionalExpression: the `!= null`
-            // half is redundant, since `null > 0` and `undefined > 0` are false.
             if (retryAfterMs != null && retryAfterMs > 0) {
               const nowMs = Date.now();
               setNow(nowMs);
