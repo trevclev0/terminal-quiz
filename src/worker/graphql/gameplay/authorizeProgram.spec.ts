@@ -52,7 +52,10 @@ describe("authorizeProgramMutation", () => {
         "prog-1",
         USER_ID,
       ),
-    ).rejects.toThrow("Program not found.");
+    ).rejects.toMatchObject({
+      message: "Program not found.",
+      extensions: { code: "FORBIDDEN" },
+    });
   });
 
   it("throws when authorId does not match userId", async () => {
@@ -71,7 +74,10 @@ describe("authorizeProgramMutation", () => {
         "prog-1",
         USER_ID,
       ),
-    ).rejects.toThrow("Unauthorized: You do not own this program.");
+    ).rejects.toMatchObject({
+      message: "Unauthorized: You do not own this program.",
+      extensions: { code: "FORBIDDEN" },
+    });
   });
 
   it("throws when authorId is null (unowned program)", async () => {
@@ -90,6 +96,9 @@ describe("authorizeProgramMutation", () => {
         "prog-1",
         USER_ID,
       ),
-    ).rejects.toThrow("Unauthorized: You do not own this program.");
+    ).rejects.toMatchObject({
+      message: "Unauthorized: You do not own this program.",
+      extensions: { code: "FORBIDDEN" },
+    });
   });
 });

@@ -462,6 +462,118 @@ describe("Gameplay Mutations: submitGuess", () => {
   });
 });
 
+describe("Gameplay Mutations: submitGuess analytics events", () => {
+  let mockDb: MockDb;
+  let writeDataPoint: ReturnType<typeof vi.fn>;
+  let context: AppGraphQLContext;
+
+  // Event columns are positional (docs/analytics.md): blobs[0] is the name,
+  // [1] programId, [2] gateId, [3] outcome; doubles are attemptCount,
+  // isCorrect, aiLatencyMs.
+  function recorded() {
+    return writeDataPoint.mock.calls.map(([point]) => point);
+  }
+
+  beforeEach(() => {
+    mockDb = createMockDb();
+    writeDataPoint = vi.fn();
+    context = Object.assign(createMockContext(mockDb), {
+      env: { ANALYTICS: { writeDataPoint }, ENVIRONMENT: "test" },
+    });
+    vi.mocked(isGuessCloseEnough).mockReset();
+  });
+
+  async function guessCorrectly(nextGate: { id: string } | null) {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      ...defaultProgress,
+      attemptCount: 4,
+    });
+    mockDb.query.gates.findFirst
+      .mockResolvedValueOnce(defaultGate)
+      .mockResolvedValueOnce(nextGate);
+    vi.mocked(isGuessCloseEnough).mockReturnValue(true);
+    if (!submitGuess.resolve) throw new Error("Resolver not defined");
+    return submitGuess.resolve(
+      null,
+      { programId: "prog-1", gateId: "gate-1", guess: "apple" },
+      context,
+    );
+  }
+
+  it("records an incorrect attempt with the updated attempt count", async () => {
+    mockDb.query.sessionProgress.findFirst
+      .mockResolvedValueOnce(defaultProgress)
+      .mockResolvedValueOnce({ ...defaultProgress, attemptCount: 3 });
+    mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
+    vi.mocked(isGuessCloseEnough).mockReturnValue(false);
+    if (!submitGuess.resolve) throw new Error("Resolver not defined");
+
+    await submitGuess.resolve(
+      null,
+      { programId: "prog-1", gateId: "gate-1", guess: "banana" },
+      context,
+    );
+
+    expect(recorded()).toEqual([
+      {
+        indexes: ["mock-session-456"],
+        blobs: ["gate_attempt", "prog-1", "gate-1", "incorrect", "test", ""],
+        doubles: [3, 0, 0],
+      },
+    ]);
+  });
+
+  it("records only gate_completed when a next gate exists", async () => {
+    const result = await guessCorrectly({ id: "gate-2" });
+
+    expect(result.nextGate).toEqual({ id: "gate-2" });
+    expect(recorded()).toEqual([
+      {
+        indexes: ["mock-session-456"],
+        blobs: ["gate_completed", "prog-1", "gate-1", "correct", "test", ""],
+        doubles: [4, 1, 0],
+      },
+    ]);
+  });
+
+  it("records gate_completed then program_completed on the final gate", async () => {
+    const result = await guessCorrectly(null);
+
+    expect(result.nextGate).toBeNull();
+    expect(recorded()).toEqual([
+      {
+        indexes: ["mock-session-456"],
+        blobs: ["gate_completed", "prog-1", "gate-1", "correct", "test", ""],
+        doubles: [4, 1, 0],
+      },
+      {
+        indexes: ["mock-session-456"],
+        blobs: ["program_completed", "prog-1", "", "complete", "test", ""],
+        doubles: [0, 0, 0],
+      },
+    ]);
+  });
+
+  it("records nothing when a concurrent guess already persisted the completion", async () => {
+    mockDb.batch.mockResolvedValue([{ meta: { changes: 0 } }, undefined]);
+
+    const result = await guessCorrectly(null);
+
+    expect(result.success).toBe(true);
+    expect(recorded()).toEqual([]);
+  });
+
+  it("records nothing and still succeeds when the batch reports no metadata", async () => {
+    mockDb.batch.mockResolvedValue([{}, undefined]);
+    expect((await guessCorrectly(null)).success).toBe(true);
+    expect(recorded()).toEqual([]);
+
+    mockDb.batch.mockResolvedValue([]);
+    expect((await guessCorrectly(null)).success).toBe(true);
+    expect(recorded()).toEqual([]);
+  });
+});
+
 describe("Gameplay Mutations: requestClue", () => {
   let mockDb: MockDb;
   let mockContext: AppGraphQLContext;
