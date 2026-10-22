@@ -51,6 +51,14 @@ inside one route test, so Stryker credited its 30 module-level mutants to that
 test and they survived. `vite.config.ts` now sets
 `autoCodeSplitting: !process.env.VITEST`. Production builds still split.
 
+Those 30 `validation.ts` module-level mutants are now Ignored as static (as they
+were before #274), not killed, so a 100% score does not mean the `validation.ts`
+statics are guarded.
+
+The resolver run has one Timeout: `requestClueMutation.ts:242`, a BlockStatement
+on the `while (current instanceof Error)` loop. Emptying the body is a genuine
+infinite loop, and Stryker counts a timeout as detected.
+
 ## Triage categories
 
 Every survivor or NoCoverage mutant gets exactly one label.
@@ -201,5 +209,15 @@ To rerun the measurement, copy `stryker.resolvers.config.json`, set
 `testRunner: "command"`, `commandRunner.command: "bun run test:integration"`,
 `coverageAnalysis: "off"`, drop `ignoreStatic`, `vitest` and `plugins`, give it
 its own `incrementalFile`, report path and `tempDirName`, forward the env var
-as above, and run it under `taskset -c 0-3`. Until then the hand-applied
+(below), and run it under `taskset -c 0-3`. The forwarding, under
+`miniflare.bindings` in `vitest.config.integration.ts`:
+
+```ts
+bindings: {
+  // ...existing bindings
+  __STRYKER_ACTIVE_MUTANT__: process.env.__STRYKER_ACTIVE_MUTANT__ ?? "",
+},
+```
+
+Until then the hand-applied
 proofs in the tables above are the integration tier's coverage.
