@@ -563,15 +563,17 @@ describe("Gameplay Mutations: submitGuess analytics events", () => {
     expect(recorded()).toEqual([]);
   });
 
-  it("records nothing and still succeeds when the batch reports no metadata", async () => {
-    mockDb.batch.mockResolvedValue([{}, undefined]);
-    expect((await guessCorrectly(null)).success).toBe(true);
-    expect(recorded()).toEqual([]);
-
-    mockDb.batch.mockResolvedValue([]);
-    expect((await guessCorrectly(null)).success).toBe(true);
-    expect(recorded()).toEqual([]);
-  });
+  it.each([
+    ["empty meta", [{}, undefined]],
+    ["no results", []],
+  ])(
+    "records nothing and still succeeds when the batch reports no metadata (%s)",
+    async (_label, batchResult) => {
+      mockDb.batch.mockResolvedValue(batchResult);
+      expect((await guessCorrectly(null)).success).toBe(true);
+      expect(recorded()).toEqual([]);
+    },
+  );
 });
 
 describe("Gameplay Mutations: requestClue", () => {
@@ -1185,6 +1187,9 @@ describe("Gameplay Mutations: requestClue outcomes", () => {
   });
 
   it("records budget_exhausted when the reservation exceeds the budget", async () => {
+    // The stub works because requestClueMutation reads the budget through
+    // Hono's env(context), which falls back to process.env under Node, so
+    // context.env is ignored for this key.
     vi.stubEnv("AI_DAILY_CLUE_BUDGET", "5");
     overrideInserts({ budgetCount: 6 });
 
