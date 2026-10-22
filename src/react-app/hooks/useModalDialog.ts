@@ -8,6 +8,7 @@ import { type RefObject, useEffect, useRef } from "react";
  */
 export function useModalDialog(
   getInitialFocus: () => HTMLElement | null,
+  // Stryker disable next-line ArrayDeclaration: a constant default dep never changes, so it behaves like []
   deps: unknown[] = [],
 ): RefObject<HTMLDialogElement | null> {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -26,6 +27,7 @@ export function useModalDialog(
    * control (its simulated cleanup cannot refocus the trigger while the page
    * behind the modal is inert).
    */
+  // Stryker disable ArrayDeclaration: the effect's constant [] deps never change, so any constant array is equivalent
   useEffect(() => {
     triggerRef.current ??= document.activeElement as HTMLElement | null;
     return () => {
@@ -33,6 +35,7 @@ export function useModalDialog(
       if (trigger?.isConnected) trigger.focus();
     };
   }, []);
+  // Stryker restore ArrayDeclaration
 
   useEffect(() => {
     const dialog = dialogRef.current;

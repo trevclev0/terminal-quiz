@@ -99,4 +99,56 @@ describe("useModalDialog", () => {
     );
     expect(trigger).toHaveFocus();
   });
+
+  it("does not reopen a dialog that is already open when deps change", async () => {
+    // Browsers throw InvalidStateError on showModal() for an open dialog.
+    const realShowModal = HTMLDialogElement.prototype.showModal;
+    vi.spyOn(HTMLDialogElement.prototype, "showModal").mockImplementation(
+      function (this: HTMLDialogElement) {
+        if (this.open) throw new Error("InvalidStateError");
+        realShowModal.call(this);
+      },
+    );
+    render(<Harness />);
+    await userEvent.click(screen.getByText("switch"));
+    expect(screen.getByText("second")).toHaveFocus();
+  });
+
+  it("still focuses the initial element when the dialog ref is not attached", () => {
+    function Detached() {
+      const buttonRef = useRef<HTMLButtonElement>(null);
+      useModalDialog(() => buttonRef.current);
+      return (
+        <button type="button" ref={buttonRef}>
+          loose
+        </button>
+      );
+    }
+    render(<Detached />);
+    expect(screen.getByText("loose")).toHaveFocus();
+  });
+
+  it("tolerates a getInitialFocus that finds nothing", () => {
+    function Nothing() {
+      useModalDialog(() => null);
+      return <button type="button">x</button>;
+    }
+    expect(() => render(<Nothing />)).not.toThrow();
+  });
+
+  it("does not hand focus to a trigger that left the document", () => {
+    const trigger = document.createElement("button");
+    document.body.append(trigger);
+    trigger.focus();
+    const { rerender } = render(<Host open />);
+    trigger.remove();
+    rerender(<Host open={false} />);
+    expect(document.activeElement).not.toBe(trigger);
+  });
+
+  it("unmounts cleanly when nothing had focus beforehand", () => {
+    vi.spyOn(document, "activeElement", "get").mockReturnValue(null);
+    const { rerender } = render(<Host open />);
+    expect(() => rerender(<Host open={false} />)).not.toThrow();
+  });
 });
