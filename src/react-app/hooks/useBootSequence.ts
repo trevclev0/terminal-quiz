@@ -49,10 +49,12 @@ export function useBootSequence(powerOn: boolean): {
     markBootComplete();
   }, [stage, markBootComplete]);
 
+  // Stryker disable ArrayDeclaration: constant [] deps never change, so any constant array keeps the callback stable
   const onBannerTyped = useCallback(
     () => dispatch({ type: "bannerTyped" }),
     [],
   );
+  // Stryker restore ArrayDeclaration
 
   return { stage, onBannerTyped };
 }

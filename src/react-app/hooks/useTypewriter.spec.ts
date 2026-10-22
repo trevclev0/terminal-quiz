@@ -25,6 +25,49 @@ describe("initial state", () => {
   });
 });
 
+describe("first render", () => {
+  function renderRecording(
+    text: string,
+    options?: Parameters<typeof useTypewriter>[1],
+  ) {
+    const frames: { displayedText: string; isComplete: boolean }[] = [];
+    renderHook(() => {
+      const { displayedText, isComplete } = useTypewriter(text, options);
+      frames.push({ displayedText, isComplete });
+    });
+    return frames[0];
+  }
+
+  it("paints nothing yet when typing is about to start", () => {
+    expect(renderRecording("hello")).toEqual({
+      displayedText: "",
+      isComplete: false,
+    });
+  });
+
+  it("paints the full text at once when disabled", () => {
+    expect(renderRecording("hello", { enabled: false })).toEqual({
+      displayedText: "hello",
+      isComplete: true,
+    });
+  });
+
+  it("paints the full text at once under reduced motion", () => {
+    vi.stubGlobal("matchMedia", vi.fn().mockReturnValue({ matches: true }));
+    expect(renderRecording("hello")).toEqual({
+      displayedText: "hello",
+      isComplete: true,
+    });
+  });
+
+  it("paints an empty string as already complete", () => {
+    expect(renderRecording("")).toEqual({
+      displayedText: "",
+      isComplete: true,
+    });
+  });
+});
+
 describe("typing progression", () => {
   it("reveals one character per speed interval", () => {
     const { result } = renderHook(() => useTypewriter("abc", { speed: 30 }));
@@ -42,6 +85,12 @@ describe("typing progression", () => {
     act(() => vi.advanceTimersByTime(90));
     expect(result.current.displayedText).toBe("abc");
     expect(result.current.isComplete).toBe(true);
+  });
+
+  it("stops its timer once the last character is shown", () => {
+    renderHook(() => useTypewriter("abc"));
+    act(() => vi.advanceTimersByTime(90));
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it("renders a surrogate pair as a single typing unit", () => {
@@ -76,6 +125,37 @@ describe("onComplete", () => {
   });
 });
 
+describe("onComplete identity", () => {
+  it("calls the latest onComplete passed before typing finishes", () => {
+    const first = vi.fn();
+    const second = vi.fn();
+    const { rerender } = renderHook(
+      (props: { onComplete: () => void }) =>
+        useTypewriter("abc", { onComplete: props.onComplete }),
+      { initialProps: { onComplete: first } },
+    );
+    act(() => vi.advanceTimersByTime(30));
+    rerender({ onComplete: second });
+    act(() => vi.advanceTimersByTime(60));
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not fire again when only the speed changes after completion", () => {
+    const onComplete = vi.fn();
+    const { rerender } = renderHook(
+      (props: { speed: number }) =>
+        useTypewriter("abc", { speed: props.speed, onComplete }),
+      { initialProps: { speed: 30 } },
+    );
+    act(() => vi.advanceTimersByTime(90));
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    rerender({ speed: 10 });
+    act(() => vi.advanceTimersByTime(100));
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("skip()", () => {
   it("jumps straight to the full text", () => {
     const { result } = renderHook(() => useTypewriter("abcdef"));
@@ -84,6 +164,25 @@ describe("skip()", () => {
     act(() => result.current.skip());
     expect(result.current.displayedText).toBe("abcdef");
     expect(result.current.isComplete).toBe(true);
+  });
+
+  it("keeps the full text and leaves no timer after skipping", () => {
+    const { result } = renderHook(() => useTypewriter("abcdef"));
+    act(() => vi.advanceTimersByTime(60));
+    act(() => result.current.skip());
+    expect(vi.getTimerCount()).toBe(0);
+    act(() => vi.advanceTimersByTime(1000));
+    expect(result.current.displayedText).toBe("abcdef");
+  });
+
+  it("skips to the new text after the text has changed", () => {
+    const { result, rerender } = renderHook(
+      (props: { text: string }) => useTypewriter(props.text),
+      { initialProps: { text: "hello" } },
+    );
+    rerender({ text: "world" });
+    act(() => result.current.skip());
+    expect(result.current.displayedText).toBe("world");
   });
 
   it("does not double-fire onComplete when skipped mid-type", () => {
@@ -156,6 +255,30 @@ describe("startDelay", () => {
     act(() => vi.advanceTimersByTime(30));
     expect(result.current.displayedText).toBe("ab");
     expect(result.current.isComplete).toBe(true);
+  });
+});
+
+describe("startDelay and skip", () => {
+  it("does not start typing after a skip during the delay", () => {
+    const onComplete = vi.fn();
+    const { result } = renderHook(() =>
+      useTypewriter("abc", { startDelay: 100, onComplete }),
+    );
+    act(() => vi.advanceTimersByTime(50));
+    act(() => result.current.skip());
+    expect(vi.getTimerCount()).toBe(0);
+    act(() => vi.advanceTimersByTime(1000));
+    expect(result.current.displayedText).toBe("abc");
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears the pending delay on unmount", () => {
+    const { unmount } = renderHook(() =>
+      useTypewriter("abc", { startDelay: 100 }),
+    );
+    expect(vi.getTimerCount()).toBe(1);
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
   });
 });
 
