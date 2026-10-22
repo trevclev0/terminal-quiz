@@ -1119,7 +1119,11 @@ describe("Gameplay Mutations: requestClue outcomes", () => {
     claimedRows?: unknown[];
     cluesInsert?: unknown;
   }) {
-    const baseInsert = mockDb.insert.getMockImplementation();
+    // `vi.fn()`'s implementation type is a callable-or-constructable union,
+    // which tsc refuses to call without narrowing.
+    const baseInsert = mockDb.insert.getMockImplementation() as
+      | ((table: unknown) => unknown)
+      | undefined;
     mockDb.insert.mockImplementation((table: unknown) => {
       if (table === aiUsage && overrides.budgetCount !== undefined) {
         return {
