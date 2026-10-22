@@ -51,6 +51,10 @@ description = "Run integration tests (pool-workers + real D1)"
 run = "bun run mutate"
 description = "Run Stryker mutation tests (scoped to pure logic; slow)"
 
+[tasks."mutate:resolvers"]
+run = "bun run mutate:resolvers"
+description = "Run Stryker mutation tests on the gameplay resolvers (slow)"
+
 [tasks.coverage]
 run = "bun run coverage"
 description = "Run coverage"
