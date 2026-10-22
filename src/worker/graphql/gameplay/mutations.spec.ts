@@ -1,5 +1,5 @@
 import { aiUsage, clueRateLimits, gateClues } from "@shared/schema";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { requestClue } from "./requestClueMutation";
 import { resetSession } from "./resetSessionMutation";
 import { submitGuess } from "./submitGuessMutation";
@@ -1090,6 +1090,230 @@ describe("Gameplay Mutations: requestClue", () => {
         mockContext,
       ),
     ).rejects.toThrow("database unavailable");
+  });
+});
+
+describe("Gameplay Mutations: requestClue outcomes", () => {
+  let mockDb: MockDb & { select: ReturnType<typeof vi.fn> };
+  let writeDataPoint: ReturnType<typeof vi.fn>;
+  let context: AppGraphQLContext;
+
+  // Event columns are positional (docs/analytics.md): blobs[3] is the
+  // outcome; doubles are attemptCount, isCorrect, aiLatencyMs.
+  function recorded() {
+    return writeDataPoint.mock.calls.map(([point]) => point);
+  }
+
+  function clueEvent(outcome: string, attemptCount: number, latencyMs = 0) {
+    return {
+      indexes: ["mock-session-456"],
+      blobs: ["clue_requested", "prog-1", "gate-1", outcome, "test", ""],
+      doubles: [attemptCount, 0, latencyMs],
+    };
+  }
+
+  function overrideInserts(overrides: {
+    budgetCount?: number;
+    claimedRows?: unknown[];
+    cluesInsert?: unknown;
+  }) {
+    const baseInsert = mockDb.insert.getMockImplementation();
+    mockDb.insert.mockImplementation((table: unknown) => {
+      if (table === aiUsage && overrides.budgetCount !== undefined) {
+        return {
+          values: vi.fn().mockReturnValue({
+            onConflictDoUpdate: vi.fn().mockReturnValue({
+              returning: vi
+                .fn()
+                .mockResolvedValue([{ requestCount: overrides.budgetCount }]),
+            }),
+          }),
+        };
+      }
+      if (table === clueRateLimits && overrides.claimedRows !== undefined) {
+        return {
+          select: vi.fn().mockReturnValue({
+            returning: vi.fn().mockResolvedValue(overrides.claimedRows),
+          }),
+        };
+      }
+      if (table === gateClues && overrides.cluesInsert !== undefined) {
+        return overrides.cluesInsert;
+      }
+      return baseInsert?.(table);
+    });
+  }
+
+  function request() {
+    if (!requestClue.resolve) throw new Error("Resolver not defined");
+    return requestClue.resolve(
+      null,
+      { programId: "prog-1", gateId: "gate-1", currentGuess: "banana" },
+      context,
+    );
+  }
+
+  beforeEach(() => {
+    mockDb = Object.assign(createMockDb(), { select: vi.fn() });
+    writeDataPoint = vi.fn();
+    context = Object.assign(createMockContext(mockDb), {
+      env: { ANALYTICS: { writeDataPoint }, ENVIRONMENT: "test" },
+    });
+    vi.mocked(generateClue).mockReset();
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      ...defaultProgress,
+      attemptCount: 3,
+    });
+    mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
+    mockDb.query.gateClues.findMany.mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllEnvs();
+  });
+
+  it("records not_eligible when the gate has no guidance", async () => {
+    mockDb.query.gates.findFirst.mockResolvedValue({
+      ...defaultGate,
+      guidanceEnabled: false,
+    });
+
+    await request();
+
+    expect(recorded()).toEqual([clueEvent("not_eligible", 3)]);
+  });
+
+  it("records budget_exhausted when the reservation exceeds the budget", async () => {
+    vi.stubEnv("AI_DAILY_CLUE_BUDGET", "5");
+    overrideInserts({ budgetCount: 6 });
+
+    const result = await request();
+
+    expect(result.isAiBudgetExhausted).toBe(true);
+    expect(recorded()).toEqual([clueEvent("budget_exhausted", 3)]);
+  });
+
+  it("still serves a clue when the reservation lands exactly on the budget", async () => {
+    vi.stubEnv("AI_DAILY_CLUE_BUDGET", "5");
+    overrideInserts({ budgetCount: 5 });
+    vi.mocked(generateClue).mockResolvedValue({
+      clueText: "Last allowed hint.",
+      reason: "success",
+      latencyMs: 0,
+    });
+
+    const result = await request();
+
+    expect(result.isAiBudgetExhausted).toBe(false);
+    expect(result.clueText).toBe("Last allowed hint.");
+  });
+
+  it("rejects a rate-limited request with its retry delay and no AI call", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(1_800_000_000_000);
+    overrideInserts({ claimedRows: [] });
+    mockDb.select.mockImplementation(() => ({
+      from: () => ({
+        where: () => ({
+          orderBy: () => ({
+            limit: () =>
+              Promise.resolve([
+                { requestedAt: new Date(1_800_000_000_000 - 45_000) },
+              ]),
+          }),
+        }),
+      }),
+    }));
+
+    const result = await request();
+
+    expect(result).toEqual({
+      clueText: null,
+      isClueLimitReached: false,
+      cluesRemaining: 3,
+      isRateLimited: true,
+      retryAfterMs: 15_000,
+      isAiBudgetExhausted: false,
+    });
+    expect(generateClue).not.toHaveBeenCalled();
+    expect(recorded()).toEqual([clueEvent("rate_limited", 3)]);
+  });
+
+  it("returns no clue and records the reason when generation fails", async () => {
+    vi.mocked(generateClue).mockResolvedValue({
+      clueText: null,
+      reason: "error",
+      latencyMs: 87,
+    });
+
+    const result = await request();
+
+    expect(result).toEqual({
+      clueText: null,
+      isClueLimitReached: false,
+      cluesRemaining: 3,
+      isRateLimited: false,
+      retryAfterMs: null,
+      isAiBudgetExhausted: false,
+    });
+    expect(recorded()).toEqual([clueEvent("ai_failed:error", 3, 87)]);
+  });
+
+  it("reports a lost duplicate race without a clue and warns", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.mocked(generateClue).mockResolvedValue({
+      clueText: "A juicy hint.",
+      reason: "success",
+      latencyMs: 41,
+    });
+    overrideInserts({
+      cluesInsert: {
+        values: vi
+          .fn()
+          .mockRejectedValue(
+            new Error(
+              "UNIQUE constraint failed: gate_clues.unique_clue_per_attempt",
+            ),
+          ),
+      },
+    });
+
+    const result = await request();
+
+    expect(result).toEqual({
+      clueText: null,
+      isClueLimitReached: false,
+      cluesRemaining: 3,
+      isRateLimited: false,
+      retryAfterMs: null,
+      isAiBudgetExhausted: false,
+    });
+    expect(warn).toHaveBeenCalledWith(
+      "Failed to insert clue (likely duplicate):",
+      expect.any(Error),
+    );
+    expect(recorded()).toEqual([clueEvent("duplicate", 3, 41)]);
+  });
+
+  it("records success and leaves the gate open while clues remain", async () => {
+    vi.mocked(generateClue).mockResolvedValue({
+      clueText: "First hint.",
+      reason: "success",
+      latencyMs: 63,
+    });
+
+    const result = await request();
+
+    expect(result).toEqual({
+      clueText: "First hint.",
+      isClueLimitReached: false,
+      cluesRemaining: 2,
+      isRateLimited: false,
+      retryAfterMs: null,
+      isAiBudgetExhausted: false,
+    });
+    expect(recorded()).toEqual([clueEvent("success", 3, 63)]);
   });
 });
 
