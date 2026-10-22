@@ -262,6 +262,44 @@ describe("CompletedGate ACCESS GRANTED flash", () => {
     expect(onFlashComplete).toHaveBeenCalledTimes(1);
   });
 
+  // A known answer can be submitted while the boot sequence is still
+  // running; the flash must wait for it, not play out behind the boot layer.
+  it("holds the flash until cleared to type", () => {
+    const onFlashComplete = vi.fn();
+    const { rerender } = render(
+      <CompletedGate
+        id="gate-0"
+        gate={mockCompletedGate}
+        isLast
+        canType={false}
+        flash
+        onFlashComplete={onFlashComplete}
+      />,
+    );
+
+    act(() => vi.advanceTimersByTime(ACCESS_GRANTED_FLASH_MS));
+    expect(screen.getByTestId("success-message")).toHaveTextContent(/^$/);
+    expect(onFlashComplete).not.toHaveBeenCalled();
+
+    rerender(
+      <CompletedGate
+        id="gate-0"
+        gate={mockCompletedGate}
+        isLast
+        canType
+        flash
+        onFlashComplete={onFlashComplete}
+      />,
+    );
+    expect(screen.getByTestId("success-message")).toHaveTextContent(
+      "ACCESS GRANTED",
+    );
+
+    act(() => vi.advanceTimersByTime(ACCESS_GRANTED_FLASH_MS));
+    expect(onFlashComplete).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId("success-message")).toHaveTextContent("Correct!");
+  });
+
   it("does not flash unless asked", () => {
     render(<CompletedGate id="gate-0" gate={mockCompletedGate} isLast />);
 
