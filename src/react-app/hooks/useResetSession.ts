@@ -16,6 +16,8 @@ export function useResetSession() {
       return data.resetSession;
     },
     onSettled: (_data, error, variables) => {
+      // Stryker disable next-line OptionalChaining: `variables` is always
+      // supplied by TanStack Query; the `?.` only guards a type-violating call.
       if (!variables?.programId) return;
       const queryKey = programProgressionQueryOptions(
         variables.programId,
