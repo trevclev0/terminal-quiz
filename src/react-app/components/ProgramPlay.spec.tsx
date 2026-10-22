@@ -732,20 +732,28 @@ describe("ProgramPlay Component", () => {
         { gateId: "gate-2" },
       );
 
-      // Long enough for an unheld heading to have typed its first characters
-      // (THE_END_TYPE_SPEED is 120ms a character).
-      await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
-      expect(screen.getByTestId("the-end-heading")).toHaveTextContent(/^$/);
+      // Fake timers only from here: rendering above needs real ones for the
+      // async queries. 1s covers a whole unheld heading (7 characters at
+      // THE_END_TYPE_SPEED, 120ms), so an empty heading proves the hold.
+      vi.useFakeTimers();
+      try {
+        act(() => vi.advanceTimersByTime(1000));
+        expect(screen.getByTestId("the-end-heading")).toHaveTextContent(/^$/);
 
-      const lastGateCall = vi
-        .mocked(CompletedGate)
-        .mock.calls.filter(([props]) => props.gate.id === "gate-2")
-        .at(-1);
-      act(() => lastGateCall?.[0].onFlashComplete?.());
+        const lastGateCall = vi
+          .mocked(CompletedGate)
+          .mock.calls.filter(([props]) => props.gate.id === "gate-2")
+          .at(-1);
+        act(() => lastGateCall?.[0].onFlashComplete?.());
+        act(() => vi.advanceTimersByTime(1000));
 
-      expect(
-        await screen.findByText("Select new program", {}, { timeout: 3000 }),
-      ).toBeInTheDocument();
+        expect(screen.getByTestId("the-end-heading")).toHaveTextContent(
+          "The End",
+        );
+        expect(screen.getByText("Select new program")).toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 
