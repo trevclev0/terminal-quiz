@@ -37,13 +37,16 @@ runs:
           # Run as root so `timeout` kills apt-get itself, not only the bunx
           # wrapper: a surviving apt-get would hold the dpkg lock against the
           # retry. As root, Playwright calls apt directly instead of via sudo.
-          sudo env "PATH=$PATH" timeout 4m \
+          # --kill-after: a maintainer script that ignores SIGTERM still dies.
+          sudo env "PATH=$PATH" timeout --kill-after=15s 4m \
             bunx playwright install-deps chromium firefox
         }
         if install_deps; then exit 0; fi
         echo "::warning::install-deps failed or hit 4m; retrying on archive.ubuntu.com"
-        # Finish any install the timeout cut off mid-unpack.
-        sudo dpkg --configure -a
+        # Finish any install the timeout cut off mid-unpack. This can fail
+        # while dependencies are still missing; the retry's apt-get install
+        # supplies them, so a failure here must not skip it.
+        sudo dpkg --configure -a || true
         # Runner images list mirrors in apt-mirrors.txt or the sources files;
         # rewrite whichever exist.
         sudo sed -i 's/azure\.archive\.ubuntu\.com/archive.ubuntu.com/g' \
