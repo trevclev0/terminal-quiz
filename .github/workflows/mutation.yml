@@ -48,17 +48,18 @@ jobs:
           restore-keys: |
             stryker-resolvers-
 
-      # Every step after the first run is `if: always()`: a red score gate in
-      # one run must not skip the other run, its report, or either cache save.
+      # Every step after the first run is `if: ${{ !cancelled() }}`: a red score gate in
+      # one run must not skip the other run, its report, or either cache save,
+      # while a cancelled run (cancel-in-progress) still stops cleanly.
       - name: Run mutation tests (pure logic and hooks)
         run: mise run mutate
 
       - name: Run mutation tests (gameplay resolvers)
-        if: always()
+        if: ${{ !cancelled() }}
         run: mise run mutate:resolvers
 
       - name: Upload hooks mutation report
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: mutation-report
@@ -66,7 +67,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload resolvers mutation report
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: mutation-report-resolvers
@@ -74,14 +75,14 @@ jobs:
           if-no-files-found: ignore
 
       - name: Save Stryker hooks incremental cache
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/cache/save@v6
         with:
           path: reports/stryker-incremental.json
           key: stryker-hooks-${{ github.sha }}
 
       - name: Save Stryker resolvers incremental cache
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/cache/save@v6
         with:
           path: reports/stryker-resolvers-incremental.json
