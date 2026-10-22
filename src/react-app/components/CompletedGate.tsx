@@ -54,22 +54,25 @@ export default function CompletedGate({
   onFlashComplete,
 }: CompletedGateProps) {
   // Derived rather than seeded from `flash` on mount, so the flash still
-  // plays if the prop arrives a render after the gate does.
+  // plays if the prop arrives a render after the gate does. It waits on
+  // `canType` like the message does: a known answer can be submitted during
+  // the boot sequence, and the flash must not play out behind it.
   const [flashDone, setFlashDone] = useState(false);
   const isFlashing = flash && !flashDone;
+  const showFlash = isFlashing && canType;
   // Read through a ref so a parent re-render (a clue cooldown ticks every
   // 250ms) handing over a new callback can't restart the timer.
   const onFlashCompleteRef = useRef(onFlashComplete);
   onFlashCompleteRef.current = onFlashComplete;
 
   useEffect(() => {
-    if (!isFlashing) return;
+    if (!showFlash) return;
     const timer = setTimeout(() => {
       setFlashDone(true);
       onFlashCompleteRef.current?.();
     }, ACCESS_GRANTED_FLASH_MS);
     return () => clearTimeout(timer);
-  }, [isFlashing]);
+  }, [showFlash]);
 
   // Only the last completed gate types — earlier ones are solved context and
   // stay static. `canType` holds that last one back while the CRT boot
@@ -103,7 +106,9 @@ export default function CompletedGate({
               aria-hidden="true"
               data-testid="success-message"
             >
-              <span className={styles.accessGranted}>ACCESS GRANTED</span>
+              {showFlash && (
+                <span className={styles.accessGranted}>ACCESS GRANTED</span>
+              )}
             </p>
           ) : shouldType ? (
             <TypedSuccessMessage
