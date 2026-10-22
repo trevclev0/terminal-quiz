@@ -23,9 +23,9 @@
   "incremental": true,
   "incrementalFile": "reports/stryker-resolvers-incremental.json",
   "thresholds": {
-    "high": 95,
-    "low": 90,
-    "break": null
+    "high": 92,
+    "low": 87,
+    "break": 82
   },
   "reporters": ["clear-text", "progress", "html"],
   "htmlReporter": {
