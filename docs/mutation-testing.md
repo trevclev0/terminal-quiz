@@ -214,8 +214,11 @@ its own `incrementalFile`, report path and `tempDirName`, forward the env var
 
 ```ts
 bindings: {
-  // ...existing bindings
-  __STRYKER_ACTIVE_MUTANT__: process.env.__STRYKER_ACTIVE_MUTANT__ ?? "",
+  // Spread only when set, so plain test runs see no binding at all.
+  ...(process.env.__STRYKER_ACTIVE_MUTANT__
+    ? { __STRYKER_ACTIVE_MUTANT__: process.env.__STRYKER_ACTIVE_MUTANT__ }
+    : {}),
+  // ...existing bindings (TEST_MIGRATIONS, …)
 },
 ```
 
