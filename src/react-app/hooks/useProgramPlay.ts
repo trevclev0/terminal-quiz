@@ -56,6 +56,8 @@ function useProgramPlay({
   );
   const [rememberedGuess, setRememberedGuess] =
     useState<RememberedGuess | null>(null);
+  // Stryker disable next-line ArrowFunction: `now` is only read while a
+  // cooldown runs, and every path that starts one sets it first.
   const [now, setNow] = useState(() => Date.now());
   const currentGateIdRef = useRef(currentGateId);
   const { isShaking, shake, clearShake } = useShake();
@@ -95,6 +97,8 @@ function useProgramPlay({
   }, [clueCooldownUntil]);
 
   const cooldownSeconds =
+    // Stryker disable next-line ConditionalExpression: with a null deadline
+    // the arithmetic below goes negative and clamps to 0 anyway.
     clueCooldownUntil === null
       ? 0
       : Math.max(0, Math.ceil((clueCooldownUntil - now) / 1000));
@@ -176,6 +180,8 @@ function useProgramPlay({
             // A clue spends the eligibility the wrong guess earned; the
             // next wrong guess renews it.
             setRememberedGuess((prev) =>
+              // Stryker disable next-line ObjectLiteral: only `canRequestClue`
+              // is read before the next wrong guess replaces the whole object.
               prev ? { ...prev, canRequestClue: false } : prev,
             );
           } else if (data.isAiBudgetExhausted) {
@@ -184,6 +190,8 @@ function useProgramPlay({
             );
           } else if (data.isRateLimited) {
             const retryAfterMs = data.retryAfterMs;
+            // Stryker disable next-line ConditionalExpression: the `!= null`
+            // half is redundant, since `null > 0` and `undefined > 0` are false.
             if (retryAfterMs != null && retryAfterMs > 0) {
               const nowMs = Date.now();
               setNow(nowMs);
