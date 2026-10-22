@@ -10,6 +10,9 @@ export function useProgramSettings(
   const visibility = program?.visibility;
 
   useEffect(() => {
+    // Stryker disable next-line LogicalOperator: `name` and `visibility` come
+    // from one object, so both are undefined together or neither is; `&&`
+    // behaves the same as `||` here.
     if (name === undefined || visibility === undefined) return;
     setProgramName(name);
     setProgramVisibility(visibility);
