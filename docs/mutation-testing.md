@@ -28,14 +28,14 @@ It is never lowered to make a run pass.
 - **Components, routes, API hooks, `main.tsx`.** Their behavior is rendering
   and wiring, covered by component and E2E specs. Mutants there are mostly
   markup and CSS-class noise.
-- **Resolvers not in the list** (programs, gates, reorder, queries). Not yet
-  triaged; the seven above are the gameplay-critical path.
+- **Resolvers not in the list** (reset session, programs, gates, reorder, queries). Not yet
+  triaged; the seven above are the security-critical path.
 - **Raw SQL and drizzle builder arguments** are not excluded but cannot be
   killed by unit specs, which mock the database. See the integration-covered
   tables below.
 - **No hook was excluded.** `useProgramSettings` stays at 87.50 by ruling: its
   only survivors are confirmed equivalents in a 17-mutant file, and excluding
-  it would drop 12 killed mutants of protection.
+  it would drop 14 killed mutants of protection.
 
 ## Numbers
 
