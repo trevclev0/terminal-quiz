@@ -3,7 +3,7 @@ import {
   GET_PROGRAM_PROGRESSION_QUERY,
   SUBMIT_GUESS_MUTATION,
 } from "@shared/gqlQueries";
-import { gateClues, sessionProgress } from "@shared/schema";
+import { gateClues, gates, programs, sessionProgress } from "@shared/schema";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
@@ -466,5 +466,76 @@ describe("submitGuess mutation", () => {
       .from(sessionProgress)
       .where(eq(sessionProgress.sessionId, sessionId));
     expect(row?.totalGuesses).toBeNull();
+  });
+
+  it("stamps completed_at only when the final gate is solved", async () => {
+    const sessionId = makeSessionId("completed-at");
+    await insertSession(sessionId, E2E_GATE_1_ID);
+    const completedAt = async () => {
+      const [row] = await db
+        .select()
+        .from(sessionProgress)
+        .where(eq(sessionProgress.sessionId, sessionId));
+      return row?.completedAt ?? null;
+    };
+
+    await gqlRequest(SUBMIT_GUESS_MUTATION, {
+      sessionId,
+      variables: {
+        programId: E2E_PROGRAM_ID,
+        gateId: E2E_GATE_1_ID,
+        guess: "blue",
+      },
+    });
+    expect(await completedAt()).toBeNull();
+
+    await db
+      .update(sessionProgress)
+      .set({ currentGateId: E2E_GATE_3_ID })
+      .where(eq(sessionProgress.sessionId, sessionId));
+    await gqlRequest(SUBMIT_GUESS_MUTATION, {
+      sessionId,
+      variables: {
+        programId: E2E_PROGRAM_ID,
+        gateId: E2E_GATE_3_ID,
+        guess: "cold",
+      },
+    });
+    expect(await completedAt()).toBeInstanceOf(Date);
+  });
+
+  it("advances to the next gate by sequence order, not insertion order", async () => {
+    const programId = crypto.randomUUID();
+    await db.insert(programs).values({ id: programId, name: "Out of order" });
+    // Inserted 1, 3, 2 so storage order disagrees with sequence order.
+    const ids: Record<number, string> = {};
+    for (const order of [1, 3, 2]) {
+      ids[order] = crypto.randomUUID();
+      await db.insert(gates).values({
+        id: ids[order],
+        programId,
+        sequenceOrder: order,
+        label: `Gate ${order}`,
+        question: "Question?",
+        correctAnswer: "answer",
+        successMessage: "OK",
+      });
+    }
+    const sessionId = makeSessionId("order");
+    await db.insert(sessionProgress).values({
+      sessionId,
+      programId,
+      currentGateId: ids[1],
+    });
+
+    const response = await gqlRequest(SUBMIT_GUESS_MUTATION, {
+      sessionId,
+      variables: { programId, gateId: ids[1], guess: "answer" },
+    });
+
+    expect(response.body.errors).toBeUndefined();
+    expect(
+      (response.body.data as SubmitGuessData).submitGuess.nextGate?.id,
+    ).toBe(ids[2]);
   });
 });
