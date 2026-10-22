@@ -165,4 +165,41 @@ only. The scheduled workflow spends no Cloudflare quota.
 
 ## Slow tier
 
-Not yet evaluated; see #326.
+Evaluated and rejected: a `command`-runner config over
+`bun run test:integration` would kill the integration-covered survivors
+automatically, but it does not fit the 30 minute budget.
+
+Measured on `activeSession.ts` (23 mutants, `coverageAnalysis: "off"`,
+`concurrency: 2`, in-memory Miniflare, no remote bindings):
+
+| Machine | Wall time | Per mutant | Score |
+|---|---|---|---|
+| Dev box, ~6.5 cores busy | 2m57s | 7.7s | 86.96% (20 killed, 3 survived) |
+| Pinned to 4 cores (`taskset -c 0-3`, like ubuntu-latest) | 5m23s | 14.0s | 86.96% |
+
+It kills both `activeSession` `findFirst({})` mutants (15:61, 30:53) that the
+unit tier cannot see. The 3 survivors are the gate-not-found branch at
+34:7/34:20/35:21, which the schema's foreign keys make unreachable.
+
+Extrapolation: the five files holding integration-covered survivors
+(`activeSession`, `authorizeProgram`, `submitGuessMutation`, `aiBudget`,
+`clueRateLimit`) have 182 non-ignored mutants in the resolver run. Each
+integration run is multi-threaded workerd (about 43 CPU-seconds), so wall time
+scales with core count, not with `concurrency`: 182 x 14.0s is about 42
+minutes on a 4 vCPU runner, over the 30 minute limit. Nothing shipped.
+
+Two other findings, if this is revisited:
+
+- The command runner passes the active mutant as the Node env var
+  `__STRYKER_ACTIVE_MUTANT__`, which workerd never sees, so every mutant
+  "survived" (0%) until the variable was forwarded as a Miniflare binding in
+  `vitest.config.integration.ts`.
+- `ignoreStatic` is rejected with `coverageAnalysis: "off"`, and
+  `tsconfigFile` must point at a nonexistent file (as in the other configs).
+
+To rerun the measurement, copy `stryker.resolvers.config.json`, set
+`testRunner: "command"`, `commandRunner.command: "bun run test:integration"`,
+`coverageAnalysis: "off"`, drop `ignoreStatic`, `vitest` and `plugins`, give it
+its own `incrementalFile`, report path and `tempDirName`, forward the env var
+as above, and run it under `taskset -c 0-3`. Until then the hand-applied
+proofs in the tables above are the integration tier's coverage.
