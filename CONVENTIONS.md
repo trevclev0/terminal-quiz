@@ -115,7 +115,7 @@
 - Co-locate tests with source: `foo.spec.ts` next to `foo.ts`.
 - Do not use real D1/Workers bindings in unit tests — mock at the service/resolver boundary (see `src/worker/test-utils/mockEnv.ts`).
 - Ensure all network requests are fully mocked in tests (e.g., using MSW) to prevent connection errors.
-- Mutation testing (`bun run mutate`, Stryker) covers pure logic only — see `stryker.config.json` for the `mutate` globs. A surviving mutant means a test passes without asserting that behavior: strengthen the test, don't exclude the mutant. Build the code under test inside the `it`, not in a `describe` body: collection-time code runs before Stryker activates a mutant, so mutants there survive regardless of assertions. `tsconfigFile` points at a nonexistent file on purpose — Stryker's tsconfig rewrite needs the TypeScript JS API, which TypeScript 7 removed.
+- Mutation testing (Stryker) covers pure logic and React hooks (`bun run mutate`, `stryker.config.json`) and the gameplay resolvers (`bun run mutate:resolvers`, `stryker.resolvers.config.json`); see `docs/mutation-testing.md` for scope, survivor categories and the zero-quota rule. A surviving mutant means a test passes without asserting that behavior: strengthen the test, don't exclude the mutant. Build the code under test inside the `it`, not in a `describe` body: collection-time code runs before Stryker activates a mutant, so mutants there survive regardless of assertions. Constant `[]` hook deps are a documented equivalent (`docs/mutation-testing.md`), not a test gap. `tsconfigFile` points at a nonexistent file on purpose — Stryker's tsconfig rewrite needs the TypeScript JS API, which TypeScript 7 removed.
 
 ## Git
 

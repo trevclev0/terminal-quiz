@@ -114,7 +114,7 @@ export default function useCrtPreferences() {
   }, []);
   // Stryker restore ArrayDeclaration
 
-  // Stryker disable ArrayDeclaration: cyclePreset is stable, so dropping it from the deps never re-subscribes
+  // Stryker disable ArrayDeclaration: cyclePreset is stable while its deps stay [], so dropping it from the deps never re-subscribes
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.code === "Comma") {

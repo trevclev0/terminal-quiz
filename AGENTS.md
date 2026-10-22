@@ -73,7 +73,9 @@ bun run test --run      # run unit/component tests once
 bun run test:integration # run backend integration tests (real D1 via @cloudflare/vitest-pool-workers)
 bun run coverage        # single run with V8 coverage (unit tests only — see note below)
 bun run test:ui         # browser-based Vitest UI
-bun run mutate          # Stryker mutation tests on pure logic (~30s); HTML report in reports/mutation/
+bun run mutate          # Stryker mutation tests on pure logic + React hooks (~2m); HTML report in reports/mutation/
+bun run mutate:resolvers # Stryker mutation tests on the gameplay resolvers (~40s); report in reports/mutation-resolvers/
+                         #   (both: unit tier only, zero Cloudflare quota — see docs/mutation-testing.md)
 bun run test:e2e        # seed local D1 with E2E fixtures, then run Playwright against localhost
                          #   (clue specs skip unless AI_CLUE_STUB="true" is in .dev.vars and in the run env)
 
