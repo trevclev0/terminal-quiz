@@ -26,10 +26,33 @@ runs:
         key: ${{ runner.os }}-playwright-${{ steps.version.outputs.version }}
 
     # apt packages can't be cached across runs, so this runs every time (~15s).
+    # A slow Azure apt mirror once stretched it to 17 minutes (#348), so each
+    # attempt gets 4 minutes, and the retry goes to Canonical's mirror instead.
+    # Composite steps can't take timeout-minutes, hence the shell `timeout`.
     - name: Install Playwright system dependencies
       if: inputs.install-deps == 'true'
       shell: bash
-      run: bunx playwright install-deps chromium firefox
+      run: |
+        install_deps() {
+          # Run as root so `timeout` kills apt-get itself, not only the bunx
+          # wrapper: a surviving apt-get would hold the dpkg lock against the
+          # retry. As root, Playwright calls apt directly instead of via sudo.
+          # --kill-after: a maintainer script that ignores SIGTERM still dies.
+          sudo env "PATH=$PATH" timeout --kill-after=15s 4m \
+            bunx playwright install-deps chromium firefox
+        }
+        if install_deps; then exit 0; fi
+        echo "::warning::install-deps failed or hit 4m; retrying on archive.ubuntu.com"
+        # Finish any install the timeout cut off mid-unpack. This can fail
+        # while dependencies are still missing; the retry's apt-get install
+        # supplies them, so a failure here must not skip it.
+        sudo dpkg --configure -a || true
+        # Runner images list mirrors in apt-mirrors.txt or the sources files;
+        # rewrite whichever exist.
+        sudo sed -i 's/azure\.archive\.ubuntu\.com/archive.ubuntu.com/g' \
+          /etc/apt/apt-mirrors.txt /etc/apt/sources.list \
+          /etc/apt/sources.list.d/* 2>/dev/null || true
+        install_deps
 
     - name: Install Playwright browsers
       if: steps.cache.outputs.cache-hit != 'true'
