@@ -28,17 +28,19 @@ jobs:
       # covering tests are unchanged. Restore and save are separate steps so
       # the save runs even when the score gate fails the job (the combined
       # actions/cache only saves after a successful job). Each run has its own
-      # key prefix so one run's cache never shadows the other's. The bare
-      # `stryker-` fallback lets the first run after the rename reuse the old
-      # single-run cache.
+      # key prefix so one run's cache never shadows the other's.
+      # Incremental reuse only checks the mutated file and its covering tests,
+      # not config: a change to stryker.*.json or vite.config.ts that alters
+      # results leaves stale verdicts in the cache. Bump the -vN suffix (in the
+      # restore and save steps) after such a change to force one cold run.
+      # v2: the pre-#348 cache carried 30 stale validation.ts survivors.
       - name: Restore Stryker hooks incremental cache
         uses: actions/cache/restore@v6
         with:
           path: reports/stryker-incremental.json
-          key: stryker-hooks-${{ github.sha }}
+          key: stryker-hooks-v2-${{ github.sha }}
           restore-keys: |
-            stryker-hooks-
-            stryker-
+            stryker-hooks-v2-
 
       - name: Restore Stryker resolvers incremental cache
         uses: actions/cache/restore@v6
@@ -79,7 +81,7 @@ jobs:
         uses: actions/cache/save@v6
         with:
           path: reports/stryker-incremental.json
-          key: stryker-hooks-${{ github.sha }}
+          key: stryker-hooks-v2-${{ github.sha }}
 
       - name: Save Stryker resolvers incremental cache
         if: ${{ !cancelled() }}
