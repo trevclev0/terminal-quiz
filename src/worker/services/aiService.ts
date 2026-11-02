@@ -14,6 +14,19 @@ const MAX_CLUE_LENGTH = 200;
 const escapeRegExp = (str: string) =>
   str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+// Whole-word, case-insensitive match; the \b anchors are skipped on a side
+// that starts/ends with punctuation (e.g. "C++", "!hello!"), where \b would
+// never match.
+function containsAnswer(text: string, answer: string): boolean {
+  const startBoundary = /^\w/.test(answer) ? "\\b" : "";
+  const endBoundary = /\w$/.test(answer) ? "\\b" : "";
+  const answerRegex = new RegExp(
+    `${startBoundary}${escapeRegExp(answer)}${endBoundary}`,
+    "i",
+  );
+  return answerRegex.test(text);
+}
+
 // System prompt instructing the AI on its role and constraints
 // for generating clues.
 const SYSTEM_PROMPT = `
@@ -81,11 +94,21 @@ export type ClueMessage = { role: "system" | "user"; content: string };
 export function buildClueMessages(
   gateQuestion: string,
   correctAnswer: string,
+  acceptedAnswers: readonly string[],
   currentGuess: string,
   previousClues: string[],
 ): ClueMessage[] {
+  // Aliases are correct answers too, so the model must treat them as secret
+  // as the main answer. The line is omitted (not left empty) for a gate with
+  // none, keeping its prompt byte-identical to before aliases existed.
+  const aliasLine =
+    acceptedAnswers.length > 0
+      ? `\nAlso accepted as correct (never reveal): ${acceptedAnswers
+          .map((alias) => `"${alias}"`)
+          .join(", ")}`
+      : "";
   let instructions = `Gate Question: "${gateQuestion}"
-Correct Answer (never reveal): "${correctAnswer}"
+Correct Answer (never reveal): "${correctAnswer}"${aliasLine}
 Clue attempt: ${previousClues.length + 1} of ${MAX_CLUES_PER_GATE}`;
 
   if (previousClues.length > 0) {
@@ -184,6 +207,7 @@ export async function generateClueWithAi(
   ai: Ai,
   gateQuestion: string,
   correctAnswer: string,
+  acceptedAnswers: readonly string[],
   currentGuess: string,
   previousClues: string[],
 ): Promise<ClueResult> {
@@ -195,6 +219,7 @@ export async function generateClueWithAi(
       messages: buildClueMessages(
         gateQuestion,
         correctAnswer,
+        acceptedAnswers,
         currentGuess,
         previousClues,
       ),
@@ -218,16 +243,14 @@ export async function generateClueWithAi(
 
     const clueText = extracted.text;
 
-    // Basic check to ensure the AI didn't directly reveal the answer.
-    // This is a safeguard, as the system prompt should ideally prevent it.
-    const escapedAnswer = escapeRegExp(correctAnswer);
-    const startBoundary = /^\w/.test(correctAnswer) ? "\\b" : "";
-    const endBoundary = /\w$/.test(correctAnswer) ? "\\b" : "";
-    const answerRegex = new RegExp(
-      `${startBoundary}${escapedAnswer}${endBoundary}`,
-      "i",
-    );
-    if (answerRegex.test(clueText)) {
+    // Basic check to ensure the AI didn't directly reveal the answer or any
+    // accepted alias. This is a safeguard, as the system prompt should
+    // ideally prevent it.
+    if (
+      [correctAnswer, ...acceptedAnswers].some((a) =>
+        containsAnswer(clueText, a),
+      )
+    ) {
       console.warn("AI generated a clue containing the answer. Filtering.");
       return { clueText: null, reason: "answer_leak", latencyMs: elapsed() };
     }
@@ -272,6 +295,7 @@ export function isClueStubEnabled(vars: ClueStubVars): boolean {
  * @param c Hono Context to access the AI binding.
  * @param gateQuestion The question of the gate.
  * @param correctAnswer The correct answer to the gate (for AI context, not for revelation).
+ * @param acceptedAnswers Alternate correct answers, kept as secret as the main one.
  * @param currentGuess The player's current (incorrect) guess.
  * @param previousClues An array of clues previously given for this gate in the current session.
  * @returns A structured result with the generated clue (or null) plus reason and latency.
@@ -280,6 +304,7 @@ export async function generateClue(
   c: Context,
   gateQuestion: string,
   correctAnswer: string,
+  acceptedAnswers: readonly string[],
   currentGuess: string,
   previousClues: string[],
 ): Promise<ClueResult> {
@@ -299,6 +324,7 @@ export async function generateClue(
     AI,
     gateQuestion,
     correctAnswer,
+    acceptedAnswers,
     currentGuess,
     previousClues,
   );

@@ -758,7 +758,10 @@ describe("Gameplay Mutations: requestClue", () => {
       ...defaultProgress,
       attemptCount: 3,
     });
-    mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
+    mockDb.query.gates.findFirst.mockResolvedValue({
+      ...defaultGate,
+      acceptedAnswers: ["Malus", "pomme"],
+    });
     mockDb.query.gateClues.findMany.mockResolvedValue([
       { clueText: "It grows on trees.", attemptCountAtRequest: 2 },
       { clueText: "Think about doctors.", attemptCountAtRequest: 1 },
@@ -785,6 +788,7 @@ describe("Gameplay Mutations: requestClue", () => {
       mockContext,
       defaultGate.question,
       defaultGate.correctAnswer,
+      ["Malus", "pomme"],
       "banana",
       ["Think about doctors.", "It grows on trees."],
     );
