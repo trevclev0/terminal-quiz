@@ -56,9 +56,13 @@
 
 /* The failure counterpart of .accessGranted: the same reverse-video blink in
    red, so a denial is felt without moving the layout. Plain red text is what
-   remains once it settles. */
+   remains once it settles. The 0.9s must match DENIAL_BLINK_MS in
+   useProgramPlay.ts, which spaces blinks out to stay under three flashes a
+   second. The negative margin cancels the padding, so the text stays where
+   it would sit unanimated and only the reverse block bleeds outwards. */
 .accessDenied {
   padding: 0 0.25rem;
+  margin: 0 -0.25rem;
   animation: accessDenied 0.9s steps(1, end) forwards;
 }
 

@@ -23,7 +23,6 @@
     "src/react-app/hooks/useCopyToClipboard.ts",
     "src/react-app/hooks/useCrtPreferences.ts",
     "src/react-app/hooks/useTypewriter.ts",
-    "src/react-app/hooks/useShake.ts",
     "src/react-app/hooks/useBootSequence.ts",
     "src/react-app/hooks/useProgressionScroll.ts",
     "!**/*.spec.ts",

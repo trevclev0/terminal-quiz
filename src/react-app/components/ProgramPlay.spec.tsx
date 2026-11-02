@@ -76,6 +76,7 @@ const mockUseProgramPlay = {
   message: null,
   guessSucceeded: null,
   denialId: null,
+  denialBlinks: false,
   isPending: false,
   changeHandler: vi.fn(),
   handleSubmit: vi.fn(),
@@ -522,12 +523,15 @@ describe("ProgramPlay Component", () => {
   });
 
   describe("denial blink", () => {
-    async function renderActive(options: { withBoot?: boolean } = {}) {
+    async function renderActive(
+      options: { withBoot?: boolean; denialBlinks?: boolean } = {},
+    ) {
       vi.mocked(useProgramPlay).mockReturnValue({
         ...mockUseProgramPlay,
         message: "ACCESS DENIED.",
         guessSucceeded: false,
         denialId: 3,
+        denialBlinks: options.denialBlinks ?? true,
       });
       const { queryClient, wrapper } = createQueryWrapper();
       queryClient.setQueryData(["programs"], mockPrograms);
@@ -563,6 +567,14 @@ describe("ProgramPlay Component", () => {
       await renderActive();
 
       expect(latestGateProps()?.animateDenial).toBe(true);
+    });
+
+    it("does not animate a denial the flash-rate throttle held back", async () => {
+      stubReducedMotion(false);
+      await renderActive({ denialBlinks: false });
+
+      expect(latestGateProps()?.denialId).toBe(3);
+      expect(latestGateProps()?.animateDenial).toBe(false);
     });
 
     it("does not animate the denial under reduced motion", async () => {

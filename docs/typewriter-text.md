@@ -18,7 +18,7 @@ plan that produced this lives in git history and the issues above.
 | `successMessage` of the latest solved gate | `CompletedGate` → `TypedSuccessMessage` | Typed only while a next gate follows; when the program ends, the final gate's message renders static |
 | "The End" heading | `ProgramEnding` → `TypedHeading` | Typed slowly once boot completes; the end buttons mount after it finishes (#215) |
 | CRT boot banner (`VT220 OK`) | `CrtOverlay` → `BootBanner` | Typed |
-| Guess response ("Access Granted." / "Access Denied." / errors) | `ActiveGate` | **Never.** It sits on the `role="status"` live region; animating it would fight `aria-live` announcements |
+| Guess response ("Access Granted." / "Access Denied." / errors) | `ActiveGate` | **Never typed.** It sits on the `role="status"` live region; animating it would fight `aria-live` announcements. A wrong-guess denial blinks in reverse video instead (#356): styling only, no change to the text, so it is announced once |
 | "Verifying..." pending state | `ActiveGate` | **Spinner, not typewriter** (#311) |
 | Program title, `ConfirmDialog` message | `ProgramPlay`, `ConfirmDialog` | Static |
 | Labels: buttons, menus, `ProgramSelector` / `NavBar` / `LoginPage` | various | Static (see rule 1) |

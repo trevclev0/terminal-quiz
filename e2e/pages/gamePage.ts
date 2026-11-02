@@ -223,8 +223,7 @@ export class GamePage {
   async isDenialBlinking(): Promise<boolean> {
     try {
       await this.page
-        .locator("[class*='accessDenied']")
-        .first()
+        .locator("[role='status'] [class*='accessDenied']")
         .waitFor({ state: "visible", timeout: 10000 });
       return true;
     } catch {

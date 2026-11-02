@@ -13,11 +13,17 @@ type ActiveGateProps = {
   guess: string;
   message: string | null;
   guessSucceeded?: boolean | null;
-  // Non-null exactly while `message` is a wrong-guess denial; a new value
-  // restarts the blink.
+  /**
+   * Non-null exactly while `message` is a wrong-guess denial; a new value
+   * restarts the blink.
+   */
   denialId: number | null;
-  // False under reduced motion or until the boot sequence ends. Toggling it
-  // must not remount the message, or the live region would announce it twice.
+  /**
+   * Whether the denial may blink: false under reduced motion, until the boot
+   * sequence ends, or for a denial throttled by the flash-rate limit.
+   * Toggling it must not remount the message, or the live region would
+   * announce it twice.
+   */
   animateDenial: boolean;
   isPending: boolean;
   inputRef: RefObject<HTMLInputElement | null>;

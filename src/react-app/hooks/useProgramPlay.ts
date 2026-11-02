@@ -16,6 +16,11 @@ type UseProgramPlayProps = {
   onHelpCommand?: () => void;
 };
 
+// How long a denial blink plays. Must match the `.accessDenied` animation
+// duration in Gate.module.css: a denial only blinks once the previous blink
+// has finished, which keeps rapid wrong guesses under three flashes a second.
+export const DENIAL_BLINK_MS = 900;
+
 export const CLUE_COMMAND_MESSAGES = {
   noGuess: "Make a guess first, then type /clue.",
   notYet: "No clue available right now.",
@@ -59,17 +64,22 @@ function useProgramPlay({
   // cooldown runs, and every path that starts one sets it first.
   const [now, setNow] = useState(() => Date.now());
   const currentGateIdRef = useRef(currentGateId);
-  // Identifies the wrong guess the shown message belongs to, and is null for
+  // Describes the wrong guess the shown message belongs to, and is null for
   // every other message. A fresh id per denial lets the UI restart its blink
-  // even when the same guess is denied twice in a row.
-  const [denialId, setDenialId] = useState<number | null>(null);
+  // even when the same guess is denied twice in a row; `blinks` is false for
+  // a denial that came too soon after the last blink to be allowed one.
+  const [denial, setDenial] = useState<{ id: number; blinks: boolean } | null>(
+    null,
+  );
   const denialCount = useRef(0);
+  const lastBlinkStartedAt = useRef<number | null>(null);
 
-  // Every message that is not a wrong-guess denial goes through here, so a
-  // stale denialId can never keep blinking a clue or error message.
+  // Shows a message that is not a wrong-guess denial, dropping any denial so
+  // a stale one can never keep blinking a clue or error message. (The
+  // gate-change effect resets both directly: it cannot depend on this.)
   const showMessage = (text: string | null) => {
     setMessage(text);
-    setDenialId(null);
+    setDenial(null);
   };
 
   // Clear response message, denial, clues, canRequestClue, and the remembered
@@ -77,7 +87,7 @@ function useProgramPlay({
   useEffect(() => {
     currentGateIdRef.current = currentGateId;
     setMessage(null);
-    setDenialId(null);
+    setDenial(null);
     setGuessSucceeded(null);
     setClues([]);
     setCanRequestClue(false);
@@ -157,7 +167,14 @@ function useProgramPlay({
       } else {
         setMessage(result.message ?? "Access Denied.");
         denialCount.current += 1;
-        setDenialId(denialCount.current);
+        const nowMs = Date.now();
+        const blinks =
+          lastBlinkStartedAt.current === null ||
+          nowMs - lastBlinkStartedAt.current >= DENIAL_BLINK_MS;
+        if (blinks) {
+          lastBlinkStartedAt.current = nowMs;
+        }
+        setDenial({ id: denialCount.current, blinks });
         setGuessSucceeded(false);
         setCanRequestClue(result.canRequestClue);
         setRememberedGuess({
@@ -246,7 +263,8 @@ function useProgramPlay({
     guess,
     message,
     guessSucceeded,
-    denialId,
+    denialId: denial?.id ?? null,
+    denialBlinks: denial?.blinks ?? false,
     isPending: submitGuessMutation.isPending,
     changeHandler,
     handleSubmit,
