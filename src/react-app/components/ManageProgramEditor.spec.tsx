@@ -39,6 +39,7 @@ const mockGates = [
     acceptanceThreshold: 0.875,
     guidanceEnabled: false,
     guidanceThreshold: 3,
+    acceptedAnswers: ["a1"],
   },
   {
     id: "gate-2",
@@ -51,6 +52,7 @@ const mockGates = [
     acceptanceThreshold: 0.875,
     guidanceEnabled: true,
     guidanceThreshold: 3,
+    acceptedAnswers: [],
   },
 ];
 
@@ -168,11 +170,32 @@ describe("ManageProgramEditor", () => {
         acceptanceThreshold: 0.875,
         guidanceEnabled: false,
         guidanceThreshold: 3,
+        acceptedAnswers: ["a1"],
       },
       expect.objectContaining({
         onSuccess: expect.any(Function),
         onError: expect.any(Function),
       }),
+    );
+  });
+
+  it("saves an alias added in the Also accept list", async () => {
+    const { mockUpdateGate } = setupMocks();
+
+    render(<ManageProgramEditor programId={PROGRAM_ID} />);
+
+    await userEvent.click(
+      screen.getAllByRole("button", { name: "[+] Add answer" })[1],
+    );
+    await userEvent.type(
+      screen.getAllByLabelText("Accepted answer 1")[1],
+      "two",
+    );
+    await userEvent.click(screen.getAllByText("Save Gate")[1]);
+
+    expect(mockUpdateGate.mutate).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "gate-2", acceptedAnswers: ["two"] }),
+      expect.anything(),
     );
   });
 

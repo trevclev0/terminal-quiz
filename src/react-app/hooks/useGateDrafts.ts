@@ -11,6 +11,7 @@ function gateToForm(gate: GateManagement): GateForm {
     acceptanceThreshold: gate.acceptanceThreshold,
     guidanceEnabled: gate.guidanceEnabled,
     guidanceThreshold: gate.guidanceThreshold,
+    acceptedAnswers: gate.acceptedAnswers ?? [],
   };
 }
 

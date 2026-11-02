@@ -1,12 +1,16 @@
 import {
   clampAcceptanceThreshold,
   clampGuidanceThreshold,
+  findAnswerConflict,
   gateFieldsSchema,
   MAX_ACCEPTANCE_THRESHOLD,
+  MAX_ACCEPTED_ANSWERS,
   MAX_GUIDANCE_THRESHOLD,
   MIN_ACCEPTANCE_THRESHOLD,
   MIN_GUIDANCE_THRESHOLD,
+  normalizeAnswer,
 } from "@shared/validation";
+import { useRef } from "react";
 import FormField from "./FormField";
 import styles from "./GateEditorCard.module.css";
 import MutationError from "./MutationError";
@@ -51,6 +55,34 @@ export default function GateEditorCard({
   const invalidFields = new Set(
     validation.success ? [] : validation.error.issues.map((i) => i.path[0]),
   );
+
+  // The conflict check sits outside the schema (see findAnswerConflict), so it
+  // joins the schema's alias issues here to keep Save in step with the server.
+  const aliases = draft.acceptedAnswers;
+  const conflictError = findAnswerConflict(draft.correctAnswer, aliases);
+  const aliasIssues = validation.success
+    ? []
+    : validation.error.issues.filter((i) => i.path[0] === "acceptedAnswers");
+  const aliasErrors = [
+    ...new Set([...aliasIssues.map((i) => i.message), conflictError]),
+  ].filter((message): message is string => message !== null);
+  const aliasKeyCounts = new Map<string, number>();
+  for (const alias of aliases) {
+    const key = normalizeAnswer(alias);
+    aliasKeyCounts.set(key, (aliasKeyCounts.get(key) ?? 0) + 1);
+  }
+  const isAliasInvalid = (alias: string, row: number) =>
+    aliasIssues.some((i) => i.path[1] === row) ||
+    (aliasKeyCounts.get(normalizeAnswer(alias)) ?? 0) > 1 ||
+    findAnswerConflict(draft.correctAnswer, [alias]) !== null;
+  const canSave = validation.success && conflictError === null;
+
+  // Row to focus once it renders; set when the author adds one.
+  const focusRowRef = useRef<number | null>(null);
+  const addAlias = () => {
+    focusRowRef.current = aliases.length;
+    onDraftChange({ acceptedAnswers: [...aliases, ""] });
+  };
 
   const acceptancePercent = `${(draft.acceptanceThreshold * 100)
     .toFixed(1)
@@ -112,6 +144,64 @@ export default function GateEditorCard({
             aria-invalid={invalidFields.has("correctAnswer")}
           />
         </FormField>
+        <fieldset className={styles.aliasGroup}>
+          <legend className={styles.aliasLegend}>Also accept</legend>
+          {aliases.map((alias, row) => (
+            // Rows have no identity beyond their position: the draft is a
+            // plain string list, so the index is the only stable key.
+            // biome-ignore lint/suspicious/noArrayIndexKey: see above
+            <div key={row} className={styles.aliasRow}>
+              <input
+                type="text"
+                value={alias}
+                onChange={(e) =>
+                  onDraftChange({
+                    acceptedAnswers: aliases.map((a, i) =>
+                      i === row ? e.target.value : a,
+                    ),
+                  })
+                }
+                ref={(el) => {
+                  if (el && focusRowRef.current === row) {
+                    focusRowRef.current = null;
+                    el.focus();
+                  }
+                }}
+                className={styles.aliasInput}
+                aria-label={`Accepted answer ${row + 1}`}
+                aria-invalid={isAliasInvalid(alias, row)}
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  onDraftChange({
+                    acceptedAnswers: aliases.filter((_, i) => i !== row),
+                  })
+                }
+                className={styles.aliasButton}
+                aria-label={`Remove accepted answer ${row + 1}`}
+              >
+                [x]
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addAlias}
+            disabled={aliases.length >= MAX_ACCEPTED_ANSWERS}
+            className={styles.aliasAddButton}
+          >
+            [+] Add answer
+          </button>
+          <span className={styles.helperText}>
+            Other answers that count as correct
+          </span>
+          {aliasErrors.map((message) => (
+            <span key={message} className={styles.fieldError}>
+              {message}
+            </span>
+          ))}
+        </fieldset>
         <FormField label="Success Message" required>
           <textarea
             value={draft.successMessage}
@@ -186,7 +276,7 @@ export default function GateEditorCard({
         <button
           type="button"
           onClick={() => onSave(gate.id)}
-          disabled={savingGateId !== null || !validation.success}
+          disabled={savingGateId !== null || !canSave}
           className={styles.button}
         >
           {savingGateId === gate.id ? "Saving..." : "Save Gate"}

@@ -14,6 +14,7 @@ export type GateManagement = {
   acceptanceThreshold: number;
   guidanceEnabled: boolean;
   guidanceThreshold: number;
+  acceptedAnswers: string[];
 };
 
 const fetchProgramGates = async (

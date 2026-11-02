@@ -13,6 +13,7 @@ export type UpdateGateVariables = {
   acceptanceThreshold?: number;
   guidanceEnabled?: boolean;
   guidanceThreshold?: number;
+  acceptedAnswers?: string[];
 };
 
 const updateGate = async (variables: UpdateGateVariables): Promise<void> => {

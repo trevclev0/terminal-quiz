@@ -15,6 +15,7 @@ const gates: GateManagement[] = [
     acceptanceThreshold: 0.875,
     guidanceEnabled: false,
     guidanceThreshold: 3,
+    acceptedAnswers: [],
   },
   {
     id: "g2",
@@ -27,6 +28,7 @@ const gates: GateManagement[] = [
     acceptanceThreshold: 0.875,
     guidanceEnabled: true,
     guidanceThreshold: 2,
+    acceptedAnswers: ["a"],
   },
 ];
 
@@ -44,6 +46,22 @@ describe("useGateDrafts", () => {
     expect(result.current[0].g1.guidanceEnabled).toBe(false);
     expect(result.current[0].g2.guidanceEnabled).toBe(true);
     expect(result.current[0].g2.guidanceThreshold).toBe(2);
+  });
+
+  it("maps accepted answers into the draft", () => {
+    const { result } = renderHook(() => useGateDrafts(gates));
+
+    expect(result.current[0].g1.acceptedAnswers).toEqual([]);
+    expect(result.current[0].g2.acceptedAnswers).toEqual(["a"]);
+  });
+
+  it("treats a missing accepted-answers list as empty", () => {
+    const legacy = [
+      { ...gates[0], acceptedAnswers: null },
+    ] as unknown as GateManagement[];
+    const { result } = renderHook(() => useGateDrafts(legacy));
+
+    expect(result.current[0].g1.acceptedAnswers).toEqual([]);
   });
 
   it("preserves manual edits across refetches", () => {
