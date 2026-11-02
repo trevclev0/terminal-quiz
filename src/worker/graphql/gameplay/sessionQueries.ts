@@ -124,7 +124,9 @@ export const getProgramProgression = {
       progress.runStartedAt = stampedAt;
     }
 
-    // Security: only gates from sessionCompletedGates are fetched with correctAnswer.
+    // Security: only gates from sessionCompletedGates are fetched with
+    // correctAnswer. Their aliases are never selected: the CompletedGate
+    // payload has no field for them, and they must stay author-only.
     const [completedEntries, totalGates] = await Promise.all([
       db.query.sessionCompletedGates.findMany({
         where: eq(sessionCompletedGates.sessionProgressId, progress.id),
@@ -136,6 +138,7 @@ export const getProgramProgression = {
       completedEntries.length === 0
         ? []
         : await db.query.gates.findMany({
+            columns: { acceptedAnswers: false },
             where: and(
               eq(gates.programId, args.programId),
               inArray(
