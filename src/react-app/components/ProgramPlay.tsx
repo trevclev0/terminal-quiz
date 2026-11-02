@@ -62,6 +62,7 @@ function ProgramPlay() {
     guessSucceeded,
     denialId,
     denialBlinks,
+    onDenialBlinkStart,
     isPending,
     changeHandler,
     handleSubmit,
@@ -251,6 +252,7 @@ function ProgramPlay() {
           guessSucceeded={guessSucceeded}
           denialId={denialId}
           animateDenial={!reduceMotion && bootComplete && denialBlinks}
+          onDenialBlinkStart={onDenialBlinkStart}
           isPending={isPending}
           inputRef={inputRef}
           changeHandler={changeHandler}

@@ -5,6 +5,7 @@ import { parseGameCommand } from "@shared/gameCommands";
 import {
   type ChangeEvent,
   type SubmitEvent,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -18,7 +19,9 @@ type UseProgramPlayProps = {
 
 // How long a denial blink plays. Must match the `.accessDenied` animation
 // duration in Gate.module.css: a denial only blinks once the previous blink
-// has finished, which keeps rapid wrong guesses under three flashes a second.
+// has finished (measured from when it actually started, see
+// `onDenialBlinkStart`), which keeps rapid wrong guesses under three flashes
+// a second.
 export const DENIAL_BLINK_MS = 900;
 
 export const CLUE_COMMAND_MESSAGES = {
@@ -72,7 +75,16 @@ function useProgramPlay({
     null,
   );
   const denialCount = useRef(0);
+  // Set when the blink animation really starts, not when a denial arrives:
+  // boot can hold the class back, so the two can be seconds apart, and timing
+  // from the denial would let a second blink overlap a deferred first one.
   const lastBlinkStartedAt = useRef<number | null>(null);
+  // Stryker disable ArrayDeclaration: a constant [] dep never changes, so any
+  // constant array keeps the callback just as stable
+  const onDenialBlinkStart = useCallback(() => {
+    lastBlinkStartedAt.current = Date.now();
+  }, []);
+  // Stryker restore ArrayDeclaration
 
   // Shows a message that is not a wrong-guess denial, dropping any denial so
   // a stale one can never keep blinking a clue or error message. (The
@@ -171,9 +183,6 @@ function useProgramPlay({
         const blinks =
           lastBlinkStartedAt.current === null ||
           nowMs - lastBlinkStartedAt.current >= DENIAL_BLINK_MS;
-        if (blinks) {
-          lastBlinkStartedAt.current = nowMs;
-        }
         setDenial({ id: denialCount.current, blinks });
         setGuessSucceeded(false);
         setCanRequestClue(result.canRequestClue);
@@ -265,6 +274,7 @@ function useProgramPlay({
     guessSucceeded,
     denialId: denial?.id ?? null,
     denialBlinks: denial?.blinks ?? false,
+    onDenialBlinkStart,
     isPending: submitGuessMutation.isPending,
     changeHandler,
     handleSubmit,

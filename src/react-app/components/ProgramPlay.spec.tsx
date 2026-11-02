@@ -77,6 +77,7 @@ const mockUseProgramPlay = {
   guessSucceeded: null,
   denialId: null,
   denialBlinks: false,
+  onDenialBlinkStart: vi.fn(),
   isPending: false,
   changeHandler: vi.fn(),
   handleSubmit: vi.fn(),
@@ -555,6 +556,24 @@ describe("ProgramPlay Component", () => {
     }
 
     const latestGateProps = () => vi.mocked(ActiveGate).mock.calls.at(-1)?.[0];
+
+    it("wires the hook's blink-start callback to ActiveGate", async () => {
+      const onDenialBlinkStart = vi.fn();
+      vi.mocked(useProgramPlay).mockReturnValue({
+        ...mockUseProgramPlay,
+        onDenialBlinkStart,
+      });
+      const { queryClient, wrapper } = createQueryWrapper();
+      queryClient.setQueryData(["programs"], mockPrograms);
+      queryClient.setQueryData(
+        ["programs", "progression", "test-program-id"],
+        mockProgression,
+      );
+      render(<ProgramPlay />, { wrapper });
+      await screen.findByText("Test Program");
+
+      expect(latestGateProps()?.onDenialBlinkStart).toBe(onDenialBlinkStart);
+    });
 
     it("passes denialId through to ActiveGate", async () => {
       await renderActive();
