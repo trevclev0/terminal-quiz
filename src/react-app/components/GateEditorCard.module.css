@@ -61,6 +61,11 @@
 
 .fieldError {
   composes: errorText from "./base.module.css";
+}
+
+/* Overrides errorText's spacing and size inside the tight alias list; the
+ * descendant selector outranks the composed rule regardless of order. */
+.aliasGroup .fieldError {
   margin-top: 0;
   font-size: 0.8em;
 }
@@ -92,6 +97,10 @@
 .aliasInput {
   composes: input from "./base.module.css";
   flex: 1;
+}
+
+/* Lifts input's 180px min-width so a row (input + [x]) fits at 375px. */
+.aliasRow .aliasInput {
   min-width: 0;
 }
 
