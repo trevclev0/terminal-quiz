@@ -279,6 +279,15 @@ describe("findAnswerConflict", () => {
     expect(findAnswerConflict("New York City", ["NYC"])).toBeNull();
     expect(findAnswerConflict("x", [])).toBeNull();
   });
+
+  it("flags a padded, differently cased correct answer", () => {
+    expect(findAnswerConflict(" NYC ", ["nyc"])).toBe(ANSWER_CONFLICT_ERROR);
+  });
+
+  it("leaves a blank correct answer to the required-field rule", () => {
+    expect(findAnswerConflict("", [""])).toBeNull();
+    expect(findAnswerConflict("  ", [" "])).toBeNull();
+  });
 });
 
 describe("guessSchema", () => {
