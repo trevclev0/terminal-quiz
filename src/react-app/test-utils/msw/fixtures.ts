@@ -119,6 +119,7 @@ export const mockGateManagement = (
   acceptanceThreshold: 0.875,
   guidanceEnabled: false,
   guidanceThreshold: 3,
+  acceptedAnswers: [],
   ...overrides,
 });
 

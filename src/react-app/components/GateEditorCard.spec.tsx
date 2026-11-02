@@ -1,6 +1,11 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import {
+  ANSWER_CONFLICT_ERROR,
+  DUPLICATE_ACCEPTED_ANSWER_ERROR,
+  MAX_ACCEPTED_ANSWERS,
+} from "../../shared/validation";
 import GateEditorCard from "./GateEditorCard";
 import type { GateForm } from "./manageEditorTypes";
 
@@ -14,6 +19,7 @@ const draft: GateForm = {
   acceptanceThreshold: 0.875,
   guidanceEnabled: false,
   guidanceThreshold: 3,
+  acceptedAnswers: [],
 };
 
 function setup(overrides: Record<string, unknown> = {}) {
@@ -219,5 +225,171 @@ describe("GateEditorCard", () => {
     expect(
       screen.getByText("Failed to delete: Delete failed"),
     ).toBeInTheDocument();
+  });
+
+  describe("Also accept", () => {
+    const withAliases = (acceptedAnswers: string[], extra = {}) => ({
+      draft: {
+        ...draft,
+        correctAnswer: "New York City",
+        ...extra,
+        acceptedAnswers,
+      },
+    });
+
+    it("shows the group with its helper text and no rows by default", () => {
+      setup();
+
+      expect(
+        screen.getByRole("group", { name: "Also accept" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("Other answers that count as correct"),
+      ).toBeInTheDocument();
+      expect(screen.queryByLabelText(/^Accepted answer/)).toBeNull();
+      expect(
+        screen.getByRole("button", { name: "[+] Add answer" }),
+      ).toBeEnabled();
+    });
+
+    it("renders one labelled input per alias", () => {
+      setup(withAliases(["nyc", "big apple"]));
+
+      expect(screen.getByLabelText("Accepted answer 1")).toHaveValue("nyc");
+      expect(screen.getByLabelText("Accepted answer 2")).toHaveValue(
+        "big apple",
+      );
+      expect(screen.getByLabelText("Remove accepted answer 2")).toBeVisible();
+    });
+
+    it("adds a blank row", async () => {
+      const { onDraftChange } = setup(withAliases(["nyc"]));
+      const user = userEvent.setup();
+
+      await user.click(screen.getByRole("button", { name: "[+] Add answer" }));
+
+      expect(onDraftChange).toHaveBeenCalledWith({
+        acceptedAnswers: ["nyc", ""],
+      });
+    });
+
+    it("focuses the row it just added", () => {
+      const props = {
+        gate,
+        draft: { ...draft, acceptedAnswers: ["nyc"] },
+        index: 0,
+        isFirst: true,
+        isLast: false,
+        isReorderPending: false,
+        isDeletePending: false,
+        savingGateId: null,
+        onReorder: vi.fn(),
+        onSave: vi.fn(),
+        onDelete: vi.fn(),
+        onDraftChange: vi.fn(),
+      };
+      const { rerender } = render(<GateEditorCard {...props} />);
+
+      fireEvent.click(screen.getByRole("button", { name: "[+] Add answer" }));
+      rerender(
+        <GateEditorCard
+          {...props}
+          draft={{ ...draft, acceptedAnswers: ["nyc", ""] }}
+        />,
+      );
+
+      expect(screen.getByLabelText("Accepted answer 2")).toHaveFocus();
+    });
+
+    it("patches only the edited row", () => {
+      const { onDraftChange } = setup(withAliases(["nyc", "big apple"]));
+
+      fireEvent.change(screen.getByLabelText("Accepted answer 2"), {
+        target: { value: "the city" },
+      });
+
+      expect(onDraftChange).toHaveBeenCalledWith({
+        acceptedAnswers: ["nyc", "the city"],
+      });
+    });
+
+    it("removes the chosen row", async () => {
+      const { onDraftChange } = setup(withAliases(["nyc", "big apple"]));
+      const user = userEvent.setup();
+
+      await user.click(screen.getByLabelText("Remove accepted answer 1"));
+
+      expect(onDraftChange).toHaveBeenCalledWith({
+        acceptedAnswers: ["big apple"],
+      });
+    });
+
+    it("disables add at the alias limit", () => {
+      setup(
+        withAliases(
+          Array.from({ length: MAX_ACCEPTED_ANSWERS }, (_, i) => `alias ${i}`),
+        ),
+      );
+
+      expect(
+        screen.getByRole("button", { name: "[+] Add answer" }),
+      ).toBeDisabled();
+    });
+
+    it("enables save for a valid alias", () => {
+      setup(withAliases(["NYC"]));
+
+      expect(screen.getByRole("button", { name: "Save Gate" })).toBeEnabled();
+      expect(screen.getByLabelText("Accepted answer 1")).toHaveAttribute(
+        "aria-invalid",
+        "false",
+      );
+    });
+
+    it("disables save and flags a blank row", () => {
+      setup(withAliases(["nyc", "  "]));
+
+      expect(screen.getByRole("button", { name: "Save Gate" })).toBeDisabled();
+      expect(screen.getByLabelText("Accepted answer 1")).toHaveAttribute(
+        "aria-invalid",
+        "false",
+      );
+      expect(screen.getByLabelText("Accepted answer 2")).toHaveAttribute(
+        "aria-invalid",
+        "true",
+      );
+    });
+
+    it("disables save and flags case-insensitive duplicates", () => {
+      setup(withAliases(["nyc", "NYC"]));
+
+      expect(screen.getByRole("button", { name: "Save Gate" })).toBeDisabled();
+      expect(screen.getByLabelText("Accepted answer 1")).toHaveAttribute(
+        "aria-invalid",
+        "true",
+      );
+      expect(screen.getByLabelText("Accepted answer 2")).toHaveAttribute(
+        "aria-invalid",
+        "true",
+      );
+      expect(
+        screen.getByText(DUPLICATE_ACCEPTED_ANSWER_ERROR),
+      ).toBeInTheDocument();
+    });
+
+    it("disables save and flags an alias equal to the correct answer", () => {
+      setup(withAliases(["nyc", " new york city "]));
+
+      expect(screen.getByRole("button", { name: "Save Gate" })).toBeDisabled();
+      expect(screen.getByLabelText("Accepted answer 1")).toHaveAttribute(
+        "aria-invalid",
+        "false",
+      );
+      expect(screen.getByLabelText("Accepted answer 2")).toHaveAttribute(
+        "aria-invalid",
+        "true",
+      );
+      expect(screen.getByText(ANSWER_CONFLICT_ERROR)).toBeInTheDocument();
+    });
   });
 });

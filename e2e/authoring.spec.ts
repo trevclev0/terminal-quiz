@@ -71,6 +71,45 @@ test.describe("@full", () => {
     expect(await gamePage.isGameComplete()).toBe(true);
   });
 
+  test("accepted answer → saved, reloaded, and solves the gate", async ({
+    page,
+  }) => {
+    await setupAuthBypass(page);
+
+    const managePage = new ManageProgramsPage(page);
+    await managePage.goto();
+    await managePage.waitForLoad();
+
+    const editorPage = await managePage.createProgram("E2E Accepted Answers");
+    createdProgramId = editorPage.programId;
+    await editorPage.waitForLoad();
+
+    await editorPage.addGate({
+      label: "City Gate",
+      question: "Which city never sleeps?",
+      correctAnswer: "New York City",
+      successMessage: "Correct! The city that never sleeps.",
+    });
+    expect(await editorPage.getAcceptedAnswers(0)).toEqual([]);
+
+    await editorPage.addAcceptedAnswer(0, "nyc");
+    await editorPage.saveGate(0);
+
+    // The alias survives a full reload, so it came back from the server.
+    await page.reload();
+    await editorPage.waitForLoad();
+    expect(await editorPage.getAcceptedAnswers(0)).toEqual(["nyc"]);
+
+    await editorPage.clickPlay();
+    const gamePage = new GamePage(page);
+    await gamePage.waitForLoad();
+
+    // Too far from "New York City" to pass on similarity alone.
+    await gamePage.submitAnswer("nyc");
+    await gamePage.waitForVerificationComplete();
+    expect(await gamePage.isGuessSuccessful()).toBe(true);
+  });
+
   test("delete gate → cancel keeps it, confirm removes it", async ({
     page,
   }) => {

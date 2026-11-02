@@ -40,7 +40,8 @@
 }
 
 .input[aria-invalid="true"],
-.textarea[aria-invalid="true"] {
+.textarea[aria-invalid="true"],
+.aliasInput[aria-invalid="true"] {
   border-color: var(--red);
 }
 
@@ -56,6 +57,50 @@
 
 .textarea {
   composes: textarea from "./base.module.css";
+}
+
+.fieldError {
+  composes: errorText from "./base.module.css";
+  margin-top: 0;
+  font-size: 0.8em;
+}
+
+.aliasGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
+}
+
+.aliasLegend {
+  composes: field from "./base.module.css";
+  padding: 0;
+  margin-bottom: 0.25rem;
+}
+
+.aliasRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: stretch;
+}
+
+.aliasInput {
+  composes: input from "./base.module.css";
+  flex: 1;
+  min-width: 0;
+}
+
+.aliasButton {
+  composes: reorderButton;
+}
+
+.aliasAddButton {
+  composes: reorderButton;
 }
 
 .checkboxField {

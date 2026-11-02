@@ -51,6 +51,43 @@ export class ManageProgramEditorPage {
     return labels;
   }
 
+  private gateCard(index: number) {
+    return this.page.locator("[class*='gateCard']").nth(index);
+  }
+
+  /** Adds a row to the gate's "Also accept" list and types `value` into it. */
+  async addAcceptedAnswer(gateIndex: number, value: string): Promise<void> {
+    const card = this.gateCard(gateIndex);
+    await card.getByRole("button", { name: "[+] Add answer" }).click();
+    // Adding focuses the new row, so typing lands in it.
+    await this.page.keyboard.type(value);
+  }
+
+  async getAcceptedAnswers(gateIndex: number): Promise<string[]> {
+    const inputs = this.gateCard(gateIndex).locator(
+      "input[aria-label^='Accepted answer']",
+    );
+    const count = await inputs.count();
+    const values: string[] = [];
+    for (let i = 0; i < count; i++) {
+      values.push(await inputs.nth(i).inputValue());
+    }
+    return values;
+  }
+
+  /** Clicks "Save Gate" on a card and waits for the updateGate request. */
+  async saveGate(gateIndex: number): Promise<void> {
+    const saved = this.page.waitForResponse(
+      (response) =>
+        response.url().includes("/api/graphql") &&
+        (response.request().postData() ?? "").includes("updateGate"),
+    );
+    await this.gateCard(gateIndex)
+      .getByRole("button", { name: "Save Gate" })
+      .click();
+    await saved;
+  }
+
   // ─── Delete confirmation (ConfirmDialog) ───────────────────────────
 
   private deleteDialog() {

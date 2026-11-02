@@ -93,7 +93,7 @@ export const updateProgramInputSchema = z.object({
  * Comparison key for answers: the same normalization `isGuessCloseEnough`
  * applies, so "NYC" and " nyc " count as one answer.
  */
-function normalizeAnswer(value: string): string {
+export function normalizeAnswer(value: string): string {
   return value.trim().toLowerCase();
 }
 
