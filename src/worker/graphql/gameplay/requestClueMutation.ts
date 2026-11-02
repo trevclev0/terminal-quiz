@@ -159,6 +159,7 @@ export const requestClue = {
       context,
       activeGate.question,
       activeGate.correctAnswer,
+      activeGate.acceptedAnswers ?? [],
       currentGuess,
       previousClueTexts,
     );

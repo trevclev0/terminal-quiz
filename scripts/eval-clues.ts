@@ -254,6 +254,7 @@ async function main() {
       recordingAi,
       GATE.question,
       GATE.answer,
+      [],
       evalCase.guess,
       [],
     );

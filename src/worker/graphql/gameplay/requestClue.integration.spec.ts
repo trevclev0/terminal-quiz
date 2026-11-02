@@ -4,6 +4,7 @@ import {
   aiUsage,
   clueRateLimits,
   gateClues,
+  gates,
   sessionProgress,
 } from "@shared/schema";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
@@ -143,8 +144,13 @@ describe("requestClue mutation", () => {
     expect(data.requestClue.cluesRemaining).toBe(2); // MAX=3, 1 used
     expect(data.requestClue.isAiBudgetExhausted).toBe(false);
 
-    // Verify generateClue was called with correct args
+    // Verify generateClue was called with correct args; a gate whose
+    // acceptedAnswers column is NULL passes no aliases.
     expect(vi.mocked(generateClue)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(generateClue).mock.calls[0].slice(2, 4)).toEqual([
+      "blue",
+      [],
+    ]);
 
     // Successful generation counts against the daily AI budget
     expect(await getUsageCount()).toBe(1);
@@ -310,6 +316,40 @@ describe("requestClue mutation", () => {
     expect(response.body.errors?.[0].message).toBe(
       "Invalid state: Program already completed or not started.",
     );
+  });
+
+  it("hands the gate's aliases to clue generation", async () => {
+    // Gate 1 is the seed's only guidance-enabled gate, so it carries the
+    // aliases for this test and is put back afterwards.
+    await db
+      .update(gates)
+      .set({ acceptedAnswers: ["navy", "azure"] })
+      .where(eq(gates.id, E2E_GATE_1_ID));
+    try {
+      const sessionId = makeSessionId("aliases");
+      await insertSession(sessionId, E2E_GATE_1_ID, { attemptCount: 2 });
+
+      const response: GqlResponse = await gqlRequest(REQUEST_CLUE_MUTATION, {
+        sessionId,
+        variables: {
+          programId: E2E_PROGRAM_ID,
+          gateId: E2E_GATE_1_ID,
+          currentGuess: "red",
+        },
+      });
+
+      expect(response.body.errors).toBeUndefined();
+      expect(vi.mocked(generateClue)).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(generateClue).mock.calls[0].slice(2, 4)).toEqual([
+        "blue",
+        ["navy", "azure"],
+      ]);
+    } finally {
+      await db
+        .update(gates)
+        .set({ acceptedAnswers: null })
+        .where(eq(gates.id, E2E_GATE_1_ID));
+    }
   });
 
   it("AI returning null is handled gracefully", async () => {
