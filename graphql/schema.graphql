@@ -65,6 +65,9 @@ type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -128,6 +131,9 @@ type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelationGateCluesR
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -144,6 +150,9 @@ type ClueRateLimitsSessionProgressRelationCurrentGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -173,6 +182,9 @@ type ClueRateLimitsSessionProgressRelationCurrentGateRelationProgramRelationGate
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -224,6 +236,9 @@ type ClueRateLimitsSessionProgressRelationCurrentGateRelationGateCluesRelationGa
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -275,6 +290,9 @@ type ClueRateLimitsSessionProgressRelationGateCluesRelationGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -304,6 +322,9 @@ type ClueRateLimitsSessionProgressRelationGateCluesRelationGateRelationProgramRe
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -364,6 +385,9 @@ type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -393,6 +417,9 @@ type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelationProg
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -444,6 +471,9 @@ type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelationGate
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -553,6 +583,9 @@ type GateCluesSessionProgressRelationProgramRelationGatesRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -592,6 +625,9 @@ type GateCluesSessionProgressRelationCurrentGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -621,6 +657,9 @@ type GateCluesSessionProgressRelationCurrentGateRelationProgramRelationGatesRela
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -692,6 +731,9 @@ type GateCluesSessionProgressRelationCompletedGatesRelationGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -721,6 +763,9 @@ type GateCluesSessionProgressRelationCompletedGatesRelationGateRelationProgramRe
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -781,6 +826,9 @@ type GateCluesGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -810,6 +858,9 @@ type GateCluesGateRelationProgramRelationGatesRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -848,6 +899,9 @@ type GatesSelectItem {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -877,6 +931,9 @@ type GatesProgramRelationGatesRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -944,6 +1001,9 @@ type GatesGateCluesRelationSessionProgressRelationProgramRelationGatesRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -960,6 +1020,9 @@ type GatesGateCluesRelationSessionProgressRelationCurrentGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1020,6 +1083,9 @@ type GatesGateCluesRelationSessionProgressRelationCompletedGatesRelationGateRela
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1069,6 +1135,9 @@ type GatesGateCluesRelationGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1085,6 +1154,9 @@ type GatesItem {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1112,6 +1184,9 @@ type ProgramsGatesRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1190,6 +1265,9 @@ type ProgramsGatesRelationGateCluesRelationSessionProgressRelationCurrentGateRel
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1250,6 +1328,9 @@ type ProgramsGatesRelationGateCluesRelationSessionProgressRelationCompletedGates
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1299,6 +1380,9 @@ type ProgramsGatesRelationGateCluesRelationGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1374,6 +1458,9 @@ type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1437,6 +1524,9 @@ type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRelationGat
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1453,6 +1543,9 @@ type SessionCompletedGatesSessionProgressRelationCurrentGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1482,6 +1575,9 @@ type SessionCompletedGatesSessionProgressRelationCurrentGateRelationProgramRelat
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1533,6 +1629,9 @@ type SessionCompletedGatesSessionProgressRelationCurrentGateRelationGateCluesRel
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1584,6 +1683,9 @@ type SessionCompletedGatesSessionProgressRelationGateCluesRelationGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1613,6 +1715,9 @@ type SessionCompletedGatesSessionProgressRelationGateCluesRelationGateRelationPr
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1682,6 +1787,9 @@ type SessionCompletedGatesGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1711,6 +1819,9 @@ type SessionCompletedGatesGateRelationProgramRelationGatesRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1778,6 +1889,9 @@ type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationPr
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1794,6 +1908,9 @@ type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationCu
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1863,6 +1980,9 @@ type SessionCompletedGatesGateRelationGateCluesRelationGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1926,6 +2046,9 @@ type SessionProgressProgramRelationGatesRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -1989,6 +2112,9 @@ type SessionProgressProgramRelationGatesRelationGateCluesRelationGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -2005,6 +2131,9 @@ type SessionProgressCurrentGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -2034,6 +2163,9 @@ type SessionProgressCurrentGateRelationProgramRelationGatesRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -2085,6 +2217,9 @@ type SessionProgressCurrentGateRelationGateCluesRelationGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -2136,6 +2271,9 @@ type SessionProgressGateCluesRelationGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -2165,6 +2303,9 @@ type SessionProgressGateCluesRelationGateRelationProgramRelationGatesRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -2225,6 +2366,9 @@ type SessionProgressCompletedGatesRelationGateRelation {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -2254,6 +2398,9 @@ type SessionProgressCompletedGatesRelationGateRelationProgramRelationGatesRelati
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -2305,6 +2452,9 @@ type SessionProgressCompletedGatesRelationGateRelationGateCluesRelationGateRelat
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -3376,6 +3526,9 @@ input GatesInsertInput {
   label: String!
   question: String!
   correctAnswer: String!
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String!
   acceptanceThreshold: Float
   guidanceEnabled: Boolean
@@ -3392,6 +3545,9 @@ input GatesUpdateInput {
   label: String
   question: String
   correctAnswer: String
+
+  """JSON"""
+  acceptedAnswers: String
   successMessage: String
   acceptanceThreshold: Float
   guidanceEnabled: Boolean
@@ -3408,6 +3564,7 @@ input GatesFilters {
   label: GatesLabelFilters
   question: GatesQuestionFilters
   correctAnswer: GatesCorrectAnswerFilters
+  acceptedAnswers: GatesAcceptedAnswersFilters
   successMessage: GatesSuccessMessageFilters
   acceptanceThreshold: GatesAcceptanceThresholdFilters
   guidanceEnabled: GatesGuidanceEnabledFilters
@@ -3627,6 +3784,71 @@ input GatesCorrectAnswerfiltersOr {
   inArray: [String!]
 
   """Array<undefined>"""
+  notInArray: [String!]
+  isNull: Boolean
+  isNotNull: Boolean
+}
+
+input GatesAcceptedAnswersFilters {
+  """JSON"""
+  eq: String
+
+  """JSON"""
+  ne: String
+
+  """JSON"""
+  lt: String
+
+  """JSON"""
+  lte: String
+
+  """JSON"""
+  gt: String
+
+  """JSON"""
+  gte: String
+  like: String
+  notLike: String
+  ilike: String
+  notIlike: String
+
+  """Array<JSON>"""
+  inArray: [String!]
+
+  """Array<JSON>"""
+  notInArray: [String!]
+  isNull: Boolean
+  isNotNull: Boolean
+  OR: [GatesAcceptedAnswersfiltersOr!]
+}
+
+input GatesAcceptedAnswersfiltersOr {
+  """JSON"""
+  eq: String
+
+  """JSON"""
+  ne: String
+
+  """JSON"""
+  lt: String
+
+  """JSON"""
+  lte: String
+
+  """JSON"""
+  gt: String
+
+  """JSON"""
+  gte: String
+  like: String
+  notLike: String
+  ilike: String
+  notIlike: String
+
+  """Array<JSON>"""
+  inArray: [String!]
+
+  """Array<JSON>"""
   notInArray: [String!]
   isNull: Boolean
   isNotNull: Boolean
@@ -3918,6 +4140,7 @@ input GatesFiltersOr {
   label: GatesLabelFilters
   question: GatesQuestionFilters
   correctAnswer: GatesCorrectAnswerFilters
+  acceptedAnswers: GatesAcceptedAnswersFilters
   successMessage: GatesSuccessMessageFilters
   acceptanceThreshold: GatesAcceptanceThresholdFilters
   guidanceEnabled: GatesGuidanceEnabledFilters
@@ -3932,6 +4155,7 @@ input GatesOrderBy {
   label: InnerOrder
   question: InnerOrder
   correctAnswer: InnerOrder
+  acceptedAnswers: InnerOrder
   successMessage: InnerOrder
   acceptanceThreshold: InnerOrder
   guidanceEnabled: InnerOrder
@@ -5135,6 +5359,7 @@ type GateManagement {
   label: String!
   question: String!
   correctAnswer: String!
+  acceptedAnswers: [String!]!
   successMessage: String!
   acceptanceThreshold: Float!
   guidanceEnabled: Boolean!
@@ -5176,8 +5401,8 @@ type Mutation {
   createProgram(name: String!, visibility: String): ProgramManagement
   updateProgram(id: String!, name: String, visibility: String): ProgramManagement
   deleteProgram(id: String!): Boolean!
-  createGate(programId: String!, label: String!, question: String!, correctAnswer: String!, successMessage: String!, sequenceOrder: Int!, acceptanceThreshold: Float, guidanceEnabled: Boolean, guidanceThreshold: Int): GateManagement
-  updateGate(id: String!, label: String, question: String, correctAnswer: String, successMessage: String, sequenceOrder: Int, acceptanceThreshold: Float, guidanceEnabled: Boolean, guidanceThreshold: Int): GateManagement
+  createGate(programId: String!, label: String!, question: String!, correctAnswer: String!, acceptedAnswers: [String!], successMessage: String!, sequenceOrder: Int!, acceptanceThreshold: Float, guidanceEnabled: Boolean, guidanceThreshold: Int): GateManagement
+  updateGate(id: String!, label: String, question: String, correctAnswer: String, acceptedAnswers: [String!], successMessage: String, sequenceOrder: Int, acceptanceThreshold: Float, guidanceEnabled: Boolean, guidanceThreshold: Int): GateManagement
   deleteGate(id: String!): Boolean!
   reorderGates(programId: String!, orderedGateIds: [String!]!): Boolean!
 }

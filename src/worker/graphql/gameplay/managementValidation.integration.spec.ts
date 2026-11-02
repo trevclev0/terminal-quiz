@@ -1,11 +1,16 @@
 import { env } from "cloudflare:workers";
 import {
   CREATE_GATE_MUTATION,
+  PROGRAM_GATES_QUERY,
   UPDATE_GATE_MUTATION,
   UPDATE_PROGRAM_MUTATION,
 } from "@shared/gqlQueries";
 import { gates, programs } from "@shared/schema";
-import { RESERVED_ANSWER_ERROR } from "@shared/validation";
+import {
+  ANSWER_CONFLICT_ERROR,
+  RESERVED_ALIAS_ERROR,
+  RESERVED_ANSWER_ERROR,
+} from "@shared/validation";
 import { invalidateCachedSchema } from "@worker-routes/graphql";
 import { type GqlResponse, gqlRequest } from "@worker-test-utils/gqlRequest";
 import { setupTestDb } from "@worker-test-utils/setupDb";
@@ -142,5 +147,202 @@ describe("management mutations validate with the shared schemas", () => {
       .from(programs)
       .where(eq(programs.id, programId));
     expect(program).toMatchObject({ name: "Renamed", visibility: "unlisted" });
+  });
+});
+
+describe("accepted-answer aliases over the management API", () => {
+  beforeAll(async () => {
+    await setupTestDb();
+  });
+
+  beforeEach(() => {
+    invalidateCachedSchema();
+  });
+
+  async function listedAliases(programId: string) {
+    const response = await gqlRequest(PROGRAM_GATES_QUERY, {
+      ...AUTH,
+      variables: { programId },
+    });
+    expect(response.body.errors).toBeUndefined();
+    const data = response.body.data as {
+      programGates: { id: string; acceptedAnswers: string[] }[];
+    };
+    return new Map(
+      data.programGates.map((gate) => [gate.id, gate.acceptedAnswers]),
+    );
+  }
+
+  function createVariables(programId: string, overrides = {}) {
+    return {
+      programId,
+      label: "Second",
+      question: "Q?",
+      correctAnswer: "NYC",
+      successMessage: "OK",
+      sequenceOrder: 2,
+      ...overrides,
+    };
+  }
+
+  async function storeAliases(gateId: string, aliases: string[]) {
+    await db
+      .update(gates)
+      .set({ acceptedAnswers: aliases })
+      .where(eq(gates.id, gateId));
+  }
+
+  it("createGate stores trimmed aliases that programGates lists", async () => {
+    const { programId } = await insertOwnedProgram("public");
+
+    const response = await gqlRequest(CREATE_GATE_MUTATION, {
+      ...AUTH,
+      variables: createVariables(programId, {
+        correctAnswer: "New York City",
+        acceptedAnswers: [" NYC ", "New York"],
+      }),
+    });
+
+    expect(response.body.errors).toBeUndefined();
+    const created = (response.body.data as { createGate: { id: string } })
+      .createGate;
+    expect((await listedAliases(programId)).get(created.id)).toEqual([
+      "NYC",
+      "New York",
+    ]);
+  });
+
+  it("lists [] for gates created without aliases and for NULL rows", async () => {
+    const { programId, gateId } = await insertOwnedProgram("public");
+
+    const response = await gqlRequest(CREATE_GATE_MUTATION, {
+      ...AUTH,
+      variables: createVariables(programId),
+    });
+
+    expect(response.body.errors).toBeUndefined();
+    const created = (response.body.data as { createGate: { id: string } })
+      .createGate;
+    const listed = await listedAliases(programId);
+    expect(listed.get(created.id)).toEqual([]);
+    expect(listed.get(gateId)).toEqual([]);
+    expect((await readGate(gateId)).acceptedAnswers).toBeNull();
+  });
+
+  it("updateGate replaces the list wholesale and [] clears it", async () => {
+    const { programId, gateId } = await insertOwnedProgram("public");
+
+    await gqlRequest(UPDATE_GATE_MUTATION, {
+      ...AUTH,
+      variables: { id: gateId, acceptedAnswers: ["four"] },
+    });
+    expect((await listedAliases(programId)).get(gateId)).toEqual(["four"]);
+
+    const cleared = await gqlRequest(UPDATE_GATE_MUTATION, {
+      ...AUTH,
+      variables: { id: gateId, acceptedAnswers: [] },
+    });
+    expect(cleared.body.errors).toBeUndefined();
+    expect((await listedAliases(programId)).get(gateId)).toEqual([]);
+    expect((await readGate(gateId)).acceptedAnswers).toEqual([]);
+  });
+
+  it("updateGate without acceptedAnswers leaves stored aliases alone", async () => {
+    const { programId, gateId } = await insertOwnedProgram("public");
+    await storeAliases(gateId, ["four"]);
+
+    const omitted = await gqlRequest(UPDATE_GATE_MUTATION, {
+      ...AUTH,
+      variables: { id: gateId, label: "Renamed" },
+    });
+    expect(omitted.body.errors).toBeUndefined();
+
+    const explicitNull = await gqlRequest(UPDATE_GATE_MUTATION, {
+      ...AUTH,
+      variables: { id: gateId, label: "Again", acceptedAnswers: null },
+    });
+    expect(explicitNull.body.errors).toBeUndefined();
+
+    expect((await listedAliases(programId)).get(gateId)).toEqual(["four"]);
+  });
+
+  it("createGate rejects an alias equal to correctAnswer", async () => {
+    const { programId } = await insertOwnedProgram("public");
+
+    const response = await gqlRequest(CREATE_GATE_MUTATION, {
+      ...AUTH,
+      variables: createVariables(programId, { acceptedAnswers: ["nyc"] }),
+    });
+
+    expect(firstError(response)).toBe(ANSWER_CONFLICT_ERROR);
+    const stored = await db
+      .select()
+      .from(gates)
+      .where(eq(gates.programId, programId));
+    expect(stored).toHaveLength(1);
+  });
+
+  it("updateGate rejects a new correctAnswer that matches a stored alias", async () => {
+    const { gateId } = await insertOwnedProgram("public");
+    await storeAliases(gateId, ["four"]);
+
+    const response = await gqlRequest(UPDATE_GATE_MUTATION, {
+      ...AUTH,
+      variables: { id: gateId, correctAnswer: "FOUR" },
+    });
+
+    expect(firstError(response)).toBe(ANSWER_CONFLICT_ERROR);
+    expect((await readGate(gateId)).correctAnswer).toBe("answer");
+  });
+
+  it("updateGate rejects new aliases that match the stored correctAnswer", async () => {
+    const { gateId } = await insertOwnedProgram("public");
+    await db
+      .update(gates)
+      .set({ correctAnswer: "4" })
+      .where(eq(gates.id, gateId));
+
+    const response = await gqlRequest(UPDATE_GATE_MUTATION, {
+      ...AUTH,
+      variables: { id: gateId, acceptedAnswers: [" 4"] },
+    });
+
+    expect(firstError(response)).toBe(ANSWER_CONFLICT_ERROR);
+    expect((await readGate(gateId)).acceptedAnswers).toBeNull();
+  });
+
+  it("rejects a reserved command as an alias", async () => {
+    const { gateId } = await insertOwnedProgram("public");
+
+    const response = await gqlRequest(UPDATE_GATE_MUTATION, {
+      ...AUTH,
+      variables: { id: gateId, acceptedAnswers: ["/clue"] },
+    });
+
+    expect(firstError(response)).toBe(RESERVED_ALIAS_ERROR);
+    expect((await readGate(gateId)).acceptedAnswers).toBeNull();
+  });
+
+  it("rejects a non-owner's alias update before any answer check", async () => {
+    const { programId, gateId } = await insertOwnedProgram("public");
+    await storeAliases(gateId, ["four"]);
+    // An unowned (NULL authorId) program is editable by no one, so the
+    // conflicting correctAnswer must surface the ownership error instead.
+    await db
+      .update(programs)
+      .set({ authorId: null })
+      .where(eq(programs.id, programId));
+
+    const response = await gqlRequest(UPDATE_GATE_MUTATION, {
+      ...AUTH,
+      variables: {
+        id: gateId,
+        correctAnswer: "four",
+        acceptedAnswers: ["five"],
+      },
+    });
+
+    expect(firstError(response)).toContain("do not own");
+    expect((await readGate(gateId)).acceptedAnswers).toEqual(["four"]);
   });
 });
