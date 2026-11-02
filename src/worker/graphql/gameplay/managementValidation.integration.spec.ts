@@ -323,26 +323,31 @@ describe("accepted-answer aliases over the management API", () => {
     expect((await readGate(gateId)).acceptedAnswers).toBeNull();
   });
 
-  it("rejects a non-owner's alias update before any answer check", async () => {
+  it("rejects a non-owner's update before any answer check", async () => {
     const { programId, gateId } = await insertOwnedProgram("public");
     await storeAliases(gateId, ["four"]);
-    // An unowned (NULL authorId) program is editable by no one, so the
-    // conflicting correctAnswer must surface the ownership error instead.
+    // An unowned (NULL authorId) program is editable by no one. Each request
+    // below would raise the conflict error if the answer check ran first, so
+    // seeing "do not own" proves authorization comes before it and a
+    // non-owner cannot probe the stored answers.
     await db
       .update(programs)
       .set({ authorId: null })
       .where(eq(programs.id, programId));
 
-    const response = await gqlRequest(UPDATE_GATE_MUTATION, {
+    const againstStoredAlias = await gqlRequest(UPDATE_GATE_MUTATION, {
       ...AUTH,
-      variables: {
-        id: gateId,
-        correctAnswer: "four",
-        acceptedAnswers: ["five"],
-      },
+      variables: { id: gateId, correctAnswer: "four" },
+    });
+    const againstStoredAnswer = await gqlRequest(UPDATE_GATE_MUTATION, {
+      ...AUTH,
+      variables: { id: gateId, acceptedAnswers: ["answer"] },
     });
 
-    expect(firstError(response)).toContain("do not own");
-    expect((await readGate(gateId)).acceptedAnswers).toEqual(["four"]);
+    expect(firstError(againstStoredAlias)).toContain("do not own");
+    expect(firstError(againstStoredAnswer)).toContain("do not own");
+    const stored = await readGate(gateId);
+    expect(stored.correctAnswer).toBe("answer");
+    expect(stored.acceptedAnswers).toEqual(["four"]);
   });
 });
