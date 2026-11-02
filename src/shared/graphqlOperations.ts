@@ -120,6 +120,7 @@ export const PROGRAM_GATES_QUERY_OPERATION =
       label
       question
       correctAnswer
+      acceptedAnswers
       successMessage
       acceptanceThreshold
       guidanceEnabled
@@ -196,6 +197,7 @@ export const CREATE_GATE_MUTATION_OPERATION =
     $label: String!
     $question: String!
     $correctAnswer: String!
+    $acceptedAnswers: [String!]
     $successMessage: String!
     $sequenceOrder: Int!
     $acceptanceThreshold: Float
@@ -207,6 +209,7 @@ export const CREATE_GATE_MUTATION_OPERATION =
       label: $label
       question: $question
       correctAnswer: $correctAnswer
+      acceptedAnswers: $acceptedAnswers
       successMessage: $successMessage
       sequenceOrder: $sequenceOrder
       acceptanceThreshold: $acceptanceThreshold
@@ -230,6 +233,7 @@ export const UPDATE_GATE_MUTATION_OPERATION =
     $label: String
     $question: String
     $correctAnswer: String
+    $acceptedAnswers: [String!]
     $successMessage: String
     $sequenceOrder: Int
     $acceptanceThreshold: Float
@@ -241,6 +245,7 @@ export const UPDATE_GATE_MUTATION_OPERATION =
       label: $label
       question: $question
       correctAnswer: $correctAnswer
+      acceptedAnswers: $acceptedAnswers
       successMessage: $successMessage
       sequenceOrder: $sequenceOrder
       acceptanceThreshold: $acceptanceThreshold

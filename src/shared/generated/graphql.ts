@@ -478,6 +478,8 @@ export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationSessionPr
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -530,6 +532,8 @@ export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelat
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelationGateCluesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -581,6 +585,8 @@ export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelat
 
 export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationGateRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -614,6 +620,8 @@ export type ClueRateLimitsSessionProgressRelationCompletedGatesRelationSessionPr
 
 export type ClueRateLimitsSessionProgressRelationCurrentGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -666,6 +674,8 @@ export type ClueRateLimitsSessionProgressRelationCurrentGateRelationGateCluesRel
 
 export type ClueRateLimitsSessionProgressRelationCurrentGateRelationGateCluesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -717,6 +727,8 @@ export type ClueRateLimitsSessionProgressRelationCurrentGateRelationProgramRelat
 
 export type ClueRateLimitsSessionProgressRelationCurrentGateRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -754,6 +766,8 @@ export type ClueRateLimitsSessionProgressRelationGateCluesRelationSessionProgres
 
 export type ClueRateLimitsSessionProgressRelationGateCluesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -812,6 +826,8 @@ export type ClueRateLimitsSessionProgressRelationGateCluesRelationGateRelationPr
 
 export type ClueRateLimitsSessionProgressRelationGateCluesRelationGateRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -863,6 +879,8 @@ export type ClueRateLimitsSessionProgressRelationProgramRelationGatesArgs = {
 
 export type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -915,6 +933,8 @@ export type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelationGat
 
 export type ClueRateLimitsSessionProgressRelationProgramRelationGatesRelationGateCluesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -1408,6 +1428,8 @@ export type GateCluesGateIdfiltersOr = {
 
 export type GateCluesGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -1466,6 +1488,8 @@ export type GateCluesGateRelationProgramRelationGatesArgs = {
 
 export type GateCluesGateRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -1687,6 +1711,8 @@ export type GateCluesSessionProgressRelationCompletedGatesRelationSessionProgres
 
 export type GateCluesSessionProgressRelationCompletedGatesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -1745,6 +1771,8 @@ export type GateCluesSessionProgressRelationCompletedGatesRelationGateRelationPr
 
 export type GateCluesSessionProgressRelationCompletedGatesRelationGateRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -1778,6 +1806,8 @@ export type GateCluesSessionProgressRelationCompletedGatesRelationSessionProgres
 
 export type GateCluesSessionProgressRelationCurrentGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -1836,6 +1866,8 @@ export type GateCluesSessionProgressRelationCurrentGateRelationProgramRelationGa
 
 export type GateCluesSessionProgressRelationCurrentGateRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -1879,6 +1911,8 @@ export type GateCluesSessionProgressRelationProgramRelationGatesArgs = {
 
 export type GateCluesSessionProgressRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -1971,6 +2005,7 @@ export type GateCluesUpdateInput = {
 
 export type GateManagement = {
   acceptanceThreshold: Scalars['Float']['output'];
+  acceptedAnswers: Array<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   guidanceEnabled: Scalars['Boolean']['output'];
   guidanceThreshold: Scalars['Int']['output'];
@@ -2018,6 +2053,57 @@ export type GatesAcceptanceThresholdfiltersOr = {
   notIlike?: InputMaybe<Scalars['String']['input']>;
   /** Array<undefined> */
   notInArray?: InputMaybe<Array<Scalars['Float']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type GatesAcceptedAnswersFilters = {
+  OR?: InputMaybe<Array<GatesAcceptedAnswersfiltersOr>>;
+  /** JSON */
+  eq?: InputMaybe<Scalars['String']['input']>;
+  /** JSON */
+  gt?: InputMaybe<Scalars['String']['input']>;
+  /** JSON */
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<JSON> */
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  /** JSON */
+  lt?: InputMaybe<Scalars['String']['input']>;
+  /** JSON */
+  lte?: InputMaybe<Scalars['String']['input']>;
+  /** JSON */
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<JSON> */
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type GatesAcceptedAnswersfiltersOr = {
+  /** JSON */
+  eq?: InputMaybe<Scalars['String']['input']>;
+  /** JSON */
+  gt?: InputMaybe<Scalars['String']['input']>;
+  /** JSON */
+  gte?: InputMaybe<Scalars['String']['input']>;
+  ilike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<JSON> */
+  inArray?: InputMaybe<Array<Scalars['String']['input']>>;
+  isNotNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
+  /** JSON */
+  lt?: InputMaybe<Scalars['String']['input']>;
+  /** JSON */
+  lte?: InputMaybe<Scalars['String']['input']>;
+  /** JSON */
+  ne?: InputMaybe<Scalars['String']['input']>;
+  notIlike?: InputMaybe<Scalars['String']['input']>;
+  /** Array<JSON> */
+  notInArray?: InputMaybe<Array<Scalars['String']['input']>>;
   notLike?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -2114,6 +2200,7 @@ export type GatesCreatedAtfiltersOr = {
 export type GatesFilters = {
   OR?: InputMaybe<Array<GatesFiltersOr>>;
   acceptanceThreshold?: InputMaybe<GatesAcceptanceThresholdFilters>;
+  acceptedAnswers?: InputMaybe<GatesAcceptedAnswersFilters>;
   correctAnswer?: InputMaybe<GatesCorrectAnswerFilters>;
   createdAt?: InputMaybe<GatesCreatedAtFilters>;
   guidanceEnabled?: InputMaybe<GatesGuidanceEnabledFilters>;
@@ -2128,6 +2215,7 @@ export type GatesFilters = {
 
 export type GatesFiltersOr = {
   acceptanceThreshold?: InputMaybe<GatesAcceptanceThresholdFilters>;
+  acceptedAnswers?: InputMaybe<GatesAcceptedAnswersFilters>;
   correctAnswer?: InputMaybe<GatesCorrectAnswerFilters>;
   createdAt?: InputMaybe<GatesCreatedAtFilters>;
   guidanceEnabled?: InputMaybe<GatesGuidanceEnabledFilters>;
@@ -2164,6 +2252,8 @@ export type GatesGateCluesRelationSessionProgressArgs = {
 
 export type GatesGateCluesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -2256,6 +2346,8 @@ export type GatesGateCluesRelationSessionProgressRelationCompletedGatesRelationS
 
 export type GatesGateCluesRelationSessionProgressRelationCompletedGatesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -2289,6 +2381,8 @@ export type GatesGateCluesRelationSessionProgressRelationCompletedGatesRelationS
 
 export type GatesGateCluesRelationSessionProgressRelationCurrentGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -2332,6 +2426,8 @@ export type GatesGateCluesRelationSessionProgressRelationProgramRelationGatesArg
 
 export type GatesGateCluesRelationSessionProgressRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -2497,6 +2593,8 @@ export type GatesIdfiltersOr = {
 
 export type GatesInsertInput = {
   acceptanceThreshold?: InputMaybe<Scalars['Float']['input']>;
+  /** JSON */
+  acceptedAnswers?: InputMaybe<Scalars['String']['input']>;
   correctAnswer: Scalars['String']['input'];
   /** Date */
   createdAt?: InputMaybe<Scalars['String']['input']>;
@@ -2512,6 +2610,8 @@ export type GatesInsertInput = {
 
 export type GatesItem = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -2566,6 +2666,7 @@ export type GatesLabelfiltersOr = {
 
 export type GatesOrderBy = {
   acceptanceThreshold?: InputMaybe<InnerOrder>;
+  acceptedAnswers?: InputMaybe<InnerOrder>;
   correctAnswer?: InputMaybe<InnerOrder>;
   createdAt?: InputMaybe<InnerOrder>;
   guidanceEnabled?: InputMaybe<InnerOrder>;
@@ -2637,6 +2738,8 @@ export type GatesProgramRelationGatesArgs = {
 
 export type GatesProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -2691,6 +2794,8 @@ export type GatesQuestionfiltersOr = {
 
 export type GatesSelectItem = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -2799,6 +2904,8 @@ export type GatesSuccessMessagefiltersOr = {
 
 export type GatesUpdateInput = {
   acceptanceThreshold?: InputMaybe<Scalars['Float']['input']>;
+  /** JSON */
+  acceptedAnswers?: InputMaybe<Scalars['String']['input']>;
   correctAnswer?: InputMaybe<Scalars['String']['input']>;
   /** Date */
   createdAt?: InputMaybe<Scalars['String']['input']>;
@@ -2841,6 +2948,7 @@ export type Mutation = {
 
 export type MutationCreateGateArgs = {
   acceptanceThreshold?: InputMaybe<Scalars['Float']['input']>;
+  acceptedAnswers?: InputMaybe<Array<Scalars['String']['input']>>;
   correctAnswer: Scalars['String']['input'];
   guidanceEnabled?: InputMaybe<Scalars['Boolean']['input']>;
   guidanceThreshold?: InputMaybe<Scalars['Int']['input']>;
@@ -2895,6 +3003,7 @@ export type MutationSubmitGuessArgs = {
 
 export type MutationUpdateGateArgs = {
   acceptanceThreshold?: InputMaybe<Scalars['Float']['input']>;
+  acceptedAnswers?: InputMaybe<Array<Scalars['String']['input']>>;
   correctAnswer?: InputMaybe<Scalars['String']['input']>;
   guidanceEnabled?: InputMaybe<Scalars['Boolean']['input']>;
   guidanceThreshold?: InputMaybe<Scalars['Int']['input']>;
@@ -3044,6 +3153,8 @@ export type ProgramsFiltersOr = {
 
 export type ProgramsGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -3096,6 +3207,8 @@ export type ProgramsGatesRelationGateCluesRelationSessionProgressArgs = {
 
 export type ProgramsGatesRelationGateCluesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -3188,6 +3301,8 @@ export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationComplet
 
 export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationCompletedGatesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -3221,6 +3336,8 @@ export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationComplet
 
 export type ProgramsGatesRelationGateCluesRelationSessionProgressRelationCurrentGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -3620,6 +3737,8 @@ export type SessionCompletedGatesGateIdfiltersOr = {
 
 export type SessionCompletedGatesGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -3672,6 +3791,8 @@ export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressArg
 
 export type SessionCompletedGatesGateRelationGateCluesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -3752,6 +3873,8 @@ export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRel
 
 export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationCurrentGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -3795,6 +3918,8 @@ export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRel
 
 export type SessionCompletedGatesGateRelationGateCluesRelationSessionProgressRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -3861,6 +3986,8 @@ export type SessionCompletedGatesGateRelationProgramRelationGatesArgs = {
 
 export type SessionCompletedGatesGateRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -4062,6 +4189,8 @@ export type SessionCompletedGatesSessionProgressRelationCompletedGatesRelation =
 
 export type SessionCompletedGatesSessionProgressRelationCurrentGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -4114,6 +4243,8 @@ export type SessionCompletedGatesSessionProgressRelationCurrentGateRelationGateC
 
 export type SessionCompletedGatesSessionProgressRelationCurrentGateRelationGateCluesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -4165,6 +4296,8 @@ export type SessionCompletedGatesSessionProgressRelationCurrentGateRelationProgr
 
 export type SessionCompletedGatesSessionProgressRelationCurrentGateRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -4202,6 +4335,8 @@ export type SessionCompletedGatesSessionProgressRelationGateCluesRelationSession
 
 export type SessionCompletedGatesSessionProgressRelationGateCluesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -4260,6 +4395,8 @@ export type SessionCompletedGatesSessionProgressRelationGateCluesRelationGateRel
 
 export type SessionCompletedGatesSessionProgressRelationGateCluesRelationGateRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -4311,6 +4448,8 @@ export type SessionCompletedGatesSessionProgressRelationProgramRelationGatesArgs
 
 export type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -4363,6 +4502,8 @@ export type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRela
 
 export type SessionCompletedGatesSessionProgressRelationProgramRelationGatesRelationGateCluesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -4556,6 +4697,8 @@ export type SessionProgressCompletedGatesRelationSessionProgressArgs = {
 
 export type SessionProgressCompletedGatesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -4608,6 +4751,8 @@ export type SessionProgressCompletedGatesRelationGateRelationGateCluesRelationSe
 
 export type SessionProgressCompletedGatesRelationGateRelationGateCluesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -4659,6 +4804,8 @@ export type SessionProgressCompletedGatesRelationGateRelationProgramRelationGate
 
 export type SessionProgressCompletedGatesRelationGateRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -4731,6 +4878,8 @@ export type SessionProgressCurrentGateIdfiltersOr = {
 
 export type SessionProgressCurrentGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -4783,6 +4932,8 @@ export type SessionProgressCurrentGateRelationGateCluesRelationSessionProgressAr
 
 export type SessionProgressCurrentGateRelationGateCluesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -4834,6 +4985,8 @@ export type SessionProgressCurrentGateRelationProgramRelationGatesArgs = {
 
 export type SessionProgressCurrentGateRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -4900,6 +5053,8 @@ export type SessionProgressGateCluesRelationSessionProgressArgs = {
 
 export type SessionProgressGateCluesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -4958,6 +5113,8 @@ export type SessionProgressGateCluesRelationGateRelationProgramRelationGatesArgs
 
 export type SessionProgressGateCluesRelationGateRelationProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -5137,6 +5294,8 @@ export type SessionProgressProgramRelationGatesArgs = {
 
 export type SessionProgressProgramRelationGatesRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -5189,6 +5348,8 @@ export type SessionProgressProgramRelationGatesRelationGateCluesRelationSessionP
 
 export type SessionProgressProgramRelationGatesRelationGateCluesRelationGateRelation = {
   acceptanceThreshold: Scalars['Float']['output'];
+  /** JSON */
+  acceptedAnswers: Maybe<Scalars['String']['output']>;
   correctAnswer: Scalars['String']['output'];
   /** Date */
   createdAt: Scalars['String']['output'];
@@ -5668,7 +5829,7 @@ export type ProgramGatesQueryVariables = Exact<{
 }>;
 
 
-export type ProgramGatesQuery = { programGates: Array<{ id: string, programId: string, sequenceOrder: number, label: string, question: string, correctAnswer: string, successMessage: string, acceptanceThreshold: number, guidanceEnabled: boolean, guidanceThreshold: number }> };
+export type ProgramGatesQuery = { programGates: Array<{ id: string, programId: string, sequenceOrder: number, label: string, question: string, correctAnswer: string, acceptedAnswers: Array<string>, successMessage: string, acceptanceThreshold: number, guidanceEnabled: boolean, guidanceThreshold: number }> };
 
 export type MyProgramsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -5709,6 +5870,7 @@ export type CreateGateMutationVariables = Exact<{
   label: string;
   question: string;
   correctAnswer: string;
+  acceptedAnswers?: Array<string> | string | null | undefined;
   successMessage: string;
   sequenceOrder: number;
   acceptanceThreshold?: number | null | undefined;
@@ -5724,6 +5886,7 @@ export type UpdateGateMutationVariables = Exact<{
   label?: string | null | undefined;
   question?: string | null | undefined;
   correctAnswer?: string | null | undefined;
+  acceptedAnswers?: Array<string> | string | null | undefined;
   successMessage?: string | null | undefined;
   sequenceOrder?: number | null | undefined;
   acceptanceThreshold?: number | null | undefined;
@@ -5757,13 +5920,13 @@ export const GetProgramsDocument = {"kind":"Document","definitions":[{"kind":"Op
 export const GetProgramProgressionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetProgramProgression"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getProgramProgression"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currentGate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}}]}},{"kind":"Field","name":{"kind":"Name","value":"completedGates"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}},{"kind":"Field","name":{"kind":"Name","value":"correctAnswer"}},{"kind":"Field","name":{"kind":"Name","value":"successMessage"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalGates"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"stats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalGuesses"}},{"kind":"Field","name":{"kind":"Name","value":"cluesUsed"}},{"kind":"Field","name":{"kind":"Name","value":"elapsedSeconds"}}]}}]}}]}}]} as unknown as DocumentNode<GetProgramProgressionQuery, GetProgramProgressionQueryVariables>;
 export const GetInProgressProgramDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetInProgressProgram"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getInProgressProgram"}}]}}]} as unknown as DocumentNode<GetInProgressProgramQuery, GetInProgressProgramQueryVariables>;
 export const ProgramDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Program"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"program"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]} as unknown as DocumentNode<ProgramQuery, ProgramQueryVariables>;
-export const ProgramGatesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ProgramGates"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"programGates"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"programId"}},{"kind":"Field","name":{"kind":"Name","value":"sequenceOrder"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}},{"kind":"Field","name":{"kind":"Name","value":"correctAnswer"}},{"kind":"Field","name":{"kind":"Name","value":"successMessage"}},{"kind":"Field","name":{"kind":"Name","value":"acceptanceThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"guidanceEnabled"}},{"kind":"Field","name":{"kind":"Name","value":"guidanceThreshold"}}]}}]}}]} as unknown as DocumentNode<ProgramGatesQuery, ProgramGatesQueryVariables>;
+export const ProgramGatesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ProgramGates"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"programGates"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"programId"}},{"kind":"Field","name":{"kind":"Name","value":"sequenceOrder"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}},{"kind":"Field","name":{"kind":"Name","value":"correctAnswer"}},{"kind":"Field","name":{"kind":"Name","value":"acceptedAnswers"}},{"kind":"Field","name":{"kind":"Name","value":"successMessage"}},{"kind":"Field","name":{"kind":"Name","value":"acceptanceThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"guidanceEnabled"}},{"kind":"Field","name":{"kind":"Name","value":"guidanceThreshold"}}]}}]}}]} as unknown as DocumentNode<ProgramGatesQuery, ProgramGatesQueryVariables>;
 export const MyProgramsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"MyPrograms"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myPrograms"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"visibility"}},{"kind":"Field","name":{"kind":"Name","value":"authorId"}}]}}]}}]} as unknown as DocumentNode<MyProgramsQuery, MyProgramsQueryVariables>;
 export const MeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Me"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"me"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"image"}}]}}]}}]} as unknown as DocumentNode<MeQuery, MeQueryVariables>;
 export const CreateProgramDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateProgram"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"visibility"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createProgram"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}},{"kind":"Argument","name":{"kind":"Name","value":"visibility"},"value":{"kind":"Variable","name":{"kind":"Name","value":"visibility"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"visibility"}},{"kind":"Field","name":{"kind":"Name","value":"authorId"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]} as unknown as DocumentNode<CreateProgramMutation, CreateProgramMutationVariables>;
 export const UpdateProgramDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateProgram"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"visibility"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateProgram"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}},{"kind":"Argument","name":{"kind":"Name","value":"visibility"},"value":{"kind":"Variable","name":{"kind":"Name","value":"visibility"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"visibility"}}]}}]}}]} as unknown as DocumentNode<UpdateProgramMutation, UpdateProgramMutationVariables>;
 export const DeleteProgramDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteProgram"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteProgram"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<DeleteProgramMutation, DeleteProgramMutationVariables>;
-export const CreateGateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateGate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"label"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"question"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"correctAnswer"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"successMessage"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sequenceOrder"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"acceptanceThreshold"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"guidanceEnabled"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"guidanceThreshold"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createGate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}},{"kind":"Argument","name":{"kind":"Name","value":"label"},"value":{"kind":"Variable","name":{"kind":"Name","value":"label"}}},{"kind":"Argument","name":{"kind":"Name","value":"question"},"value":{"kind":"Variable","name":{"kind":"Name","value":"question"}}},{"kind":"Argument","name":{"kind":"Name","value":"correctAnswer"},"value":{"kind":"Variable","name":{"kind":"Name","value":"correctAnswer"}}},{"kind":"Argument","name":{"kind":"Name","value":"successMessage"},"value":{"kind":"Variable","name":{"kind":"Name","value":"successMessage"}}},{"kind":"Argument","name":{"kind":"Name","value":"sequenceOrder"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sequenceOrder"}}},{"kind":"Argument","name":{"kind":"Name","value":"acceptanceThreshold"},"value":{"kind":"Variable","name":{"kind":"Name","value":"acceptanceThreshold"}}},{"kind":"Argument","name":{"kind":"Name","value":"guidanceEnabled"},"value":{"kind":"Variable","name":{"kind":"Name","value":"guidanceEnabled"}}},{"kind":"Argument","name":{"kind":"Name","value":"guidanceThreshold"},"value":{"kind":"Variable","name":{"kind":"Name","value":"guidanceThreshold"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"programId"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}},{"kind":"Field","name":{"kind":"Name","value":"sequenceOrder"}}]}}]}}]} as unknown as DocumentNode<CreateGateMutation, CreateGateMutationVariables>;
-export const UpdateGateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateGate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"label"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"question"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"correctAnswer"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"successMessage"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sequenceOrder"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"acceptanceThreshold"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"guidanceEnabled"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"guidanceThreshold"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateGate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"label"},"value":{"kind":"Variable","name":{"kind":"Name","value":"label"}}},{"kind":"Argument","name":{"kind":"Name","value":"question"},"value":{"kind":"Variable","name":{"kind":"Name","value":"question"}}},{"kind":"Argument","name":{"kind":"Name","value":"correctAnswer"},"value":{"kind":"Variable","name":{"kind":"Name","value":"correctAnswer"}}},{"kind":"Argument","name":{"kind":"Name","value":"successMessage"},"value":{"kind":"Variable","name":{"kind":"Name","value":"successMessage"}}},{"kind":"Argument","name":{"kind":"Name","value":"sequenceOrder"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sequenceOrder"}}},{"kind":"Argument","name":{"kind":"Name","value":"acceptanceThreshold"},"value":{"kind":"Variable","name":{"kind":"Name","value":"acceptanceThreshold"}}},{"kind":"Argument","name":{"kind":"Name","value":"guidanceEnabled"},"value":{"kind":"Variable","name":{"kind":"Name","value":"guidanceEnabled"}}},{"kind":"Argument","name":{"kind":"Name","value":"guidanceThreshold"},"value":{"kind":"Variable","name":{"kind":"Name","value":"guidanceThreshold"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"sequenceOrder"}}]}}]}}]} as unknown as DocumentNode<UpdateGateMutation, UpdateGateMutationVariables>;
+export const CreateGateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateGate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"label"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"question"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"correctAnswer"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"acceptedAnswers"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"successMessage"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sequenceOrder"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"acceptanceThreshold"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"guidanceEnabled"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"guidanceThreshold"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createGate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}},{"kind":"Argument","name":{"kind":"Name","value":"label"},"value":{"kind":"Variable","name":{"kind":"Name","value":"label"}}},{"kind":"Argument","name":{"kind":"Name","value":"question"},"value":{"kind":"Variable","name":{"kind":"Name","value":"question"}}},{"kind":"Argument","name":{"kind":"Name","value":"correctAnswer"},"value":{"kind":"Variable","name":{"kind":"Name","value":"correctAnswer"}}},{"kind":"Argument","name":{"kind":"Name","value":"acceptedAnswers"},"value":{"kind":"Variable","name":{"kind":"Name","value":"acceptedAnswers"}}},{"kind":"Argument","name":{"kind":"Name","value":"successMessage"},"value":{"kind":"Variable","name":{"kind":"Name","value":"successMessage"}}},{"kind":"Argument","name":{"kind":"Name","value":"sequenceOrder"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sequenceOrder"}}},{"kind":"Argument","name":{"kind":"Name","value":"acceptanceThreshold"},"value":{"kind":"Variable","name":{"kind":"Name","value":"acceptanceThreshold"}}},{"kind":"Argument","name":{"kind":"Name","value":"guidanceEnabled"},"value":{"kind":"Variable","name":{"kind":"Name","value":"guidanceEnabled"}}},{"kind":"Argument","name":{"kind":"Name","value":"guidanceThreshold"},"value":{"kind":"Variable","name":{"kind":"Name","value":"guidanceThreshold"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"programId"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}},{"kind":"Field","name":{"kind":"Name","value":"sequenceOrder"}}]}}]}}]} as unknown as DocumentNode<CreateGateMutation, CreateGateMutationVariables>;
+export const UpdateGateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateGate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"label"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"question"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"correctAnswer"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"acceptedAnswers"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"successMessage"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sequenceOrder"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"acceptanceThreshold"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"guidanceEnabled"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"guidanceThreshold"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateGate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"label"},"value":{"kind":"Variable","name":{"kind":"Name","value":"label"}}},{"kind":"Argument","name":{"kind":"Name","value":"question"},"value":{"kind":"Variable","name":{"kind":"Name","value":"question"}}},{"kind":"Argument","name":{"kind":"Name","value":"correctAnswer"},"value":{"kind":"Variable","name":{"kind":"Name","value":"correctAnswer"}}},{"kind":"Argument","name":{"kind":"Name","value":"acceptedAnswers"},"value":{"kind":"Variable","name":{"kind":"Name","value":"acceptedAnswers"}}},{"kind":"Argument","name":{"kind":"Name","value":"successMessage"},"value":{"kind":"Variable","name":{"kind":"Name","value":"successMessage"}}},{"kind":"Argument","name":{"kind":"Name","value":"sequenceOrder"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sequenceOrder"}}},{"kind":"Argument","name":{"kind":"Name","value":"acceptanceThreshold"},"value":{"kind":"Variable","name":{"kind":"Name","value":"acceptanceThreshold"}}},{"kind":"Argument","name":{"kind":"Name","value":"guidanceEnabled"},"value":{"kind":"Variable","name":{"kind":"Name","value":"guidanceEnabled"}}},{"kind":"Argument","name":{"kind":"Name","value":"guidanceThreshold"},"value":{"kind":"Variable","name":{"kind":"Name","value":"guidanceThreshold"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"sequenceOrder"}}]}}]}}]} as unknown as DocumentNode<UpdateGateMutation, UpdateGateMutationVariables>;
 export const DeleteGateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteGate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteGate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<DeleteGateMutation, DeleteGateMutationVariables>;
 export const ReorderGatesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ReorderGates"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"orderedGateIds"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"reorderGates"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}},{"kind":"Argument","name":{"kind":"Name","value":"orderedGateIds"},"value":{"kind":"Variable","name":{"kind":"Name","value":"orderedGateIds"}}}]}]}}]} as unknown as DocumentNode<ReorderGatesMutation, ReorderGatesMutationVariables>;

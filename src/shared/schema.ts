@@ -21,6 +21,12 @@ export const gates = sqliteTable(
     label: text("label").notNull(),
     question: text("question").notNull(),
     correctAnswer: text("correct_answer").notNull(),
+    // Extra answers accepted alongside correctAnswer. NULL (every row that
+    // predates the column) and [] both mean "no aliases"; additive nullable
+    // so the migration is a plain ALTER, not a table rebuild.
+    acceptedAnswers: text("accepted_answers", { mode: "json" }).$type<
+      string[]
+    >(),
     successMessage: text("success_message").notNull(),
     acceptanceThreshold: real("acceptance_threshold").notNull().default(0.875),
     guidanceEnabled: integer("guidance_enabled", { mode: "boolean" })

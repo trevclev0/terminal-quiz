@@ -58,6 +58,13 @@ const GateManagementType = new GraphQLObjectType({
     label: { type: new GraphQLNonNull(GraphQLString) },
     question: { type: new GraphQLNonNull(GraphQLString) },
     correctAnswer: { type: new GraphQLNonNull(GraphQLString) },
+    acceptedAnswers: {
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(GraphQLString)),
+      ),
+      resolve: (source: { acceptedAnswers: string[] | null }) =>
+        source.acceptedAnswers ?? [],
+    },
     successMessage: { type: new GraphQLNonNull(GraphQLString) },
     acceptanceThreshold: { type: new GraphQLNonNull(GraphQLFloat) },
     guidanceEnabled: { type: new GraphQLNonNull(GraphQLBoolean) },

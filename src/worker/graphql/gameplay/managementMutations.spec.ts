@@ -572,6 +572,8 @@ describe("updateGate", () => {
       id: "gate-1",
       programId: "prog-1",
       label: "Old",
+      correctAnswer: "A",
+      acceptedAnswers: null,
     });
     mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
     const returning = vi.fn().mockResolvedValue([
@@ -602,6 +604,32 @@ describe("updateGate", () => {
     );
 
     expect(result.label).toBe("New Label");
+  });
+
+  it("treats a null acceptedAnswers arg as no change", async () => {
+    mockDb.query.gates.findFirst.mockResolvedValue({
+      id: "gate-1",
+      programId: "prog-1",
+      label: "Old",
+      correctAnswer: "A",
+      acceptedAnswers: ["b"],
+    });
+    mockDb.query.programs.findFirst.mockResolvedValue(OWNED_PROGRAM);
+    const set = vi.fn().mockReturnValue({
+      where: vi
+        .fn()
+        .mockReturnValue({ returning: vi.fn().mockResolvedValue([{}]) }),
+    });
+    mockDb.update.mockReturnValue({ set });
+
+    await resolveField(
+      updateGate,
+      null,
+      { id: "gate-1", label: "New", acceptedAnswers: null },
+      mockContext,
+    );
+
+    expect(set).toHaveBeenCalledWith({ label: "New" });
   });
 
   it("throws when gate not found", async () => {

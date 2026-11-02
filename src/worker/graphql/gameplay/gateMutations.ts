@@ -1,6 +1,7 @@
 import { gates } from "@shared/schema";
 import {
   createGateInputSchema,
+  findAnswerConflict,
   parseOrThrow,
   updateGateInputSchema,
 } from "@shared/validation";
@@ -9,12 +10,15 @@ import {
   GraphQLBoolean,
   GraphQLFloat,
   GraphQLInt,
+  GraphQLList,
   GraphQLNonNull,
   GraphQLString,
 } from "graphql";
 import { authorizeProgramMutation } from "./authorizeProgram";
 import { definedFields, requireUser } from "./managementHelpers";
 import { type AppGraphQLContext, GateManagementType } from "./types";
+
+const acceptedAnswersType = new GraphQLList(new GraphQLNonNull(GraphQLString));
 
 export const createGate = {
   type: GateManagementType,
@@ -23,6 +27,7 @@ export const createGate = {
     label: { type: new GraphQLNonNull(GraphQLString) },
     question: { type: new GraphQLNonNull(GraphQLString) },
     correctAnswer: { type: new GraphQLNonNull(GraphQLString) },
+    acceptedAnswers: { type: acceptedAnswersType },
     successMessage: { type: new GraphQLNonNull(GraphQLString) },
     sequenceOrder: { type: new GraphQLNonNull(GraphQLInt) },
     acceptanceThreshold: { type: GraphQLFloat },
@@ -36,6 +41,7 @@ export const createGate = {
       label: string;
       question: string;
       correctAnswer: string;
+      acceptedAnswers?: string[] | null;
       successMessage: string;
       sequenceOrder: number;
       acceptanceThreshold?: number;
@@ -49,6 +55,7 @@ export const createGate = {
       label: args.label,
       question: args.question,
       correctAnswer: args.correctAnswer,
+      acceptedAnswers: args.acceptedAnswers ?? undefined,
       successMessage: args.successMessage,
       sequenceOrder: args.sequenceOrder,
       // An explicit GraphQL null means "column default", same as omitting.
@@ -56,6 +63,12 @@ export const createGate = {
       guidanceEnabled: args.guidanceEnabled ?? undefined,
       guidanceThreshold: args.guidanceThreshold ?? undefined,
     });
+
+    const conflict = findAnswerConflict(
+      input.correctAnswer,
+      input.acceptedAnswers ?? [],
+    );
+    if (conflict) throw new Error(conflict);
 
     const db = context.get("db");
     await authorizeProgramMutation(db, args.programId, userId);
@@ -88,6 +101,7 @@ export const updateGate = {
     label: { type: GraphQLString },
     question: { type: GraphQLString },
     correctAnswer: { type: GraphQLString },
+    acceptedAnswers: { type: acceptedAnswersType },
     successMessage: { type: GraphQLString },
     sequenceOrder: { type: GraphQLInt },
     acceptanceThreshold: { type: GraphQLFloat },
@@ -101,6 +115,7 @@ export const updateGate = {
       label?: string;
       question?: string;
       correctAnswer?: string;
+      acceptedAnswers?: string[] | null;
       successMessage?: string;
       sequenceOrder?: number;
       acceptanceThreshold?: number;
@@ -112,7 +127,11 @@ export const updateGate = {
     const userId = requireUser(context.get("user"));
     const { id, ...fields } = args;
     const updateData = definedFields(
-      parseOrThrow(updateGateInputSchema, fields),
+      parseOrThrow(updateGateInputSchema, {
+        ...fields,
+        // A GraphQL null means "no change", same as omitting the arg.
+        acceptedAnswers: fields.acceptedAnswers ?? undefined,
+      }),
     );
     if (Object.keys(updateData).length === 0) {
       throw new Error("No fields to update.");
@@ -125,6 +144,15 @@ export const updateGate = {
     if (!gate) throw new Error("Gate not found.");
 
     await authorizeProgramMutation(db, gate.programId, userId);
+
+    // A partial update carries only one side of the pair, so check the new
+    // value against what is stored for the other. After authorization so a
+    // non-owner learns nothing about the stored answers.
+    const conflict = findAnswerConflict(
+      updateData.correctAnswer ?? gate.correctAnswer,
+      updateData.acceptedAnswers ?? gate.acceptedAnswers ?? [],
+    );
+    if (conflict) throw new Error(conflict);
 
     const { sequenceOrder } = updateData;
     if (sequenceOrder !== undefined && sequenceOrder !== gate.sequenceOrder) {
