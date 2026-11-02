@@ -538,4 +538,117 @@ describe("submitGuess mutation", () => {
       (response.body.data as SubmitGuessData).submitGuess.nextGate?.id,
     ).toBe(ids[2]);
   });
+
+  describe("accepted-answer aliases", () => {
+    /** A session at gate 2, reached by solving gate 1 through the API. */
+    async function sessionAtGate2(label: string): Promise<string> {
+      const sessionId = makeSessionId(label);
+      await insertSession(sessionId, E2E_GATE_1_ID);
+      const solved = await gqlRequest(SUBMIT_GUESS_MUTATION, {
+        sessionId,
+        variables: {
+          programId: E2E_PROGRAM_ID,
+          gateId: E2E_GATE_1_ID,
+          guess: "blue",
+        },
+      });
+      expect((solved.body.data as SubmitGuessData).submitGuess.success).toBe(
+        true,
+      );
+      return sessionId;
+    }
+
+    function guessGate2(sessionId: string, guess: string) {
+      return gqlRequest(SUBMIT_GUESS_MUTATION, {
+        sessionId,
+        variables: {
+          programId: E2E_PROGRAM_ID,
+          gateId: E2E_GATE_2_ID,
+          guess,
+        },
+      });
+    }
+
+    it("accepts an alias and records the main answer", async () => {
+      const sessionId = await sessionAtGate2("alias-accepted");
+
+      const response = await guessGate2(sessionId, "Four");
+
+      expect(response.body.errors).toBeUndefined();
+      expect((response.body.data as SubmitGuessData).submitGuess.success).toBe(
+        true,
+      );
+
+      const progResponse = await gqlRequest(GET_PROGRAM_PROGRESSION_QUERY, {
+        sessionId,
+        variables: { programId: E2E_PROGRAM_ID },
+      });
+      const progData = progResponse.body.data as {
+        getProgramProgression: {
+          completedGates: { id: string; correctAnswer: string }[];
+        };
+      };
+      const completed = progData.getProgramProgression.completedGates.find(
+        (gate) => gate.id === E2E_GATE_2_ID,
+      );
+      expect(completed?.correctAnswer).toBe("4");
+    });
+
+    it("denies a guess that matches neither the answer nor an alias", async () => {
+      const sessionId = await sessionAtGate2("alias-denied");
+
+      const response = await guessGate2(sessionId, "five");
+
+      expect(response.body.errors).toBeUndefined();
+      expect((response.body.data as SubmitGuessData).submitGuess.success).toBe(
+        false,
+      );
+    });
+
+    // The documents are inline because these operations cannot exist in
+    // graphqlOperations.ts: codegen rejects a field the schema lacks.
+    it.each([
+      [
+        "currentGate",
+        `query ($programId: String!) {
+          getProgramProgression(programId: $programId) {
+            currentGate { acceptedAnswers }
+          }
+        }`,
+      ],
+      [
+        "completedGates",
+        `query ($programId: String!) {
+          getProgramProgression(programId: $programId) {
+            completedGates { acceptedAnswers }
+          }
+        }`,
+      ],
+      [
+        "nextGate",
+        `mutation ($programId: String!, $gateId: String!, $guess: String!) {
+          submitGuess(programId: $programId, gateId: $gateId, guess: $guess) {
+            nextGate { acceptedAnswers }
+          }
+        }`,
+      ],
+    ])("rejects selecting acceptedAnswers on %s", async (_name, query) => {
+      const sessionId = makeSessionId("alias-not-exposed");
+      await insertSession(sessionId, E2E_GATE_1_ID);
+
+      const response = await gqlRequest(query, {
+        sessionId,
+        variables: {
+          programId: E2E_PROGRAM_ID,
+          gateId: E2E_GATE_1_ID,
+          guess: "blue",
+        },
+      });
+
+      expect(response.body.data).toBeUndefined();
+      expect(response.body.errors?.[0]?.message).toContain(
+        'Cannot query field "acceptedAnswers"',
+      );
+    });
+  });
 });

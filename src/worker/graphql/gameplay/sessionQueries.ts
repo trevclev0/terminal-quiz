@@ -62,6 +62,7 @@ export const getProgramProgression = {
       const firstGate = await db.query.gates.findFirst({
         columns: {
           correctAnswer: false,
+          acceptedAnswers: false,
         },
         where: eq(gates.programId, args.programId),
         orderBy: [asc(gates.sequenceOrder)],
@@ -149,6 +150,7 @@ export const getProgramProgression = {
       ? await db.query.gates.findFirst({
           columns: {
             correctAnswer: false,
+            acceptedAnswers: false,
           },
           where: and(
             eq(gates.id, progress.currentGateId),

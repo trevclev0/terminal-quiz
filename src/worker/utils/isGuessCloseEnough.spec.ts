@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import isGuessCloseEnough from "./isGuessCloseEnough";
+import isGuessCloseEnough, { isGuessAccepted } from "./isGuessCloseEnough";
 
 describe("isGuessCloseEnough", () => {
   describe("default threshold (0.875)", () => {
@@ -47,5 +47,35 @@ describe("isGuessCloseEnough", () => {
 
   it("returns true when both strings normalize to empty", () => {
     expect(isGuessCloseEnough("   ", "   ")).toBe(true);
+  });
+});
+
+describe("isGuessAccepted", () => {
+  it("accepts an alias regardless of case", () => {
+    expect(isGuessAccepted("nyc", "New York City", ["NYC"])).toBe(true);
+  });
+
+  it("accepts an alias after trimming the guess", () => {
+    expect(isGuessAccepted(" NYC ", "New York City", ["nyc"])).toBe(true);
+  });
+
+  it("keeps a short alias exact at the default threshold", () => {
+    expect(isGuessAccepted("nyx", "New York City", ["NYC"], 0.875)).toBe(false);
+  });
+
+  it("still fuzzy-matches the main answer when there are no aliases", () => {
+    expect(isGuessAccepted("New York Citty", "New York City", null)).toBe(true);
+  });
+
+  it("rejects a guess that matches neither the answer nor an alias", () => {
+    expect(isGuessAccepted("Boston", "New York City", [])).toBe(false);
+  });
+
+  it("accepts an alias of a non-word answer", () => {
+    expect(isGuessAccepted("four", "4", ["four"])).toBe(true);
+  });
+
+  it("applies the threshold to aliases", () => {
+    expect(isGuessAccepted("fuor", "4", ["four"], 0.5)).toBe(true);
   });
 });

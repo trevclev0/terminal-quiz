@@ -199,7 +199,7 @@ describe("getProgramProgression", () => {
     expect(result.completedGates).toEqual([]);
     expect(mockDb.query.gates.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
-        columns: { correctAnswer: false },
+        columns: { correctAnswer: false, acceptedAnswers: false },
         where: expect.anything(),
       }),
     );
