@@ -1,16 +1,25 @@
 import { describe, expect, it } from "vitest";
 import { MAX_GUESS_LENGTH } from "./types";
 import {
+  ACCEPTED_ANSWER_LENGTH_ERROR,
+  ACCEPTED_ANSWER_REQUIRED_ERROR,
+  ACCEPTED_ANSWERS_LIMIT_ERROR,
+  ANSWER_CONFLICT_ERROR,
   acceptanceThresholdSchema,
+  acceptedAnswersSchema,
   clampAcceptanceThreshold,
   clampGuidanceThreshold,
   createGateInputSchema,
   createProgramInputSchema,
+  DUPLICATE_ACCEPTED_ANSWER_ERROR,
+  findAnswerConflict,
   gateFieldsSchema,
   gateTextSchema,
   guessSchema,
   guidanceThresholdSchema,
+  MAX_ACCEPTED_ANSWERS,
   parseOrThrow,
+  RESERVED_ALIAS_ERROR,
   RESERVED_ANSWER_ERROR,
   sequenceOrderSchema,
   updateGateInputSchema,
@@ -168,6 +177,107 @@ describe("gate input", () => {
     expect(
       gateFieldsSchema.safeParse({ ...draft, acceptanceThreshold: 2 }).success,
     ).toBe(false);
+  });
+});
+
+describe("acceptedAnswersSchema", () => {
+  it("trims each alias", () => {
+    expect(acceptedAnswersSchema.parse(["  NYC ", "New York"])).toEqual([
+      "NYC",
+      "New York",
+    ]);
+  });
+
+  it("accepts an empty list", () => {
+    expect(acceptedAnswersSchema.parse([])).toEqual([]);
+  });
+
+  it("accepts an alias of exactly MAX_GUESS_LENGTH characters", () => {
+    const alias = "x".repeat(MAX_GUESS_LENGTH);
+    expect(acceptedAnswersSchema.parse([alias])).toEqual([alias]);
+  });
+
+  it("measures length after trimming", () => {
+    const alias = "x".repeat(MAX_GUESS_LENGTH);
+    expect(acceptedAnswersSchema.parse([`  ${alias}  `])).toEqual([alias]);
+  });
+
+  it("rejects non-string items", () => {
+    expect(() => parseOrThrow(acceptedAnswersSchema, [42])).toThrow(
+      ACCEPTED_ANSWER_REQUIRED_ERROR,
+    );
+  });
+
+  it("rejects blank items", () => {
+    expect(() => parseOrThrow(acceptedAnswersSchema, [" "])).toThrow(
+      ACCEPTED_ANSWER_REQUIRED_ERROR,
+    );
+  });
+
+  it("rejects items over MAX_GUESS_LENGTH", () => {
+    expect(() =>
+      parseOrThrow(acceptedAnswersSchema, ["x".repeat(MAX_GUESS_LENGTH + 1)]),
+    ).toThrow(ACCEPTED_ANSWER_LENGTH_ERROR);
+  });
+
+  it("rejects reserved game commands, however they are cased or padded", () => {
+    expect(() => parseOrThrow(acceptedAnswersSchema, ["/clue"])).toThrow(
+      RESERVED_ALIAS_ERROR,
+    );
+    expect(() => parseOrThrow(acceptedAnswersSchema, [" /HELP "])).toThrow(
+      RESERVED_ALIAS_ERROR,
+    );
+  });
+
+  it("rejects more than MAX_ACCEPTED_ANSWERS items", () => {
+    const items = Array.from(
+      { length: MAX_ACCEPTED_ANSWERS + 1 },
+      (_, index) => `alias ${index}`,
+    );
+    expect(() => parseOrThrow(acceptedAnswersSchema, items)).toThrow(
+      ACCEPTED_ANSWERS_LIMIT_ERROR,
+    );
+    expect(
+      acceptedAnswersSchema.safeParse(items.slice(0, MAX_ACCEPTED_ANSWERS))
+        .success,
+    ).toBe(true);
+  });
+
+  it("rejects duplicates that differ only by case or whitespace", () => {
+    expect(() => parseOrThrow(acceptedAnswersSchema, ["NYC", "nyc "])).toThrow(
+      DUPLICATE_ACCEPTED_ANSWER_ERROR,
+    );
+  });
+
+  it("names the reserved commands in the alias error", () => {
+    expect(RESERVED_ALIAS_ERROR).toBe(
+      'Accepted answers can\'t be "/clue" or "/help" — those are game commands.',
+    );
+  });
+
+  it("is optional on a gate draft", () => {
+    const draft = { ...VALID_GATE_TEXT };
+    expect(gateFieldsSchema.safeParse(draft).success).toBe(true);
+    expect(
+      gateFieldsSchema.safeParse({ ...draft, acceptedAnswers: ["nyc"] })
+        .success,
+    ).toBe(true);
+    expect(
+      gateFieldsSchema.safeParse({ ...draft, acceptedAnswers: [" "] }).success,
+    ).toBe(false);
+  });
+});
+
+describe("findAnswerConflict", () => {
+  it("flags an alias equal to the correct answer after normalizing", () => {
+    expect(findAnswerConflict("New York City", ["new york city "])).toBe(
+      ANSWER_CONFLICT_ERROR,
+    );
+  });
+
+  it("returns null when no alias repeats the correct answer", () => {
+    expect(findAnswerConflict("New York City", ["NYC"])).toBeNull();
+    expect(findAnswerConflict("x", [])).toBeNull();
   });
 });
 

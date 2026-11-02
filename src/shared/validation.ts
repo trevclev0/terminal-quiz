@@ -30,7 +30,20 @@ export type Visibility = (typeof VISIBILITIES)[number];
 const ACCEPTANCE_THRESHOLD_ERROR = `acceptanceThreshold must be between ${MIN_ACCEPTANCE_THRESHOLD} and ${MAX_ACCEPTANCE_THRESHOLD}.`;
 const GUIDANCE_THRESHOLD_ERROR = `guidanceThreshold must be an integer between ${MIN_GUIDANCE_THRESHOLD} and ${MAX_GUIDANCE_THRESHOLD}.`;
 const SEQUENCE_ORDER_ERROR = "sequenceOrder must be a positive integer.";
-export const RESERVED_ANSWER_ERROR = `correctAnswer can't be ${GAME_COMMANDS.map((command) => `"${command}"`).join(" or ")} — those are game commands.`;
+const RESERVED_COMMAND_LIST = GAME_COMMANDS.map(
+  (command) => `"${command}"`,
+).join(" or ");
+export const RESERVED_ANSWER_ERROR = `correctAnswer can't be ${RESERVED_COMMAND_LIST} — those are game commands.`;
+export const MAX_ACCEPTED_ANSWERS = 10;
+export const ACCEPTED_ANSWER_REQUIRED_ERROR =
+  "Accepted answers can't be blank.";
+export const ACCEPTED_ANSWER_LENGTH_ERROR = `Accepted answers must be at most ${MAX_GUESS_LENGTH} characters.`;
+export const RESERVED_ALIAS_ERROR = `Accepted answers can't be ${RESERVED_COMMAND_LIST} — those are game commands.`;
+export const ACCEPTED_ANSWERS_LIMIT_ERROR = `A gate can have at most ${MAX_ACCEPTED_ANSWERS} accepted answers.`;
+export const DUPLICATE_ACCEPTED_ANSWER_ERROR =
+  "Accepted answers must all be different.";
+export const ANSWER_CONFLICT_ERROR =
+  "An accepted answer can't repeat the correct answer.";
 
 /** Non-blank after trimming; parses to the trimmed value. */
 function requiredText(field: string) {
@@ -76,6 +89,47 @@ export const updateProgramInputSchema = z.object({
   name: z.optional(programNameSchema),
 });
 
+/**
+ * Comparison key for answers: the same normalization `isGuessCloseEnough`
+ * applies, so "NYC" and " nyc " count as one answer.
+ */
+function normalizeAnswer(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+// Checks run in order on the trimmed value: the trim must come first so the
+// blank, length and reserved-command checks all see what will be stored.
+const aliasSchema = z.string({ error: ACCEPTED_ANSWER_REQUIRED_ERROR }).check(
+  z.trim(),
+  z.minLength(1, ACCEPTED_ANSWER_REQUIRED_ERROR),
+  z.maxLength(MAX_GUESS_LENGTH, ACCEPTED_ANSWER_LENGTH_ERROR),
+  z.refine((value) => parseGameCommand(value) === null, RESERVED_ALIAS_ERROR),
+);
+
+/** Extra correct answers for a gate; parses to trimmed, distinct aliases. */
+export const acceptedAnswersSchema = z.array(aliasSchema).check(
+  z.maxLength(MAX_ACCEPTED_ANSWERS, ACCEPTED_ANSWERS_LIMIT_ERROR),
+  z.refine(
+    (aliases) => new Set(aliases.map(normalizeAnswer)).size === aliases.length,
+    DUPLICATE_ACCEPTED_ANSWER_ERROR,
+  ),
+);
+
+/**
+ * Returns an error when an alias repeats the correct answer, else null.
+ * Lives outside the zod schemas because `z.extend` refuses refined object
+ * schemas; callers run it once they hold both sides of the comparison.
+ */
+export function findAnswerConflict(
+  correctAnswer: string,
+  acceptedAnswers: readonly string[],
+): string | null {
+  const answer = normalizeAnswer(correctAnswer);
+  return acceptedAnswers.some((alias) => normalizeAnswer(alias) === answer)
+    ? ANSWER_CONFLICT_ERROR
+    : null;
+}
+
 /** The four text fields every gate needs — the Add Gate form's shape. */
 export const gateTextSchema = z.object({
   label: requiredText("label"),
@@ -98,6 +152,7 @@ export const gateFieldsSchema = z.extend(gateTextSchema, {
     z.boolean({ error: "guidanceEnabled must be a boolean." }),
   ),
   guidanceThreshold: z.optional(guidanceThresholdSchema),
+  acceptedAnswers: z.optional(acceptedAnswersSchema),
 });
 
 export const createGateInputSchema = z.extend(gateFieldsSchema, {
