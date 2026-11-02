@@ -63,6 +63,7 @@ const gateRows: (typeof gates.$inferInsert)[] = [
       "an algorithm for the Analytical Engine in the mid-1800s. Who " +
       "am I?",
     correctAnswer: "Ada Lovelace",
+    acceptedAnswers: ["Lovelace"],
     successMessage:
       "Correct! Ada Lovelace saw the potential for computers to do " +
       "more than just crunch numbers, envisioning them as tools for " +
@@ -152,6 +153,7 @@ const gateRows: (typeof gates.$inferInsert)[] = [
       "miles to protect the northern borders of China. What am I " +
       "called?",
     correctAnswer: "Great Wall of China",
+    acceptedAnswers: ["Great Wall"],
     successMessage:
       "Impressive! You've conquered the longest structure ever built " +
       "by humans. It is actually a collection of many walls built " +
@@ -166,6 +168,7 @@ const gateRows: (typeof gates.$inferInsert)[] = [
       "I am a colossal copper statue standing in New York Harbor, " +
       "holding a torch high as a symbol of freedom. Who am I?",
     correctAnswer: "Statue of Liberty",
+    acceptedAnswers: ["Lady Liberty"],
     successMessage:
       "Excellent! A gift from France to the U.S., she has welcomed " +
       "millions of people to American shores since 1886. Her " +
@@ -411,6 +414,7 @@ const gateRows: (typeof gates.$inferInsert)[] = [
     label: "Prime-01",
     question: "I am the only even prime number. What number am I?",
     correctAnswer: "Two",
+    acceptedAnswers: ["2"],
     successMessage:
       "Correct! Every other even number is divisible by 2, so only " +
       "2 is both even and prime.",
@@ -424,6 +428,7 @@ const gateRows: (typeof gates.$inferInsert)[] = [
       "I am the number of sides on a triangle and the number of " +
       "corners too. What number am I?",
     correctAnswer: "Three",
+    acceptedAnswers: ["3"],
     successMessage:
       "Right! A triangle has exactly three sides and three vertices.",
   },
