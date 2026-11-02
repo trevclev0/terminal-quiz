@@ -318,19 +318,25 @@ describe("useProgramPlay", () => {
   });
 
   describe("denial blink throttle", () => {
-    // Wrong guesses at the given clock readings; returns each denial's
-    // blink verdict. Readings start below DENIAL_BLINK_MS so a first denial
-    // only blinks because nothing has blinked yet, not because the clock is
-    // far from zero.
-    async function denialsAt(times: number[]) {
+    // Plays a script of wrong guesses ("denial") and blink starts ("start",
+    // what the span's animationstart reports) at the given clock readings,
+    // and returns each denial's blink verdict. Readings stay below
+    // DENIAL_BLINK_MS where it matters, so a first denial only blinks because
+    // nothing has blinked yet, not because the clock is far from zero.
+    type Step = ["denial" | "start", number];
+    async function play(steps: Step[]) {
       const { result } = renderHook(
         () => useProgramPlay({ programId, currentGateId }),
         { wrapper },
       );
       mockMutateAsync.mockResolvedValue({ success: false, message: "No" });
       const verdicts: boolean[] = [];
-      for (const time of times) {
+      for (const [kind, time] of steps) {
         vi.spyOn(Date, "now").mockReturnValue(time);
+        if (kind === "start") {
+          act(() => result.current.onDenialBlinkStart());
+          continue;
+        }
         await act(async () => {
           await result.current.handleSubmit({
             preventDefault: vi.fn(),
@@ -342,28 +348,69 @@ describe("useProgramPlay", () => {
     }
 
     it("blinks the first denial", async () => {
-      const { verdicts } = await denialsAt([100]);
+      const { verdicts } = await play([["denial", 100]]);
       expect(verdicts).toEqual([true]);
     });
 
-    it("holds back a denial that follows a blink too soon", async () => {
-      const { verdicts, result } = await denialsAt([
-        100,
-        100 + DENIAL_BLINK_MS - 1,
+    it("holds back a denial that follows a started blink too soon", async () => {
+      const { verdicts, result } = await play([
+        ["denial", 100],
+        ["start", 100],
+        ["denial", 100 + DENIAL_BLINK_MS - 1],
       ]);
       expect(verdicts).toEqual([true, false]);
       // Still a new denial, so the message remounts without the blink class.
       expect(result.current.denialId).not.toBeNull();
     });
 
-    it("blinks again once a full blink has passed", async () => {
-      const { verdicts } = await denialsAt([100, 100 + DENIAL_BLINK_MS]);
+    it("blinks again once a full blink has passed since it started", async () => {
+      const { verdicts } = await play([
+        ["denial", 100],
+        ["start", 100],
+        ["denial", 100 + DENIAL_BLINK_MS],
+      ]);
       expect(verdicts).toEqual([true, true]);
     });
 
-    it("measures from the last blink, not the last throttled denial", async () => {
-      const { verdicts } = await denialsAt([100, 500, 100 + DENIAL_BLINK_MS]);
+    it("measures from the last blink that started, not the last denial", async () => {
+      const { verdicts } = await play([
+        ["denial", 100],
+        ["start", 100],
+        ["denial", 500],
+        ["denial", 100 + DENIAL_BLINK_MS],
+      ]);
       expect(verdicts).toEqual([true, false, true]);
+    });
+
+    // The clock runs from the blink's real start, not from the denial: boot
+    // can hold the class back, so the animation may start long after the
+    // denial arrived.
+    it("measures from a deferred blink's start, not its denial", async () => {
+      const { verdicts } = await play([
+        ["denial", 0],
+        ["start", 3000],
+        ["denial", 3600],
+        ["denial", 3000 + DENIAL_BLINK_MS],
+      ]);
+      expect(verdicts).toEqual([true, false, true]);
+    });
+
+    it("lets denials blink while no blink has started yet", async () => {
+      const { verdicts } = await play([
+        ["denial", 100],
+        ["denial", 200],
+      ]);
+      expect(verdicts).toEqual([true, true]);
+    });
+
+    it("keeps onDenialBlinkStart stable across renders", () => {
+      const { result, rerender } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      const first = result.current.onDenialBlinkStart;
+      rerender();
+      expect(result.current.onDenialBlinkStart).toBe(first);
     });
 
     it("reports no blink when there is no denial", () => {
