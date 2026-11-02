@@ -294,7 +294,7 @@ bun run test:ui           # browser-based Vitest UI
 - Use `createTestRouter` / `renderWithRouter` (`test-utils/reactRouterUtils.tsx`) for route-level integration tests
 - Mocks restore automatically (`clearMocks: true`, `restoreMocks: true` in `vite.config.ts` and `vitest.config.integration.ts`)
 - Suppress expected `console.error` from React error boundaries with `vi.spyOn(console, "error").mockImplementation(() => {})` in `beforeEach`
-- Integration specs share canonical query/mutation strings from `src/shared/gqlQueries.ts`
+- Integration specs share canonical query/mutation strings from `src/shared/gqlQueries.ts`. The exception is a negative test asserting a field is NOT selectable (e.g. `acceptedAnswers` on a gameplay type): it inlines its document, because codegen rejects invalid operations
 
 Route files prefixed with `-` (e.g. `-root.spec.tsx`, `-select.spec.tsx`, `-$programId.spec.tsx`) are test files, not real routes — TanStack Router's file-based routing ignores the `-` prefix.
 
@@ -374,7 +374,7 @@ Releases use `semantic-release` + `semantic-release-gitmoji` with standard semve
 ## Key Domain Concepts
 
 - **Program** — a named collection of gates a player works through in sequence
-- **Gate** — a riddle with `question`, `correctAnswer`, `successMessage`, optional AI guidance (`guidanceEnabled`, `guidanceThreshold`)
+- **Gate** — a riddle with `question`, `correctAnswer`, optional `acceptedAnswers` aliases, `successMessage`, optional AI guidance (`guidanceEnabled`, `guidanceThreshold`)
 - **`sequenceOrder`** — ordering within a program, enforced by a unique index on `(programId, sequenceOrder)`
 - **Guess acceptance** — Levenshtein similarity ≥ a per-gate `acceptanceThreshold` (default 0.875) via `leven`, checked server-side in `src/worker/utils/isGuessCloseEnough.ts`. A guess passes against `correctAnswer` or any of the gate's `acceptedAnswers` (nullable JSON column, max 10, authoring-only: never in gameplay payloads or AI clues), each at the gate's own threshold
 - **Session ID** — minted server-side into the HttpOnly `anon_gameplay_session` cookie (`Path=/api`, `Secure` outside development) by `sessionMiddleware`; never client-generated or sent as a header. Mutations additionally require the constant `x-session-id` same-origin tripwire header (enforced by `requireSessionHeader`)
