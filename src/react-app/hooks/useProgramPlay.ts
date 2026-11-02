@@ -1,7 +1,6 @@
 import { useRequestClueMutation } from "@api/mutations/useRequestClueMutation";
 import { useSubmitGuessMutation } from "@api/mutations/useSubmitGuessMutation";
 import { useResetSession } from "@hooks/useResetSession";
-import useShake from "@hooks/useShake";
 import { parseGameCommand } from "@shared/gameCommands";
 import {
   type ChangeEvent,
@@ -60,16 +59,26 @@ function useProgramPlay({
   // cooldown runs, and every path that starts one sets it first.
   const [now, setNow] = useState(() => Date.now());
   const currentGateIdRef = useRef(currentGateId);
-  const { isShaking, shake, clearShake } = useShake();
+  // Identifies the wrong guess the shown message belongs to, and is null for
+  // every other message. A fresh id per denial lets the UI restart its blink
+  // even when the same guess is denied twice in a row.
+  const [denialId, setDenialId] = useState<number | null>(null);
+  const denialCount = useRef(0);
 
-  // Clear response message, shake, clues, canRequestClue, and the remembered
+  // Every message that is not a wrong-guess denial goes through here, so a
+  // stale denialId can never keep blinking a clue or error message.
+  const showMessage = (text: string | null) => {
+    setMessage(text);
+    setDenialId(null);
+  };
+
+  // Clear response message, denial, clues, canRequestClue, and the remembered
   // wrong guess when currentGate.id changes
-  // biome-ignore lint/correctness/useExhaustiveDependencies: clearShake is stable from useShake, only re-run when currentGateId changes
   useEffect(() => {
     currentGateIdRef.current = currentGateId;
     setMessage(null);
+    setDenialId(null);
     setGuessSucceeded(null);
-    clearShake();
     setClues([]);
     setCanRequestClue(false);
     setIsClueLimitReached(false);
@@ -127,11 +136,11 @@ function useProgramPlay({
     }
 
     if (!currentGateId) {
-      setMessage("No active gate to submit guess to");
+      showMessage("No active gate to submit guess to");
       setGuessSucceeded(false);
       return;
     }
-    setMessage(null);
+    showMessage(null);
     setGuessSucceeded(null);
 
     try {
@@ -141,14 +150,15 @@ function useProgramPlay({
       });
 
       if (result.success) {
-        setMessage(result.message ?? null);
+        showMessage(result.message ?? null);
         setGuessSucceeded(true);
         setGuess("");
         setRememberedGuess(null);
       } else {
         setMessage(result.message ?? "Access Denied.");
+        denialCount.current += 1;
+        setDenialId(denialCount.current);
         setGuessSucceeded(false);
-        shake();
         setCanRequestClue(result.canRequestClue);
         setRememberedGuess({
           guess: guess.trim(),
@@ -156,7 +166,7 @@ function useProgramPlay({
         });
       }
     } catch {
-      setMessage("Error submitting guess");
+      showMessage("Error submitting guess");
       setGuessSucceeded(false);
     }
   };
@@ -183,7 +193,7 @@ function useProgramPlay({
               prev ? { ...prev, canRequestClue: false } : prev,
             );
           } else if (data.isAiBudgetExhausted) {
-            setMessage(
+            showMessage(
               "AI hint budget exhausted for today — try again tomorrow.",
             );
           } else if (data.isRateLimited) {
@@ -193,12 +203,12 @@ function useProgramPlay({
               setNow(nowMs);
               setClueCooldownUntil(nowMs + retryAfterMs);
             } else {
-              setMessage(
+              showMessage(
                 "You've requested too many clues. Please try again later.",
               );
             }
           } else {
-            setMessage("Failed to generate a clue. Please try again.");
+            showMessage("Failed to generate a clue. Please try again.");
           }
           setIsClueLimitReached(data.isClueLimitReached);
         },
@@ -206,7 +216,7 @@ function useProgramPlay({
           if (currentGateIdRef.current !== requestGateId) {
             return;
           }
-          setMessage("Error requesting clue. Please try again.");
+          showMessage("Error requesting clue. Please try again.");
         },
       },
     );
@@ -215,18 +225,18 @@ function useProgramPlay({
   const handleRequestClue = () => requestClue(guess);
 
   function handleClueCommand() {
-    const showMessage = (text: string) => {
-      setMessage(text);
+    const showReply = (text: string) => {
+      showMessage(text);
       setGuessSucceeded(null);
     };
     if (!rememberedGuess) {
-      showMessage(CLUE_COMMAND_MESSAGES.noGuess);
+      showReply(CLUE_COMMAND_MESSAGES.noGuess);
     } else if (isClueLimitReached) {
-      showMessage(CLUE_COMMAND_MESSAGES.limit);
+      showReply(CLUE_COMMAND_MESSAGES.limit);
     } else if (isClueCooldown) {
-      showMessage(CLUE_COMMAND_MESSAGES.cooldown(cooldownSeconds));
+      showReply(CLUE_COMMAND_MESSAGES.cooldown(cooldownSeconds));
     } else if (!rememberedGuess.canRequestClue) {
-      showMessage(CLUE_COMMAND_MESSAGES.notYet);
+      showReply(CLUE_COMMAND_MESSAGES.notYet);
     } else if (!requestClueMutation.isPending) {
       requestClue(rememberedGuess.guess);
     }
@@ -236,7 +246,7 @@ function useProgramPlay({
     guess,
     message,
     guessSucceeded,
-    isShaking,
+    denialId,
     isPending: submitGuessMutation.isPending,
     changeHandler,
     handleSubmit,
