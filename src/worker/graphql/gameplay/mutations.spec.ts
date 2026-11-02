@@ -753,6 +753,40 @@ describe("Gameplay Mutations: requestClue", () => {
     expect(generateClue).not.toHaveBeenCalled();
   });
 
+  it("passes no aliases to generateClue when the gate has none stored", async () => {
+    mockDb.query.sessionProgress.findFirst.mockResolvedValue({
+      ...defaultProgress,
+      attemptCount: 3,
+    });
+    mockDb.query.gates.findFirst.mockResolvedValue({
+      ...defaultGate,
+      acceptedAnswers: null,
+    });
+    mockDb.query.gateClues.findMany.mockResolvedValue([]);
+    vi.mocked(generateClue).mockResolvedValue({
+      clueText: "It is often red or green.",
+      reason: "success",
+      latencyMs: 0,
+    });
+
+    if (!requestClue.resolve) throw new Error("Resolver not defined");
+
+    await requestClue.resolve(
+      null,
+      { programId: "prog-1", gateId: "gate-1", currentGuess: "banana" },
+      mockContext,
+    );
+
+    expect(generateClue).toHaveBeenCalledWith(
+      mockContext,
+      defaultGate.question,
+      defaultGate.correctAnswer,
+      [],
+      "banana",
+      [],
+    );
+  });
+
   it("generates, persists, and returns a new clue when eligible", async () => {
     mockDb.query.sessionProgress.findFirst.mockResolvedValue({
       ...defaultProgress,
