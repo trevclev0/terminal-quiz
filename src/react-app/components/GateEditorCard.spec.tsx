@@ -1,7 +1,9 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import {
+  ACCEPTED_ANSWER_REQUIRED_ERROR,
   ANSWER_CONFLICT_ERROR,
   DUPLICATE_ACCEPTED_ANSWER_ERROR,
   MAX_ACCEPTED_ANSWERS,
@@ -397,6 +399,145 @@ describe("GateEditorCard", () => {
 
       expect(screen.getByRole("button", { name: "Save Gate" })).toBeDisabled();
       expect(screen.queryByText(ANSWER_CONFLICT_ERROR)).not.toBeInTheDocument();
+    });
+
+    const HELPER_TEXT = "Other answers that count as correct";
+
+    it("describes an invalid alias with its error and the helper text", () => {
+      setup(withAliases(["", "nyc"]));
+
+      const input = screen.getByLabelText("Accepted answer 1");
+      expect(input).toHaveAccessibleDescription(
+        expect.stringContaining(HELPER_TEXT),
+      );
+      expect(input).toHaveAccessibleDescription(
+        expect.stringContaining(ACCEPTED_ANSWER_REQUIRED_ERROR),
+      );
+    });
+
+    it("describes a valid alias with the helper text only", () => {
+      setup(withAliases(["", "nyc"]));
+
+      const input = screen.getByLabelText("Accepted answer 2");
+      expect(input).toHaveAccessibleDescription(
+        expect.stringContaining(HELPER_TEXT),
+      );
+      expect(input).not.toHaveAccessibleDescription(
+        expect.stringContaining(ACCEPTED_ANSWER_REQUIRED_ERROR),
+      );
+    });
+
+    it("gives each card its own description ids", () => {
+      const props = {
+        gate,
+        draft: { ...draft, acceptedAnswers: [""] },
+        index: 0,
+        isFirst: true,
+        isLast: false,
+        isReorderPending: false,
+        isDeletePending: false,
+        savingGateId: null,
+        onReorder: vi.fn(),
+        onSave: vi.fn(),
+        onDelete: vi.fn(),
+        onDraftChange: vi.fn(),
+      };
+      const { container } = render(
+        <>
+          <section data-testid="card-a">
+            <GateEditorCard {...props} />
+          </section>
+          <section data-testid="card-b">
+            <GateEditorCard {...props} />
+          </section>
+        </>,
+      );
+
+      for (const id of ["card-a", "card-b"]) {
+        const card = container.querySelector(`[data-testid="${id}"]`);
+        const input = card?.querySelector("input[aria-label^='Accepted']");
+        const ids = input?.getAttribute("aria-describedby")?.split(" ") ?? [];
+        expect(ids.length).toBeGreaterThan(1);
+        for (const describedBy of ids) {
+          expect(card?.querySelector(`[id="${describedBy}"]`)).not.toBeNull();
+          expect(
+            container.querySelectorAll(`[id="${describedBy}"]`),
+          ).toHaveLength(1);
+        }
+      }
+    });
+
+    describe("removal focus", () => {
+      function Harness({ initial }: { initial: string[] }) {
+        const [acceptedAnswers, setAcceptedAnswers] = useState(initial);
+        return (
+          <GateEditorCard
+            gate={gate}
+            draft={{ ...draft, acceptedAnswers }}
+            index={0}
+            isFirst
+            isLast={false}
+            isReorderPending={false}
+            isDeletePending={false}
+            savingGateId={null}
+            onReorder={vi.fn()}
+            onSave={vi.fn()}
+            onDelete={vi.fn()}
+            onDraftChange={(patch) =>
+              setAcceptedAnswers(patch.acceptedAnswers ?? acceptedAnswers)
+            }
+            updateError={null}
+            deleteError={null}
+          />
+        );
+      }
+
+      it("focuses the row that slides up after removing a middle row", async () => {
+        render(<Harness initial={["a", "b", "c"]} />);
+
+        await userEvent.click(
+          screen.getByLabelText("Remove accepted answer 2"),
+        );
+
+        const input = screen.getByLabelText("Accepted answer 2");
+        expect(input).toHaveValue("c");
+        expect(input).toHaveFocus();
+      });
+
+      it("focuses the new last row after removing the last row", async () => {
+        render(<Harness initial={["a", "b"]} />);
+
+        await userEvent.click(
+          screen.getByLabelText("Remove accepted answer 2"),
+        );
+
+        expect(screen.getByLabelText("Accepted answer 1")).toHaveValue("a");
+        expect(screen.getByLabelText("Accepted answer 1")).toHaveFocus();
+      });
+
+      it("focuses the add button after removing the only row", async () => {
+        render(<Harness initial={["a"]} />);
+
+        await userEvent.click(
+          screen.getByLabelText("Remove accepted answer 1"),
+        );
+
+        const add = screen.getByRole("button", { name: "[+] Add answer" });
+        expect(add).toBeEnabled();
+        expect(add).toHaveFocus();
+      });
+
+      it("still lands focus when other rows are invalid", async () => {
+        render(<Harness initial={["", "b", ""]} />);
+
+        await userEvent.click(
+          screen.getByLabelText("Remove accepted answer 2"),
+        );
+
+        const input = screen.getByLabelText("Accepted answer 2");
+        expect(input).toHaveValue("");
+        expect(input).toHaveFocus();
+      });
     });
   });
 });
