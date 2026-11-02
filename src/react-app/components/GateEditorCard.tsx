@@ -90,6 +90,9 @@ export default function GateEditorCard({
   // Where focus goes once the next render lands: a row index, or the Add
   // button when no row is left. Set by add and remove, since the removed
   // row's button unmounts and would otherwise drop focus to <body>.
+  // Both ref callbacks below must stay inline: React re-runs a ref callback
+  // only when its identity changes, which here is every commit. Memoizing
+  // them (or React Compiler doing so) would silently break this focus.
   const focusRowRef = useRef<number | null>(null);
   const focusAddRef = useRef(false);
   const addAlias = () => {
