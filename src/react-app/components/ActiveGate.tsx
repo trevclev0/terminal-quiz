@@ -25,6 +25,8 @@ type ActiveGateProps = {
    * announce it twice.
    */
   animateDenial: boolean;
+  /** Called when the blink animation actually starts playing. */
+  onDenialBlinkStart: () => void;
   isPending: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
   changeHandler: (e: ChangeEvent<HTMLInputElement>) => void;
@@ -99,6 +101,7 @@ export default function ActiveGate({
   guessSucceeded = null,
   denialId,
   animateDenial,
+  onDenialBlinkStart,
   isPending,
   inputRef,
   changeHandler,
@@ -197,6 +200,7 @@ to submit`;
                       ? gateStyles.accessDenied
                       : undefined
                   }
+                  onAnimationStart={onDenialBlinkStart}
                 >
                   {message}
                 </span>

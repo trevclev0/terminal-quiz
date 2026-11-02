@@ -49,6 +49,7 @@ const mockRequestClueMutation = {
   isPending: false,
 };
 const mockHandleRequestClue = vi.fn();
+const mockOnDenialBlinkStart = vi.fn();
 
 function fullProps(
   props: Partial<React.ComponentProps<typeof ActiveGate>> = {},
@@ -61,6 +62,7 @@ function fullProps(
     guessSucceeded: null,
     denialId: null,
     animateDenial: true,
+    onDenialBlinkStart: mockOnDenialBlinkStart,
     isPending: false,
     inputRef: mockInputRef,
     changeHandler: mockChangeHandler,
@@ -258,6 +260,15 @@ describe("ActiveGate", () => {
 
       expect(screen.getByRole("status")).toHaveTextContent("Verifying...");
       expect(container.querySelector(".accessDenied")).toBeNull();
+    });
+
+    it("reports the blink starting when the span's animation begins", () => {
+      renderActiveGate(deniedProps);
+
+      expect(mockOnDenialBlinkStart).not.toHaveBeenCalled();
+      fireEvent.animationStart(screen.getByText(denial));
+
+      expect(mockOnDenialBlinkStart).toHaveBeenCalledTimes(1);
     });
 
     it("never shakes the gate", () => {
