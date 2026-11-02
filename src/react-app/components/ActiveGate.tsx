@@ -13,7 +13,20 @@ type ActiveGateProps = {
   guess: string;
   message: string | null;
   guessSucceeded?: boolean | null;
-  isShaking: boolean;
+  /**
+   * Non-null exactly while `message` is a wrong-guess denial; a new value
+   * restarts the blink.
+   */
+  denialId: number | null;
+  /**
+   * Whether the denial may blink: false under reduced motion, until the boot
+   * sequence ends, or for a denial throttled by the flash-rate limit.
+   * Toggling it must not remount the message, or the live region would
+   * announce it twice.
+   */
+  animateDenial: boolean;
+  /** Called when the blink animation actually starts playing. */
+  onDenialBlinkStart: () => void;
   isPending: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
   changeHandler: (e: ChangeEvent<HTMLInputElement>) => void;
@@ -86,7 +99,9 @@ export default function ActiveGate({
   guess,
   message,
   guessSucceeded = null,
-  isShaking,
+  denialId,
+  animateDenial,
+  onDenialBlinkStart,
   isPending,
   inputRef,
   changeHandler,
@@ -124,12 +139,7 @@ to submit`;
   const displayMessage = pendingMessage ?? message;
 
   return (
-    <div
-      id={id}
-      className={
-        isShaking ? `${gateStyles.gate} ${styles.shake}` : gateStyles.gate
-      }
-    >
+    <div id={id} className={gateStyles.gate}>
       <details open>
         <summary className={gateStyles.gateSummary}>{gate.label}</summary>
         <form onSubmit={handleSubmit} aria-label={formAriaLabel}>
@@ -177,8 +187,24 @@ to submit`;
                     : "response"
               }
             >
-              {pendingMessage && <Spinner />}
-              {displayMessage}
+              {pendingMessage ? (
+                <>
+                  <Spinner />
+                  {pendingMessage}
+                </>
+              ) : (
+                <span
+                  key={denialId ?? "message"}
+                  className={
+                    denialId !== null && animateDenial
+                      ? gateStyles.accessDenied
+                      : undefined
+                  }
+                  onAnimationStart={onDenialBlinkStart}
+                >
+                  {message}
+                </span>
+              )}
             </p>
           )}
 

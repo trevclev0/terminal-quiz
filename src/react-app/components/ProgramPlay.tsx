@@ -60,7 +60,9 @@ function ProgramPlay() {
     guess,
     message,
     guessSucceeded,
-    isShaking,
+    denialId,
+    denialBlinks,
+    onDenialBlinkStart,
     isPending,
     changeHandler,
     handleSubmit,
@@ -248,7 +250,9 @@ function ProgramPlay() {
           guess={guess}
           message={message}
           guessSucceeded={guessSucceeded}
-          isShaking={isShaking}
+          denialId={denialId}
+          animateDenial={!reduceMotion && bootComplete && denialBlinks}
+          onDenialBlinkStart={onDenialBlinkStart}
           isPending={isPending}
           inputRef={inputRef}
           changeHandler={changeHandler}

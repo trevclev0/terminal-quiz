@@ -214,12 +214,21 @@ export class GamePage {
   }
 
   /**
-   * Check if the active gate div currently has the shake CSS class.
-   * Note: shake auto-clears after ~400ms, so call this immediately
-   * after a wrong answer submission.
+   * Check if the denial message carries the ACCESS DENIED blink class.
+   * The class stays on after the animation ends (`forwards`), so there is
+   * no timing race once it is applied. A denial that lands while the CRT
+   * boot is still running gets the class only when boot completes, so wait
+   * for it rather than sampling once.
    */
-  async isShaking(): Promise<boolean> {
-    return this.page.locator("[class*='shake']").first().isVisible();
+  async isDenialBlinking(): Promise<boolean> {
+    try {
+      await this.page
+        .locator("[role='status'] [class*='accessDenied']")
+        .waitFor({ state: "visible", timeout: 10000 });
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   // ─── Keyboard shortcut helpers ─────────────────────────────────────

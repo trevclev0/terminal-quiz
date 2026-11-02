@@ -49,17 +49,20 @@ const mockRequestClueMutation = {
   isPending: false,
 };
 const mockHandleRequestClue = vi.fn();
+const mockOnDenialBlinkStart = vi.fn();
 
-function renderActiveGate(
+function fullProps(
   props: Partial<React.ComponentProps<typeof ActiveGate>> = {},
-) {
-  const fullProps = {
+): React.ComponentProps<typeof ActiveGate> {
+  return {
     id: "gate-0",
     gate: mockActiveGate,
     guess: "",
     message: null,
     guessSucceeded: null,
-    isShaking: false,
+    denialId: null,
+    animateDenial: true,
+    onDenialBlinkStart: mockOnDenialBlinkStart,
     isPending: false,
     inputRef: mockInputRef,
     changeHandler: mockChangeHandler,
@@ -72,7 +75,12 @@ function renderActiveGate(
     enabled: true,
     ...props,
   };
-  return render(<ActiveGate {...fullProps} />);
+}
+
+function renderActiveGate(
+  props: Partial<React.ComponentProps<typeof ActiveGate>> = {},
+) {
+  return render(<ActiveGate {...fullProps(props)} />);
 }
 
 beforeEach(() => {
@@ -184,28 +192,105 @@ describe("ActiveGate", () => {
     expect(screen.getByRole("textbox")).toBeDisabled();
   });
 
-  it("applies .shake class when isShaking is true", () => {
-    const { container } = renderActiveGate({ isShaking: true });
-    const gateDiv = container.querySelector("#gate-0");
-    expect(gateDiv).toHaveClass("shake gate");
-  });
+  describe("denial blink", () => {
+    const denial = "ACCESS DENIED. INCORRECT SYNTAX OR VALUE.";
+    const deniedProps = {
+      message: denial,
+      guessSucceeded: false,
+      denialId: 1,
+    };
 
-  it("does not apply .shake class when isShaking is false", () => {
-    const { container } = renderActiveGate({ isShaking: false });
-    const gateDiv = container.querySelector("#gate-0");
-    expect(gateDiv).not.toHaveClass("shake");
-    expect(gateDiv).toHaveClass("gate");
+    it("wraps a wrong-guess denial in the accessDenied element", () => {
+      renderActiveGate({ ...deniedProps, animateDenial: true });
+
+      expect(screen.getByText(denial)).toHaveClass("accessDenied");
+    });
+
+    it("keeps the denial red but unanimated when animateDenial is off", () => {
+      renderActiveGate({ ...deniedProps, animateDenial: false });
+
+      expect(screen.getByText(denial)).not.toHaveClass("accessDenied");
+      expect(screen.getByRole("status")).toHaveClass("fail");
+    });
+
+    it("does not blink a failure message that is not a denial", () => {
+      renderActiveGate({
+        message: "Error submitting guess",
+        guessSucceeded: false,
+        denialId: null,
+        animateDenial: true,
+      });
+
+      expect(screen.getByText("Error submitting guess")).not.toHaveClass(
+        "accessDenied",
+      );
+      expect(screen.getByRole("status")).toHaveClass("fail");
+    });
+
+    it("restarts the blink by remounting when denialId changes", () => {
+      const { rerender } = renderActiveGate(deniedProps);
+      const first = screen.getByText(denial);
+
+      rerender(<ActiveGate {...fullProps({ ...deniedProps, denialId: 2 })} />);
+
+      expect(screen.getByText(denial)).not.toBe(first);
+    });
+
+    it("does not remount when only animateDenial turns on", () => {
+      const { rerender } = renderActiveGate({
+        ...deniedProps,
+        animateDenial: false,
+      });
+      const first = screen.getByText(denial);
+      expect(first).not.toHaveClass("accessDenied");
+
+      rerender(
+        <ActiveGate {...fullProps({ ...deniedProps, animateDenial: true })} />,
+      );
+
+      expect(screen.getByText(denial)).toBe(first);
+      expect(first).toHaveClass("accessDenied");
+    });
+
+    it("shows Verifying... without the blink while a guess is pending", () => {
+      const { container } = renderActiveGate({
+        ...deniedProps,
+        isPending: true,
+      });
+
+      expect(screen.getByRole("status")).toHaveTextContent("Verifying...");
+      expect(container.querySelector(".accessDenied")).toBeNull();
+    });
+
+    it("reports the blink starting when the span's animation begins", () => {
+      renderActiveGate(deniedProps);
+
+      expect(mockOnDenialBlinkStart).not.toHaveBeenCalled();
+      fireEvent.animationStart(screen.getByText(denial));
+
+      expect(mockOnDenialBlinkStart).toHaveBeenCalledTimes(1);
+    });
+
+    it("never shakes the gate", () => {
+      const { container } = renderActiveGate(deniedProps);
+
+      const gateDiv = container.querySelector("#gate-0");
+      expect(gateDiv).not.toHaveClass("shake");
+      expect(gateDiv).toHaveClass("gate");
+    });
   });
 
   it("renders response message with .fail class for incorrect response", () => {
     renderActiveGate({ message: "Access Denied.", guessSucceeded: false });
-    const response = screen.getByText("Access Denied.");
+    const response = screen.getByRole("status");
+    expect(response).toHaveTextContent("Access Denied.");
     expect(response).toHaveClass("fail response");
   });
 
   it("renders response message without .fail class for correct response", () => {
     renderActiveGate({ message: "ACCESS GRANTED.", guessSucceeded: true });
-    const response = screen.getByText("ACCESS GRANTED.");
+    const response = screen.getByRole("status");
+    expect(response).toHaveTextContent("ACCESS GRANTED.");
     expect(response).not.toHaveClass("fail");
     expect(response).toHaveClass("response");
   });

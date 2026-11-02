@@ -11,7 +11,7 @@ test.describe("@full wrong answer flow", () => {
     await gamePage.waitForLoad();
   });
 
-  test("shows denial message and shake on wrong answer, then recovers", async ({
+  test("shows a blinking denial on wrong answer, then recovers", async ({
     page,
   }) => {
     const gamePage = new GamePage(page);
@@ -20,12 +20,7 @@ test.describe("@full wrong answer flow", () => {
     const denialMsg = await gamePage.submitAnswerAndWaitForDenial("wrong");
     expect(denialMsg).toContain("ACCESS DENIED");
 
-    // Should be shaking immediately after denial
-    // (shake auto-clears after 400ms, denial appears ~same time)
-    expect(await gamePage.isShaking()).toBe(true);
-
-    // Wait for shake to clear
-    await page.waitForTimeout(500);
+    expect(await gamePage.isDenialBlinking()).toBe(true);
 
     // Submit correct answer — should proceed to Gate 2
     await gamePage.submitAnswer("blue");
