@@ -75,7 +75,7 @@ const mockUseProgramPlay = {
   guess: "",
   message: null,
   guessSucceeded: null,
-  isShaking: false,
+  denialId: null,
   isPending: false,
   changeHandler: vi.fn(),
   handleSubmit: vi.fn(),
@@ -253,7 +253,7 @@ describe("ProgramPlay Component", () => {
       gate: mockProgression.currentGate,
       guess: "",
       message: null,
-      isShaking: false,
+      denialId: null,
       isPending: false,
       enabled: true,
     });
@@ -521,27 +521,66 @@ describe("ProgramPlay Component", () => {
     await screen.findByText("test-program-id");
   });
 
-  it("passes isShaking prop to ActiveGate correctly", async () => {
-    vi.mocked(useProgramPlay).mockReturnValue({
-      ...mockUseProgramPlay,
-      isShaking: true,
+  describe("denial blink", () => {
+    async function renderActive(options: { withBoot?: boolean } = {}) {
+      vi.mocked(useProgramPlay).mockReturnValue({
+        ...mockUseProgramPlay,
+        message: "ACCESS DENIED.",
+        guessSucceeded: false,
+        denialId: 3,
+      });
+      const { queryClient, wrapper } = createQueryWrapper();
+      queryClient.setQueryData(["programs"], mockPrograms);
+      queryClient.setQueryData(
+        ["programs", "progression", "test-program-id"],
+        mockProgression,
+      );
+      render(
+        options.withBoot ? (
+          <BootProvider>
+            <BootHarness>
+              <ProgramPlay />
+            </BootHarness>
+          </BootProvider>
+        ) : (
+          <ProgramPlay />
+        ),
+        { wrapper },
+      );
+      await screen.findByText("Test Program");
+    }
+
+    const latestGateProps = () => vi.mocked(ActiveGate).mock.calls.at(-1)?.[0];
+
+    it("passes denialId through to ActiveGate", async () => {
+      await renderActive();
+
+      expect(latestGateProps()?.denialId).toBe(3);
     });
 
-    const { queryClient, wrapper } = createQueryWrapper();
+    it("animates the denial when motion is allowed and boot is done", async () => {
+      stubReducedMotion(false);
+      await renderActive();
 
-    queryClient.setQueryData(["programs"], mockPrograms);
-    queryClient.setQueryData(
-      ["programs", "progression", "test-program-id"],
-      mockProgression,
-    );
+      expect(latestGateProps()?.animateDenial).toBe(true);
+    });
 
-    render(<ProgramPlay />, { wrapper });
+    it("does not animate the denial under reduced motion", async () => {
+      await renderActive();
 
-    await screen.findByText("Test Program");
-    const activeGateCall = vi.mocked(ActiveGate).mock.calls[0];
-    expect(activeGateCall).toBeDefined();
-    expect(activeGateCall[0]).toMatchObject({
-      isShaking: true,
+      expect(latestGateProps()?.animateDenial).toBe(false);
+    });
+
+    it("holds the denial animation until the boot sequence reports", async () => {
+      stubReducedMotion(false);
+      await renderActive({ withBoot: true });
+      expect(latestGateProps()?.animateDenial).toBe(false);
+
+      fireEvent.click(screen.getByTestId("finish-boot"));
+
+      await waitFor(() => {
+        expect(latestGateProps()?.animateDenial).toBe(true);
+      });
     });
   });
 

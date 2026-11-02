@@ -146,7 +146,7 @@ bun run eval:clues       # manual real-model clue prompt eval — plan only; add
 │   │   ├── contexts/          # BootContext — bootComplete flag reported by
 │   │   │                     # CrtOverlay, gating the typed gameplay surfaces
 │   │   ├── hooks/             # useProgramPlay, usePrograms, useProgressionScroll,
-│   │   │                     # useResetSession, useShake, useTypewriter,
+│   │   │                     # useResetSession, useTypewriter,
 │   │   │                     # useCrtPreferences, useKeyboardShortcuts,
 │   │   │                     # useModalDialog
 │   │   ├── routes/            # TanStack file-based routes: __root, index, login,
