@@ -98,7 +98,8 @@ test.describe("@full", () => {
     // The alias survives a full reload, so it came back from the server.
     await page.reload();
     await editorPage.waitForLoad();
-    expect(await editorPage.getAcceptedAnswers(0)).toEqual(["nyc"]);
+    // Gate cards render after the drafts load, so retry until they do.
+    await expect.poll(() => editorPage.getAcceptedAnswers(0)).toEqual(["nyc"]);
 
     await editorPage.clickPlay();
     const gamePage = new GamePage(page);
