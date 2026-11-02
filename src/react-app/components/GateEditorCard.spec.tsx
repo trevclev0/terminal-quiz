@@ -469,11 +469,16 @@ describe("GateEditorCard", () => {
 
     describe("removal focus", () => {
       function Harness({ initial }: { initial: string[] }) {
-        const [acceptedAnswers, setAcceptedAnswers] = useState(initial);
+        // Holds the whole draft so edits to other fields re-render the card,
+        // which is what exposes a focus flag that was never reset.
+        const [current, setCurrent] = useState<GateForm>({
+          ...draft,
+          acceptedAnswers: initial,
+        });
         return (
           <GateEditorCard
             gate={gate}
-            draft={{ ...draft, acceptedAnswers }}
+            draft={current}
             index={0}
             isFirst
             isLast={false}
@@ -484,7 +489,7 @@ describe("GateEditorCard", () => {
             onSave={vi.fn()}
             onDelete={vi.fn()}
             onDraftChange={(patch) =>
-              setAcceptedAnswers(patch.acceptedAnswers ?? acceptedAnswers)
+              setCurrent((prev) => ({ ...prev, ...patch }))
             }
             updateError={null}
             deleteError={null}
@@ -501,6 +506,18 @@ describe("GateEditorCard", () => {
 
         const input = screen.getByLabelText("Accepted answer 2");
         expect(input).toHaveValue("c");
+        expect(input).toHaveFocus();
+      });
+
+      it("focuses the row that slides up after removing the first row", async () => {
+        render(<Harness initial={["a", "b", "c"]} />);
+
+        await userEvent.click(
+          screen.getByLabelText("Remove accepted answer 1"),
+        );
+
+        const input = screen.getByLabelText("Accepted answer 1");
+        expect(input).toHaveValue("b");
         expect(input).toHaveFocus();
       });
 
@@ -528,15 +545,32 @@ describe("GateEditorCard", () => {
       });
 
       it("still lands focus when other rows are invalid", async () => {
-        render(<Harness initial={["", "b", ""]} />);
+        render(<Harness initial={["", "b", "c"]} />);
 
         await userEvent.click(
           screen.getByLabelText("Remove accepted answer 2"),
         );
 
         const input = screen.getByLabelText("Accepted answer 2");
-        expect(input).toHaveValue("");
+        expect(input).toHaveValue("c");
         expect(input).toHaveFocus();
+      });
+
+      it("does not pull focus back once the pending focus is spent", async () => {
+        const user = userEvent.setup();
+        render(<Harness initial={["a"]} />);
+
+        await user.click(screen.getByLabelText("Remove accepted answer 1"));
+        const add = screen.getByRole("button", { name: "[+] Add answer" });
+        expect(add).toHaveFocus();
+
+        await user.click(add);
+        expect(screen.getByLabelText("Accepted answer 1")).toHaveFocus();
+
+        const label = screen.getByDisplayValue("Gate One");
+        await user.click(label);
+        await user.type(label, "!");
+        expect(screen.getByDisplayValue("Gate One!")).toHaveFocus();
       });
     });
   });
