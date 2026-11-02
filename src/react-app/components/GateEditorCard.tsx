@@ -10,7 +10,7 @@ import {
   MIN_GUIDANCE_THRESHOLD,
   normalizeAnswer,
 } from "@shared/validation";
-import { useRef } from "react";
+import { useId, useRef } from "react";
 import FormField from "./FormField";
 import styles from "./GateEditorCard.module.css";
 import MutationError from "./MutationError";
@@ -77,11 +77,39 @@ export default function GateEditorCard({
     findAnswerConflict(draft.correctAnswer, [alias]) !== null;
   const canSave = validation.success && conflictError === null;
 
-  // Row to focus once it renders; set when the author adds one.
+  const helperId = useId();
+  const errorsId = useId();
+  // The group shows one shared error list, so an invalid row is described by
+  // all of it; the errors are separate spans (not a wrapper) to leave the
+  // flex layout untouched.
+  const invalidDescribedBy = [
+    helperId,
+    ...aliasErrors.map((_, i) => `${errorsId}-${i}`),
+  ].join(" ");
+
+  // Where focus goes once the next render lands: a row index, or the Add
+  // button when no row is left. Set by add and remove, since the removed
+  // row's button unmounts and would otherwise drop focus to <body>.
+  // Both ref callbacks below must stay inline: React re-runs a ref callback
+  // only when its identity changes, which here is every commit. Memoizing
+  // them (or React Compiler doing so) would silently break this focus.
   const focusRowRef = useRef<number | null>(null);
+  const focusAddRef = useRef(false);
   const addAlias = () => {
     focusRowRef.current = aliases.length;
     onDraftChange({ acceptedAnswers: [...aliases, ""] });
+  };
+
+  const removeAlias = (row: number) => {
+    // Rows are keyed by position, so the row after the removed one slides up
+    // into index `row`; only the last row has to fall back to its neighbour.
+    const target = row < aliases.length - 1 ? row : row - 1;
+    if (target < 0) {
+      focusAddRef.current = true;
+    } else {
+      focusRowRef.current = target;
+    }
+    onDraftChange({ acceptedAnswers: aliases.filter((_, i) => i !== row) });
   };
 
   const acceptancePercent = `${(draft.acceptanceThreshold * 100)
@@ -146,58 +174,68 @@ export default function GateEditorCard({
         </FormField>
         <fieldset className={styles.aliasGroup}>
           <legend className={styles.aliasLegend}>Also accept</legend>
-          {aliases.map((alias, row) => (
-            // Rows have no identity beyond their position: the draft is a
-            // plain string list, so the index is the only stable key.
-            // biome-ignore lint/suspicious/noArrayIndexKey: see above
-            <div key={row} className={styles.aliasRow}>
-              <input
-                type="text"
-                value={alias}
-                onChange={(e) =>
-                  onDraftChange({
-                    acceptedAnswers: aliases.map((a, i) =>
-                      i === row ? e.target.value : a,
-                    ),
-                  })
-                }
-                ref={(el) => {
-                  if (el && focusRowRef.current === row) {
-                    focusRowRef.current = null;
-                    el.focus();
+          {aliases.map((alias, row) => {
+            const invalid = isAliasInvalid(alias, row);
+            return (
+              // Rows have no identity beyond their position: the draft is a
+              // plain string list, so the index is the only stable key.
+              // biome-ignore lint/suspicious/noArrayIndexKey: see above
+              <div key={row} className={styles.aliasRow}>
+                <input
+                  type="text"
+                  value={alias}
+                  onChange={(e) =>
+                    onDraftChange({
+                      acceptedAnswers: aliases.map((a, i) =>
+                        i === row ? e.target.value : a,
+                      ),
+                    })
                   }
-                }}
-                className={styles.aliasInput}
-                aria-label={`Accepted answer ${row + 1}`}
-                aria-invalid={isAliasInvalid(alias, row)}
-              />
-              <button
-                type="button"
-                onClick={() =>
-                  onDraftChange({
-                    acceptedAnswers: aliases.filter((_, i) => i !== row),
-                  })
-                }
-                className={styles.aliasButton}
-                aria-label={`Remove accepted answer ${row + 1}`}
-              >
-                [x]
-              </button>
-            </div>
-          ))}
+                  ref={(el) => {
+                    if (el && focusRowRef.current === row) {
+                      focusRowRef.current = null;
+                      el.focus();
+                    }
+                  }}
+                  className={styles.aliasInput}
+                  aria-label={`Accepted answer ${row + 1}`}
+                  aria-invalid={invalid}
+                  aria-describedby={invalid ? invalidDescribedBy : helperId}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeAlias(row)}
+                  className={styles.aliasButton}
+                  aria-label={`Remove accepted answer ${row + 1}`}
+                >
+                  [x]
+                </button>
+              </div>
+            );
+          })}
           <button
             type="button"
+            ref={(el) => {
+              if (el && focusAddRef.current) {
+                focusAddRef.current = false;
+                el.focus();
+              }
+            }}
             onClick={addAlias}
             disabled={aliases.length >= MAX_ACCEPTED_ANSWERS}
             className={styles.aliasAddButton}
           >
             [+] Add answer
           </button>
-          <span className={styles.helperText}>
+          <span id={helperId} className={styles.helperText}>
             Other answers that count as correct
           </span>
-          {aliasErrors.map((message) => (
-            <span key={message} className={styles.fieldError}>
+          {aliasErrors.map((message, i) => (
+            <span
+              key={message}
+              id={`${errorsId}-${i}`}
+              className={styles.fieldError}
+            >
               {message}
             </span>
           ))}
