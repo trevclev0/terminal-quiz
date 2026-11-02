@@ -24,4 +24,20 @@ function isGuessCloseEnough(
   return similarity >= threshold;
 }
 
+/**
+ * True when the guess is close enough to the main answer or to any alias.
+ * Aliases use the same fuzzy threshold, so a short alias such as "NYC" has
+ * no slack for typos while a long one tolerates them like the main answer.
+ */
+export function isGuessAccepted(
+  guess: string,
+  correctAnswer: string,
+  acceptedAnswers: readonly string[] | null,
+  threshold = GUESS_ACCURACY_THRESHOLD,
+): boolean {
+  return [correctAnswer, ...(acceptedAnswers ?? [])].some((answer) =>
+    isGuessCloseEnough(guess, answer, threshold),
+  );
+}
+
 export default isGuessCloseEnough;

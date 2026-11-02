@@ -45,6 +45,7 @@ const e2eGateRows: (typeof gates)["$inferInsert"][] = [
     label: "Gate 2",
     question: "What is 2 + 2?",
     correctAnswer: "4",
+    acceptedAnswers: ["four"],
     successMessage: "Correct! Basic arithmetic still holds.",
     guidanceEnabled: false,
     guidanceThreshold: 3,

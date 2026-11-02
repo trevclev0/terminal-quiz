@@ -5,7 +5,7 @@ import { resetSession } from "./resetSessionMutation";
 import { submitGuess } from "./submitGuessMutation";
 
 vi.mock("@worker-utils/isGuessCloseEnough", () => ({
-  default: vi.fn(),
+  isGuessAccepted: vi.fn(),
 }));
 
 vi.mock("@worker-services/aiService", () => ({
@@ -14,7 +14,7 @@ vi.mock("@worker-services/aiService", () => ({
 
 import { generateClue } from "@worker-services/aiService";
 import { createMockGraphQLContext } from "@worker-test-utils/mockEnv";
-import isGuessCloseEnough from "@worker-utils/isGuessCloseEnough";
+import { isGuessAccepted } from "@worker-utils/isGuessCloseEnough";
 import type { AppGraphQLContext } from "./types";
 
 type MockDb = {
@@ -113,7 +113,7 @@ describe("Gameplay Mutations: submitGuess", () => {
   beforeEach(() => {
     mockDb = createMockDb();
     mockContext = createMockContext(mockDb);
-    vi.mocked(isGuessCloseEnough).mockReset();
+    vi.mocked(isGuessAccepted).mockReset();
     vi.mocked(generateClue).mockReset();
   });
 
@@ -125,7 +125,7 @@ describe("Gameplay Mutations: submitGuess", () => {
         attemptCount: 1,
       });
     mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
-    vi.mocked(isGuessCloseEnough).mockReturnValue(false);
+    vi.mocked(isGuessAccepted).mockReturnValue(false);
 
     if (!submitGuess.resolve) throw new Error("Resolver not defined");
 
@@ -158,7 +158,7 @@ describe("Gameplay Mutations: submitGuess", () => {
       });
     mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
     mockDb.query.gateClues.findMany.mockResolvedValue([]);
-    vi.mocked(isGuessCloseEnough).mockReturnValue(false);
+    vi.mocked(isGuessAccepted).mockReturnValue(false);
 
     if (!submitGuess.resolve) throw new Error("Resolver not defined");
 
@@ -186,7 +186,7 @@ describe("Gameplay Mutations: submitGuess", () => {
       guidanceEnabled: false,
     });
     mockDb.query.gateClues.findMany.mockResolvedValue([]);
-    vi.mocked(isGuessCloseEnough).mockReturnValue(false);
+    vi.mocked(isGuessAccepted).mockReturnValue(false);
 
     if (!submitGuess.resolve) throw new Error("Resolver not defined");
 
@@ -215,7 +215,7 @@ describe("Gameplay Mutations: submitGuess", () => {
       { attemptCountAtRequest: 3 },
       { attemptCountAtRequest: 4 },
     ]);
-    vi.mocked(isGuessCloseEnough).mockReturnValue(false);
+    vi.mocked(isGuessAccepted).mockReturnValue(false);
 
     if (!submitGuess.resolve) throw new Error("Resolver not defined");
 
@@ -242,7 +242,7 @@ describe("Gameplay Mutations: submitGuess", () => {
     mockDb.query.gateClues.findMany.mockResolvedValue([
       { attemptCountAtRequest: 3 },
     ]);
-    vi.mocked(isGuessCloseEnough).mockReturnValue(false);
+    vi.mocked(isGuessAccepted).mockReturnValue(false);
 
     if (!submitGuess.resolve) throw new Error("Resolver not defined");
 
@@ -269,7 +269,7 @@ describe("Gameplay Mutations: submitGuess", () => {
     mockDb.query.gateClues.findMany.mockResolvedValue([
       { attemptCountAtRequest: 3 },
     ]);
-    vi.mocked(isGuessCloseEnough).mockReturnValue(false);
+    vi.mocked(isGuessAccepted).mockReturnValue(false);
 
     if (!submitGuess.resolve) throw new Error("Resolver not defined");
 
@@ -377,7 +377,7 @@ describe("Gameplay Mutations: submitGuess", () => {
       .mockResolvedValueOnce(defaultProgress)
       .mockResolvedValueOnce(null);
     mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
-    vi.mocked(isGuessCloseEnough).mockReturnValue(false);
+    vi.mocked(isGuessAccepted).mockReturnValue(false);
 
     if (!submitGuess.resolve) throw new Error("Resolver not defined");
 
@@ -406,7 +406,7 @@ describe("Gameplay Mutations: submitGuess", () => {
         guidanceThreshold: 2,
       })
       .mockResolvedValueOnce({ id: "gate-3" });
-    vi.mocked(isGuessCloseEnough).mockReturnValue(true);
+    vi.mocked(isGuessAccepted).mockReturnValue(true);
 
     if (!submitGuess.resolve) throw new Error("Resolver not defined");
 
@@ -443,7 +443,7 @@ describe("Gameplay Mutations: submitGuess", () => {
         guidanceThreshold: 2,
       })
       .mockResolvedValueOnce(null);
-    vi.mocked(isGuessCloseEnough).mockReturnValue(true);
+    vi.mocked(isGuessAccepted).mockReturnValue(true);
 
     if (!submitGuess.resolve) throw new Error("Resolver not defined");
 
@@ -480,7 +480,7 @@ describe("Gameplay Mutations: submitGuess analytics events", () => {
     context = Object.assign(createMockContext(mockDb), {
       env: { ANALYTICS: { writeDataPoint }, ENVIRONMENT: "test" },
     });
-    vi.mocked(isGuessCloseEnough).mockReset();
+    vi.mocked(isGuessAccepted).mockReset();
   });
 
   async function guessCorrectly(nextGate: { id: string } | null) {
@@ -491,7 +491,7 @@ describe("Gameplay Mutations: submitGuess analytics events", () => {
     mockDb.query.gates.findFirst
       .mockResolvedValueOnce(defaultGate)
       .mockResolvedValueOnce(nextGate);
-    vi.mocked(isGuessCloseEnough).mockReturnValue(true);
+    vi.mocked(isGuessAccepted).mockReturnValue(true);
     if (!submitGuess.resolve) throw new Error("Resolver not defined");
     return submitGuess.resolve(
       null,
@@ -505,7 +505,7 @@ describe("Gameplay Mutations: submitGuess analytics events", () => {
       .mockResolvedValueOnce(defaultProgress)
       .mockResolvedValueOnce({ ...defaultProgress, attemptCount: 3 });
     mockDb.query.gates.findFirst.mockResolvedValue(defaultGate);
-    vi.mocked(isGuessCloseEnough).mockReturnValue(false);
+    vi.mocked(isGuessAccepted).mockReturnValue(false);
     if (!submitGuess.resolve) throw new Error("Resolver not defined");
 
     await submitGuess.resolve(

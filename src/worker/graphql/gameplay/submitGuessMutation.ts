@@ -1,6 +1,6 @@
 import { gates, sessionCompletedGates, sessionProgress } from "@shared/schema";
 import { guessSchema, parseOrThrow } from "@shared/validation";
-import isGuessCloseEnough from "@worker-utils/isGuessCloseEnough";
+import { isGuessAccepted } from "@worker-utils/isGuessCloseEnough";
 import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { GraphQLNonNull, GraphQLString } from "graphql";
 import { loadActiveSession } from "./activeSession";
@@ -52,9 +52,10 @@ export const submitGuess = {
     );
 
     if (
-      !isGuessCloseEnough(
+      !isGuessAccepted(
         guess,
         activeGate.correctAnswer,
+        activeGate.acceptedAnswers,
         activeGate.acceptanceThreshold,
       )
     ) {
@@ -116,6 +117,7 @@ export const submitGuess = {
       (await db.query.gates.findFirst({
         columns: {
           correctAnswer: false,
+          acceptedAnswers: false,
         },
         where: and(
           eq(gates.programId, args.programId),

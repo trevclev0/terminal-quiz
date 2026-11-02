@@ -72,7 +72,7 @@ const GateManagementType = new GraphQLObjectType({
   },
 });
 
-const ActiveGateType = new GraphQLObjectType({
+export const ActiveGateType = new GraphQLObjectType({
   name: "ActiveGate",
   fields: {
     id: { type: new GraphQLNonNull(GraphQLString) },
