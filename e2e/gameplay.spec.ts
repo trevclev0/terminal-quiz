@@ -49,4 +49,28 @@ test.describe("@full", () => {
       page.getByRole("button", { name: "Select new program" }),
     ).toBeVisible();
   });
+
+  test("accepts an alias answer", async ({ page }) => {
+    const selectPage = new SelectProgramPage(page);
+    await selectPage.goto();
+    await selectPage.waitForLoad();
+    const gamePage = await selectPage.selectAndStart("E2E Test Program");
+    await gamePage.waitForLoad();
+
+    await gamePage.submitAnswer("blue");
+    await gamePage.waitForVerificationComplete();
+    expect(await gamePage.isGuessSuccessful()).toBe(true);
+    await gamePage.waitForActiveGateLabel("Gate 2");
+
+    // Gate 2's correctAnswer is "4"; "four" is one of its accepted aliases.
+    await gamePage.submitAnswer("four");
+    await gamePage.waitForVerificationComplete();
+    expect(await gamePage.isGuessSuccessful()).toBe(true);
+    await gamePage.waitForActiveGateLabel("Gate 3");
+
+    expect(await gamePage.getCompletedGateLabels()).toContain("Gate 2");
+    // The completed gate reveals the canonical answer, not the alias typed.
+    const gateTwo = page.locator("form[aria-label='Gate 2 - completed']");
+    await expect(gateTwo.locator("input")).toHaveValue("4");
+  });
 });
