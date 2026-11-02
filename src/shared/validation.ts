@@ -125,6 +125,9 @@ export function findAnswerConflict(
   acceptedAnswers: readonly string[],
 ): string | null {
   const answer = normalizeAnswer(correctAnswer);
+  // A blank answer is the required-field rule's to report; blank == blank
+  // would otherwise surface a second, misleading conflict error.
+  if (answer === "") return null;
   return acceptedAnswers.some((alias) => normalizeAnswer(alias) === answer)
     ? ANSWER_CONFLICT_ERROR
     : null;

@@ -391,5 +391,12 @@ describe("GateEditorCard", () => {
       );
       expect(screen.getByText(ANSWER_CONFLICT_ERROR)).toBeInTheDocument();
     });
+
+    it("does not report a blank answer matching a blank row as a conflict", () => {
+      setup(withAliases([""], { correctAnswer: "" }));
+
+      expect(screen.getByRole("button", { name: "Save Gate" })).toBeDisabled();
+      expect(screen.queryByText(ANSWER_CONFLICT_ERROR)).not.toBeInTheDocument();
+    });
   });
 });
