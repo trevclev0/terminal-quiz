@@ -67,6 +67,14 @@ describe("isGuessAccepted", () => {
     expect(isGuessAccepted("New York Citty", "New York City", null)).toBe(true);
   });
 
+  it("adds no fallback answer when the gate has no aliases", () => {
+    // Pins `acceptedAnswers ?? []`: a stand-in alias for null (Stryker's
+    // "Stryker was here" fallback) would make this guess correct.
+    expect(isGuessAccepted("Stryker was here", "New York City", null)).toBe(
+      false,
+    );
+  });
+
   it("rejects a guess that matches neither the answer nor an alias", () => {
     expect(isGuessAccepted("Boston", "New York City", [])).toBe(false);
   });
