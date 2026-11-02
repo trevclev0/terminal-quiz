@@ -18,6 +18,7 @@ import {
   guessSchema,
   guidanceThresholdSchema,
   MAX_ACCEPTED_ANSWERS,
+  normalizeAnswer,
   parseOrThrow,
   RESERVED_ALIAS_ERROR,
   RESERVED_ANSWER_ERROR,
@@ -265,6 +266,12 @@ describe("acceptedAnswersSchema", () => {
     expect(
       gateFieldsSchema.safeParse({ ...draft, acceptedAnswers: [" "] }).success,
     ).toBe(false);
+  });
+});
+
+describe("normalizeAnswer", () => {
+  it("trims and lowercases, matching isGuessCloseEnough", () => {
+    expect(normalizeAnswer("  New York CITY ")).toBe("new york city");
   });
 });
 
