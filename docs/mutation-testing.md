@@ -12,7 +12,7 @@ lives in #326 and in git history.
 
 | Config | Command | Mutates | Break |
 |---|---|---|---|
-| `stryker.config.json` | `bun run mutate` | `src/worker/utils/**`, `shared/validation.ts`, `shared/gameCommands.ts`, `clueEligibility.ts`, `bootSequence.ts`, and 15 React hooks in `src/react-app/hooks/` | 90 |
+| `stryker.config.json` | `bun run mutate` | `src/worker/utils/**`, `shared/validation.ts`, `shared/gameCommands.ts`, `clueEligibility.ts`, `bootSequence.ts`, and 14 React hooks in `src/react-app/hooks/` | 90 |
 | `stryker.resolvers.config.json` | `bun run mutate:resolvers` | `submitGuessMutation`, `activeSession`, `authorizeProgram`, `managementHelpers`, `requestClueMutation`, `aiBudget`, `clueRateLimit` | 82 |
 
 Both run the unit tier only (Vitest, `coverageAnalysis: "perTest"`,
