@@ -1,7 +1,10 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createQueryWrapper } from "../test-utils/queryTestUtils";
-import useProgramPlay, { CLUE_COMMAND_MESSAGES } from "./useProgramPlay";
+import useProgramPlay, {
+  CLUE_COMMAND_MESSAGES,
+  DENIAL_BLINK_MS,
+} from "./useProgramPlay";
 
 // Mock the mutations
 const mockMutateAsync = vi.fn();
@@ -312,6 +315,64 @@ describe("useProgramPlay", () => {
     expect(first).not.toBeNull();
     // Strictly increasing, so an id is never reused after another denial.
     expect(result.current.denialId).toBeGreaterThan(first as number);
+  });
+
+  describe("denial blink throttle", () => {
+    // Wrong guesses at the given clock readings; returns each denial's
+    // blink verdict. Readings start below DENIAL_BLINK_MS so a first denial
+    // only blinks because nothing has blinked yet, not because the clock is
+    // far from zero.
+    async function denialsAt(times: number[]) {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      mockMutateAsync.mockResolvedValue({ success: false, message: "No" });
+      const verdicts: boolean[] = [];
+      for (const time of times) {
+        vi.spyOn(Date, "now").mockReturnValue(time);
+        await act(async () => {
+          await result.current.handleSubmit({
+            preventDefault: vi.fn(),
+          } as unknown as React.SubmitEvent<HTMLFormElement>);
+        });
+        verdicts.push(result.current.denialBlinks);
+      }
+      return { result, verdicts };
+    }
+
+    it("blinks the first denial", async () => {
+      const { verdicts } = await denialsAt([100]);
+      expect(verdicts).toEqual([true]);
+    });
+
+    it("holds back a denial that follows a blink too soon", async () => {
+      const { verdicts, result } = await denialsAt([
+        100,
+        100 + DENIAL_BLINK_MS - 1,
+      ]);
+      expect(verdicts).toEqual([true, false]);
+      // Still a new denial, so the message remounts without the blink class.
+      expect(result.current.denialId).not.toBeNull();
+    });
+
+    it("blinks again once a full blink has passed", async () => {
+      const { verdicts } = await denialsAt([100, 100 + DENIAL_BLINK_MS]);
+      expect(verdicts).toEqual([true, true]);
+    });
+
+    it("measures from the last blink, not the last throttled denial", async () => {
+      const { verdicts } = await denialsAt([100, 500, 100 + DENIAL_BLINK_MS]);
+      expect(verdicts).toEqual([true, false, true]);
+    });
+
+    it("reports no blink when there is no denial", () => {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      expect(result.current.denialBlinks).toBe(false);
+    });
   });
 
   it("clears denialId while the next guess is pending", async () => {
