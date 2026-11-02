@@ -36,16 +36,6 @@ vi.mock("@api/mutations/useRequestClueMutation", () => ({
   })),
 }));
 
-const mockShake = vi.fn();
-const mockClearShake = vi.fn();
-vi.mock("@hooks/useShake", () => ({
-  default: vi.fn(() => ({
-    isShaking: false,
-    shake: mockShake,
-    clearShake: mockClearShake,
-  })),
-}));
-
 describe("useProgramPlay", () => {
   const programId = "test-program";
   const currentGateId = "gate-1";
@@ -73,12 +63,12 @@ describe("useProgramPlay", () => {
     expect(result.current.message).toBeNull();
   });
 
-  it("starts with isShaking false", () => {
+  it("starts with denialId null", () => {
     const { result } = renderHook(
       () => useProgramPlay({ programId, currentGateId }),
       { wrapper },
     );
-    expect(result.current.isShaking).toBe(false);
+    expect(result.current.denialId).toBeNull();
   });
 
   it("starts with isPending false", () => {
@@ -177,7 +167,7 @@ describe("useProgramPlay", () => {
     expect(result.current.guess).toBe("");
   });
 
-  it("does not set isShaking to true", async () => {
+  it("keeps denialId null on a correct guess", async () => {
     const { result } = renderHook(
       () => useProgramPlay({ programId, currentGateId }),
       { wrapper },
@@ -190,7 +180,7 @@ describe("useProgramPlay", () => {
       } as unknown as React.SubmitEvent<HTMLFormElement>);
     });
 
-    expect(mockShake).not.toHaveBeenCalled();
+    expect(result.current.denialId).toBeNull();
   });
 
   it("records the solved gate, as a new solve each time", async () => {
@@ -286,7 +276,7 @@ describe("useProgramPlay", () => {
     expect(mockMutate).not.toHaveBeenCalled();
   });
 
-  it("sets isShaking to true", async () => {
+  it("sets a denialId on a wrong guess", async () => {
     const { result } = renderHook(
       () => useProgramPlay({ programId, currentGateId }),
       { wrapper },
@@ -299,23 +289,173 @@ describe("useProgramPlay", () => {
       } as unknown as React.SubmitEvent<HTMLFormElement>);
     });
 
-    expect(mockShake).toHaveBeenCalled();
+    expect(result.current.denialId).toEqual(expect.any(Number));
   });
 
-  it("calls shake from useShake", async () => {
+  it("gives a second wrong guess a different denialId", async () => {
     const { result } = renderHook(
       () => useProgramPlay({ programId, currentGateId }),
       { wrapper },
     );
     mockMutateAsync.mockResolvedValue({ success: false, message: "Wrong!" });
+    const submitOnce = () =>
+      act(async () => {
+        await result.current.handleSubmit({
+          preventDefault: vi.fn(),
+        } as unknown as React.SubmitEvent<HTMLFormElement>);
+      });
 
+    await submitOnce();
+    const first = result.current.denialId;
+    await submitOnce();
+
+    expect(first).not.toBeNull();
+    // Strictly increasing, so an id is never reused after another denial.
+    expect(result.current.denialId).toBeGreaterThan(first as number);
+  });
+
+  it("clears denialId while the next guess is pending", async () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+    mockMutateAsync.mockResolvedValueOnce({ success: false, message: "No" });
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
+    });
+    expect(result.current.denialId).not.toBeNull();
+
+    let settle: (value: unknown) => void = () => {};
+    mockMutateAsync.mockReturnValueOnce(
+      new Promise((resolve) => {
+        settle = resolve;
+      }),
+    );
+    let pending: Promise<void> = Promise.resolve();
+    act(() => {
+      pending = result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>) as Promise<void>;
+    });
+    expect(result.current.denialId).toBeNull();
+
+    await act(async () => {
+      settle({ success: true, message: "Correct!" });
+      await pending;
+    });
+    expect(result.current.denialId).toBeNull();
+  });
+
+  it("clears denialId when the next guess errors", async () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+    mockMutateAsync.mockResolvedValueOnce({ success: false, message: "No" });
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
+    });
+    expect(result.current.denialId).not.toBeNull();
+
+    mockMutateAsync.mockRejectedValueOnce(new Error("boom"));
     await act(async () => {
       await result.current.handleSubmit({
         preventDefault: vi.fn(),
       } as unknown as React.SubmitEvent<HTMLFormElement>);
     });
 
-    expect(mockShake).toHaveBeenCalled();
+    expect(result.current.message).toBe("Error submitting guess");
+    expect(result.current.denialId).toBeNull();
+  });
+
+  it("clears denialId when a clue request fails after a denial", async () => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+    mockMutateAsync.mockResolvedValueOnce({
+      success: false,
+      message: "No",
+      canRequestClue: true,
+    });
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
+    });
+    expect(result.current.denialId).not.toBeNull();
+
+    mockMutate.mockImplementation((_variables, options) => {
+      options.onSuccess({
+        clueText: null,
+        isClueLimitReached: false,
+        isRateLimited: false,
+        retryAfterMs: null,
+        isAiBudgetExhausted: true,
+      });
+    });
+    act(() => {
+      result.current.handleRequestClue();
+    });
+
+    expect(result.current.message).toContain("budget exhausted");
+    expect(result.current.denialId).toBeNull();
+  });
+
+  it.each([
+    [
+      "a failed generation",
+      (options: { onSuccess: (data: unknown) => void }) =>
+        options.onSuccess({
+          clueText: null,
+          isClueLimitReached: false,
+          isRateLimited: false,
+          retryAfterMs: null,
+        }),
+    ],
+    [
+      "a rate limit without a retry time",
+      (options: { onSuccess: (data: unknown) => void }) =>
+        options.onSuccess({
+          clueText: null,
+          isClueLimitReached: false,
+          isRateLimited: true,
+          retryAfterMs: null,
+        }),
+    ],
+    [
+      "a request error",
+      (options: { onError: (error: Error) => void }) =>
+        options.onError(new Error("Network error")),
+    ],
+  ])("clears denialId on %s after a denial", async (_name, respond) => {
+    const { result } = renderHook(
+      () => useProgramPlay({ programId, currentGateId }),
+      { wrapper },
+    );
+    mockMutateAsync.mockResolvedValueOnce({
+      success: false,
+      message: "No",
+      canRequestClue: true,
+    });
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
+    });
+    expect(result.current.denialId).not.toBeNull();
+
+    mockMutate.mockImplementation((_variables, options) => respond(options));
+    act(() => {
+      result.current.handleRequestClue();
+    });
+
+    expect(result.current.message).not.toBe("No");
+    expect(result.current.denialId).toBeNull();
   });
 
   it("sets canRequestClue to true if returned by mutation", async () => {
@@ -513,15 +653,22 @@ describe("useProgramPlay", () => {
     );
   });
 
-  it("clears shake when currentGateId changes", () => {
-    const { rerender } = renderHook(
+  it("resets denialId when currentGateId changes", async () => {
+    const { result, rerender } = renderHook(
       ({ currentGateId }) => useProgramPlay({ programId, currentGateId }),
       { wrapper, initialProps: { currentGateId: "gate-1" } },
     );
+    mockMutateAsync.mockResolvedValueOnce({ success: false, message: "No" });
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: vi.fn(),
+      } as unknown as React.SubmitEvent<HTMLFormElement>);
+    });
+    expect(result.current.denialId).not.toBeNull();
 
     rerender({ currentGateId: "gate-2" });
 
-    expect(mockClearShake).toHaveBeenCalled();
+    expect(result.current.denialId).toBeNull();
   });
 
   it("resets clues and canRequestClue when currentGateId changes", () => {
@@ -1137,6 +1284,36 @@ describe("useProgramPlay", () => {
       expect(result.current.guessSucceeded).toBe(false);
     });
 
+    it("keeps denialId on /help, which leaves the denial on screen", async () => {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      await wrongGuess(result, false);
+      const denialId = result.current.denialId;
+      expect(denialId).not.toBeNull();
+
+      type(result, "/help");
+      await submit(result);
+
+      expect(result.current.denialId).toBe(denialId);
+    });
+
+    it("clears denialId when /clue replies with a message", async () => {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId }),
+        { wrapper },
+      );
+      await wrongGuess(result, false);
+      expect(result.current.denialId).not.toBeNull();
+
+      type(result, "/clue");
+      await submit(result);
+
+      expect(result.current.message).toBe(CLUE_COMMAND_MESSAGES.notYet);
+      expect(result.current.denialId).toBeNull();
+    });
+
     it("/clue requests a clue with the last wrong guess", async () => {
       const { result } = renderHook(
         () => useProgramPlay({ programId, currentGateId }),
@@ -1152,7 +1329,6 @@ describe("useProgramPlay", () => {
         expect.any(Object),
       );
       expect(mockMutateAsync).toHaveBeenCalledTimes(1);
-      expect(mockShake).toHaveBeenCalledTimes(1);
       expect(result.current.guess).toBe("");
     });
 
