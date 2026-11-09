@@ -79,6 +79,8 @@ function useProgramPlay({
     useState<RememberedGuess | null>(null);
   // Client-only by design (#361): guess text never leaves the browser beyond
   // the submit itself, and a reload starts the scrollback over.
+  // Stryker disable next-line ArrayDeclaration: the gate-change effect resets
+  // this to [] on mount, before any render can show the initial value.
   const [guessHistory, setGuessHistory] = useState<string[]>([]);
   // Stryker disable next-line ArrowFunction: `now` is only read while a
   // cooldown runs, and every path that starts one sets it first.
