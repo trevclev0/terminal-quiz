@@ -543,9 +543,14 @@ describe("ActiveGate guess history", () => {
   });
 
   // The denial status line already announces each wrong guess; a live list
-  // would read it out a second time.
+  // would read it out a second time. Roles count too: status, alert and log
+  // are live regions without an aria-live attribute.
   it("is not a live region", () => {
     renderActiveGate({ guessHistory: ["london"] });
-    expect((historyList() as HTMLElement).closest("[aria-live]")).toBeNull();
+    expect(
+      (historyList() as HTMLElement).closest(
+        '[aria-live], [role="status"], [role="alert"], [role="log"]',
+      ),
+    ).toBeNull();
   });
 });
