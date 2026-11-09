@@ -37,18 +37,18 @@ Analytics Engine has no schema enforcement; blobs/doubles/indexes are
 positional. Adding a field appends at the end; never insert in the middle, or
 existing queries break silently.
 
-| Position | Name          | Type   | Notes                                        |
-|----------|---------------|--------|----------------------------------------------|
+| Position | Name          | Type   | Notes                                              |
+| -------- | ------------- | ------ | -------------------------------------------------- |
 | index1   | session_id    | string | 36-char UUID, ≤96B limit. High-cardinality filter. |
-| blob1    | event         | string | `program_started`, `gate_attempt`, ...        |
-| blob2    | program_id    | string | `""` when n/a                                 |
-| blob3    | gate_id       | string | `""` when n/a                                 |
-| blob4    | outcome       | string | per-event vocabulary (below)                  |
-| blob5    | env           | string | `production` / `preview` / `test`             |
-| blob6    | detail        | string | free-form, truncated to 1KB by `trackEvent`   |
-| double1  | attempt_count | number | `0` when n/a                                  |
-| double2  | is_correct    | 0/1    |                                               |
-| double3  | ai_latency_ms | number | `0` when n/a                                  |
+| blob1    | event         | string | `program_started`, `gate_attempt`, ...             |
+| blob2    | program_id    | string | `""` when n/a                                      |
+| blob3    | gate_id       | string | `""` when n/a                                      |
+| blob4    | outcome       | string | per-event vocabulary (below)                       |
+| blob5    | env           | string | `production` / `preview` / `test`                  |
+| blob6    | detail        | string | free-form, truncated to 1KB by `trackEvent`        |
+| double1  | attempt_count | number | `0` when n/a                                       |
+| double2  | is_correct    | 0/1    |                                                    |
+| double3  | ai_latency_ms | number | `0` when n/a                                       |
 
 `session_id` is the sole index: it is the highest-cardinality field and the
 join key for per-session funnels. Every other blob is low-cardinality and safe
@@ -57,19 +57,20 @@ high-cardinality; use it as a drill-down field, not a grouping dimension.
 
 ## Events
 
-| Event              | Fired from                         | `outcome` vocabulary                                        |
-|--------------------|------------------------------------|-------------------------------------------------------------|
-| `program_started`  | `getProgramProgression`, only when a new `session_progress` row is created | `fresh` |
-| `gate_attempt`     | `submitGuess`, incorrect path      | `incorrect`                                                 |
-| `gate_completed`   | `submitGuess`, correct path        | `correct`                                                   |
-| `program_completed`| `submitGuess`, correct path with status `completed` | `complete`                                      |
-| `clue_requested`   | `requestClue`                      | `not_eligible` \| `budget_exhausted` \| `rate_limited` \| `success` \| `duplicate` \| `ai_failed:{no_binding\|empty\|malformed\|answer_leak\|error}` |
-| `session_reset`    | `resetSession`, only when a session row actually exists | `reset` |
-| `client_error`     | `POST /api/error` beacon           | `boundary` \| `route` \| `boot`                             |
+| Event               | Fired from                                                                 | `outcome` vocabulary                                                                                                                                 |
+| ------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `program_started`   | `getProgramProgression`, only when a new `session_progress` row is created | `fresh`                                                                                                                                              |
+| `gate_attempt`      | `submitGuess`, incorrect path                                              | `incorrect`                                                                                                                                          |
+| `gate_completed`    | `submitGuess`, correct path                                                | `correct`                                                                                                                                            |
+| `program_completed` | `submitGuess`, correct path with status `completed`                        | `complete`                                                                                                                                           |
+| `clue_requested`    | `requestClue`                                                              | `not_eligible` \| `budget_exhausted` \| `rate_limited` \| `success` \| `duplicate` \| `ai_failed:{no_binding\|empty\|malformed\|answer_leak\|error}` |
+| `session_reset`     | `resetSession`, only when a session row actually exists                    | `reset`                                                                                                                                              |
+| `client_error`      | `POST /api/error` beacon                                                   | `boundary` \| `route` \| `boot`                                                                                                                      |
 
 Event invariants:
+
 - `gate_completed` / `gate_attempt` carry `attempt_count`. On a correct guess,
-  `attempt_count` is the pre-reset value (guesses *before* the successful one)
+  `attempt_count` is the pre-reset value (guesses _before_ the successful one)
   — i.e. attempts-before-success.
 - `clue_requested` carries `ai_latency_ms` on `success` and `ai_failed:*`
   outcomes; it is 0 for pure gatekeeping outcomes (`not_eligible`,
@@ -188,8 +189,8 @@ Analytics Engine's 90 days. Logs carry `sessionId`.
   days; Workers Logs 3–7 days (plan-dependent).
 - The error-beacon limiter persists no IP address — only a keyed hash. A row
   becomes eligible for deletion about two hours after its clock-hour window
-  opens and is deleted by the next beacon claim after that (see *Volume
-  limiter*). D1 Time Travel can still restore a deleted row for up to 30
+  opens and is deleted by the next beacon claim after that (see _Volume
+  limiter_). D1 Time Travel can still restore a deleted row for up to 30
   days, which is why the hash is keyed rather than a plain digest.
 
 ## Reference queries

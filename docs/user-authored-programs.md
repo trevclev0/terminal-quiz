@@ -6,15 +6,15 @@
 This is the decision record for authentication and program authoring. For
 the current mechanics (middleware, `requireUser`, `authorizeProgramMutation`,
 mutation list, visibility, the login redirect guard), see AGENTS.md →
-*Auth & Authoring*. The build plan lives in the issues above and in git
+_Auth & Authoring_. The build plan lives in the issues above and in git
 history.
 
 ## Guiding principles
 
 - **Simplicity first**, for players (no login wall) and for operations (fits
   the existing Hono/D1/Drizzle/GraphQL stack, no new infrastructure).
-- **Minimal data footprint.** Store only what's needed to know *who owns
-  what*: no passwords, and no OAuth tokens kept past the handshake.
+- **Minimal data footprint.** Store only what's needed to know _who owns
+  what_: no passwords, and no OAuth tokens kept past the handshake.
 - **Don't touch what works.** Anonymous gameplay (`session_progress`,
   `submitGuess`, `requestClue`, `resetSession`) is unchanged. Auth is
   additive.
@@ -23,17 +23,17 @@ history.
 
 ## Decisions
 
-| Question | Decision | Why |
-|---|---|---|
-| Auth implementation | **Better Auth**, self-hosted on the same Worker, OAuth-only | Free at any scale, native D1/Drizzle/Hono support, no proxy layer, and the single GraphQL endpoint stays intact. |
-| Providers | **Google + GitHub**; Facebook deferred | Both are trivial with Better Auth. Facebook adds Meta App Review overhead that's out of proportion for a personal project, and it's a plugin away. |
-| Login scope | **Guests browse and play; login only to author** | Keeps "send a friend a link" frictionless and matches the actually privileged surface. |
-| Visibility | **`public`** (listed) or **`unlisted`** (link-only) | Two states, one column, no ACL table. Covers share-by-URL from day one. Unlisted is security-through-obscurity, like unlisted YouTube videos. |
-| Who can author | Any authenticated user, own content only | `is_admin` is scaffolded on `user` for future moderation and unused today. |
-| Authoring UI | One flat page per program (`/programs/manage/$programId`) for metadata + gates | No nested routes to maintain. |
-| Draft state | None. A program is live when created | Deferred (#316). |
-| Account deletion | No UI, but the schema is ready | `programs.author_id` is `ON DELETE SET NULL`, so a deleted author's programs survive as unowned instead of cascading into other players' progress rows. |
-| Stats / leaderboards | Out of scope | Explicit call at the time. Any revival needs a privacy review (`docs/analytics.md`). |
+| Question             | Decision                                                                       | Why                                                                                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth implementation  | **Better Auth**, self-hosted on the same Worker, OAuth-only                    | Free at any scale, native D1/Drizzle/Hono support, no proxy layer, and the single GraphQL endpoint stays intact.                                        |
+| Providers            | **Google + GitHub**; Facebook deferred                                         | Both are trivial with Better Auth. Facebook adds Meta App Review overhead that's out of proportion for a personal project, and it's a plugin away.      |
+| Login scope          | **Guests browse and play; login only to author**                               | Keeps "send a friend a link" frictionless and matches the actually privileged surface.                                                                  |
+| Visibility           | **`public`** (listed) or **`unlisted`** (link-only)                            | Two states, one column, no ACL table. Covers share-by-URL from day one. Unlisted is security-through-obscurity, like unlisted YouTube videos.           |
+| Who can author       | Any authenticated user, own content only                                       | `is_admin` is scaffolded on `user` for future moderation and unused today.                                                                              |
+| Authoring UI         | One flat page per program (`/programs/manage/$programId`) for metadata + gates | No nested routes to maintain.                                                                                                                           |
+| Draft state          | None. A program is live when created                                           | Deferred (#316).                                                                                                                                        |
+| Account deletion     | No UI, but the schema is ready                                                 | `programs.author_id` is `ON DELETE SET NULL`, so a deleted author's programs survive as unowned instead of cascading into other players' progress rows. |
+| Stats / leaderboards | Out of scope                                                                   | Explicit call at the time. Any revival needs a privacy review (`docs/analytics.md`).                                                                    |
 
 ## Two decoupled identity systems
 
@@ -54,14 +54,14 @@ reason about accounts.
 
 ## Keep Better Auth's tables out of the GraphQL schema
 
-`buildSchema()` in `routes/graphql.ts` registers every Drizzle entity *type*
+`buildSchema()` in `routes/graphql.ts` registers every Drizzle entity _type_
 from the schema module it's given. The auto-CRUD resolvers aren't wired
 today, but if `user` / `session` / `account` shared that module, their types
 would be introspectable, and one careless spread of `entities.queries` would
 expose session tokens. So Better Auth gets its **own schema file**
 (`src/shared/authSchema.ts`) and its **own Drizzle instance** on the same D1
 binding, and it is never passed to `buildSchema()`. AGENTS.md lists this
-under *What to Avoid*.
+under _What to Avoid_.
 
 Related: the adapter's `account` serializer strips
 `accessToken` / `refreshToken` / `idToken` before insert
@@ -83,7 +83,7 @@ duplicate IDs) and rewrites `sequence_order` without ever violating the
 
 ## Navigation & access
 
-- Nothing requires login to *play*. Public programs, and unlisted ones via
+- Nothing requires login to _play_. Public programs, and unlisted ones via
   their link, work for anyone.
 - The program selector lists public programs, plus the viewer's own unlisted
   ones when logged in.
@@ -92,7 +92,7 @@ duplicate IDs) and rewrites `sequence_order` without ever violating the
   same-origin relative path. It rejects absolute, protocol-relative and
   backslash variants, checks the path against an allowlist, and falls back to
   `/programs/select`. Two bugs fixed during polish are worth remembering:
-  the backslash check has to run *before* URL parsing (parsing
+  the backslash check has to run _before_ URL parsing (parsing
   percent-encodes it past the guard), and the allowlist match has to strip
   the query string first.
 
@@ -108,7 +108,7 @@ possible.
 
 ## Test-suite lesson
 
-`restoreMocks: true` in the Vitest config restores spies after *every* test,
+`restoreMocks: true` in the Vitest config restores spies after _every_ test,
 so a `console.error` spy installed in `beforeAll` silently stops working
 after the first test. Install suppression spies in `beforeEach`. AGENTS.md
-→ *Testing* codifies this.
+→ _Testing_ codifies this.

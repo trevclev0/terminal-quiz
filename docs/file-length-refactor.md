@@ -13,20 +13,20 @@ section's known-gap note and the Cleanup section below.
 
 ## Current state (audited Jul 2026)
 
-| File | Lines | Type | Verdict |
-|---|---|---|---|
-| `src/react-app/components/ManageProgramEditor.tsx` | 560 → 198 | Logic (container) | ✅ Split (Phase 1) + re-trimmed (cleanup, Jul 2026) |
-| `src/worker/graphql/gameplay/programMutations.ts` | 89 | Logic (3 resolvers) | ✅ Split from `managementMutations.ts` (Phase 2, Jul 2026) |
-| `src/worker/graphql/gameplay/gateMutations.ts` | 192 | Logic (3 resolvers) | ✅ Split from `managementMutations.ts` (Phase 2, Jul 2026) |
-| `src/worker/graphql/gameplay/reorderGatesMutation.ts` | 80 | Logic (1 resolver) | ✅ Split from `managementMutations.ts` (Phase 2, Jul 2026) |
-| `src/worker/graphql/gameplay/requestClueMutation.ts` | 116 | Logic (1 resolver) | ✅ Split from `mutations.ts` (Phase 3, Jul 2026) |
-| `src/worker/graphql/gameplay/resetSessionMutation.ts` | 72 | Logic (1 resolver) | ✅ Split from `mutations.ts` (Phase 3, Jul 2026) |
-| `src/worker/graphql/gameplay/submitGuessMutation.ts` | 140 | Logic (1 resolver) | ✅ Split from `mutations.ts` (Phase 3, Jul 2026) |
-| `src/worker/graphql/gameplay/authQueries.ts` | 10 | Logic (1 resolver) | ✅ Split from `queries.ts` (Phase 4, Jul 2026) |
-| `src/worker/graphql/gameplay/sessionQueries.ts` | 121 | Logic (2 resolvers) | ✅ Split from `queries.ts` (Phase 4, Jul 2026) |
-| `src/worker/graphql/gameplay/programQueries.ts` | 97 | Logic (4 resolvers) | ✅ Split from `queries.ts` (Phase 4, Jul 2026) |
-| `src/shared/gqlQueries.ts` | 222 | Data (17 query strings) | 🟢 Keep |
-| `src/shared/schema.ts` | 202 | Data (5 table definitions) | 🟢 Keep |
+| File                                                  | Lines     | Type                       | Verdict                                                    |
+| ----------------------------------------------------- | --------- | -------------------------- | ---------------------------------------------------------- |
+| `src/react-app/components/ManageProgramEditor.tsx`    | 560 → 198 | Logic (container)          | ✅ Split (Phase 1) + re-trimmed (cleanup, Jul 2026)        |
+| `src/worker/graphql/gameplay/programMutations.ts`     | 89        | Logic (3 resolvers)        | ✅ Split from `managementMutations.ts` (Phase 2, Jul 2026) |
+| `src/worker/graphql/gameplay/gateMutations.ts`        | 192       | Logic (3 resolvers)        | ✅ Split from `managementMutations.ts` (Phase 2, Jul 2026) |
+| `src/worker/graphql/gameplay/reorderGatesMutation.ts` | 80        | Logic (1 resolver)         | ✅ Split from `managementMutations.ts` (Phase 2, Jul 2026) |
+| `src/worker/graphql/gameplay/requestClueMutation.ts`  | 116       | Logic (1 resolver)         | ✅ Split from `mutations.ts` (Phase 3, Jul 2026)           |
+| `src/worker/graphql/gameplay/resetSessionMutation.ts` | 72        | Logic (1 resolver)         | ✅ Split from `mutations.ts` (Phase 3, Jul 2026)           |
+| `src/worker/graphql/gameplay/submitGuessMutation.ts`  | 140       | Logic (1 resolver)         | ✅ Split from `mutations.ts` (Phase 3, Jul 2026)           |
+| `src/worker/graphql/gameplay/authQueries.ts`          | 10        | Logic (1 resolver)         | ✅ Split from `queries.ts` (Phase 4, Jul 2026)             |
+| `src/worker/graphql/gameplay/sessionQueries.ts`       | 121       | Logic (2 resolvers)        | ✅ Split from `queries.ts` (Phase 4, Jul 2026)             |
+| `src/worker/graphql/gameplay/programQueries.ts`       | 97        | Logic (4 resolvers)        | ✅ Split from `queries.ts` (Phase 4, Jul 2026)             |
+| `src/shared/gqlQueries.ts`                            | 222       | Data (17 query strings)    | 🟢 Keep                                                    |
+| `src/shared/schema.ts`                                | 202       | Data (5 table definitions) | 🟢 Keep                                                    |
 
 The original oversized files (`managementMutations.ts` 368, `mutations.ts` 366,
 `queries.ts` 230) were deleted — each row above marks its replacement and
@@ -61,12 +61,12 @@ reorder, per-gate edit cards, add-gate form, and draft-state orchestration.
 
 ### New files
 
-| New file | Contents | Est. lines |
-|---|---|---|
-| `ManageProgramEditor.tsx` | container: draft state, effects, mutation wiring, orchestration | ~150 |
-| `ProgramSettingsForm.tsx` | program name/visibility/save/copy-link section (current L214-265) | ~70 |
-| `GateEditorCard.tsx` | one gate's edit card + reorder buttons (current L287-478) | ~190 |
-| `AddGateForm.tsx` | add-gate form (current L484-560) | ~95 |
+| New file                  | Contents                                                          | Est. lines |
+| ------------------------- | ----------------------------------------------------------------- | ---------- |
+| `ManageProgramEditor.tsx` | container: draft state, effects, mutation wiring, orchestration   | ~150       |
+| `ProgramSettingsForm.tsx` | program name/visibility/save/copy-link section (current L214-265) | ~70        |
+| `GateEditorCard.tsx`      | one gate's edit card + reorder buttons (current L287-478)         | ~190       |
+| `AddGateForm.tsx`         | add-gate form (current L484-560)                                  | ~95        |
 
 ### CSS split
 
@@ -118,15 +118,15 @@ convention). Move the relevant classes out of `ManageProgramEditor.module.css`:
 
 ### Phase 1 result (Jul 2026)
 
-| File | Lines | Notes |
-|---|---|---|
-| `ManageProgramEditor.tsx` | 183 | container: draft state, effects, mutation wiring |
-| `GateEditorCard.tsx` | 182 | owns `GateForm` type |
-| `ProgramSettingsForm.tsx` | 116 | owns `copied`/`copyFailed` timers + clipboard write |
-| `AddGateForm.tsx` | 88 | owns `NewGateForm` type |
-| `useGateDrafts.ts` (new hook) | 39 | gates→draft sync effect, extracted to keep container <200 |
-| `useProgramSettings.ts` (new hook) | 26 | program name/visibility state + sync effect |
-| `useNewGateForm.ts` (new hook) | 20 | add-gate form state + change/reset |
+| File                               | Lines | Notes                                                     |
+| ---------------------------------- | ----- | --------------------------------------------------------- |
+| `ManageProgramEditor.tsx`          | 183   | container: draft state, effects, mutation wiring          |
+| `GateEditorCard.tsx`               | 182   | owns `GateForm` type                                      |
+| `ProgramSettingsForm.tsx`          | 116   | owns `copied`/`copyFailed` timers + clipboard write       |
+| `AddGateForm.tsx`                  | 88    | owns `NewGateForm` type                                   |
+| `useGateDrafts.ts` (new hook)      | 39    | gates→draft sync effect, extracted to keep container <200 |
+| `useProgramSettings.ts` (new hook) | 26    | program name/visibility state + sync effect               |
+| `useNewGateForm.ts` (new hook)     | 20    | add-gate form state + change/reset                        |
 
 Follow-up (post-split tightening): container brought from 204 → 183 by
 extracting `useProgramSettings` + `useNewGateForm`. Added per-component specs
@@ -174,12 +174,12 @@ Domain split: program CRUD vs gate CRUD, plus shared validation helpers.
 
 ### New files
 
-| New file | Contents | Est. lines |
-|---|---|---|
-| `managementHelpers.ts` | `requireUser`, `assertVisibility`, `VALID_VISIBILITY` (current L18-33) | ~25 |
-| `programMutations.ts` | `createProgram`, `updateProgram`, `deleteProgram` (current L35-118) | ~170 |
-| `gateMutations.ts` | `createGate`, `updateGate`, `deleteGate` (current L119-297) | ~185 |
-| `reorderGatesMutation.ts` | `reorderGates` (current L299-368) | ~90 |
+| New file                  | Contents                                                               | Est. lines |
+| ------------------------- | ---------------------------------------------------------------------- | ---------- |
+| `managementHelpers.ts`    | `requireUser`, `assertVisibility`, `VALID_VISIBILITY` (current L18-33) | ~25        |
+| `programMutations.ts`     | `createProgram`, `updateProgram`, `deleteProgram` (current L35-118)    | ~170       |
+| `gateMutations.ts`        | `createGate`, `updateGate`, `deleteGate` (current L119-297)            | ~185       |
+| `reorderGatesMutation.ts` | `reorderGates` (current L299-368)                                      | ~90        |
 
 ### Import updates
 
@@ -190,12 +190,12 @@ Domain split: program CRUD vs gate CRUD, plus shared validation helpers.
 
 ### Phase 2 result (Jul 2026)
 
-| File | Lines |
-|---|---|
-| `managementHelpers.ts` | 20 |
-| `programMutations.ts` | 90 |
-| `gateMutations.ts` | 192 |
-| `reorderGatesMutation.ts` | 82 |
+| File                      | Lines |
+| ------------------------- | ----- |
+| `managementHelpers.ts`    | 20    |
+| `programMutations.ts`     | 90    |
+| `gateMutations.ts`        | 192   |
+| `reorderGatesMutation.ts` | 82    |
 
 Deviations from the sketch above:
 
@@ -222,11 +222,11 @@ One file per gameplay mutation.
 
 ### New files
 
-| New file | Contents | Est. lines |
-|---|---|---|
-| `submitGuessMutation.ts` | `submitGuess` (current L38-183) | ~145 |
-| `requestClueMutation.ts` | `requestClue` (current L184-304) | ~120 |
-| `resetSessionMutation.ts` | `resetSession` (current L305-366) | ~60 |
+| New file                  | Contents                          | Est. lines |
+| ------------------------- | --------------------------------- | ---------- |
+| `submitGuessMutation.ts`  | `submitGuess` (current L38-183)   | ~145       |
+| `requestClueMutation.ts`  | `requestClue` (current L184-304)  | ~120       |
+| `resetSessionMutation.ts` | `resetSession` (current L305-366) | ~60        |
 
 ### Shared helper move
 
@@ -242,14 +242,14 @@ imports in the two new mutation files.
 
 ### Phase 3 result (Jul 2026)
 
-| File | Lines |
-|---|---|
-| `submitGuessMutation.ts` | 156 |
-| `requestClueMutation.ts` | 133 |
-| `resetSessionMutation.ts` | 72 |
-| `clueEligibility.ts` | 53 |
-| `guessValidation.ts` | 1 |
-| `activeSession.ts` | 41 |
+| File                      | Lines |
+| ------------------------- | ----- |
+| `submitGuessMutation.ts`  | 156   |
+| `requestClueMutation.ts`  | 133   |
+| `resetSessionMutation.ts` | 72    |
+| `clueEligibility.ts`      | 53    |
+| `guessValidation.ts`      | 1     |
+| `activeSession.ts`        | 41    |
 
 Deviations from the sketch above (documented decisions):
 
@@ -287,11 +287,11 @@ Domain split: auth, programs, session.
 
 ### New files
 
-| New file | Contents | Est. lines |
-|---|---|---|
-| `authQueries.ts` | `me` (current L18-26) | ~25 |
-| `programQueries.ts` | `getPrograms`, `program`, `myPrograms`, `programGates` (current L144-230) | ~120 |
-| `sessionQueries.ts` | `getProgramProgression`, `getInProgressProgram` (current L27-143) | ~110 |
+| New file            | Contents                                                                  | Est. lines |
+| ------------------- | ------------------------------------------------------------------------- | ---------- |
+| `authQueries.ts`    | `me` (current L18-26)                                                     | ~25        |
+| `programQueries.ts` | `getPrograms`, `program`, `myPrograms`, `programGates` (current L144-230) | ~120       |
+| `sessionQueries.ts` | `getProgramProgression`, `getInProgressProgram` (current L27-143)         | ~110       |
 
 ### Import updates
 
@@ -311,11 +311,11 @@ duplicated (3 lines each).
 
 ### Phase 4 result (Jul 2026)
 
-| File | Lines |
-|---|---|
-| `authQueries.ts` | 12 |
-| `sessionQueries.ts` | 129 |
-| `programQueries.ts` | 99 |
+| File                | Lines |
+| ------------------- | ----- |
+| `authQueries.ts`    | 12    |
+| `sessionQueries.ts` | 129   |
+| `programQueries.ts` | 99    |
 
 - **`queries.ts` deleted** — replaced by the 3 files above; both importers
   (`graphql.ts`, `queries.spec.ts`) updated. Spec file name kept (it covers all

@@ -12,7 +12,7 @@ issues above and in git history.
 
 Prevent a single session from spamming `requestClue` and burning Workers AI
 quota by enforcing a session-wide temporal rate limit: **rolling 3 AI clue
-requests per 60 seconds**, enforced atomically *before* the AI call, with the
+requests per 60 seconds**, enforced atomically _before_ the AI call, with the
 rate-limited state surfaced to the client so the UI can show a cooldown.
 
 ## Why the claim runs before `generateClue`
@@ -22,7 +22,7 @@ transaction with a `SELECT CASE WHEN EXISTS ...` check that rejects if a
 clue was created in the last 10s.
 
 That does not work. In the current resolver
-(`requestClueMutation.ts`), the AI call (`generateClue`) happens *before* the
+(`requestClueMutation.ts`), the AI call (`generateClue`) happens _before_ the
 `gate_clues` insert, and the insert needs `clueText` which only exists after
 the AI call. A guard evaluated at insert time therefore runs **after** the
 quota has already been spent — it saves nothing.
@@ -88,24 +88,30 @@ One row per **accepted AI claim** (history, not a single counter row),
 cascade-deleted with `session_progress`. Migration `0015_broken_supernaut.sql`.
 
 ```ts
-export const clueRateLimits = sqliteTable("clue_rate_limits", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  sessionProgressId: text("session_progress_id")
-    .notNull()
-    .references(() => sessionProgress.id, { onDelete: "cascade" }),
-  // Per-attempt reservation (#221) — one slot per (session, gate, attempt)
-  // in-window. Nullable: legacy rows predate the columns and expire out of
-  // the window.
-  gateId: text("gate_id"),
-  attemptCountAtRequest: integer("attempt_count_at_request"),
-  requestedAt: integer("requested_at", { mode: "timestamp_ms" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-}, (t) => [
-  index("clue_rate_limits_session_progress_id_idx").on(t.sessionProgressId),
-  // Serves the global expiry prune (WHERE requested_at < cutoff)
-  index("clue_rate_limits_requested_at_idx").on(t.requestedAt),
-]);
+export const clueRateLimits = sqliteTable(
+  "clue_rate_limits",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    sessionProgressId: text("session_progress_id")
+      .notNull()
+      .references(() => sessionProgress.id, { onDelete: "cascade" }),
+    // Per-attempt reservation (#221) — one slot per (session, gate, attempt)
+    // in-window. Nullable: legacy rows predate the columns and expire out of
+    // the window.
+    gateId: text("gate_id"),
+    attemptCountAtRequest: integer("attempt_count_at_request"),
+    requestedAt: integer("requested_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (t) => [
+    index("clue_rate_limits_session_progress_id_idx").on(t.sessionProgressId),
+    // Serves the global expiry prune (WHERE requested_at < cutoff)
+    index("clue_rate_limits_requested_at_idx").on(t.requestedAt),
+  ],
+);
 ```
 
 The `session_progress_id` index serves the count check and the per-session
@@ -125,17 +131,23 @@ serialized by the D1 write path (verified working on D1 in
 
 ```ts
 const [claimed] = await db.batch([
-  db.insert(clueRateLimits)
-    .select((qb) => qb
-      .select({
-        id: sql`${crypto.randomUUID()}`.as("id"),
-        sessionProgressId: sql`${sessionProgressId}`.as("session_progress_id"),
-        gateId: sql`${gateId}`.as("gate_id"),
-        attemptCountAtRequest: sql`${attemptCountAtRequest}`.as("attempt_count_at_request"),
-        requestedAt: sql`${nowMs}`.as("requested_at"),
-      })
-      .from(sql`(select 1)`)
-      .where(sql`(
+  db
+    .insert(clueRateLimits)
+    .select((qb) =>
+      qb
+        .select({
+          id: sql`${crypto.randomUUID()}`.as("id"),
+          sessionProgressId: sql`${sessionProgressId}`.as(
+            "session_progress_id",
+          ),
+          gateId: sql`${gateId}`.as("gate_id"),
+          attemptCountAtRequest: sql`${attemptCountAtRequest}`.as(
+            "attempt_count_at_request",
+          ),
+          requestedAt: sql`${nowMs}`.as("requested_at"),
+        })
+        .from(sql`(select 1)`)
+        .where(sql`(
         SELECT COUNT(*) FROM clue_rate_limits
         WHERE session_progress_id = ${sessionProgressId}
           AND requested_at > ${cutoffMs}
@@ -200,10 +212,10 @@ the limiter only throttles real AI attempts.
 `RequestClueResult` (in `types.ts`) and `REQUEST_CLUE_MUTATION` (in
 `gqlQueries.ts`) carry:
 
-| Field | Type | When set |
-|---|---|---|
-| `isRateLimited` | `Boolean!` | Always |
-| `retryAfterMs` | `Int` | Only when `isRateLimited` is true |
+| Field           | Type       | When set                          |
+| --------------- | ---------- | --------------------------------- |
+| `isRateLimited` | `Boolean!` | Always                            |
+| `retryAfterMs`  | `Int`      | Only when `isRateLimited` is true |
 
 Rate-limited response shape:
 
@@ -225,16 +237,16 @@ Investigated before settling on the D1 plan (verified against Cloudflare docs,
 2026-08). The native options are either **permissive** or **global** — none
 provide exact per-session accounting, which is the requirement here.
 
-| Option | Scope | Accuracy | Behavior | Verdict |
-|---|---|---|---|---|
-| **Workers AI account limits** (already active) | Per-account, per task/model | Exact ceiling | 300 req/min text gen (per-model 150–1500); frontier models 20 req/min per account; excess → error → `generateClue` returns `null` | Real hard ceiling; zero code. Keep as the account backstop — you cannot exceed it. |
-| **Rate Limiting binding (`RATE_LIMITER`)** | Keyed by arbitrary string (could be session) | **Permissive, eventually consistent** (docs: "not an accurate accounting system") | Fixed window, period must be 10s or 60s; `limit()` → `{success}`; you return 429 yourself | Counters cached locally + async → excess slips through before enforcement. Wrong as sole AI-quota guard; likely paid; Wrangler 4.36+. Not worth layering. |
-| **WAF rate limiting rules** | Zone-level, IP-based | Permissive (up to seconds delay) | Free: 1 rule/10s. Pro: 2 rules/1min. Block → error 1015, **not** 429 | Coarse per-IP backstop only; can't distinguish expensive AI calls from cheap eligibility rejections. |
-| **AI Gateway** | Per-gateway (all traffic through one gateway) | Accurate, fixed or sliding window | 429 on exceed, request not processed; all plans | Global cap on all AI traffic + caching/observability. But gateway-wide (not per-user) and requires routing AI calls through a gateway URL + token instead of the `AI.run()` binding — a different integration. Good deferred account-level layer. |
-| **Durable Objects** | Per-key single-writer | Accurate, in-memory counter | Classic Cloudflare rate-limiter reference pattern | High-throughput per-key, but adds a DO binding + state model. Overkill at this app's scale vs. the D1 atomic claim. |
+| Option                                         | Scope                                         | Accuracy                                                                          | Behavior                                                                                                                          | Verdict                                                                                                                                                                                                                                           |
+| ---------------------------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Workers AI account limits** (already active) | Per-account, per task/model                   | Exact ceiling                                                                     | 300 req/min text gen (per-model 150–1500); frontier models 20 req/min per account; excess → error → `generateClue` returns `null` | Real hard ceiling; zero code. Keep as the account backstop — you cannot exceed it.                                                                                                                                                                |
+| **Rate Limiting binding (`RATE_LIMITER`)**     | Keyed by arbitrary string (could be session)  | **Permissive, eventually consistent** (docs: "not an accurate accounting system") | Fixed window, period must be 10s or 60s; `limit()` → `{success}`; you return 429 yourself                                         | Counters cached locally + async → excess slips through before enforcement. Wrong as sole AI-quota guard; likely paid; Wrangler 4.36+. Not worth layering.                                                                                         |
+| **WAF rate limiting rules**                    | Zone-level, IP-based                          | Permissive (up to seconds delay)                                                  | Free: 1 rule/10s. Pro: 2 rules/1min. Block → error 1015, **not** 429                                                              | Coarse per-IP backstop only; can't distinguish expensive AI calls from cheap eligibility rejections.                                                                                                                                              |
+| **AI Gateway**                                 | Per-gateway (all traffic through one gateway) | Accurate, fixed or sliding window                                                 | 429 on exceed, request not processed; all plans                                                                                   | Global cap on all AI traffic + caching/observability. But gateway-wide (not per-user) and requires routing AI calls through a gateway URL + token instead of the `AI.run()` binding — a different integration. Good deferred account-level layer. |
+| **Durable Objects**                            | Per-key single-writer                         | Accurate, in-memory counter                                                       | Classic Cloudflare rate-limiter reference pattern                                                                                 | High-throughput per-key, but adds a DO binding + state model. Overkill at this app's scale vs. the D1 atomic claim.                                                                                                                               |
 
 **Conclusion:** the D1 atomic claim is not re-inventing the wheel — it is the
-*accurate* layer Cloudflare's own tools deliberately omit. The native options
+_accurate_ layer Cloudflare's own tools deliberately omit. The native options
 are permissive (binding, WAF rules) or global (AI Gateway, Workers AI limits),
 while the requirement is an exact per-session window before an expensive
 downstream call. Cloudflare's own guidance is to use D1 for accurate rate
@@ -244,25 +256,25 @@ account-wide cap/observability layer.
 
 ## Related layer: global daily AI budget
 
-The limiter bounds a *single session*. It cannot bound *sessions ×
-players*, which is the dimension that actually exhausts the shared Workers
+The limiter bounds a _single session_. It cannot bound _sessions ×
+players_, which is the dimension that actually exhausts the shared Workers
 AI allocation. The free tier's daily Neuron pool works out to roughly 200
 clue generations per day; past it, clues fail app-wide until 00:00 UTC. So a
 second, global guardrail sits in front of this one (#227;
 `src/worker/graphql/gameplay/aiBudget.ts`, `ai_usage` table,
 `AI_DAILY_CLUE_BUDGET`):
 
-| Decision | Choice | Why |
-|---|---|---|
-| Scope | One app-wide daily counter, not per author or program | The failure mode is a shared daily pool. Per-author accounting adds tables for marginal value at this scale. |
-| Default | ~150/day, env-configurable | Comfortably under the free-tier equivalent; tune from observed usage. |
-| Accounting | Atomically **reserve** one unit (upsert + `RETURNING`) **before** the rate-limit claim; release it only when the AI was provably never called (over-budget race loser, rate-limit rejection) | D1 is single-writer, so concurrent requests get strictly increasing counts and can't all slip past the cap. An over-budget request burns no rate-limit slot and makes no AI call. A failed or unstored generation keeps its reservation because it may still have billed. The counter tracks *launched* generations, not stored clues. |
-| On exhaustion | `clueText: null` + `isAiBudgetExhausted: true`; the client says "try again tomorrow", with no cooldown timer | A raw 429, or the generic "try again" message, would mislead: retrying cannot help until the UTC day rolls over. |
-| Purpose | Availability protection on Free; bill protection on Paid | The free tier hard-caps spend, so today it keeps clues working for everyone rather than saving money. |
+| Decision      | Choice                                                                                                                                                                                       | Why                                                                                                                                                                                                                                                                                                                                    |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Scope         | One app-wide daily counter, not per author or program                                                                                                                                        | The failure mode is a shared daily pool. Per-author accounting adds tables for marginal value at this scale.                                                                                                                                                                                                                           |
+| Default       | ~150/day, env-configurable                                                                                                                                                                   | Comfortably under the free-tier equivalent; tune from observed usage.                                                                                                                                                                                                                                                                  |
+| Accounting    | Atomically **reserve** one unit (upsert + `RETURNING`) **before** the rate-limit claim; release it only when the AI was provably never called (over-budget race loser, rate-limit rejection) | D1 is single-writer, so concurrent requests get strictly increasing counts and can't all slip past the cap. An over-budget request burns no rate-limit slot and makes no AI call. A failed or unstored generation keeps its reservation because it may still have billed. The counter tracks _launched_ generations, not stored clues. |
+| On exhaustion | `clueText: null` + `isAiBudgetExhausted: true`; the client says "try again tomorrow", with no cooldown timer                                                                                 | A raw 429, or the generic "try again" message, would mislead: retrying cannot help until the UTC day rolls over.                                                                                                                                                                                                                       |
+| Purpose       | Availability protection on Free; bill protection on Paid                                                                                                                                     | The free tier hard-caps spend, so today it keeps clues working for everyone rather than saving money.                                                                                                                                                                                                                                  |
 
 `guidanceThreshold` does **not** drive AI cost. Per-session spend is
 already capped by `MAX_CLUES_PER_GATE` and this limiter; the threshold only
-shifts *when* clues unlock. That is why authors keep the knob. It is bounded
+shifts _when_ clues unlock. That is why authors keep the knob. It is bounded
 to `1..MAX_CLUES_PER_GATE` (3) so it stays coherent with the
 "1st/2nd/3rd Clue" UI, and it sits under an "Advanced" disclosure in the
 editor (#226).

@@ -105,8 +105,11 @@
   touched for another reason — no retroactive docstring passes. Coverage
   percentage is not the goal: a file with no docstrings and one good "why"
   comment can be correctly documented.
-- Markdown fenced code blocks must declare a language (e.g. `` ```text ``,
-  `` ```bash ``, `` ```tsx ``). No bare `` ``` `` fences.
+- Markdown fenced code blocks must declare a language after the opening
+  fence (e.g. `text`, `bash`, `tsx`). No bare fences.
+- Don't use double-backtick code spans in Markdown. Biome's Markdown
+  formatter (2.6) collapses them to single backticks, which breaks the span.
+  Rephrase so the code needs no literal backtick.
 - TypeScript strict mode plus `noUnusedLocals`, `noUnusedParameters`, etc. — do not disable these
 
 ## Testing
