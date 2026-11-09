@@ -11,18 +11,18 @@ plan that produced this lives in git history and the issues above.
 
 ## Surface dispositions
 
-| Surface | Component | Disposition |
-|---|---|---|
-| Gate question | `ActiveGate` → `TypedQuestion` | Typed |
-| Latest clue | `ActiveGate` | Typed (#213) |
-| `successMessage` of the latest solved gate | `CompletedGate` → `TypedSuccessMessage` | Typed only while a next gate follows; when the program ends, the final gate's message renders static |
-| "The End" heading | `ProgramEnding` → `TypedHeading` | Typed slowly once boot completes; the end buttons mount after it finishes (#215) |
-| CRT boot banner (`VT220 OK`) | `CrtOverlay` → `BootBanner` | Typed |
-| Guess response ("Access Granted." / "Access Denied." / errors) | `ActiveGate` | **Never typed.** It sits on the `role="status"` live region; animating it would fight `aria-live` announcements. A wrong-guess denial blinks in reverse video instead (#356): styling only, no change to the text, so it is announced once |
-| "Verifying..." pending state | `ActiveGate` | **Spinner, not typewriter** (#311) |
-| Program title, `ConfirmDialog` message | `ProgramPlay`, `ConfirmDialog` | Static |
-| Labels: buttons, menus, `ProgramSelector` / `NavBar` / `LoginPage` | various | Static (see rule 1) |
-| Global on/off toggle, hotkey, speed setting | none | Not built (#316) |
+| Surface                                                            | Component                               | Disposition                                                                                                                                                                                                                                |
+| ------------------------------------------------------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Gate question                                                      | `ActiveGate` → `TypedQuestion`          | Typed                                                                                                                                                                                                                                      |
+| Latest clue                                                        | `ActiveGate`                            | Typed (#213)                                                                                                                                                                                                                               |
+| `successMessage` of the latest solved gate                         | `CompletedGate` → `TypedSuccessMessage` | Typed only while a next gate follows; when the program ends, the final gate's message renders static                                                                                                                                       |
+| "The End" heading                                                  | `ProgramEnding` → `TypedHeading`        | Typed slowly once boot completes; the end buttons mount after it finishes (#215)                                                                                                                                                           |
+| CRT boot banner (`VT220 OK`)                                       | `CrtOverlay` → `BootBanner`             | Typed                                                                                                                                                                                                                                      |
+| Guess response ("Access Granted." / "Access Denied." / errors)     | `ActiveGate`                            | **Never typed.** It sits on the `role="status"` live region; animating it would fight `aria-live` announcements. A wrong-guess denial blinks in reverse video instead (#356): styling only, no change to the text, so it is announced once |
+| "Verifying..." pending state                                       | `ActiveGate`                            | **Spinner, not typewriter** (#311)                                                                                                                                                                                                         |
+| Program title, `ConfirmDialog` message                             | `ProgramPlay`, `ConfirmDialog`          | Static                                                                                                                                                                                                                                     |
+| Labels: buttons, menus, `ProgramSelector` / `NavBar` / `LoginPage` | various                                 | Static (see rule 1)                                                                                                                                                                                                                        |
+| Global on/off toggle, hotkey, speed setting                        | none                                    | Not built (#316)                                                                                                                                                                                                                           |
 
 ## Rules
 
@@ -34,7 +34,7 @@ plan that produced this lives in git history and the issues above.
    deliberate exception is the "The End" buttons, which appear after the
    heading types (#215).
 3. **Never two typewriters at once.** The boot banner comes first:
-   `BootContext.bootComplete` (#214) holds back the *head* of the gameplay
+   `BootContext.bootComplete` (#214) holds back the _head_ of the gameplay
    chain. That's the first question on a fresh start, the latest
    `successMessage` on a mid-program reload, or "The End" on a finished
    program. After that, a solved gate's `successMessage` types, then the next
@@ -47,7 +47,7 @@ plan that produced this lives in git history and the issues above.
 4. **The hook stays content-agnostic.** String in, string out. No
    gate-, CRT- or settings-specific logic inside `useTypewriter`; `speed` and
    `startDelay` are per-call props, not globals. A future global toggle must
-   *compose* with `prefers-reduced-motion` (`enabled === false ||
+   _compose_ with `prefers-reduced-motion` (`enabled === false ||
    reducedMotion`) and mirror `useCrtPreferences`' `localStorage` + hotkey
    pattern. It must not replace the reduced-motion check.
 
@@ -56,7 +56,7 @@ plan that produced this lives in git history and the issues above.
 Every typed surface is a small subcomponent that **mounts only when it is
 allowed to type** (`BootBanner`, `TypedQuestion`, `TypedSuccessMessage`,
 the "The End" heading). Never gate the hook with its `enabled` option:
-`enabled: false` resolves to *instant full text*, so the first render
+`enabled: false` resolves to _instant full text_, so the first render
 would paint the whole string for a frame, then wipe it and re-type. That
 visible flash is the bug this pattern exists to prevent. It also caused a
 page-refresh bug where the last gate's question showed in full, then

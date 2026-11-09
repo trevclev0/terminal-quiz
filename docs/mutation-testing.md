@@ -10,10 +10,10 @@ lives in #326 and in git history.
 
 ## What each config mutates
 
-| Config | Command | Mutates | Break |
-|---|---|---|---|
-| `stryker.config.json` | `bun run mutate` | `src/worker/utils/**`, `shared/validation.ts`, `shared/gameCommands.ts`, `clueEligibility.ts`, `bootSequence.ts`, and 14 React hooks in `src/react-app/hooks/` | 90 |
-| `stryker.resolvers.config.json` | `bun run mutate:resolvers` | `submitGuessMutation`, `activeSession`, `authorizeProgram`, `managementHelpers`, `requestClueMutation`, `aiBudget`, `clueRateLimit` | 82 |
+| Config                          | Command                    | Mutates                                                                                                                                                        | Break |
+| ------------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| `stryker.config.json`           | `bun run mutate`           | `src/worker/utils/**`, `shared/validation.ts`, `shared/gameCommands.ts`, `clueEligibility.ts`, `bootSequence.ts`, and 14 React hooks in `src/react-app/hooks/` | 90    |
+| `stryker.resolvers.config.json` | `bun run mutate:resolvers` | `submitGuessMutation`, `activeSession`, `authorizeProgram`, `managementHelpers`, `requestClueMutation`, `aiBudget`, `clueRateLimit`                            | 82    |
 
 Both run the unit tier only (Vitest, `coverageAnalysis: "perTest"`,
 `ignoreStatic: true`) and exclude `*.spec.ts(x)` and `test-utils/`. Each has
@@ -39,11 +39,11 @@ It is never lowered to make a run pass.
 
 ## Numbers
 
-| Run | Before | After |
-|---|---|---|
-| `mutate` on `main` (cold) | 183 mutants, 83.61, exit 1 | 153 mutants, 100%, about 44s (route fix only) |
-| `mutate`, hooks added (cold) | | 98.43, about 2m09s |
-| `mutate:resolvers` (cold) | 64.79 (first pass 53.52) | 84.86, about 41s |
+| Run                          | Before                     | After                                         |
+| ---------------------------- | -------------------------- | --------------------------------------------- |
+| `mutate` on `main` (cold)    | 183 mutants, 83.61, exit 1 | 153 mutants, 100%, about 44s (route fix only) |
+| `mutate`, hooks added (cold) |                            | 98.43, about 2m09s                            |
+| `mutate:resolvers` (cold)    | 64.79 (first pass 53.52)   | 84.86, about 41s                              |
 
 The `main` baseline failed because `bootSequence.ts` in `mutate` pulled route
 specs into the run, and TanStack `autoCodeSplitting` lazy-loaded `validation.ts`
@@ -97,37 +97,37 @@ callback's deps are not constant, the mutant is not equivalent.
 
 ### Hooks (`mutate`): equivalents
 
-| Location | Why equivalent |
-|---|---|
-| `useProgramPlay` `clueCooldownUntil === null` to `false` | null arithmetic goes negative and clamps to 0 |
-| `useProgramPlay` `retryAfterMs != null` to `true` | `null > 0` and `undefined > 0` are false |
-| `useProgramSettings` `name === undefined` / `visibility === undefined` to `false` | both fields are undefined together, so the other operand decides alike |
-| `useCopyToClipboard` `timerRef.current !== null` to `true` | cleanup only runs after the effect set the ref; the `false` sibling is killed, so no disable |
-| `useCrtPreferences` `if (raw)` to `true` | `JSON.parse(null)` is null and the surrounding try/catch returns null as before |
-| `useTypewriter` `text === "" ? text : ""` terms | both branches yield `""` |
-| `useTypewriter` `if (true)` before `clearTimeout`/`clearInterval` | clearing a null handle is a no-op |
-| `useTypewriter` `startDelay > 0` to `true`/`>= 0` | a 0ms timeout is indistinguishable from starting at once |
+| Location                                                                          | Why equivalent                                                                               |
+| --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `useProgramPlay` `clueCooldownUntil === null` to `false`                          | null arithmetic goes negative and clamps to 0                                                |
+| `useProgramPlay` `retryAfterMs != null` to `true`                                 | `null > 0` and `undefined > 0` are false                                                     |
+| `useProgramSettings` `name === undefined` / `visibility === undefined` to `false` | both fields are undefined together, so the other operand decides alike                       |
+| `useCopyToClipboard` `timerRef.current !== null` to `true`                        | cleanup only runs after the effect set the ref; the `false` sibling is killed, so no disable |
+| `useCrtPreferences` `if (raw)` to `true`                                          | `JSON.parse(null)` is null and the surrounding try/catch returns null as before              |
+| `useTypewriter` `text === "" ? text : ""` terms                                   | both branches yield `""`                                                                     |
+| `useTypewriter` `if (true)` before `clearTimeout`/`clearInterval`                 | clearing a null handle is a no-op                                                            |
+| `useTypewriter` `startDelay > 0` to `true`/`>= 0`                                 | a 0ms timeout is indistinguishable from starting at once                                     |
 
 ### Resolvers: integration-covered
 
 Hand-mutated, then `bun run test:integration` (in-memory Miniflare). Specs live
 in `src/worker/graphql/gameplay/`.
 
-| Mutant | Mutator | Guarding integration test |
-|---|---|---|
-| `activeSession` 15:61, 30:53 | ObjectLiteral `findFirst({})` | submitGuess: "no session progress rejects guess", "completed program rejects further guesses" |
-| `authorizeProgram` 12:53 | ObjectLiteral `findFirst({})` | programs: "programGates returns gates for an owned program" |
-| `submitGuess` 65:28, 68:28, 145:28 | StringLiteral `sql\`\`` (attempt and total guess counters) | submitGuess: "wrong guess increments attempt count", "increments total_guesses on wrong and correct guesses" |
-| `submitGuess` 73:72 | ObjectLiteral refetch `findFirst({})` | submitGuess: "wrong guess at attempt threshold enables clue" |
-| `submitGuess` 116:39 | ObjectLiteral `findFirst({})` (next gate) | submitGuess: "correct guess advances to next gate", "advances to the next gate by sequence order, not insertion order" |
-| `submitGuess` 117:18, 118:26 | ObjectLiteral `columns: {}`, BooleanLiteral `correctAnswer: true` | submitGuess: "correct guess advances to next gate" |
-| `submitGuess` 134:17 | ObjectLiteral `.values({})` | submitGuess: "correct guess advances to next gate" |
-| `submitGuess` 146:15 (x3), 146:29, 146:43 | completedAt stamping | submitGuess: "stamps completed_at only when the final gate is solved" |
-| `clueRateLimit` 74:20, 79:15, 81:19, 82:20, 83:35, 86:24, 87:39, 90:29, 92:20, 94:16, 108:18 | claim select, WHERE guard, cutoff | clueRateLimit: "claims a slot when under the cap", "claims up to the cap across distinct attempts within the window, then rejects" |
-| `clueRateLimit` 122:13 | `select({})` attempt lookup | clueRateLimit: "rejects a second claim for the same attempt within the window" |
-| `clueRateLimit` 146:13 | `select({})` oldest lookup | clueRateLimit: "blocks a claim just inside window (precise retryAfterMs)" |
-| `aiBudget` 31:13, 32:25, 34:12, 34:31, 36:16 | reserve upsert | requestClue: "returns clue text when eligible", "AI returning null is handled gracefully" |
-| `aiBudget` 52:10, 52:29 | release update, `MAX(0, x-1)` | requestClue: "rate limit: in-window cap rejects with retryAfterMs", "ai budget exhausted: rejects before any AI call, slot, or increment" |
+| Mutant                                                                                       | Mutator                                                                     | Guarding integration test                                                                                                                 |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `activeSession` 15:61, 30:53                                                                 | ObjectLiteral `findFirst({})`                                               | submitGuess: "no session progress rejects guess", "completed program rejects further guesses"                                             |
+| `authorizeProgram` 12:53                                                                     | ObjectLiteral `findFirst({})`                                               | programs: "programGates returns gates for an owned program"                                                                               |
+| `submitGuess` 65:28, 68:28, 145:28                                                           | StringLiteral on an empty `sql` template (attempt and total guess counters) | submitGuess: "wrong guess increments attempt count", "increments total_guesses on wrong and correct guesses"                              |
+| `submitGuess` 73:72                                                                          | ObjectLiteral refetch `findFirst({})`                                       | submitGuess: "wrong guess at attempt threshold enables clue"                                                                              |
+| `submitGuess` 116:39                                                                         | ObjectLiteral `findFirst({})` (next gate)                                   | submitGuess: "correct guess advances to next gate", "advances to the next gate by sequence order, not insertion order"                    |
+| `submitGuess` 117:18, 118:26                                                                 | ObjectLiteral `columns: {}`, BooleanLiteral `correctAnswer: true`           | submitGuess: "correct guess advances to next gate"                                                                                        |
+| `submitGuess` 134:17                                                                         | ObjectLiteral `.values({})`                                                 | submitGuess: "correct guess advances to next gate"                                                                                        |
+| `submitGuess` 146:15 (x3), 146:29, 146:43                                                    | completedAt stamping                                                        | submitGuess: "stamps completed_at only when the final gate is solved"                                                                     |
+| `clueRateLimit` 74:20, 79:15, 81:19, 82:20, 83:35, 86:24, 87:39, 90:29, 92:20, 94:16, 108:18 | claim select, WHERE guard, cutoff                                           | clueRateLimit: "claims a slot when under the cap", "claims up to the cap across distinct attempts within the window, then rejects"        |
+| `clueRateLimit` 122:13                                                                       | `select({})` attempt lookup                                                 | clueRateLimit: "rejects a second claim for the same attempt within the window"                                                            |
+| `clueRateLimit` 146:13                                                                       | `select({})` oldest lookup                                                  | clueRateLimit: "blocks a claim just inside window (precise retryAfterMs)"                                                                 |
+| `aiBudget` 31:13, 32:25, 34:12, 34:31, 36:16                                                 | reserve upsert                                                              | requestClue: "returns clue text when eligible", "AI returning null is handled gracefully"                                                 |
+| `aiBudget` 52:10, 52:29                                                                      | release update, `MAX(0, x-1)`                                               | requestClue: "rate limit: in-window cap rejects with retryAfterMs", "ai budget exhausted: rejects before any AI call, slot, or increment" |
 
 `117:18` and `118:26` are caught because the broken projection breaks other
 fields of the next gate, not by a leak check. `nextGate` is `ActiveGateType`
@@ -139,18 +139,18 @@ Eight are integration-covered (rows above); five are the `.as()` aliases below.
 
 ### Resolvers: equivalent
 
-| Mutant | Why equivalent |
-|---|---|
+| Mutant                                                                       | Why equivalent                                                                                                                                                                                      |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `clueRateLimit` 82:48, 84:15, 86:39, 88:15, 90:43 (`.as("<alias>")` to `""`) | column aliases do not affect positional mapping in `INSERT ... SELECT`; all integration tests still pass. No disable, because the same mutator on 82/86/90 also covers non-equivalent `sql` mutants |
-| `aiBudget` 12:18 ConditionalExpression `false` | `parseInt(undefined, 10)` is NaN, same as the original for an unset value |
+| `aiBudget` 12:18 ConditionalExpression `false`                               | `parseInt(undefined, 10)` is NaN, same as the original for an unset value                                                                                                                           |
 
 Across the three clue files that is 26 survivor/NoCoverage mutants: 20
 integration-covered plus 6 equivalent.
 
 ### Resolvers: planner-dependent
 
-| Mutant | Guard |
-|---|---|
+| Mutant                                              | Guard                                                                                                                                                                                                                                                                                            |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `submitGuess` 124:18 ArrayDeclaration `orderBy: []` | integration "advances to the next gate by sequence order, not insertion order" (gates inserted 1, 3, 2). It passes with the mutation because `unique_program_sequence (program_id, sequence_order)` serves the range scan in index order. If that index changes, this test is the one that fails |
 
 ## Zero-quota rule
@@ -180,10 +180,10 @@ automatically, but it does not fit the 30 minute budget.
 Measured on `activeSession.ts` (23 mutants, `coverageAnalysis: "off"`,
 `concurrency: 2`, in-memory Miniflare, no remote bindings):
 
-| Machine | Wall time | Per mutant | Score |
-|---|---|---|---|
-| Dev box, ~6.5 cores busy | 2m57s | 7.7s | 86.96% (20 killed, 3 survived) |
-| Pinned to 4 cores (`taskset -c 0-3`, like ubuntu-latest) | 5m23s | 14.0s | 86.96% |
+| Machine                                                  | Wall time | Per mutant | Score                          |
+| -------------------------------------------------------- | --------- | ---------- | ------------------------------ |
+| Dev box, ~6.5 cores busy                                 | 2m57s     | 7.7s       | 86.96% (20 killed, 3 survived) |
+| Pinned to 4 cores (`taskset -c 0-3`, like ubuntu-latest) | 5m23s     | 14.0s      | 86.96%                         |
 
 It kills both `activeSession` `findFirst({})` mutants (15:61, 30:53) that the
 unit tier cannot see. The 3 survivors are the gate-not-found branch at

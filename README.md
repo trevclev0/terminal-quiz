@@ -59,21 +59,21 @@
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 19, TypeScript, Vite 8, TanStack Router |
-| Backend | Hono 4, Cloudflare Workers |
-| API | GraphQL (`drizzle-graphql` auto-schema + custom gameplay resolvers) |
-| Database | Cloudflare D1 (SQLite), Drizzle ORM |
-| AI | Cloudflare Workers AI (`@cf/meta/llama-4-scout-17b-16e-instruct`) for clue generation |
-| Client cache | TanStack Query v5 |
-| Testing | Vitest (unit + Workers-pool integration), Playwright (E2E), React Testing Library, MSW, happy-dom |
-| Linting / Formatting | Biome |
-| Commits | cz-git + commitlint, gitmoji, Husky |
-| CI / CD | GitHub Actions |
-| Releases | semantic-release + semantic-release-gitmoji |
-| Package Manager | Bun |
-| Tool/task management | mise |
+| Layer                | Technology                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| Frontend             | React 19, TypeScript, Vite 8, TanStack Router                                                     |
+| Backend              | Hono 4, Cloudflare Workers                                                                        |
+| API                  | GraphQL (`drizzle-graphql` auto-schema + custom gameplay resolvers)                               |
+| Database             | Cloudflare D1 (SQLite), Drizzle ORM                                                               |
+| AI                   | Cloudflare Workers AI (`@cf/meta/llama-4-scout-17b-16e-instruct`) for clue generation             |
+| Client cache         | TanStack Query v5                                                                                 |
+| Testing              | Vitest (unit + Workers-pool integration), Playwright (E2E), React Testing Library, MSW, happy-dom |
+| Linting / Formatting | Biome                                                                                             |
+| Commits              | cz-git + commitlint, gitmoji, Husky                                                               |
+| CI / CD              | GitHub Actions                                                                                    |
+| Releases             | semantic-release + semantic-release-gitmoji                                                       |
+| Package Manager      | Bun                                                                                               |
+| Tool/task management | mise                                                                                              |
 
 ---
 
@@ -148,6 +148,7 @@ cp .dev.vars.example .dev.vars
 ```
 
 - **`.env`** — set `DRIZZLE_DATABASE_URL` to the local D1 SQLite file path. Wrangler generates this file the first time you run the local dev server; the typical path looks like:
+
   ```bash
   DRIZZLE_DATABASE_URL=.wrangler/state/v3/d1/miniflare-D1DatabaseObject/<HASH>.sqlite
   ```
@@ -183,22 +184,22 @@ bun run seed:e2e:local
 
 ### Scripts
 
-| Command | Description |
-|---|---|
-| `bun run dev` | Start local dev server (Vite + Cloudflare Worker via Miniflare) |
-| `bun run build` | Type-check and build both the client and worker bundles |
-| `bun run check` | Build and run a wrangler dry-run deploy (pre-deploy sanity check) |
-| `bun run check:code` | Run Biome linting and formatting checks, auto-fixing where safe |
-| `bun run test` | Run the Vitest unit/component test suite in watch mode |
-| `bun run test --run` | Run the Vitest unit/component test suite once |
-| `bun run test:integration` | Run backend integration tests against a real D1 instance (`@cloudflare/vitest-pool-workers`) |
-| `bun run test:ui` | Run the Vitest UI |
-| `bun run test:e2e` | Seed local D1 with E2E fixtures, then run the Playwright suite against `http://localhost:5173` |
-| `bun run coverage` | Run the unit test suite and generate a V8 coverage report |
-| `bun run seed:generate` | Compile `scripts/seed.ts` + `seed-e2e.ts` into `scripts/generated/*.sql` |
+| Command                                               | Description                                                                                                                   |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `bun run dev`                                         | Start local dev server (Vite + Cloudflare Worker via Miniflare)                                                               |
+| `bun run build`                                       | Type-check and build both the client and worker bundles                                                                       |
+| `bun run check`                                       | Build and run a wrangler dry-run deploy (pre-deploy sanity check)                                                             |
+| `bun run check:code`                                  | Run Biome linting and formatting checks, auto-fixing where safe                                                               |
+| `bun run test`                                        | Run the Vitest unit/component test suite in watch mode                                                                        |
+| `bun run test --run`                                  | Run the Vitest unit/component test suite once                                                                                 |
+| `bun run test:integration`                            | Run backend integration tests against a real D1 instance (`@cloudflare/vitest-pool-workers`)                                  |
+| `bun run test:ui`                                     | Run the Vitest UI                                                                                                             |
+| `bun run test:e2e`                                    | Seed local D1 with E2E fixtures, then run the Playwright suite against `http://localhost:5173`                                |
+| `bun run coverage`                                    | Run the unit test suite and generate a V8 coverage report                                                                     |
+| `bun run seed:generate`                               | Compile `scripts/seed.ts` + `seed-e2e.ts` into `scripts/generated/*.sql`                                                      |
 | `bun run seed:e2e:local` / `bun run seed:e2e:preview` | Seed the E2E fixture program (`scripts/generated/seed-e2e.sql`, compiled from `scripts/seedE2eData.ts`) into local/preview D1 |
-| `bun run commit` | Launch the interactive Commitizen prompt (preferred over `git commit`) |
-| `bun run cf-typegen` | Regenerate Wrangler/Workers type bindings |
+| `bun run commit`                                      | Launch the interactive Commitizen prompt (preferred over `git commit`)                                                        |
+| `bun run cf-typegen`                                  | Regenerate Wrangler/Workers type bindings                                                                                     |
 
 > [!NOTE]
 > You can run any of the scripts above using `mise run <task-name>` instead of `bun run <script-name>` (e.g. `mise run test:run`). Both are fully supported; `mise.toml` defines the task list.
@@ -237,21 +238,21 @@ bun run test:e2e          # Playwright E2E suite (against local dev server)
 
 Test utilities live in `src/react-app/test-utils/`:
 
-| File | Purpose |
-|---|---|
-| `setupTests.ts` | Global setup — imports jest-dom matchers, registers `afterEach` cleanup |
-| `queryTestUtils.tsx` | Factory for a fresh `QueryClient` + `QueryClientProvider` wrapper per test |
+| File                   | Purpose                                                                     |
+| ---------------------- | --------------------------------------------------------------------------- |
+| `setupTests.ts`        | Global setup — imports jest-dom matchers, registers `afterEach` cleanup     |
+| `queryTestUtils.tsx`   | Factory for a fresh `QueryClient` + `QueryClientProvider` wrapper per test  |
 | `reactRouterUtils.tsx` | Factory for a test router + render helper for route-level integration tests |
-| `cssModuleMock.ts` | Mock for CSS module imports in tests |
-| `msw/` | MSW handlers and fixtures for mocking the GraphQL API |
+| `cssModuleMock.ts`     | Mock for CSS module imports in tests                                        |
+| `msw/`                 | MSW handlers and fixtures for mocking the GraphQL API                       |
 
 Backend test utilities live in `src/worker/test-utils/`:
 
-| File | Purpose |
-|---|---|
-| `mockEnv.ts` | Mock D1/Hono/GraphQL contexts for unit tests |
-| `setupDb.ts` | Applies migrations + seed SQL (compiled from `scripts/seedE2eData.ts`) to a real D1 instance for integration tests |
-| `gqlRequest.ts` | Sends a request through the real worker `fetch()` handler for integration tests |
+| File            | Purpose                                                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `mockEnv.ts`    | Mock D1/Hono/GraphQL contexts for unit tests                                                                       |
+| `setupDb.ts`    | Applies migrations + seed SQL (compiled from `scripts/seedE2eData.ts`) to a real D1 instance for integration tests |
+| `gqlRequest.ts` | Sends a request through the real worker `fetch()` handler for integration tests                                    |
 
 Coverage (unit tests only — the Workers pool used for integration tests doesn't support V8 coverage) excludes `main.tsx`, `vite-env.d.ts`, `shared/schema.ts`, `shared/types.ts`, `shared/gqlQueries.ts`, `routeTree.gen.ts`, `worker/index.ts`, `worker/middleware/**`, `worker/routes/graphql.ts`, `react-app/routes/__root.tsx`, `react-app/api/queryClient.ts`, and `**/test-utils/**` (see `vite.config.ts` for the authoritative list).
 
@@ -263,13 +264,13 @@ Schema is defined in `src/shared/schema.ts` using Drizzle ORM and is the single 
 
 ### Tables
 
-| Table | Purpose |
-|---|---|
-| `programs` | Top-level quiz sets; each has a name |
-| `gates` | Individual riddles belonging to a program, ordered by `sequence_order` |
-| `session_progress` | Per-session progression — current gate, attempt count, and status; unique per `(session_id, program_id)` |
-| `session_completed_gates` | Join table recording which gates a session has completed; unique per `(session_progress_id, gate_id)` |
-| `gate_clues` | AI-generated clues issued for a given gate within a session's progress, keyed to the attempt count they were issued at |
+| Table                     | Purpose                                                                                                                |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `programs`                | Top-level quiz sets; each has a name                                                                                   |
+| `gates`                   | Individual riddles belonging to a program, ordered by `sequence_order`                                                 |
+| `session_progress`        | Per-session progression — current gate, attempt count, and status; unique per `(session_id, program_id)`               |
+| `session_completed_gates` | Join table recording which gates a session has completed; unique per `(session_progress_id, gate_id)`                  |
+| `gate_clues`              | AI-generated clues issued for a given gate within a session's progress, keyed to the attempt count they were issued at |
 
 > [!NOTE]
 > There is no `game_state` table — an earlier single-row global state table was removed once progression became fully session-scoped (migration `0009_whole_quasar`).
@@ -313,12 +314,13 @@ retired from the seed set — it never touches user-authored programs or players
 
 Deployment is handled automatically by the `deploy.yml` GitHub Actions workflow.
 
-| Trigger | Target |
-|---|---|
-| Push to `main` | Production (`quiz.clevertrevor.dev`) |
-| Pull request | Preview deployment (Cloudflare Workers preview URL) |
+| Trigger        | Target                                              |
+| -------------- | --------------------------------------------------- |
+| Push to `main` | Production (`quiz.clevertrevor.dev`)                |
+| Pull request   | Preview deployment (Cloudflare Workers preview URL) |
 
 The workflow runs two jobs:
+
 1. `deploy` builds both the client and worker bundles, patches the generated `wrangler.jsonc` for preview deployments (different D1 database, `workers_dev: true`), applies any pending D1 migrations, and deploys via `cloudflare/wrangler-action`. It then updates the GitHub Deployment status with the live URL — success/error by the deploy result alone.
 2. For non-fork pull requests, an `e2e` job runs after deploy in the `mcr.microsoft.com/playwright` container (image tag auto-synced to the installed Playwright version), seeds the preview D1 with `scripts/generated/seed-e2e.sql` (compiled via `seed:e2e:preview`), and runs the full Playwright E2E suite against the deployed preview URL. The `e2e` job is a branch-protection-required status check: a failing run blocks the merge, but does not mark the deployment as failed.
 
@@ -326,17 +328,17 @@ Preview Workers are torn down automatically on PR close via `.github/workflows/p
 
 **Required repository secrets:**
 
-| Secret | Description |
-|---|---|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API token with Workers, D1, and Workers AI permissions |
-| `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
+| Secret                    | Description                                                                                                              |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `CLOUDFLARE_API_TOKEN`    | Cloudflare API token with Workers, D1, and Workers AI permissions                                                        |
+| `CLOUDFLARE_ACCOUNT_ID`   | Your Cloudflare account ID                                                                                               |
 | `RELEASE_APP_PRIVATE_KEY` | Private key of the GitHub App the release workflow mints its token from (used to push the release commit back to `main`) |
-| `AUTH_TEST_BYPASS_SECRET` | Shared secret for the E2E test auth bypass (also passed to preview deploys via `--var`) |
+| `AUTH_TEST_BYPASS_SECRET` | Shared secret for the E2E test auth bypass (also passed to preview deploys via `--var`)                                  |
 
 **Required repository variables:**
 
-| Variable | Description |
-|---|---|
+| Variable                | Description                          |
+| ----------------------- | ------------------------------------ |
 | `RELEASE_APP_CLIENT_ID` | Client ID of that release GitHub App |
 
 ### Manual deployment
