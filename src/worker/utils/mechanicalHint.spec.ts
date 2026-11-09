@@ -101,6 +101,7 @@ describe("unlockedHintStep", () => {
 
   it("unlocks nothing below the guidance threshold", () => {
     expect(unlockedHintStep({ ...gate, attemptCount: 1 })).toBe(0);
+    expect(unlockedHintStep({ ...gate, attemptCount: 0 })).toBe(0);
   });
 
   it("unlocks step 1 at the threshold", () => {

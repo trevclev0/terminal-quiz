@@ -100,9 +100,9 @@ function useProgramPlay({
   // this to [] on mount, before any render can show the initial value.
   const [guessHistory, setGuessHistory] = useState<string[]>([]);
   const [hint, setHint] = useState<Hint | null>(null);
-  // Steps the server has unlocked on this gate. Taken from each wrong guess,
-  // and raised by a hint response, since after a reload the server knows
-  // about guesses this mount never saw.
+  // Steps the server has unlocked on this gate, from the latest wrong guess.
+  // `/hint` asks the server whenever no hint is showing, since after a
+  // reload the server knows about guesses this mount never saw.
   const [hintsUnlocked, setHintsUnlocked] = useState(0);
   // Stryker disable next-line ArrowFunction: `now` is only read while a
   // cooldown runs, and every path that starts one sets it first.
@@ -329,13 +329,13 @@ function useProgramPlay({
         onSuccess: (data) => {
           // Ignore responses from a request started on a now-inactive gate.
           if (currentGateIdRef.current !== requestGateId) return;
-          if (data.step > 0 && data.cells) {
+          // The server sends cells exactly when a step is unlocked.
+          if (data.cells) {
             setHint({
               step: data.step,
               cells: data.cells,
               isFinalStep: data.isFinalStep,
             });
-            setHintsUnlocked((prev) => Math.max(prev, data.step));
           } else {
             showReply(HINT_MESSAGES.notYet);
           }
