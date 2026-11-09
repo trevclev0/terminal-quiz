@@ -46,6 +46,33 @@ function setup(overrides: Record<string, unknown> = {}) {
   return props;
 }
 
+function RemovalFocusHarness({ initial }: { initial: string[] }) {
+  // Holds the whole draft so edits to other fields re-render the card,
+  // which is what exposes a focus flag that was never reset.
+  const [current, setCurrent] = useState<GateForm>({
+    ...draft,
+    acceptedAnswers: initial,
+  });
+  return (
+    <GateEditorCard
+      gate={gate}
+      draft={current}
+      index={0}
+      isFirst
+      isLast={false}
+      isReorderPending={false}
+      isDeletePending={false}
+      savingGateId={null}
+      onReorder={vi.fn()}
+      onSave={vi.fn()}
+      onDelete={vi.fn()}
+      onDraftChange={(patch) => setCurrent((prev) => ({ ...prev, ...patch }))}
+      updateError={null}
+      deleteError={null}
+    />
+  );
+}
+
 describe("GateEditorCard", () => {
   it("renders draft values and gate index", () => {
     setup();
@@ -468,37 +495,8 @@ describe("GateEditorCard", () => {
     });
 
     describe("removal focus", () => {
-      function Harness({ initial }: { initial: string[] }) {
-        // Holds the whole draft so edits to other fields re-render the card,
-        // which is what exposes a focus flag that was never reset.
-        const [current, setCurrent] = useState<GateForm>({
-          ...draft,
-          acceptedAnswers: initial,
-        });
-        return (
-          <GateEditorCard
-            gate={gate}
-            draft={current}
-            index={0}
-            isFirst
-            isLast={false}
-            isReorderPending={false}
-            isDeletePending={false}
-            savingGateId={null}
-            onReorder={vi.fn()}
-            onSave={vi.fn()}
-            onDelete={vi.fn()}
-            onDraftChange={(patch) =>
-              setCurrent((prev) => ({ ...prev, ...patch }))
-            }
-            updateError={null}
-            deleteError={null}
-          />
-        );
-      }
-
       it("focuses the row that slides up after removing a middle row", async () => {
-        render(<Harness initial={["a", "b", "c"]} />);
+        render(<RemovalFocusHarness initial={["a", "b", "c"]} />);
 
         await userEvent.click(
           screen.getByLabelText("Remove accepted answer 2"),
@@ -510,7 +508,7 @@ describe("GateEditorCard", () => {
       });
 
       it("focuses the row that slides up after removing the first row", async () => {
-        render(<Harness initial={["a", "b", "c"]} />);
+        render(<RemovalFocusHarness initial={["a", "b", "c"]} />);
 
         await userEvent.click(
           screen.getByLabelText("Remove accepted answer 1"),
@@ -522,7 +520,7 @@ describe("GateEditorCard", () => {
       });
 
       it("focuses the new last row after removing the last row", async () => {
-        render(<Harness initial={["a", "b"]} />);
+        render(<RemovalFocusHarness initial={["a", "b"]} />);
 
         await userEvent.click(
           screen.getByLabelText("Remove accepted answer 2"),
@@ -533,7 +531,7 @@ describe("GateEditorCard", () => {
       });
 
       it("focuses the add button after removing the only row", async () => {
-        render(<Harness initial={["a"]} />);
+        render(<RemovalFocusHarness initial={["a"]} />);
 
         await userEvent.click(
           screen.getByLabelText("Remove accepted answer 1"),
@@ -545,7 +543,7 @@ describe("GateEditorCard", () => {
       });
 
       it("still lands focus when other rows are invalid", async () => {
-        render(<Harness initial={["", "b", "c"]} />);
+        render(<RemovalFocusHarness initial={["", "b", "c"]} />);
 
         await userEvent.click(
           screen.getByLabelText("Remove accepted answer 2"),
@@ -558,7 +556,7 @@ describe("GateEditorCard", () => {
 
       it("does not pull focus back once the pending focus is spent", async () => {
         const user = userEvent.setup();
-        render(<Harness initial={["a"]} />);
+        render(<RemovalFocusHarness initial={["a"]} />);
 
         await user.click(screen.getByLabelText("Remove accepted answer 1"));
         const add = screen.getByRole("button", { name: "[+] Add answer" });
