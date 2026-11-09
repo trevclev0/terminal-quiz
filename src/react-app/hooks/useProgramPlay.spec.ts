@@ -4,6 +4,7 @@ import { createQueryWrapper } from "../test-utils/queryTestUtils";
 import useProgramPlay, {
   CLUE_COMMAND_MESSAGES,
   DENIAL_BLINK_MS,
+  GUESS_HISTORY_LIMIT,
 } from "./useProgramPlay";
 
 // Mock the mutations
@@ -1627,6 +1628,108 @@ describe("useProgramPlay", () => {
         { gateId: currentGateId, currentGuess: "something else" },
         expect.any(Object),
       );
+    });
+  });
+
+  describe("guess history", () => {
+    type Hook = { current: ReturnType<typeof useProgramPlay> };
+
+    const render = () =>
+      renderHook(
+        ({ gateId }: { gateId: string }) =>
+          useProgramPlay({ programId, currentGateId: gateId }),
+        { wrapper, initialProps: { gateId: currentGateId } },
+      );
+
+    const type = (result: Hook, value: string) =>
+      act(() => {
+        result.current.changeHandler({
+          target: { value },
+        } as React.ChangeEvent<HTMLInputElement>);
+      });
+
+    const submit = (result: Hook) =>
+      act(async () => {
+        await result.current.handleSubmit({
+          preventDefault: vi.fn(),
+        } as unknown as React.SubmitEvent<HTMLFormElement>);
+      });
+
+    const deny = async (result: Hook, value: string) => {
+      mockMutateAsync.mockResolvedValueOnce({
+        success: false,
+        message: "ACCESS DENIED",
+        canRequestClue: false,
+      });
+      type(result, value);
+      await submit(result);
+    };
+
+    it("starts empty", () => {
+      const { result } = render();
+      expect(result.current.guessHistory).toEqual([]);
+    });
+
+    it("records denied guesses oldest first, trimmed", async () => {
+      const { result } = render();
+      await deny(result, "  london ");
+      await deny(result, "paris");
+      expect(result.current.guessHistory).toEqual(["london", "paris"]);
+    });
+
+    it("keeps only the most recent guesses", async () => {
+      const { result } = render();
+      const guesses = Array.from(
+        { length: GUESS_HISTORY_LIMIT + 1 },
+        (_, i) => `guess ${i}`,
+      );
+      for (const guess of guesses) {
+        await deny(result, guess);
+      }
+      expect(GUESS_HISTORY_LIMIT).toBe(5);
+      expect(result.current.guessHistory).toEqual(guesses.slice(1));
+    });
+
+    it("moves a repeated guess to the bottom, as last typed", async () => {
+      const { result } = render();
+      await deny(result, "london");
+      await deny(result, "paris");
+      await deny(result, " LONDON");
+      expect(result.current.guessHistory).toEqual(["paris", "LONDON"]);
+      expect(mockMutateAsync).toHaveBeenCalledTimes(3);
+    });
+
+    it("clears when the guess is accepted", async () => {
+      const { result } = render();
+      await deny(result, "london");
+      mockMutateAsync.mockResolvedValueOnce({ success: true, message: "OK" });
+      type(result, "rome");
+      await submit(result);
+      expect(result.current.guessHistory).toEqual([]);
+    });
+
+    it("clears when the gate changes", async () => {
+      const { result, rerender } = render();
+      await deny(result, "london");
+      rerender({ gateId: "gate-2" });
+      expect(result.current.guessHistory).toEqual([]);
+    });
+
+    it("does not record game commands", async () => {
+      const { result } = render();
+      type(result, "/help");
+      await submit(result);
+      type(result, "/clue");
+      await submit(result);
+      expect(result.current.guessHistory).toEqual([]);
+    });
+
+    it("does not record a guess that failed to submit", async () => {
+      const { result } = render();
+      mockMutateAsync.mockRejectedValueOnce(new Error("Network error"));
+      type(result, "london");
+      await submit(result);
+      expect(result.current.guessHistory).toEqual([]);
     });
   });
 });

@@ -74,6 +74,7 @@ function ProgramPlay() {
     requestClueMutation,
     resetSessionMutation,
     lastSolve,
+    guessHistory,
   } = useProgramPlay({
     programId,
     currentGateId: currentGate?.id,
@@ -262,6 +263,7 @@ function ProgramPlay() {
           cooldownSeconds={cooldownSeconds}
           handleRequestClue={handleRequestClue}
           clues={clues}
+          guessHistory={guessHistory}
           requestClueMutation={requestClueMutation}
           enabled={canTypeQuestion}
         />

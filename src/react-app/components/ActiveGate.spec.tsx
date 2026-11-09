@@ -508,3 +508,44 @@ describe("Clue typing", () => {
     expect(liveRegion?.querySelectorAll(".sr-only")).toHaveLength(1);
   });
 });
+
+describe("ActiveGate guess history", () => {
+  const historyList = () =>
+    screen.queryByRole("list", { name: "Previous guesses" });
+
+  it("renders no history list before any wrong guess", () => {
+    renderActiveGate({ guessHistory: [] });
+    expect(historyList()).toBeNull();
+  });
+
+  it("lists previous guesses oldest first", () => {
+    renderActiveGate({ guessHistory: ["london", "paris"] });
+    const items = within(historyList() as HTMLElement).getAllByRole("listitem");
+    expect(items).toHaveLength(2);
+    expect(within(items[0]).getByText("london")).toBeInTheDocument();
+    expect(within(items[1]).getByText("paris")).toBeInTheDocument();
+  });
+
+  it("hides the carets from assistive tech", () => {
+    renderActiveGate({ guessHistory: ["london"] });
+    const item = within(historyList() as HTMLElement).getByRole("listitem");
+    const caret = item.querySelector('[aria-hidden="true"]');
+    expect(caret?.textContent).toBe(">");
+  });
+
+  it("sits above the prompt, like scrollback", () => {
+    renderActiveGate({ guessHistory: ["london"] });
+    const input = screen.getByLabelText("Gate 1 password input");
+    expect(
+      (historyList() as HTMLElement).compareDocumentPosition(input) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  // The denial status line already announces each wrong guess; a live list
+  // would read it out a second time.
+  it("is not a live region", () => {
+    renderActiveGate({ guessHistory: ["london"] });
+    expect((historyList() as HTMLElement).closest("[aria-live]")).toBeNull();
+  });
+});

@@ -11,7 +11,7 @@ test.describe("@full wrong answer flow", () => {
     await gamePage.waitForLoad();
   });
 
-  test("shows a blinking denial on wrong answer, then recovers", async ({
+  test("shows a blinking denial and guess history, then recovers", async ({
     page,
   }) => {
     const gamePage = new GamePage(page);
@@ -22,6 +22,13 @@ test.describe("@full wrong answer flow", () => {
 
     expect(await gamePage.isDenialBlinking()).toBe(true);
 
+    // A second wrong guess joins the first in the scrollback, oldest first
+    await gamePage.submitAnswer("green");
+    await expect(gamePage.guessHistoryItems()).toContainText([
+      "wrong",
+      "green",
+    ]);
+
     // Submit correct answer — should proceed to Gate 2
     await gamePage.submitAnswer("blue");
     const result = await gamePage.waitForVerificationComplete();
@@ -30,5 +37,7 @@ test.describe("@full wrong answer flow", () => {
     await gamePage.waitForActiveGateLabel("Gate 2");
     const label = await gamePage.getActiveGateLabel();
     expect(label).toBe("Gate 2");
+    // Solving the gate clears its scrollback
+    await expect(gamePage.guessHistoryItems()).toHaveCount(0);
   });
 });
