@@ -48,3 +48,24 @@
   width: 1ch;
   display: inline-block;
 }
+
+/* Lines up under the prompt's caret so the list reads as scrollback.
+   light-grey, not faded-green: the history is read, and faded-green falls
+   below 4.5:1 contrast on the background. */
+.guessHistory {
+  margin: 0.75rem 1rem 0;
+  padding: 0;
+  list-style: none;
+  color: var(--light-grey);
+}
+
+.guessHistoryLine {
+  margin: 0.25rem 0;
+  overflow-wrap: anywhere;
+}
+
+.historyCaret {
+  margin-right: 0.5rem;
+  width: 1ch;
+  display: inline-block;
+}

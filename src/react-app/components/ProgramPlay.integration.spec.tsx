@@ -6,7 +6,7 @@ import {
 import { gqlApi } from "@test-utils/msw/graphqlApi";
 import { createQueryWrapper } from "@test-utils/queryTestUtils";
 import { stubReducedMotion } from "@test-utils/reducedMotion";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse } from "msw";
 import { setupServer } from "msw/node";
@@ -239,6 +239,37 @@ describe("ProgramPlay Integration", () => {
     await waitFor(() => {
       expect(screen.getByText("Get 1st Clue")).toBeInTheDocument();
     });
+  });
+
+  it("lists the gate's wrong guesses, then drops them once solved", async () => {
+    const { wrapper } = createQueryWrapper();
+    const user = userEvent.setup();
+
+    render(<ProgramPlay />, { wrapper });
+
+    const input = await screen.findByLabelText("Gate 1 password input");
+    for (const guess of ["three", "five"]) {
+      await user.clear(input);
+      await user.type(input, guess);
+      await user.keyboard("{Enter}");
+      await screen.findByText("Access Denied.");
+    }
+
+    const history = await screen.findByRole("list", {
+      name: "Previous guesses",
+    });
+    expect(within(history).getAllByRole("listitem")).toHaveLength(2);
+    expect(within(history).getByText("three")).toBeInTheDocument();
+    expect(within(history).getByText("five")).toBeInTheDocument();
+
+    await user.clear(input);
+    await user.type(input, "4");
+    await user.keyboard("{Enter}");
+
+    await screen.findByLabelText("Gate 2 password input");
+    expect(
+      screen.queryByRole("list", { name: "Previous guesses" }),
+    ).not.toBeInTheDocument();
   });
 
   it("requests and displays a clue after wrong guess", async () => {

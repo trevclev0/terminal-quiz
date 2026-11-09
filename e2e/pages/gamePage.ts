@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 export class GamePage {
   constructor(private page: Page) {}
@@ -229,6 +229,17 @@ export class GamePage {
     } catch {
       return false;
     }
+  }
+
+  /**
+   * The active gate's previous-guess scrollback lines. Use with Playwright's
+   * retrying assertions (`toContainText`, `toHaveCount`): the list updates
+   * after each denial lands.
+   */
+  guessHistoryItems(): Locator {
+    return this.page
+      .getByRole("list", { name: "Previous guesses" })
+      .getByRole("listitem");
   }
 
   // ─── Keyboard shortcut helpers ─────────────────────────────────────

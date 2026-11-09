@@ -31,6 +31,20 @@ export const CLUE_COMMAND_MESSAGES = {
   cooldown: (seconds: number) => `Clue cooldown — try again in ${seconds}s`,
 };
 
+// How many of the current gate's denied guesses the scrollback keeps.
+export const GUESS_HISTORY_LIMIT = 5;
+
+// A repeat moves to the bottom instead of showing twice, so the list stays a
+// record of distinct things tried. Compared loosely, the way a player reads
+// "London" and "london " as the same attempt.
+function appendGuess(history: string[], guess: string): string[] {
+  const key = guess.toLowerCase();
+  return [
+    ...history.filter((entry) => entry.toLowerCase() !== key),
+    guess,
+  ].slice(-GUESS_HISTORY_LIMIT);
+}
+
 // The last wrong guess, kept apart from the input box so `/clue` can send it
 // even though typing the command replaced the box's contents.
 type RememberedGuess = { guess: string; canRequestClue: boolean };
@@ -63,6 +77,9 @@ function useProgramPlay({
   );
   const [rememberedGuess, setRememberedGuess] =
     useState<RememberedGuess | null>(null);
+  // Client-only by design (#361): guess text never leaves the browser beyond
+  // the submit itself, and a reload starts the scrollback over.
+  const [guessHistory, setGuessHistory] = useState<string[]>([]);
   // Stryker disable next-line ArrowFunction: `now` is only read while a
   // cooldown runs, and every path that starts one sets it first.
   const [now, setNow] = useState(() => Date.now());
@@ -94,8 +111,8 @@ function useProgramPlay({
     setDenial(null);
   };
 
-  // Clear response message, denial, clues, canRequestClue, and the remembered
-  // wrong guess when currentGate.id changes
+  // Clear response message, denial, clues, canRequestClue, the remembered
+  // wrong guess, and the guess history when currentGate.id changes
   useEffect(() => {
     currentGateIdRef.current = currentGateId;
     setMessage(null);
@@ -105,6 +122,7 @@ function useProgramPlay({
     setCanRequestClue(false);
     setIsClueLimitReached(false);
     setRememberedGuess(null);
+    setGuessHistory([]);
     // NOTE: clueCooldownUntil intentionally persists across gates — the
     // backend rate limit is session-wide, so moving gates must not re-enable
     // a clue request the server would reject.
@@ -176,6 +194,7 @@ function useProgramPlay({
         setGuessSucceeded(true);
         setGuess("");
         setRememberedGuess(null);
+        setGuessHistory([]);
       } else {
         setMessage(result.message ?? "Access Denied.");
         denialCount.current += 1;
@@ -190,6 +209,7 @@ function useProgramPlay({
           guess: guess.trim(),
           canRequestClue: result.canRequestClue,
         });
+        setGuessHistory((prev) => appendGuess(prev, guess.trim()));
       }
     } catch {
       showMessage("Error submitting guess");
@@ -287,6 +307,7 @@ function useProgramPlay({
     requestClueMutation,
     resetSessionMutation,
     lastSolve,
+    guessHistory,
   };
 }
 

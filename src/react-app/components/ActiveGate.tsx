@@ -39,6 +39,8 @@ type ActiveGateProps = {
   };
   handleRequestClue: () => void;
   clues?: string[];
+  /** This gate's denied guesses, oldest first. */
+  guessHistory?: string[];
   enabled?: boolean;
 };
 
@@ -112,6 +114,7 @@ export default function ActiveGate({
   requestClueMutation,
   handleRequestClue,
   clues = [],
+  guessHistory = [],
   enabled = true,
 }: ActiveGateProps) {
   const formAriaLabel = `${gate.label} - enter password and press Enter \
@@ -157,6 +160,20 @@ to submit`;
             />
           ) : (
             <p className="description" aria-hidden="true" />
+          )}
+          {guessHistory.length > 0 && (
+            // Deliberately not live: the denial status line below already
+            // announces each wrong guess as it happens.
+            <ul aria-label="Previous guesses" className={styles.guessHistory}>
+              {guessHistory.map((entry) => (
+                <li key={entry} className={styles.guessHistoryLine}>
+                  <span className={styles.historyCaret} aria-hidden="true">
+                    &gt;
+                  </span>
+                  <span>{entry}</span>
+                </li>
+              ))}
+            </ul>
           )}
           <div className={gateStyles.promptLine}>
             <span className={styles.promptCaret} aria-hidden="true">

@@ -86,6 +86,7 @@ const mockUseProgramPlay = {
   cooldownSeconds: 0,
   clueCooldownUntil: null,
   clues: [],
+  guessHistory: [],
   handleRequestClue: vi.fn(),
   requestClueMutation: {
     mutate: vi.fn(),
