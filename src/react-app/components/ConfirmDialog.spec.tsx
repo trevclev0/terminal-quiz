@@ -12,6 +12,24 @@ const baseProps = {
   onCancel: vi.fn(),
 };
 
+function Harness() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)}>
+        Open
+      </button>
+      {open && (
+        <ConfirmDialog
+          {...baseProps}
+          onConfirm={vi.fn()}
+          onCancel={() => setOpen(false)}
+        />
+      )}
+    </>
+  );
+}
+
 describe("ConfirmDialog", () => {
   it("renders the message", () => {
     render(<ConfirmDialog {...baseProps} onConfirm={vi.fn()} />);
@@ -143,24 +161,6 @@ describe("ConfirmDialog", () => {
   });
 
   it("restores focus to the trigger when the dialog unmounts", async () => {
-    function Harness() {
-      const [open, setOpen] = useState(false);
-      return (
-        <>
-          <button type="button" onClick={() => setOpen(true)}>
-            Open
-          </button>
-          {open && (
-            <ConfirmDialog
-              {...baseProps}
-              onConfirm={vi.fn()}
-              onCancel={() => setOpen(false)}
-            />
-          )}
-        </>
-      );
-    }
-
     render(<Harness />);
     const trigger = screen.getByText("Open");
 

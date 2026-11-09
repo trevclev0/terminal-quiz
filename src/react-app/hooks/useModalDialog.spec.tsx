@@ -4,6 +4,21 @@ import { StrictMode, useRef, useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { useModalDialog } from "./useModalDialog";
 
+function Detached() {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  useModalDialog(() => buttonRef.current);
+  return (
+    <button type="button" ref={buttonRef}>
+      loose
+    </button>
+  );
+}
+
+function Nothing() {
+  useModalDialog(() => null);
+  return <button type="button">x</button>;
+}
+
 function Harness() {
   const firstRef = useRef<HTMLButtonElement>(null);
   const secondRef = useRef<HTMLButtonElement>(null);
@@ -115,24 +130,11 @@ describe("useModalDialog", () => {
   });
 
   it("still focuses the initial element when the dialog ref is not attached", () => {
-    function Detached() {
-      const buttonRef = useRef<HTMLButtonElement>(null);
-      useModalDialog(() => buttonRef.current);
-      return (
-        <button type="button" ref={buttonRef}>
-          loose
-        </button>
-      );
-    }
     render(<Detached />);
     expect(screen.getByText("loose")).toHaveFocus();
   });
 
   it("tolerates a getInitialFocus that finds nothing", () => {
-    function Nothing() {
-      useModalDialog(() => null);
-      return <button type="button">x</button>;
-    }
     expect(() => render(<Nothing />)).not.toThrow();
   });
 
