@@ -10,6 +10,21 @@ import styles from "./CrtOverlay.module.css";
 const BANNER_TEXT = "VT220 OK";
 const BANNER_TYPING_MS = BANNER_TEXT.length * BANNER_TYPE_SPEED;
 
+// A layout effect runs inside the first commit, before any passive effect
+// could move the boot stage on, so it reports exactly what got painted.
+function FirstCommitProbe({
+  onFirstCommit,
+}: {
+  onFirstCommit: (bootLayerPainted: boolean) => void;
+}) {
+  useLayoutEffect(() => {
+    onFirstCommit(
+      document.querySelector('[data-testid="crt-poweron"]') !== null,
+    );
+  }, [onFirstCommit]);
+  return null;
+}
+
 function createFakeStorage() {
   const store: Record<string, string> = {};
   return {
@@ -364,8 +379,8 @@ describe("CrtOverlay boot reporting", () => {
     expect(screen.getByTestId("boot-flag")).toHaveTextContent("done");
   });
 
-  // A layout effect runs inside the first commit, before any passive effect
-  // could move the stage to `done`, so it sees exactly what got painted.
+  // FirstCommitProbe reads the DOM inside the first commit, so this pins
+  // what got painted rather than what a later effect cleaned up.
   it("never paints the boot layer under reduced motion", () => {
     localStorage.setItem(
       "terminal_quiz_crt_settings",
@@ -373,18 +388,14 @@ describe("CrtOverlay boot reporting", () => {
     );
     stubReducedMotion(true);
     let bootLayerOnFirstCommit: boolean | undefined;
-    function FirstCommitProbe() {
-      useLayoutEffect(() => {
-        bootLayerOnFirstCommit ??=
-          document.querySelector('[data-testid="crt-poweron"]') !== null;
-      }, []);
-      return null;
-    }
-
     render(
       <>
         <CrtOverlay />
-        <FirstCommitProbe />
+        <FirstCommitProbe
+          onFirstCommit={(painted) => {
+            bootLayerOnFirstCommit ??= painted;
+          }}
+        />
       </>,
     );
 
