@@ -46,6 +46,7 @@ interface SubmitGuessData {
     success: boolean;
     message: string | null;
     canRequestClue: boolean;
+    hintsUnlocked: number;
     nextGate: { id: string; label: string; question: string } | null;
   };
 }
@@ -84,6 +85,7 @@ describe("submitGuess mutation", () => {
     expect(data.submitGuess.message).toBe("ACCESS GRANTED.");
     expect(data.submitGuess.message).not.toContain("Correct!");
     expect(data.submitGuess.canRequestClue).toBe(false);
+    expect(data.submitGuess.hintsUnlocked).toBe(0);
     expect(data.submitGuess.nextGate).not.toBeNull();
     expect(data.submitGuess.nextGate?.id).toBe(E2E_GATE_2_ID);
 
@@ -123,6 +125,7 @@ describe("submitGuess mutation", () => {
     expect(data.submitGuess.success).toBe(false);
     expect(data.submitGuess.nextGate).toBeNull();
     expect(data.submitGuess.canRequestClue).toBe(false);
+    expect(data.submitGuess.hintsUnlocked).toBe(0);
 
     // Verify attempt_count incremented via direct DB query
     const row = await env.DB.prepare(
@@ -169,6 +172,8 @@ describe("submitGuess mutation", () => {
     expect(data.submitGuess.nextGate).toBeNull();
     // attemptCount=3 now meets threshold=2, guidance is enabled → clue available
     expect(data.submitGuess.canRequestClue).toBe(true);
+    // ...and the second hint step: one step at the threshold, one per guess after
+    expect(data.submitGuess.hintsUnlocked).toBe(2);
   });
 
   it("clue cap: no more clues once MAX_CLUES_PER_GATE reached", async () => {

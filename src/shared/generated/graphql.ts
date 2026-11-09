@@ -2939,6 +2939,7 @@ export type Mutation = {
   deleteProgram: Scalars['Boolean']['output'];
   reorderGates: Scalars['Boolean']['output'];
   requestClue: Maybe<RequestClueResult>;
+  requestHint: Maybe<RequestHintResult>;
   resetSession: Scalars['Boolean']['output'];
   submitGuess: Maybe<SubmitGuessPayload>;
   updateGate: Maybe<GateManagement>;
@@ -2984,6 +2985,12 @@ export type MutationReorderGatesArgs = {
 
 export type MutationRequestClueArgs = {
   currentGuess: Scalars['String']['input'];
+  gateId: Scalars['String']['input'];
+  programId: Scalars['String']['input'];
+};
+
+
+export type MutationRequestHintArgs = {
   gateId: Scalars['String']['input'];
   programId: Scalars['String']['input'];
 };
@@ -3622,6 +3629,12 @@ export type RequestClueResult = {
   isClueLimitReached: Scalars['Boolean']['output'];
   isRateLimited: Scalars['Boolean']['output'];
   retryAfterMs: Maybe<Scalars['Int']['output']>;
+};
+
+export type RequestHintResult = {
+  cells: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  isFinalStep: Scalars['Boolean']['output'];
+  step: Scalars['Int']['output'];
 };
 
 export type RunStats = {
@@ -5770,6 +5783,7 @@ export type SessionProgressUpdatedAtfiltersOr = {
 
 export type SubmitGuessPayload = {
   canRequestClue: Scalars['Boolean']['output'];
+  hintsUnlocked: Scalars['Int']['output'];
   message: Maybe<Scalars['String']['output']>;
   nextGate: Maybe<ActiveGate>;
   success: Scalars['Boolean']['output'];
@@ -5782,7 +5796,7 @@ export type SubmitGuessMutationVariables = Exact<{
 }>;
 
 
-export type SubmitGuessMutation = { submitGuess: { success: boolean, message: string | null, canRequestClue: boolean, nextGate: { id: string, label: string, question: string } | null } | null };
+export type SubmitGuessMutation = { submitGuess: { success: boolean, message: string | null, canRequestClue: boolean, hintsUnlocked: number, nextGate: { id: string, label: string, question: string } | null } | null };
 
 export type RequestClueMutationVariables = Exact<{
   programId: string;
@@ -5792,6 +5806,14 @@ export type RequestClueMutationVariables = Exact<{
 
 
 export type RequestClueMutation = { requestClue: { clueText: string | null, isClueLimitReached: boolean, cluesRemaining: number, isRateLimited: boolean, retryAfterMs: number | null, isAiBudgetExhausted: boolean } | null };
+
+export type RequestHintMutationVariables = Exact<{
+  programId: string;
+  gateId: string;
+}>;
+
+
+export type RequestHintMutation = { requestHint: { step: number, cells: Array<string | null> | null, isFinalStep: boolean } | null };
 
 export type ResetSessionMutationVariables = Exact<{
   programId: string;
@@ -5913,8 +5935,9 @@ export type ReorderGatesMutationVariables = Exact<{
 export type ReorderGatesMutation = { reorderGates: boolean };
 
 
-export const SubmitGuessDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SubmitGuess"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"gateId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"guess"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"submitGuess"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}},{"kind":"Argument","name":{"kind":"Name","value":"gateId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"gateId"}}},{"kind":"Argument","name":{"kind":"Name","value":"guess"},"value":{"kind":"Variable","name":{"kind":"Name","value":"guess"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"canRequestClue"}},{"kind":"Field","name":{"kind":"Name","value":"nextGate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}}]}}]}}]}}]} as unknown as DocumentNode<SubmitGuessMutation, SubmitGuessMutationVariables>;
+export const SubmitGuessDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SubmitGuess"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"gateId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"guess"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"submitGuess"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}},{"kind":"Argument","name":{"kind":"Name","value":"gateId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"gateId"}}},{"kind":"Argument","name":{"kind":"Name","value":"guess"},"value":{"kind":"Variable","name":{"kind":"Name","value":"guess"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"canRequestClue"}},{"kind":"Field","name":{"kind":"Name","value":"hintsUnlocked"}},{"kind":"Field","name":{"kind":"Name","value":"nextGate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}}]}}]}}]}}]} as unknown as DocumentNode<SubmitGuessMutation, SubmitGuessMutationVariables>;
 export const RequestClueDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RequestClue"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"gateId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"currentGuess"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"requestClue"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}},{"kind":"Argument","name":{"kind":"Name","value":"gateId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"gateId"}}},{"kind":"Argument","name":{"kind":"Name","value":"currentGuess"},"value":{"kind":"Variable","name":{"kind":"Name","value":"currentGuess"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"clueText"}},{"kind":"Field","name":{"kind":"Name","value":"isClueLimitReached"}},{"kind":"Field","name":{"kind":"Name","value":"cluesRemaining"}},{"kind":"Field","name":{"kind":"Name","value":"isRateLimited"}},{"kind":"Field","name":{"kind":"Name","value":"retryAfterMs"}},{"kind":"Field","name":{"kind":"Name","value":"isAiBudgetExhausted"}}]}}]}}]} as unknown as DocumentNode<RequestClueMutation, RequestClueMutationVariables>;
+export const RequestHintDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RequestHint"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"gateId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"requestHint"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}},{"kind":"Argument","name":{"kind":"Name","value":"gateId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"gateId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"step"}},{"kind":"Field","name":{"kind":"Name","value":"cells"}},{"kind":"Field","name":{"kind":"Name","value":"isFinalStep"}}]}}]}}]} as unknown as DocumentNode<RequestHintMutation, RequestHintMutationVariables>;
 export const ResetSessionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ResetSession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resetSession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}}]}]}}]} as unknown as DocumentNode<ResetSessionMutation, ResetSessionMutationVariables>;
 export const GetProgramsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetPrograms"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"programs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]} as unknown as DocumentNode<GetProgramsQuery, GetProgramsQueryVariables>;
 export const GetProgramProgressionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetProgramProgression"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"programId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getProgramProgression"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"programId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"programId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currentGate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}}]}},{"kind":"Field","name":{"kind":"Name","value":"completedGates"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"question"}},{"kind":"Field","name":{"kind":"Name","value":"correctAnswer"}},{"kind":"Field","name":{"kind":"Name","value":"successMessage"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalGates"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"stats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalGuesses"}},{"kind":"Field","name":{"kind":"Name","value":"cluesUsed"}},{"kind":"Field","name":{"kind":"Name","value":"elapsedSeconds"}}]}}]}}]}}]} as unknown as DocumentNode<GetProgramProgressionQuery, GetProgramProgressionQueryVariables>;

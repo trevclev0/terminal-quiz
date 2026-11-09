@@ -72,6 +72,10 @@ function ProgramPlay() {
     handleRequestClue,
     clues,
     requestClueMutation,
+    hint,
+    canRequestHint,
+    handleRequestHint,
+    isHintPending,
     resetSessionMutation,
     lastSolve,
     guessHistory,
@@ -265,6 +269,10 @@ function ProgramPlay() {
           clues={clues}
           guessHistory={guessHistory}
           requestClueMutation={requestClueMutation}
+          hint={hint}
+          canRequestHint={canRequestHint}
+          handleRequestHint={handleRequestHint}
+          isHintPending={isHintPending}
           enabled={canTypeQuestion}
         />
       )}

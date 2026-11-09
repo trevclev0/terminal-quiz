@@ -17,6 +17,7 @@ import {
 } from "@worker-graphql/gameplay/programQueries";
 import { reorderGates } from "@worker-graphql/gameplay/reorderGatesMutation";
 import { requestClue } from "@worker-graphql/gameplay/requestClueMutation";
+import { requestHint } from "@worker-graphql/gameplay/requestHintMutation";
 import { resetSession } from "@worker-graphql/gameplay/resetSessionMutation";
 import {
   getInProgressProgram,
@@ -61,6 +62,7 @@ export function buildAppSchema<
       fields: {
         submitGuess,
         requestClue,
+        requestHint,
         resetSession,
         createProgram,
         updateProgram,

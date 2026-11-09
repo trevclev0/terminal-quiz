@@ -11,6 +11,7 @@
     "src/shared/gameCommands.ts",
     "src/worker/graphql/gameplay/clueEligibility.ts",
     "src/react-app/utils/bootSequence.ts",
+    "src/react-app/utils/hintFormat.ts",
     "src/react-app/hooks/useProgramPlay.ts",
     "src/react-app/hooks/useResetSession.ts",
     "src/react-app/hooks/useProgramSettings.ts",

@@ -5,6 +5,7 @@ import useProgramPlay, {
   CLUE_COMMAND_MESSAGES,
   DENIAL_BLINK_MS,
   GUESS_HISTORY_LIMIT,
+  HINT_MESSAGES,
 } from "./useProgramPlay";
 
 // Mock the mutations
@@ -12,6 +13,8 @@ const mockMutateAsync = vi.fn();
 const mockMutate = vi.fn();
 let mockSubmitIsPending = false;
 let mockClueIsPending = false;
+const mockHintMutate = vi.fn();
+let mockHintIsPending = false;
 
 // The hook's onSolved, captured so a test's mutateAsync can report a solve
 // the way the real mutation's onSuccess does.
@@ -40,6 +43,15 @@ vi.mock("@api/mutations/useRequestClueMutation", () => ({
   })),
 }));
 
+vi.mock("@api/mutations/useRequestHintMutation", () => ({
+  useRequestHintMutation: vi.fn(() => ({
+    mutate: mockHintMutate,
+    get isPending() {
+      return mockHintIsPending;
+    },
+  })),
+}));
+
 describe("useProgramPlay", () => {
   const programId = "test-program";
   const currentGateId = "gate-1";
@@ -49,6 +61,7 @@ describe("useProgramPlay", () => {
     vi.clearAllMocks();
     mockSubmitIsPending = false;
     mockClueIsPending = false;
+    mockHintIsPending = false;
   });
 
   it("starts with an empty guess", () => {
@@ -899,7 +912,7 @@ describe("useProgramPlay", () => {
 
     expect(result.current.clues).toEqual([]);
     expect(result.current.message).toBe(
-      "AI hint budget exhausted for today — try again tomorrow.",
+      "AI clue budget exhausted for today. Type /hint for a letter hint.",
     );
     // Budget exhaustion is a "try again tomorrow" failure — the clue button
     // stays usable and no retry cooldown starts.
@@ -914,7 +927,7 @@ describe("useProgramPlay", () => {
 
     expect(result.current.clues).toEqual([]);
     expect(result.current.message).toBe(
-      "AI hint budget exhausted for today — try again tomorrow.",
+      "AI clue budget exhausted for today. Type /hint for a letter hint.",
     );
     expect(result.current.canRequestClue).toBe(true);
   });
@@ -1730,6 +1743,296 @@ describe("useProgramPlay", () => {
       type(result, "london");
       await submit(result);
       expect(result.current.guessHistory).toEqual([]);
+    });
+  });
+
+  describe("mechanical hints", () => {
+    const submitEvent = () =>
+      ({
+        preventDefault: vi.fn(),
+      }) as unknown as React.SubmitEvent<HTMLFormElement>;
+
+    const type = (
+      result: { current: ReturnType<typeof useProgramPlay> },
+      value: string,
+    ) => {
+      act(() => {
+        result.current.changeHandler({
+          target: { value },
+        } as React.ChangeEvent<HTMLInputElement>);
+      });
+    };
+
+    const submit = async (result: {
+      current: ReturnType<typeof useProgramPlay>;
+    }) => {
+      await act(async () => {
+        await result.current.handleSubmit(submitEvent());
+      });
+    };
+
+    const wrongGuess = async (
+      result: { current: ReturnType<typeof useProgramPlay> },
+      hintsUnlocked: number,
+    ) => {
+      mockMutateAsync.mockResolvedValueOnce({
+        success: false,
+        message: "Wrong!",
+        canRequestClue: false,
+        hintsUnlocked,
+      });
+      type(result, "nope");
+      await submit(result);
+    };
+
+    const hint = (overrides = {}) => ({
+      step: 1,
+      cells: [null, null, null, null],
+      isFinalStep: false,
+      ...overrides,
+    });
+
+    const respondWithHint = (response: ReturnType<typeof hint>) => {
+      mockHintMutate.mockImplementation((_variables, options) => {
+        options.onSuccess(response);
+      });
+    };
+
+    const renderPlay = () =>
+      renderHook(() => useProgramPlay({ programId, currentGateId }), {
+        wrapper,
+      });
+
+    it("starts with no hint to show or request", () => {
+      const { result } = renderPlay();
+
+      expect(result.current.hint).toBeNull();
+      expect(result.current.canRequestHint).toBe(false);
+    });
+
+    it("offers a hint once a wrong guess unlocks one", async () => {
+      const { result } = renderPlay();
+
+      await wrongGuess(result, 1);
+
+      expect(result.current.canRequestHint).toBe(true);
+    });
+
+    it("does not offer a hint while none is unlocked", async () => {
+      const { result } = renderPlay();
+
+      await wrongGuess(result, 0);
+
+      expect(result.current.canRequestHint).toBe(false);
+    });
+
+    it("requests the hint for the current gate and shows it", async () => {
+      const { result } = renderPlay();
+      await wrongGuess(result, 1);
+      respondWithHint(hint());
+
+      act(() => {
+        result.current.handleRequestHint();
+      });
+
+      expect(mockHintMutate).toHaveBeenCalledWith(
+        { gateId: currentGateId },
+        expect.any(Object),
+      );
+      expect(result.current.hint).toEqual(hint());
+      expect(result.current.canRequestHint).toBe(false);
+    });
+
+    it("offers the next hint after another wrong guess unlocks it", async () => {
+      const { result } = renderPlay();
+      await wrongGuess(result, 1);
+      respondWithHint(hint());
+      act(() => {
+        result.current.handleRequestHint();
+      });
+
+      await wrongGuess(result, 2);
+
+      expect(result.current.canRequestHint).toBe(true);
+    });
+
+    it("replies notYet and shows no hint when none is unlocked", async () => {
+      const { result } = renderPlay();
+      respondWithHint(hint({ step: 0, cells: null }));
+
+      act(() => {
+        result.current.handleRequestHint();
+      });
+
+      expect(result.current.hint).toBeNull();
+      expect(result.current.message).toBe(HINT_MESSAGES.notYet);
+    });
+
+    it("shows an error message when the request fails", () => {
+      const { result } = renderPlay();
+      mockHintMutate.mockImplementation((_variables, options) => {
+        options.onError(new Error("boom"));
+      });
+
+      act(() => {
+        result.current.handleRequestHint();
+      });
+
+      expect(result.current.message).toBe(HINT_MESSAGES.error);
+    });
+
+    it("ignores a response for a gate the player has left", () => {
+      const { result, rerender } = renderHook(
+        ({ currentGateId }) => useProgramPlay({ programId, currentGateId }),
+        { wrapper, initialProps: { currentGateId: "gate-1" } },
+      );
+      let respond: (() => void) | undefined;
+      mockHintMutate.mockImplementation((_variables, options) => {
+        respond = () => options.onSuccess(hint());
+      });
+      act(() => {
+        result.current.handleRequestHint();
+      });
+
+      rerender({ currentGateId: "gate-2" });
+      act(() => {
+        respond?.();
+      });
+
+      expect(result.current.hint).toBeNull();
+    });
+
+    it("ignores an error for a gate the player has left", () => {
+      const { result, rerender } = renderHook(
+        ({ currentGateId }) => useProgramPlay({ programId, currentGateId }),
+        { wrapper, initialProps: { currentGateId: "gate-1" } },
+      );
+      let fail: (() => void) | undefined;
+      mockHintMutate.mockImplementation((_variables, options) => {
+        fail = () => options.onError(new Error("boom"));
+      });
+      act(() => {
+        result.current.handleRequestHint();
+      });
+
+      rerender({ currentGateId: "gate-2" });
+      act(() => {
+        fail?.();
+      });
+
+      expect(result.current.message).toBeNull();
+    });
+
+    it("clears the hint and unlocked steps when the gate changes", async () => {
+      const { result, rerender } = renderHook(
+        ({ currentGateId }) => useProgramPlay({ programId, currentGateId }),
+        { wrapper, initialProps: { currentGateId: "gate-1" } },
+      );
+      await wrongGuess(result, 2);
+      respondWithHint(hint());
+      act(() => {
+        result.current.handleRequestHint();
+      });
+
+      rerender({ currentGateId: "gate-2" });
+
+      expect(result.current.hint).toBeNull();
+      expect(result.current.canRequestHint).toBe(false);
+    });
+
+    it("makes no request without a current gate", () => {
+      const { result } = renderHook(
+        () => useProgramPlay({ programId, currentGateId: null }),
+        { wrapper },
+      );
+
+      act(() => {
+        result.current.handleRequestHint();
+      });
+
+      expect(mockHintMutate).not.toHaveBeenCalled();
+    });
+
+    it("makes no request while one is pending", () => {
+      mockHintIsPending = true;
+      const { result } = renderPlay();
+
+      act(() => {
+        result.current.handleRequestHint();
+      });
+
+      expect(mockHintMutate).not.toHaveBeenCalled();
+    });
+
+    it("/hint requests a hint without submitting a guess", async () => {
+      const { result } = renderPlay();
+      respondWithHint(hint());
+      type(result, " /HINT ");
+
+      await submit(result);
+
+      expect(mockMutateAsync).not.toHaveBeenCalled();
+      expect(mockHintMutate).toHaveBeenCalledTimes(1);
+      expect(result.current.guess).toBe("");
+      expect(result.current.hint).toEqual(hint());
+    });
+
+    it("/hint with the final hint showing replies final, no request", async () => {
+      const { result } = renderPlay();
+      await wrongGuess(result, 3);
+      respondWithHint(hint({ step: 3, isFinalStep: true }));
+      act(() => {
+        result.current.handleRequestHint();
+      });
+      mockHintMutate.mockClear();
+
+      type(result, "/hint");
+      await submit(result);
+
+      expect(mockHintMutate).not.toHaveBeenCalled();
+      expect(result.current.message).toBe(HINT_MESSAGES.final);
+    });
+
+    it("/hint with the newest hint already showing replies notYet", async () => {
+      const { result } = renderPlay();
+      await wrongGuess(result, 1);
+      respondWithHint(hint());
+      act(() => {
+        result.current.handleRequestHint();
+      });
+      mockHintMutate.mockClear();
+
+      type(result, "/hint");
+      await submit(result);
+
+      expect(mockHintMutate).not.toHaveBeenCalled();
+      expect(result.current.message).toBe(HINT_MESSAGES.notYet);
+    });
+
+    it("clears the denial when /hint replies with a message", async () => {
+      const { result } = renderPlay();
+      respondWithHint(hint({ step: 0, cells: null }));
+      await wrongGuess(result, 0);
+      expect(result.current.denialId).not.toBeNull();
+
+      type(result, "/hint");
+      await submit(result);
+
+      expect(result.current.denialId).toBeNull();
+      expect(result.current.guessSucceeded).toBeNull();
+    });
+
+    it("raises the unlocked count to a step the server returns", async () => {
+      // After a reload the client has not seen a guess result yet, but the
+      // server still knows how many steps are unlocked.
+      const { result } = renderPlay();
+      respondWithHint(hint({ step: 2 }));
+
+      type(result, "/hint");
+      await submit(result);
+
+      expect(result.current.hint).toEqual(hint({ step: 2 }));
+      expect(result.current.canRequestHint).toBe(false);
     });
   });
 });

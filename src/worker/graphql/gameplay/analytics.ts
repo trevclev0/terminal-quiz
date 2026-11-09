@@ -8,6 +8,7 @@ export type GameplayEventName =
   | "gate_completed"
   | "program_completed"
   | "clue_requested"
+  | "hint_requested"
   | "session_reset"
   | "client_error";
 

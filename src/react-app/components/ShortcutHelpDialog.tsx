@@ -11,6 +11,10 @@ const COMMANDS = [
     command: "/clue",
     description: "request a clue after enough wrong guesses",
   },
+  {
+    command: "/hint",
+    description: "show a letter-pattern hint after enough wrong guesses",
+  },
   { command: "/help", description: "show this help" },
 ];
 

@@ -30,9 +30,9 @@ export type Visibility = (typeof VISIBILITIES)[number];
 const ACCEPTANCE_THRESHOLD_ERROR = `acceptanceThreshold must be between ${MIN_ACCEPTANCE_THRESHOLD} and ${MAX_ACCEPTANCE_THRESHOLD}.`;
 const GUIDANCE_THRESHOLD_ERROR = `guidanceThreshold must be an integer between ${MIN_GUIDANCE_THRESHOLD} and ${MAX_GUIDANCE_THRESHOLD}.`;
 const SEQUENCE_ORDER_ERROR = "sequenceOrder must be a positive integer.";
-const RESERVED_COMMAND_LIST = GAME_COMMANDS.map(
-  (command) => `"${command}"`,
-).join(" or ");
+const RESERVED_COMMAND_LIST = new Intl.ListFormat("en", {
+  type: "disjunction",
+}).format(GAME_COMMANDS.map((command) => `"${command}"`));
 export const RESERVED_ANSWER_ERROR = `correctAnswer can't be ${RESERVED_COMMAND_LIST} — those are game commands.`;
 export const MAX_ACCEPTED_ANSWERS = 10;
 export const ACCEPTED_ANSWER_REQUIRED_ERROR =

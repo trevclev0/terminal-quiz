@@ -1,4 +1,5 @@
 import type { RequestClueResponse } from "@api/mutations/useRequestClueMutation";
+import type { RequestHintResponse } from "@api/mutations/useRequestHintMutation";
 import type { SubmitGuessResponse } from "@api/mutations/useSubmitGuessMutation";
 import type { Me } from "@api/queries/useMeQuery";
 import type { MyProgram } from "@api/queries/useMyProgramsQuery";
@@ -72,6 +73,7 @@ export const mockSubmitGuessResponse = (
   success: true,
   message: "ACCESS GRANTED.",
   canRequestClue: false,
+  hintsUnlocked: 0,
   nextGate: null,
   ...overrides,
 });
@@ -132,5 +134,14 @@ export const mockRequestClueResponse = (
   isRateLimited: false,
   retryAfterMs: null,
   isAiBudgetExhausted: false,
+  ...overrides,
+});
+
+export const mockRequestHintResponse = (
+  overrides: Partial<RequestHintResponse> = {},
+): RequestHintResponse => ({
+  step: 1,
+  cells: [null, null, null, null],
+  isFinalStep: false,
   ...overrides,
 });

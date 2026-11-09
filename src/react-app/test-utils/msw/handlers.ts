@@ -4,6 +4,7 @@ import {
   GET_PROGRAMS_QUERY,
   PROGRAM_QUERY,
   REQUEST_CLUE_MUTATION,
+  REQUEST_HINT_MUTATION,
   RESET_SESSION_MUTATION,
   SUBMIT_GUESS_MUTATION,
 } from "@shared/gqlQueries";
@@ -13,6 +14,7 @@ import {
   mockPrograms,
   mockProgression,
   mockRequestClueResponse,
+  mockRequestHintResponse,
   mockSubmitGuessResponse,
 } from "./fixtures";
 import { gqlApi } from "./graphqlApi";
@@ -46,6 +48,10 @@ export const requestClueHandler = gqlApi.mutation(REQUEST_CLUE_MUTATION, () =>
   HttpResponse.json({ data: { requestClue: mockRequestClueResponse() } }),
 );
 
+export const requestHintHandler = gqlApi.mutation(REQUEST_HINT_MUTATION, () =>
+  HttpResponse.json({ data: { requestHint: mockRequestHintResponse() } }),
+);
+
 export const resetSessionHandler = gqlApi.mutation(RESET_SESSION_MUTATION, () =>
   HttpResponse.json({ data: { resetSession: true } }),
 );
@@ -61,6 +67,7 @@ export const handlers = [
   getInProgressProgramHandler,
   submitGuessHandler,
   requestClueHandler,
+  requestHintHandler,
   resetSessionHandler,
   getSessionHandler,
 ];

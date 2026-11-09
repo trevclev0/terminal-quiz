@@ -252,7 +252,7 @@ describe("acceptedAnswersSchema", () => {
 
   it("names the reserved commands in the alias error", () => {
     expect(RESERVED_ALIAS_ERROR).toBe(
-      'Accepted answers can\'t be "/clue" or "/help" — those are game commands.',
+      'Accepted answers can\'t be "/clue", "/help", or "/hint" — those are game commands.',
     );
   });
 

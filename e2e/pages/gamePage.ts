@@ -245,7 +245,7 @@ export class GamePage {
   // ─── Keyboard shortcut helpers ─────────────────────────────────────
 
   /**
-   * Type a slash command (`/clue`, `/help`) into the active gate's answer
+   * Type a slash command (`/clue`, `/hint`, `/help`) into the active gate's answer
    * box and press Enter.
    */
   async typeCommand(command: string): Promise<void> {
@@ -261,6 +261,18 @@ export class GamePage {
    */
   getActiveInputLocator() {
     return this.page.getByPlaceholder("enter password... (/help)");
+  }
+
+  // ─── Hint helpers ──────────────────────────────────────────────────
+
+  /** The "Get Hint" / "Get Next Hint" button. */
+  getHintButtonLocator() {
+    return this.page.getByRole("button", { name: /^Get (Next )?Hint$/ });
+  }
+
+  /** The visible letter pattern of the newest hint, e.g. "B _ _ _". */
+  getHintPatternLocator() {
+    return this.page.getByTestId("hint-pattern");
   }
 
   // ─── Clue button helpers ───────────────────────────────────────────

@@ -1,8 +1,14 @@
 import type { ActiveGate as ActiveGateType } from "@api/queries/useProgramProgressionQuery";
+import type { Hint } from "@hooks/useProgramPlay";
 import useTypewriter from "@hooks/useTypewriter";
 import { MAX_CLUES_PER_GATE, MAX_GUESS_LENGTH } from "@shared/types";
 import type { ChangeEvent, RefObject, SubmitEvent } from "react";
 import { useCallback, useState } from "react";
+import {
+  describeHint,
+  formatHintPattern,
+  hintLengthLabel,
+} from "../utils/hintFormat";
 import styles from "./ActiveGate.module.css";
 import gateStyles from "./Gate.module.css";
 import { Spinner } from "./Spinner";
@@ -41,6 +47,12 @@ type ActiveGateProps = {
   clues?: string[];
   /** This gate's denied guesses, oldest first. */
   guessHistory?: string[];
+  /** The newest letter-pattern hint for this gate, if one was requested. */
+  hint?: Hint | null;
+  /** True while a wrong guess has unlocked a hint step not yet shown. */
+  canRequestHint?: boolean;
+  isHintPending?: boolean;
+  handleRequestHint?: () => void;
   enabled?: boolean;
 };
 
@@ -115,6 +127,10 @@ export default function ActiveGate({
   handleRequestClue,
   clues = [],
   guessHistory = [],
+  hint = null,
+  canRequestHint = false,
+  isHintPending = false,
+  handleRequestHint,
   enabled = true,
 }: ActiveGateProps) {
   const formAriaLabel = `${gate.label} - enter password and press Enter \
@@ -246,6 +262,39 @@ to submit`;
                       ? "Get Final Clue"
                       : `Get ${clueNumber}${clueSuffix} Clue`}
               </button>
+            </p>
+          )}
+
+          {canRequestHint && (
+            <p className={styles.cluePrompt}>
+              <button
+                type="button"
+                className={styles.clueLink}
+                onClick={handleRequestHint}
+                disabled={isHintPending || isPending}
+              >
+                {isHintPending
+                  ? "Fetching Hint..."
+                  : hint
+                    ? "Get Next Hint"
+                    : "Get Hint"}
+              </button>
+            </p>
+          )}
+
+          {hint && (
+            // The visible pattern is a row of underscores, which a screen
+            // reader would read out symbol by symbol, so it gets the spelled
+            // out version instead.
+            <p role="status" className={styles.hintLine}>
+              <span className="sr-only">{describeHint(hint.cells)}</span>
+              <span aria-hidden="true">
+                Hint:{" "}
+                <span className={styles.hintPattern} data-testid="hint-pattern">
+                  {formatHintPattern(hint.cells)}
+                </span>{" "}
+                ({hintLengthLabel(hint.cells)})
+              </span>
             </p>
           )}
 

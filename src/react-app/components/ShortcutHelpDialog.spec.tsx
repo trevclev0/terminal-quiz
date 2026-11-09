@@ -11,14 +11,21 @@ describe("ShortcutHelpDialog", () => {
     ).toBeInTheDocument();
   });
 
-  it.each(["/clue", "/help", "?", "Esc", "Enter", "R", "N", "Ctrl+Shift+,"])(
-    "lists %s",
-    (shortcut) => {
-      render(<ShortcutHelpDialog onClose={vi.fn()} />);
-      const dialog = screen.getByRole("dialog", { name: "Keyboard shortcuts" });
-      expect(within(dialog).getByText(shortcut)).toBeInTheDocument();
-    },
-  );
+  it.each([
+    "/clue",
+    "/hint",
+    "/help",
+    "?",
+    "Esc",
+    "Enter",
+    "R",
+    "N",
+    "Ctrl+Shift+,",
+  ])("lists %s", (shortcut) => {
+    render(<ShortcutHelpDialog onClose={vi.fn()} />);
+    const dialog = screen.getByRole("dialog", { name: "Keyboard shortcuts" });
+    expect(within(dialog).getByText(shortcut)).toBeInTheDocument();
+  });
 
   it("focuses the [x] button on open", () => {
     render(<ShortcutHelpDialog onClose={vi.fn()} />);
