@@ -1,4 +1,5 @@
 import { useRequestClueMutation } from "@api/mutations/useRequestClueMutation";
+import { useRequestHintMutation } from "@api/mutations/useRequestHintMutation";
 import { useSubmitGuessMutation } from "@api/mutations/useSubmitGuessMutation";
 import { useResetSession } from "@hooks/useResetSession";
 import { parseGameCommand } from "@shared/gameCommands";
@@ -44,6 +45,21 @@ function appendGuess(history: string[], guess: string): string[] {
     guess,
   ].slice(-GUESS_HISTORY_LIMIT);
 }
+export const HINT_MESSAGES = {
+  notYet: "No new hint yet. Make another guess.",
+  final: "That's the last hint for this gate.",
+  error: "Error requesting hint. Please try again.",
+};
+
+const AI_BUDGET_EXHAUSTED_MESSAGE =
+  "AI clue budget exhausted for today. Type /hint for a letter hint.";
+
+/** A letter-pattern hint: null cells are hidden letters, " " a word gap. */
+export type Hint = {
+  step: number;
+  cells: (string | null)[];
+  isFinalStep: boolean;
+};
 
 // The last wrong guess, kept apart from the input box so `/clue` can send it
 // even though typing the command replaced the box's contents.
@@ -64,6 +80,7 @@ function useProgramPlay({
     onSolved: (gateId) => setLastSolve({ gateId }),
   });
   const requestClueMutation = useRequestClueMutation(programId);
+  const requestHintMutation = useRequestHintMutation(programId);
   const resetSessionMutation = useResetSession();
 
   const [guess, setGuess] = useState("");
@@ -82,6 +99,11 @@ function useProgramPlay({
   // Stryker disable next-line ArrayDeclaration: the gate-change effect resets
   // this to [] on mount, before any render can show the initial value.
   const [guessHistory, setGuessHistory] = useState<string[]>([]);
+  const [hint, setHint] = useState<Hint | null>(null);
+  // Steps the server has unlocked on this gate. Taken from each wrong guess,
+  // and raised by a hint response, since after a reload the server knows
+  // about guesses this mount never saw.
+  const [hintsUnlocked, setHintsUnlocked] = useState(0);
   // Stryker disable next-line ArrowFunction: `now` is only read while a
   // cooldown runs, and every path that starts one sets it first.
   const [now, setNow] = useState(() => Date.now());
@@ -113,8 +135,14 @@ function useProgramPlay({
     setDenial(null);
   };
 
-  // Clear response message, denial, clues, canRequestClue, the remembered
-  // wrong guess, and the guess history when currentGate.id changes
+  // A command's reply: a plain message, neither success nor failure.
+  const showReply = (text: string) => {
+    showMessage(text);
+    setGuessSucceeded(null);
+  };
+
+  // Clear response message, denial, clues, canRequestClue, hints, the
+  // remembered wrong guess, and the guess history when currentGate.id changes
   useEffect(() => {
     currentGateIdRef.current = currentGateId;
     setMessage(null);
@@ -125,6 +153,8 @@ function useProgramPlay({
     setIsClueLimitReached(false);
     setRememberedGuess(null);
     setGuessHistory([]);
+    setHint(null);
+    setHintsUnlocked(0);
     // NOTE: clueCooldownUntil intentionally persists across gates — the
     // backend rate limit is session-wide, so moving gates must not re-enable
     // a clue request the server would reject.
@@ -172,6 +202,11 @@ function useProgramPlay({
       handleClueCommand();
       return;
     }
+    if (command === "/hint") {
+      setGuess("");
+      handleHintCommand();
+      return;
+    }
 
     if (submitGuessMutation.isPending) {
       return;
@@ -207,6 +242,7 @@ function useProgramPlay({
         setDenial({ id: denialCount.current, blinks });
         setGuessSucceeded(false);
         setCanRequestClue(result.canRequestClue);
+        setHintsUnlocked(result.hintsUnlocked);
         setRememberedGuess({
           guess: guess.trim(),
           canRequestClue: result.canRequestClue,
@@ -241,9 +277,7 @@ function useProgramPlay({
               prev ? { ...prev, canRequestClue: false } : prev,
             );
           } else if (data.isAiBudgetExhausted) {
-            showMessage(
-              "AI hint budget exhausted for today — try again tomorrow.",
-            );
+            showMessage(AI_BUDGET_EXHAUSTED_MESSAGE);
           } else if (data.isRateLimited) {
             const retryAfterMs = data.retryAfterMs;
             if (retryAfterMs != null && retryAfterMs > 0) {
@@ -273,10 +307,6 @@ function useProgramPlay({
   const handleRequestClue = () => requestClue(guess);
 
   function handleClueCommand() {
-    const showReply = (text: string) => {
-      showMessage(text);
-      setGuessSucceeded(null);
-    };
     if (!rememberedGuess) {
       showReply(CLUE_COMMAND_MESSAGES.noGuess);
     } else if (isClueLimitReached) {
@@ -287,6 +317,44 @@ function useProgramPlay({
       showReply(CLUE_COMMAND_MESSAGES.notYet);
     } else if (!requestClueMutation.isPending) {
       requestClue(rememberedGuess.guess);
+    }
+  }
+
+  const requestHint = () => {
+    const requestGateId = currentGateId;
+    if (!requestGateId || requestHintMutation.isPending) return;
+    requestHintMutation.mutate(
+      { gateId: requestGateId },
+      {
+        onSuccess: (data) => {
+          // Ignore responses from a request started on a now-inactive gate.
+          if (currentGateIdRef.current !== requestGateId) return;
+          if (data.step > 0 && data.cells) {
+            setHint({
+              step: data.step,
+              cells: data.cells,
+              isFinalStep: data.isFinalStep,
+            });
+            setHintsUnlocked((prev) => Math.max(prev, data.step));
+          } else {
+            showReply(HINT_MESSAGES.notYet);
+          }
+        },
+        onError: () => {
+          if (currentGateIdRef.current !== requestGateId) return;
+          showMessage(HINT_MESSAGES.error);
+        },
+      },
+    );
+  };
+
+  function handleHintCommand() {
+    if (hint?.isFinalStep) {
+      showReply(HINT_MESSAGES.final);
+    } else if (hint && hint.step >= hintsUnlocked) {
+      showReply(HINT_MESSAGES.notYet);
+    } else {
+      requestHint();
     }
   }
 
@@ -310,6 +378,10 @@ function useProgramPlay({
     resetSessionMutation,
     lastSolve,
     guessHistory,
+    hint,
+    canRequestHint: hintsUnlocked > (hint?.step ?? 0),
+    handleRequestHint: requestHint,
+    isHintPending: requestHintMutation.isPending,
   };
 }
 

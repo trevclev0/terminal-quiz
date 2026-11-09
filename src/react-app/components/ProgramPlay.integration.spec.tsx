@@ -75,6 +75,7 @@ const server = setupServer(
             success: true,
             message: "ACCESS GRANTED.",
             canRequestClue: false,
+            hintsUnlocked: 0,
             nextGate: null,
           },
         },
@@ -86,6 +87,7 @@ const server = setupServer(
           success: false,
           message: "Access Denied.",
           canRequestClue: true,
+          hintsUnlocked: 1,
           nextGate: null,
         },
       },
@@ -102,6 +104,13 @@ const server = setupServer(
   ),
   gqlApi.query("GetInProgressProgram", () =>
     HttpResponse.json({ data: { getInProgressProgram: null } }),
+  ),
+  gqlApi.mutation("RequestHint", () =>
+    HttpResponse.json({
+      data: {
+        requestHint: { step: 1, cells: [null], isFinalStep: true },
+      },
+    }),
   ),
   gqlApi.mutation("RequestClue", () =>
     HttpResponse.json({
@@ -301,6 +310,26 @@ describe("ProgramPlay Integration", () => {
         "Try thinking of 2+2",
       );
     });
+  });
+
+  it("shows a letter-pattern hint after a wrong guess unlocks one", async () => {
+    const { wrapper } = createQueryWrapper();
+    const user = userEvent.setup();
+
+    render(<ProgramPlay />, { wrapper });
+
+    const input = await screen.findByLabelText("Gate 1 password input");
+    await user.type(input, "wrong");
+    await user.keyboard("{Enter}");
+
+    await user.click(await screen.findByRole("button", { name: "Get Hint" }));
+
+    expect(await screen.findByTestId("hint-pattern")).toHaveTextContent("_");
+    expect(screen.getByText(/\(1 char\)/)).toBeInTheDocument();
+    // The only unlocked step is showing, so no further hint is offered.
+    expect(
+      screen.queryByRole("button", { name: /hint/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("disables clue button with countdown when request is rate limited", async () => {

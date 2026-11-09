@@ -27,6 +27,7 @@ import {
   ProgramGatesDocument,
   ReorderGatesDocument,
   RequestClueDocument,
+  RequestHintDocument,
   ResetSessionDocument,
   SubmitGuessDocument,
   UpdateGateDocument,
@@ -35,6 +36,7 @@ import {
 
 export const SUBMIT_GUESS_MUTATION = SubmitGuessDocument;
 export const REQUEST_CLUE_MUTATION = RequestClueDocument;
+export const REQUEST_HINT_MUTATION = RequestHintDocument;
 export const RESET_SESSION_MUTATION = ResetSessionDocument;
 export const GET_PROGRAMS_QUERY = GetProgramsDocument;
 export const GET_PROGRAM_PROGRESSION_QUERY = GetProgramProgressionDocument;

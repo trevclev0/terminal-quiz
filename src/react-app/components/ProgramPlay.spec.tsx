@@ -88,6 +88,10 @@ const mockUseProgramPlay = {
   clues: [],
   guessHistory: [],
   handleRequestClue: vi.fn(),
+  hint: null,
+  canRequestHint: false,
+  handleRequestHint: vi.fn(),
+  isHintPending: false,
   requestClueMutation: {
     mutate: vi.fn(),
     isPending: false,

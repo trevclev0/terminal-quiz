@@ -128,6 +128,22 @@ const SubmitGuessPayloadType = new GraphQLObjectType({
     message: { type: GraphQLString }, // Dynamic hint or success text
     nextGate: { type: ActiveGateType }, // Nullable if completed
     canRequestClue: { type: new GraphQLNonNull(GraphQLBoolean) },
+    // How many letter-pattern hint steps this gate has unlocked so far.
+    hintsUnlocked: { type: new GraphQLNonNull(GraphQLInt) },
+  },
+});
+
+const RequestHintResultType = new GraphQLObjectType({
+  name: "RequestHintResult",
+  fields: {
+    // 0 when no step is unlocked yet; `cells` is null then.
+    step: { type: new GraphQLNonNull(GraphQLInt) },
+    // One entry per character: the revealed character, " " for a word gap,
+    // or null for a hidden letter.
+    cells: { type: new GraphQLList(GraphQLString) },
+    // True once `step` is the answer's last safe step: no further wrong
+    // guess will unlock another hint.
+    isFinalStep: { type: new GraphQLNonNull(GraphQLBoolean) },
   },
 });
 
@@ -148,5 +164,6 @@ export {
   ProgramManagementType,
   ProgressionPayloadType,
   RequestClueResultType,
+  RequestHintResultType,
   SubmitGuessPayloadType,
 };

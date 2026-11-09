@@ -1,6 +1,7 @@
 import { gates, sessionCompletedGates, sessionProgress } from "@shared/schema";
 import { guessSchema, parseOrThrow } from "@shared/validation";
 import { isGuessAccepted } from "@worker-utils/isGuessCloseEnough";
+import { unlockedHintStep } from "@worker-utils/mechanicalHint";
 import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { GraphQLNonNull, GraphQLString } from "graphql";
 import { loadActiveSession } from "./activeSession";
@@ -109,6 +110,12 @@ export const submitGuess = {
         message: ACCESS_DENIED,
         nextGate: null,
         canRequestClue,
+        hintsUnlocked: unlockedHintStep({
+          correctAnswer: activeGate.correctAnswer,
+          guidanceEnabled: activeGate.guidanceEnabled,
+          guidanceThreshold: activeGate.guidanceThreshold,
+          attemptCount: updatedProgress.attemptCount,
+        }),
       };
     }
 
@@ -187,6 +194,7 @@ export const submitGuess = {
       message: ACCESS_GRANTED,
       nextGate,
       canRequestClue: false,
+      hintsUnlocked: 0,
     };
   },
 };

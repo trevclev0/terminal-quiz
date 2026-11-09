@@ -19,6 +19,7 @@ export const SUBMIT_GUESS_MUTATION_OPERATION =
       success
       message
       canRequestClue
+      hintsUnlocked
       nextGate {
         id
         label
@@ -39,6 +40,18 @@ export const REQUEST_CLUE_MUTATION_OPERATION =
       isRateLimited
       retryAfterMs
       isAiBudgetExhausted
+    }
+  }
+`;
+
+export const REQUEST_HINT_MUTATION_OPERATION =
+  /* GraphQL */
+  `
+  mutation RequestHint($programId: String!, $gateId: String!) {
+    requestHint(programId: $programId, gateId: $gateId) {
+      step
+      cells
+      isFinalStep
     }
   }
 `;

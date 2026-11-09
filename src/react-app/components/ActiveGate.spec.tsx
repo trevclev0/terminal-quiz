@@ -554,3 +554,81 @@ describe("ActiveGate guess history", () => {
     ).toBeNull();
   });
 });
+
+describe("ActiveGate hints", () => {
+  const hint = {
+    step: 3,
+    cells: ["B", null, "U", "E"],
+    isFinalStep: true,
+  };
+  const mockHandleRequestHint = vi.fn();
+
+  it("offers no hint button until a hint is unlocked", () => {
+    renderActiveGate({ canRequestHint: false });
+
+    expect(
+      screen.queryByRole("button", { name: /hint/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("requests a hint from the Get Hint button", () => {
+    renderActiveGate({
+      canRequestHint: true,
+      handleRequestHint: mockHandleRequestHint,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Get Hint" }));
+
+    expect(mockHandleRequestHint).toHaveBeenCalledTimes(1);
+  });
+
+  it("labels the button Get Next Hint once a hint is showing", () => {
+    renderActiveGate({ canRequestHint: true, hint: { ...hint, step: 1 } });
+
+    expect(
+      screen.getByRole("button", { name: "Get Next Hint" }),
+    ).toBeInTheDocument();
+  });
+
+  it("disables the button while a hint request is pending", () => {
+    renderActiveGate({ canRequestHint: true, isHintPending: true });
+
+    expect(
+      screen.getByRole("button", { name: "Fetching Hint..." }),
+    ).toBeDisabled();
+  });
+
+  it("disables the button while a guess is verifying", () => {
+    renderActiveGate({ canRequestHint: true, isPending: true });
+
+    expect(screen.getByRole("button", { name: "Get Hint" })).toBeDisabled();
+  });
+
+  it("shows the hint pattern and its length", () => {
+    renderActiveGate({ hint });
+
+    expect(screen.getByTestId("hint-pattern")).toHaveTextContent("B _ U E");
+    expect(screen.getByText(/\(4 chars\)/)).toBeInTheDocument();
+  });
+
+  it("announces the hint in words through a status region", () => {
+    renderActiveGate({ hint });
+
+    const status = screen
+      .getAllByRole("status")
+      .find((region) => region.textContent?.includes("B, blank, U, E"));
+    expect(status).toBeDefined();
+    expect(within(status as HTMLElement).getByTestId("hint-pattern")).toBe(
+      screen.getByTestId("hint-pattern"),
+    );
+    expect(
+      screen.getByTestId("hint-pattern").closest("[aria-hidden='true']"),
+    ).not.toBeNull();
+  });
+
+  it("shows no hint line without a hint", () => {
+    renderActiveGate({ hint: null });
+
+    expect(screen.queryByTestId("hint-pattern")).not.toBeInTheDocument();
+  });
+});
