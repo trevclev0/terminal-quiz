@@ -2009,6 +2009,23 @@ describe("useProgramPlay", () => {
       expect(result.current.message).toBe(HINT_MESSAGES.notYet);
     });
 
+    it("/hint fetches the next hint once a wrong guess unlocks it", async () => {
+      const { result } = renderPlay();
+      await wrongGuess(result, 1);
+      respondWithHint(hint());
+      act(() => {
+        result.current.handleRequestHint();
+      });
+      await wrongGuess(result, 2);
+      respondWithHint(hint({ step: 2 }));
+
+      type(result, "/hint");
+      await submit(result);
+
+      expect(mockHintMutate).toHaveBeenCalledTimes(2);
+      expect(result.current.hint).toEqual(hint({ step: 2 }));
+    });
+
     it("clears the denial when /hint replies with a message", async () => {
       const { result } = renderPlay();
       respondWithHint(hint({ step: 0, cells: null }));

@@ -25,6 +25,9 @@ export function formatHintPattern(cells: HintCell[]): string {
 export function hintLengthLabel(cells: HintCell[]): string {
   const lengths = splitWords(cells).map(
     (word) =>
+      // Stryker disable next-line ConditionalExpression: RegExp.test coerces
+      // null to "null", which matches, so dropping the null check is
+      // equivalent. The check stays so the intent doesn't rest on that.
       word.filter((cell) => cell === null || ALPHANUMERIC.test(cell)).length,
   );
   if (lengths.length > 1) {
